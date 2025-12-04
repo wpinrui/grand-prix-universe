@@ -101,7 +101,13 @@ function getCachedContent<TFile, TItem>(
 ): TItem[] {
   if (cache[cacheKey] === null) {
     const data = loadContentFile<TFile>(filename);
-    cache[cacheKey] = data ? (extractor(data) ?? []) : [];
+    if (data) {
+      const extracted = extractor(data);
+      // Guard against malformed JSON where the expected array is not actually an array
+      cache[cacheKey] = Array.isArray(extracted) ? extracted : [];
+    } else {
+      cache[cacheKey] = [];
+    }
   }
   return cache[cacheKey] as TItem[];
 }
