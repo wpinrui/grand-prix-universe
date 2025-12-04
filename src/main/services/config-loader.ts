@@ -10,7 +10,7 @@
 import { app } from 'electron';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import type { Team, Driver, Circuit, Sponsor, Manufacturer, Chief } from '../../shared/domain';
+import type { Team, Driver, Circuit, Sponsor, Manufacturer, Chief, GameRules } from '../../shared/domain';
 
 // JSON file wrapper types
 interface TeamsFile {
@@ -105,6 +105,12 @@ const cache: Record<CacheKey, unknown[] | null> = {
   chiefs: null,
 };
 
+// Separate cache for config files (single objects, not arrays)
+type ConfigCacheKey = 'rules';
+const configCache: Record<ConfigCacheKey, unknown | null> = {
+  rules: null,
+};
+
 /**
  * Generic cached content loader.
  * Eliminates repetition across getTeams/getDrivers/getCircuits.
@@ -191,6 +197,16 @@ export const ConfigLoader = {
     return this.getChiefs().find((chief) => chief.id === id);
   },
 
+  getRules(): GameRules | null {
+    if (configCache.rules !== null) {
+      return configCache.rules as GameRules;
+    }
+
+    const rules = loadConfigFile<GameRules>('rules.json');
+    configCache.rules = rules;
+    return rules;
+  },
+
   clearCache(): void {
     cache.teams = null;
     cache.drivers = null;
@@ -198,6 +214,7 @@ export const ConfigLoader = {
     cache.sponsors = null;
     cache.manufacturers = null;
     cache.chiefs = null;
+    configCache.rules = null;
   },
 
   /** Get the data directory path (for debugging). */

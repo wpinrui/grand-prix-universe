@@ -1,0 +1,29 @@
+{
+  "points": {
+    "system": [25, 18, 15, 12, 10, 8, 6, 4, 2, 1],
+    "fastestLapBonus": {
+      "enabled": false,
+      "points": 1,
+      "requiresTopN": 10
+    }
+  },
+  "grid": {
+    "teamsCount": 10,
+    "carsPerTeam": 2
+  },
+  "raceWeekend": {
+    "practice": {
+      "sessions": 1,
+      "durationMinutes": 60
+    },
+    "qualifying": {
+      "format": "knockout",
+      "eliminationsPerSession": [5, 5, 0]
+    },
+    "race": {
+      "distanceMultiplier": 1.0,
+      "mandatoryPitStops": false,
+      "requireCompoundChange": false
+    }
+  }
+}

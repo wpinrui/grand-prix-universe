@@ -241,3 +241,55 @@ export interface Sponsor {
   minReputation: number; // 0-100, team must have at least this reputation
   rivalGroup: string | null; // sponsors in same group are mutually exclusive
 }
+
+// =============================================================================
+// CONFIG TYPES (Game Rules)
+// =============================================================================
+
+export enum QualifyingFormat {
+  Knockout = 'knockout', // Q1/Q2/Q3 elimination style
+  SingleLap = 'single-lap', // One-shot qualifying
+  Aggregate = 'aggregate', // Best time from multiple sessions
+}
+
+export interface PointsConfig {
+  system: number[]; // Points by position (index 0 = 1st place)
+  fastestLapBonus: {
+    enabled: boolean;
+    points: number;
+    requiresTopN: number; // Must finish in top N to get bonus
+  };
+}
+
+export interface GridConfig {
+  teamsCount: number;
+  carsPerTeam: number;
+}
+
+export interface PracticeConfig {
+  sessions: number;
+  durationMinutes: number;
+}
+
+export interface QualifyingConfig {
+  format: QualifyingFormat;
+  eliminationsPerSession: number[]; // How many eliminated in each session
+}
+
+export interface RaceConfig {
+  distanceMultiplier: number; // Multiplier for circuit-defined laps
+  mandatoryPitStops: boolean;
+  requireCompoundChange: boolean;
+}
+
+export interface RaceWeekendConfig {
+  practice: PracticeConfig;
+  qualifying: QualifyingConfig;
+  race: RaceConfig;
+}
+
+export interface GameRules {
+  points: PointsConfig;
+  grid: GridConfig;
+  raceWeekend: RaceWeekendConfig;
+}
