@@ -1,0 +1,388 @@
+{
+  "circuits": [
+    {
+      "id": "albert-park",
+      "name": "Albert Park Circuit",
+      "location": "Melbourne",
+      "country": "Australia",
+      "lengthKm": 5.278,
+      "laps": 58,
+      "characteristics": {
+        "speedRating": 72,
+        "downforceRequirement": 62,
+        "brakingDemand": 58,
+        "tyreWear": 48,
+        "overtakingOpportunity": 55,
+        "wetWeatherLikelihood": 30
+      }
+    },
+    {
+      "id": "shanghai",
+      "name": "Shanghai International Circuit",
+      "location": "Shanghai",
+      "country": "China",
+      "lengthKm": 5.451,
+      "laps": 56,
+      "characteristics": {
+        "speedRating": 74,
+        "downforceRequirement": 68,
+        "brakingDemand": 70,
+        "tyreWear": 60,
+        "overtakingOpportunity": 65,
+        "wetWeatherLikelihood": 35
+      }
+    },
+    {
+      "id": "suzuka",
+      "name": "Suzuka International Racing Course",
+      "location": "Suzuka",
+      "country": "Japan",
+      "lengthKm": 5.807,
+      "laps": 53,
+      "characteristics": {
+        "speedRating": 82,
+        "downforceRequirement": 78,
+        "brakingDemand": 62,
+        "tyreWear": 68,
+        "overtakingOpportunity": 45,
+        "wetWeatherLikelihood": 40
+      }
+    },
+    {
+      "id": "bahrain",
+      "name": "Bahrain International Circuit",
+      "location": "Sakhir",
+      "country": "Bahrain",
+      "lengthKm": 5.412,
+      "laps": 57,
+      "characteristics": {
+        "speedRating": 70,
+        "downforceRequirement": 55,
+        "brakingDemand": 72,
+        "tyreWear": 65,
+        "overtakingOpportunity": 70,
+        "wetWeatherLikelihood": 5
+      }
+    },
+    {
+      "id": "jeddah",
+      "name": "Jeddah Corniche Circuit",
+      "location": "Jeddah",
+      "country": "Saudi Arabia",
+      "lengthKm": 6.174,
+      "laps": 50,
+      "characteristics": {
+        "speedRating": 92,
+        "downforceRequirement": 42,
+        "brakingDemand": 55,
+        "tyreWear": 45,
+        "overtakingOpportunity": 52,
+        "wetWeatherLikelihood": 2
+      }
+    },
+    {
+      "id": "miami",
+      "name": "Miami International Autodrome",
+      "location": "Miami",
+      "country": "United States",
+      "lengthKm": 5.41,
+      "laps": 57,
+      "characteristics": {
+        "speedRating": 75,
+        "downforceRequirement": 60,
+        "brakingDemand": 65,
+        "tyreWear": 58,
+        "overtakingOpportunity": 62,
+        "wetWeatherLikelihood": 35
+      }
+    },
+    {
+      "id": "imola",
+      "name": "Autodromo Enzo e Dino Ferrari",
+      "location": "Imola",
+      "country": "Italy",
+      "lengthKm": 4.909,
+      "laps": 63,
+      "characteristics": {
+        "speedRating": 76,
+        "downforceRequirement": 70,
+        "brakingDemand": 60,
+        "tyreWear": 52,
+        "overtakingOpportunity": 38,
+        "wetWeatherLikelihood": 30
+      }
+    },
+    {
+      "id": "monaco",
+      "name": "Circuit de Monaco",
+      "location": "Monte Carlo",
+      "country": "Monaco",
+      "lengthKm": 3.337,
+      "laps": 78,
+      "characteristics": {
+        "speedRating": 42,
+        "downforceRequirement": 95,
+        "brakingDemand": 88,
+        "tyreWear": 32,
+        "overtakingOpportunity": 12,
+        "wetWeatherLikelihood": 20
+      }
+    },
+    {
+      "id": "barcelona",
+      "name": "Circuit de Barcelona-Catalunya",
+      "location": "Barcelona",
+      "country": "Spain",
+      "lengthKm": 4.675,
+      "laps": 66,
+      "characteristics": {
+        "speedRating": 72,
+        "downforceRequirement": 75,
+        "brakingDemand": 58,
+        "tyreWear": 72,
+        "overtakingOpportunity": 42,
+        "wetWeatherLikelihood": 15
+      }
+    },
+    {
+      "id": "montreal",
+      "name": "Circuit Gilles Villeneuve",
+      "location": "Montreal",
+      "country": "Canada",
+      "lengthKm": 4.361,
+      "laps": 70,
+      "characteristics": {
+        "speedRating": 76,
+        "downforceRequirement": 45,
+        "brakingDemand": 85,
+        "tyreWear": 42,
+        "overtakingOpportunity": 72,
+        "wetWeatherLikelihood": 40
+      }
+    },
+    {
+      "id": "spielberg",
+      "name": "Red Bull Ring",
+      "location": "Spielberg",
+      "country": "Austria",
+      "lengthKm": 4.318,
+      "laps": 71,
+      "characteristics": {
+        "speedRating": 80,
+        "downforceRequirement": 48,
+        "brakingDemand": 68,
+        "tyreWear": 50,
+        "overtakingOpportunity": 68,
+        "wetWeatherLikelihood": 45
+      }
+    },
+    {
+      "id": "silverstone",
+      "name": "Silverstone Circuit",
+      "location": "Silverstone",
+      "country": "United Kingdom",
+      "lengthKm": 5.891,
+      "laps": 52,
+      "characteristics": {
+        "speedRating": 85,
+        "downforceRequirement": 72,
+        "brakingDemand": 55,
+        "tyreWear": 65,
+        "overtakingOpportunity": 58,
+        "wetWeatherLikelihood": 55
+      }
+    },
+    {
+      "id": "spa",
+      "name": "Circuit de Spa-Francorchamps",
+      "location": "Spa",
+      "country": "Belgium",
+      "lengthKm": 7.004,
+      "laps": 44,
+      "characteristics": {
+        "speedRating": 90,
+        "downforceRequirement": 55,
+        "brakingDemand": 52,
+        "tyreWear": 55,
+        "overtakingOpportunity": 72,
+        "wetWeatherLikelihood": 75
+      }
+    },
+    {
+      "id": "budapest",
+      "name": "Hungaroring",
+      "location": "Budapest",
+      "country": "Hungary",
+      "lengthKm": 4.381,
+      "laps": 70,
+      "characteristics": {
+        "speedRating": 48,
+        "downforceRequirement": 88,
+        "brakingDemand": 55,
+        "tyreWear": 58,
+        "overtakingOpportunity": 25,
+        "wetWeatherLikelihood": 30
+      }
+    },
+    {
+      "id": "zandvoort",
+      "name": "Circuit Zandvoort",
+      "location": "Zandvoort",
+      "country": "Netherlands",
+      "lengthKm": 4.259,
+      "laps": 72,
+      "characteristics": {
+        "speedRating": 65,
+        "downforceRequirement": 82,
+        "brakingDemand": 52,
+        "tyreWear": 62,
+        "overtakingOpportunity": 28,
+        "wetWeatherLikelihood": 45
+      }
+    },
+    {
+      "id": "monza",
+      "name": "Autodromo Nazionale Monza",
+      "location": "Monza",
+      "country": "Italy",
+      "lengthKm": 5.793,
+      "laps": 53,
+      "characteristics": {
+        "speedRating": 98,
+        "downforceRequirement": 25,
+        "brakingDemand": 78,
+        "tyreWear": 42,
+        "overtakingOpportunity": 82,
+        "wetWeatherLikelihood": 25
+      }
+    },
+    {
+      "id": "baku",
+      "name": "Baku City Circuit",
+      "location": "Baku",
+      "country": "Azerbaijan",
+      "lengthKm": 6.003,
+      "laps": 51,
+      "characteristics": {
+        "speedRating": 88,
+        "downforceRequirement": 52,
+        "brakingDemand": 72,
+        "tyreWear": 45,
+        "overtakingOpportunity": 65,
+        "wetWeatherLikelihood": 15
+      }
+    },
+    {
+      "id": "marina-bay",
+      "name": "Marina Bay Street Circuit",
+      "location": "Singapore",
+      "country": "Singapore",
+      "lengthKm": 5.063,
+      "laps": 62,
+      "characteristics": {
+        "speedRating": 52,
+        "downforceRequirement": 85,
+        "brakingDemand": 78,
+        "tyreWear": 58,
+        "overtakingOpportunity": 32,
+        "wetWeatherLikelihood": 45
+      }
+    },
+    {
+      "id": "austin",
+      "name": "Circuit of the Americas",
+      "location": "Austin",
+      "country": "United States",
+      "lengthKm": 5.513,
+      "laps": 56,
+      "characteristics": {
+        "speedRating": 78,
+        "downforceRequirement": 68,
+        "brakingDemand": 62,
+        "tyreWear": 65,
+        "overtakingOpportunity": 68,
+        "wetWeatherLikelihood": 25
+      }
+    },
+    {
+      "id": "mexico-city",
+      "name": "Autodromo Hermanos Rodriguez",
+      "location": "Mexico City",
+      "country": "Mexico",
+      "lengthKm": 4.304,
+      "laps": 71,
+      "characteristics": {
+        "speedRating": 75,
+        "downforceRequirement": 72,
+        "brakingDemand": 68,
+        "tyreWear": 48,
+        "overtakingOpportunity": 58,
+        "wetWeatherLikelihood": 20
+      }
+    },
+    {
+      "id": "interlagos",
+      "name": "Autodromo Jose Carlos Pace",
+      "location": "Sao Paulo",
+      "country": "Brazil",
+      "lengthKm": 4.309,
+      "laps": 71,
+      "characteristics": {
+        "speedRating": 74,
+        "downforceRequirement": 65,
+        "brakingDemand": 68,
+        "tyreWear": 70,
+        "overtakingOpportunity": 65,
+        "wetWeatherLikelihood": 50
+      }
+    },
+    {
+      "id": "las-vegas",
+      "name": "Las Vegas Strip Circuit",
+      "location": "Las Vegas",
+      "country": "United States",
+      "lengthKm": 6.201,
+      "laps": 50,
+      "characteristics": {
+        "speedRating": 88,
+        "downforceRequirement": 45,
+        "brakingDemand": 70,
+        "tyreWear": 52,
+        "overtakingOpportunity": 62,
+        "wetWeatherLikelihood": 5
+      }
+    },
+    {
+      "id": "lusail",
+      "name": "Lusail International Circuit",
+      "location": "Lusail",
+      "country": "Qatar",
+      "lengthKm": 5.419,
+      "laps": 57,
+      "characteristics": {
+        "speedRating": 82,
+        "downforceRequirement": 58,
+        "brakingDemand": 55,
+        "tyreWear": 72,
+        "overtakingOpportunity": 55,
+        "wetWeatherLikelihood": 2
+      }
+    },
+    {
+      "id": "yas-marina",
+      "name": "Yas Marina Circuit",
+      "location": "Abu Dhabi",
+      "country": "United Arab Emirates",
+      "lengthKm": 5.281,
+      "laps": 58,
+      "characteristics": {
+        "speedRating": 75,
+        "downforceRequirement": 62,
+        "brakingDemand": 65,
+        "tyreWear": 55,
+        "overtakingOpportunity": 60,
+        "wetWeatherLikelihood": 2
+      }
+    }
+  ]
+}
