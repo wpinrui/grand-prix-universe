@@ -1,3 +1,45 @@
 # Agent instructions (project-specific, not shared)
 .claude/
 agents/
+
+# Design document (local reference only)
+Grand_Prix_World_Design_Document.md
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+out/
+build/
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+
+# Real F1 data (licensing - users add their own)
+data/override/
+
+# Save files (user-specific)
+saves/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# TypeScript
+*.tsbuildinfo
+
+# Electron
+release/
