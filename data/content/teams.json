@@ -71,9 +71,9 @@
       "factoryLevel": 52
     },
     {
-      "id": "eagle-racing",
-      "name": "Eagle Racing",
-      "shortName": "EAG",
+      "id": "automation-racing",
+      "name": "Automation Racing",
+      "shortName": "AUT",
       "primaryColor": "#FFFFFF",
       "secondaryColor": "#B91C1C",
       "headquarters": "United States",
@@ -81,9 +81,9 @@
       "factoryLevel": 48
     },
     {
-      "id": "glacier-racing",
-      "name": "Glacier Racing",
-      "shortName": "GLA",
+      "id": "sabre-racing",
+      "name": "Sabre Racing",
+      "shortName": "SAB",
       "primaryColor": "#52B747",
       "secondaryColor": "#FFFFFF",
       "headquarters": "Switzerland",
@@ -91,9 +91,9 @@
       "factoryLevel": 40
     },
     {
-      "id": "azure-racing",
-      "name": "Azure Racing",
-      "shortName": "AZU",
+      "id": "alfie-racing",
+      "name": "Alfie Racing",
+      "shortName": "ALF",
       "primaryColor": "#0090FF",
       "secondaryColor": "#FF87BC",
       "headquarters": "France",
