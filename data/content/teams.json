@@ -61,8 +61,8 @@
       "factoryLevel": 55
     },
     {
-      "id": "emerald-gp-team",
-      "name": "Emerald GP Team",
+      "id": "emerald-racing-team",
+      "name": "Emerald Racing Team",
       "shortName": "EME",
       "primaryColor": "#006F62",
       "secondaryColor": "#00FF87",
@@ -91,8 +91,8 @@
       "factoryLevel": 40
     },
     {
-      "id": "alfie-gp",
-      "name": "Alfie GP",
+      "id": "team-alfie",
+      "name": "Team Alfie",
       "shortName": "ALF",
       "primaryColor": "#0090FF",
       "secondaryColor": "#FF87BC",
