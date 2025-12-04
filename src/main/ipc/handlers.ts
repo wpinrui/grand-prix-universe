@@ -51,6 +51,14 @@ export function registerIpcHandlers(): void {
     return ConfigLoader.getRules();
   });
 
+  ipcMain.handle(IpcChannels.CONFIG_GET_REGULATIONS, () => {
+    return ConfigLoader.getRegulations();
+  });
+
+  ipcMain.handle(IpcChannels.CONFIG_GET_REGULATIONS_BY_SEASON, (_event, season: number) => {
+    return ConfigLoader.getRegulationsBySeason(season);
+  });
+
   // Game handlers (stubs for now)
   ipcMain.handle(IpcChannels.GAME_NEW, (_event, _teamId: string) => {
     // TODO: Implement when GameStateManager exists

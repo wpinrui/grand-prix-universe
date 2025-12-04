@@ -293,3 +293,41 @@ export interface GameRules {
   grid: GridConfig;
   raceWeekend: RaceWeekendConfig;
 }
+
+// =============================================================================
+// REGULATIONS TYPES (In-universe FIA rules, vary by season)
+// =============================================================================
+
+export interface TestingRegulations {
+  maxMilesPerWeek: number;
+  preSeasonDays: number;
+}
+
+export interface EngineRegulations {
+  unitsPerSeason: number;
+  gridPenaltyPerUnit: number;
+}
+
+export interface GearboxRegulations {
+  racesPerUnit: number;
+  gridPenalty: number;
+}
+
+export interface TyreRegulations {
+  compoundsPerWeekend: number;
+  drySetsPerWeekend: number;
+}
+
+export interface SeasonRegulations {
+  season: number;
+  testing: TestingRegulations;
+  engines: EngineRegulations;
+  gearbox: GearboxRegulations;
+  tyres: TyreRegulations;
+  technologyCarryover: string[]; // Component IDs that carry over between seasons
+}
+
+export interface Regulations {
+  seasons: SeasonRegulations[];
+  default: SeasonRegulations;
+}

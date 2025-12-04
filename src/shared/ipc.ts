@@ -5,7 +5,17 @@
  * All IPC communication must go through these typed channels.
  */
 
-import type { Team, Driver, Circuit, Sponsor, Manufacturer, Chief, GameRules } from './domain';
+import type {
+  Team,
+  Driver,
+  Circuit,
+  Sponsor,
+  Manufacturer,
+  Chief,
+  GameRules,
+  Regulations,
+  SeasonRegulations,
+} from './domain';
 
 /** Channel names for IPC communication */
 export const IpcChannels = {
@@ -21,6 +31,8 @@ export const IpcChannels = {
   CONFIG_GET_MANUFACTURERS: 'config:getManufacturers',
   CONFIG_GET_CHIEFS: 'config:getChiefs',
   CONFIG_GET_RULES: 'config:getRules',
+  CONFIG_GET_REGULATIONS: 'config:getRegulations',
+  CONFIG_GET_REGULATIONS_BY_SEASON: 'config:getRegulationsBySeason',
 
   // Game state (placeholders for future implementation)
   GAME_NEW: 'game:new',
@@ -68,6 +80,14 @@ export interface IpcInvokeMap {
   [IpcChannels.CONFIG_GET_RULES]: {
     args: [];
     result: GameRules | null;
+  };
+  [IpcChannels.CONFIG_GET_REGULATIONS]: {
+    args: [];
+    result: Regulations | null;
+  };
+  [IpcChannels.CONFIG_GET_REGULATIONS_BY_SEASON]: {
+    args: [season: number];
+    result: SeasonRegulations | null;
   };
   [IpcChannels.GAME_NEW]: {
     args: [teamId: string];

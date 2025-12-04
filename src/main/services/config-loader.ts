@@ -10,7 +10,17 @@
 import { app } from 'electron';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import type { Team, Driver, Circuit, Sponsor, Manufacturer, Chief, GameRules } from '../../shared/domain';
+import type {
+  Team,
+  Driver,
+  Circuit,
+  Sponsor,
+  Manufacturer,
+  Chief,
+  GameRules,
+  Regulations,
+  SeasonRegulations,
+} from '../../shared/domain';
 
 // JSON file wrapper types
 interface TeamsFile {
@@ -109,9 +119,10 @@ const cache: Record<CacheKey, unknown[] | null> = {
 // Use a Symbol sentinel to distinguish "not loaded" from "loaded but file missing (null)"
 const NOT_LOADED = Symbol('NOT_LOADED');
 type ConfigCacheValue = unknown | typeof NOT_LOADED;
-type ConfigCacheKey = 'rules';
+type ConfigCacheKey = 'rules' | 'regulations';
 const configCache: Record<ConfigCacheKey, ConfigCacheValue> = {
   rules: NOT_LOADED,
+  regulations: NOT_LOADED,
 };
 
 /**
@@ -210,6 +221,27 @@ export const ConfigLoader = {
     return rules;
   },
 
+  getRegulations(): Regulations | null {
+    if (configCache.regulations !== NOT_LOADED) {
+      return configCache.regulations as Regulations | null;
+    }
+
+    const regulations = loadConfigFile<Regulations>('regulations.json');
+    configCache.regulations = regulations;
+    return regulations;
+  },
+
+  getRegulationsBySeason(season: number): SeasonRegulations | null {
+    const regulations = this.getRegulations();
+    if (!regulations) {
+      return null;
+    }
+
+    // Find season-specific regulations, fall back to default
+    const seasonRegs = regulations.seasons.find((s) => s.season === season);
+    return seasonRegs ?? regulations.default;
+  },
+
   clearCache(): void {
     cache.teams = null;
     cache.drivers = null;
@@ -218,6 +250,7 @@ export const ConfigLoader = {
     cache.manufacturers = null;
     cache.chiefs = null;
     configCache.rules = NOT_LOADED;
+    configCache.regulations = NOT_LOADED;
   },
 
   /** Get the data directory path (for debugging). */

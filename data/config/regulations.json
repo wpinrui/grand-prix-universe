@@ -1,0 +1,44 @@
+{
+  "seasons": [
+    {
+      "season": 1,
+      "testing": {
+        "maxMilesPerWeek": 350,
+        "preSeasonDays": 8
+      },
+      "engines": {
+        "unitsPerSeason": 8,
+        "gridPenaltyPerUnit": 5
+      },
+      "gearbox": {
+        "racesPerUnit": 6,
+        "gridPenalty": 5
+      },
+      "tyres": {
+        "compoundsPerWeekend": 2,
+        "drySetsPerWeekend": 13
+      },
+      "technologyCarryover": ["brakes", "clutch", "electronics", "gearbox"]
+    }
+  ],
+  "default": {
+    "season": 0,
+    "testing": {
+      "maxMilesPerWeek": 350,
+      "preSeasonDays": 8
+    },
+    "engines": {
+      "unitsPerSeason": 8,
+      "gridPenaltyPerUnit": 5
+    },
+    "gearbox": {
+      "racesPerUnit": 6,
+      "gridPenalty": 5
+    },
+    "tyres": {
+      "compoundsPerWeekend": 2,
+      "drySetsPerWeekend": 13
+    },
+    "technologyCarryover": ["brakes", "clutch", "electronics", "gearbox"]
+  }
+}
