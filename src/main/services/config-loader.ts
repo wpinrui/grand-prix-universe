@@ -82,97 +82,71 @@ function loadConfigFile<T>(filename: string): T | null {
   return readJsonFile<T>(configPath);
 }
 
-// Cache for loaded data
-let teamsCache: Team[] | null = null;
-let driversCache: Driver[] | null = null;
-let circuitsCache: Circuit[] | null = null;
+// Unified cache for all content types
+type CacheKey = 'teams' | 'drivers' | 'circuits';
+const cache: Record<CacheKey, unknown[] | null> = {
+  teams: null,
+  drivers: null,
+  circuits: null,
+};
+
+/**
+ * Generic cached content loader.
+ * Eliminates repetition across getTeams/getDrivers/getCircuits.
+ */
+function getCachedContent<TFile, TItem>(
+  cacheKey: CacheKey,
+  filename: string,
+  extractor: (file: TFile) => TItem[]
+): TItem[] {
+  if (cache[cacheKey] === null) {
+    const data = loadContentFile<TFile>(filename);
+    cache[cacheKey] = data ? extractor(data) : [];
+  }
+  return cache[cacheKey] as TItem[];
+}
 
 /**
  * ConfigLoader - Singleton service for loading game data
  */
 export const ConfigLoader = {
-  /**
-   * Get all teams.
-   * Uses cached data if available.
-   */
   getTeams(): Team[] {
-    if (teamsCache === null) {
-      const data = loadContentFile<TeamsFile>('teams.json');
-      teamsCache = data?.teams ?? [];
-    }
-    return teamsCache;
+    return getCachedContent<TeamsFile, Team>('teams', 'teams.json', (f) => f.teams);
   },
 
-  /**
-   * Get a team by ID.
-   */
   getTeamById(id: string): Team | undefined {
     return this.getTeams().find((team) => team.id === id);
   },
 
-  /**
-   * Get all drivers.
-   * Uses cached data if available.
-   */
   getDrivers(): Driver[] {
-    if (driversCache === null) {
-      const data = loadContentFile<DriversFile>('drivers.json');
-      driversCache = data?.drivers ?? [];
-    }
-    return driversCache;
+    return getCachedContent<DriversFile, Driver>('drivers', 'drivers.json', (f) => f.drivers);
   },
 
-  /**
-   * Get a driver by ID.
-   */
   getDriverById(id: string): Driver | undefined {
     return this.getDrivers().find((driver) => driver.id === id);
   },
 
-  /**
-   * Get drivers by team ID.
-   */
   getDriversByTeamId(teamId: string): Driver[] {
     return this.getDrivers().filter((driver) => driver.teamId === teamId);
   },
 
-  /**
-   * Get all circuits.
-   * Uses cached data if available.
-   */
   getCircuits(): Circuit[] {
-    if (circuitsCache === null) {
-      const data = loadContentFile<CircuitsFile>('circuits.json');
-      circuitsCache = data?.circuits ?? [];
-    }
-    return circuitsCache;
+    return getCachedContent<CircuitsFile, Circuit>('circuits', 'circuits.json', (f) => f.circuits);
   },
 
-  /**
-   * Get a circuit by ID.
-   */
   getCircuitById(id: string): Circuit | undefined {
     return this.getCircuits().find((circuit) => circuit.id === id);
   },
 
-  /**
-   * Clear all caches.
-   * Call this when data files may have changed.
-   */
   clearCache(): void {
-    teamsCache = null;
-    driversCache = null;
-    circuitsCache = null;
+    cache.teams = null;
+    cache.drivers = null;
+    cache.circuits = null;
   },
 
-  /**
-   * Get the data directory path (for debugging).
-   */
+  /** Get the data directory path (for debugging). */
   getDataPath,
 
-  /**
-   * Load a config file by name.
-   * Config files don't support override.
-   */
+  /** Load a config file by name. Config files don't support override. */
   loadConfig: loadConfigFile,
 };
