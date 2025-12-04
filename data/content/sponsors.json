@@ -547,7 +547,7 @@
       "tier": "minor",
       "payment": 3500000,
       "minReputation": 20,
-      "rivalGroup": null
+      "rivalGroup": "gaming-peripherals"
     },
     {
       "id": "razer",
