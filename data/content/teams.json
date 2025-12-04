@@ -1,0 +1,104 @@
+{
+  "teams": [
+    {
+      "id": "papaya-racing",
+      "name": "Papaya Racing",
+      "shortName": "PAP",
+      "primaryColor": "#FF8000",
+      "secondaryColor": "#0057B8",
+      "headquarters": "United Kingdom",
+      "budget": 220000000,
+      "factoryLevel": 95
+    },
+    {
+      "id": "silver-arrow-motorsport",
+      "name": "Silver Arrow Motorsport",
+      "shortName": "SAR",
+      "primaryColor": "#C0C0C0",
+      "secondaryColor": "#00D2BE",
+      "headquarters": "Germany",
+      "budget": 200000000,
+      "factoryLevel": 90
+    },
+    {
+      "id": "crimson-bull-racing",
+      "name": "Crimson Bull Racing",
+      "shortName": "CRI",
+      "primaryColor": "#1E3A8A",
+      "secondaryColor": "#DC2626",
+      "headquarters": "Austria",
+      "budget": 195000000,
+      "factoryLevel": 88
+    },
+    {
+      "id": "scuderia-veloce",
+      "name": "Scuderia Veloce",
+      "shortName": "VEL",
+      "primaryColor": "#DC2626",
+      "secondaryColor": "#FBBF24",
+      "headquarters": "Italy",
+      "budget": 190000000,
+      "factoryLevel": 86
+    },
+    {
+      "id": "willards-gp-team",
+      "name": "Willards GP Team",
+      "shortName": "WIL",
+      "primaryColor": "#1E40AF",
+      "secondaryColor": "#FFFFFF",
+      "headquarters": "United Kingdom",
+      "budget": 120000000,
+      "factoryLevel": 65
+    },
+    {
+      "id": "toro-minore",
+      "name": "Toro Minore",
+      "shortName": "TOR",
+      "primaryColor": "#3B82F6",
+      "secondaryColor": "#FFFFFF",
+      "headquarters": "Italy",
+      "budget": 100000000,
+      "factoryLevel": 55
+    },
+    {
+      "id": "emerald-racing-team",
+      "name": "Emerald Racing Team",
+      "shortName": "EME",
+      "primaryColor": "#006F62",
+      "secondaryColor": "#00FF87",
+      "headquarters": "United Kingdom",
+      "budget": 95000000,
+      "factoryLevel": 52
+    },
+    {
+      "id": "automation-gp",
+      "name": "Automation GP",
+      "shortName": "AUT",
+      "primaryColor": "#FFFFFF",
+      "secondaryColor": "#B91C1C",
+      "headquarters": "United States",
+      "budget": 90000000,
+      "factoryLevel": 48
+    },
+    {
+      "id": "sabre-grand-prix",
+      "name": "Sabre Grand Prix",
+      "shortName": "SAB",
+      "primaryColor": "#52B747",
+      "secondaryColor": "#FFFFFF",
+      "headquarters": "Switzerland",
+      "budget": 75000000,
+      "factoryLevel": 40
+    },
+    {
+      "id": "team-alfie",
+      "name": "Team Alfie",
+      "shortName": "ALF",
+      "primaryColor": "#0090FF",
+      "secondaryColor": "#FF87BC",
+      "headquarters": "France",
+      "budget": 60000000,
+      "factoryLevel": 32
+    }
+  ]
+}
