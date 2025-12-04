@@ -5,11 +5,18 @@
  * All IPC communication must go through these typed channels.
  */
 
+import type { Team, Driver, Circuit } from './domain';
+
 /** Channel names for IPC communication */
 export const IpcChannels = {
   // App lifecycle
   APP_GET_VERSION: 'app:getVersion',
   APP_QUIT: 'app:quit',
+
+  // Config/content data
+  CONFIG_GET_TEAMS: 'config:getTeams',
+  CONFIG_GET_DRIVERS: 'config:getDrivers',
+  CONFIG_GET_CIRCUITS: 'config:getCircuits',
 
   // Game state (placeholders for future implementation)
   GAME_NEW: 'game:new',
@@ -29,6 +36,18 @@ export interface IpcInvokeMap {
   [IpcChannels.APP_QUIT]: {
     args: [];
     result: void;
+  };
+  [IpcChannels.CONFIG_GET_TEAMS]: {
+    args: [];
+    result: Team[];
+  };
+  [IpcChannels.CONFIG_GET_DRIVERS]: {
+    args: [];
+    result: Driver[];
+  };
+  [IpcChannels.CONFIG_GET_CIRCUITS]: {
+    args: [];
+    result: Circuit[];
   };
   [IpcChannels.GAME_NEW]: {
     args: [teamId: string];
