@@ -184,7 +184,7 @@ export const ConfigLoader = {
   },
 
   getChiefs(): Chief[] {
-    return getCachedContent<ChiefsFile, Chief>('chiefs', 'staff.json', (f) => f.chiefs);
+    return getCachedContent<ChiefsFile, Chief>('chiefs', 'chiefs.json', (f) => f.chiefs);
   },
 
   getChiefById(id: string): Chief | undefined {
