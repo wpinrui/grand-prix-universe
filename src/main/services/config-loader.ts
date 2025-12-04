@@ -247,25 +247,28 @@ export const ConfigLoader = {
   },
 
   getCompounds(): TyreCompoundConfig[] {
-    if (configCache.compounds === NOT_LOADED) {
-      const config = loadConfigFile<CompoundsConfig>('compounds.json');
-      const compounds = config?.compounds;
-
-      if (!Array.isArray(compounds)) {
-        configCache.compounds = [];
-      } else {
-        const validIds = new Set(Object.values(TyreCompound));
-        configCache.compounds = compounds.filter((c) => {
-          if (!validIds.has(c.id)) {
-            console.warn(`Invalid compound ID "${c.id}" - must match TyreCompound enum`);
-            return false;
-          }
-          return true;
-        });
-      }
+    if (configCache.compounds !== NOT_LOADED) {
+      return configCache.compounds as TyreCompoundConfig[];
     }
 
-    return configCache.compounds as TyreCompoundConfig[];
+    const config = loadConfigFile<CompoundsConfig>('compounds.json');
+    const compounds = config?.compounds;
+
+    if (!Array.isArray(compounds)) {
+      configCache.compounds = [];
+      return [];
+    }
+
+    const validIds = new Set(Object.values(TyreCompound));
+    configCache.compounds = compounds.filter((c) => {
+      const isValid = validIds.has(c.id);
+      if (!isValid) {
+        console.warn(`Invalid compound ID "${c.id}" - must match TyreCompound enum`);
+      }
+      return isValid;
+    });
+
+    return configCache.compounds;
   },
 
   getCompoundById(id: TyreCompound): TyreCompoundConfig | undefined {
