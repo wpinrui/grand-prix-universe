@@ -249,12 +249,14 @@ export const ConfigLoader = {
   getCompounds(): TyreCompoundConfig[] {
     if (configCache.compounds !== NOT_LOADED) {
       const cached = configCache.compounds as CompoundsConfig | null;
-      return cached?.compounds ?? [];
+      const compounds = cached?.compounds;
+      return Array.isArray(compounds) ? compounds : [];
     }
 
     const config = loadConfigFile<CompoundsConfig>('compounds.json');
     configCache.compounds = config;
-    return config?.compounds ?? [];
+    const compounds = config?.compounds;
+    return Array.isArray(compounds) ? compounds : [];
   },
 
   getCompoundById(id: TyreCompound): TyreCompoundConfig | undefined {
