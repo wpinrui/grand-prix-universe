@@ -531,7 +531,7 @@
     "rivalGroup": "social-media"
   },
   {
-    "id": "twitter",
+    "id": "x",
     "name": "X",
     "industry": "technology",
     "tier": "minor",
@@ -693,7 +693,7 @@
     "rivalGroup": "racing-gear"
   },
   {
-    "id": "tmobile",
+    "id": "t-mobile",
     "name": "T-Mobile",
     "industry": "telecommunications",
     "tier": "minor",
