@@ -10,7 +10,7 @@
 import { app } from 'electron';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import type { Team, Driver, Circuit, Sponsor, Manufacturer, Chief } from '../../shared/domain';
+import type { Team, Driver, Circuit, Sponsor, Manufacturer, Chief, GameRules } from '../../shared/domain';
 
 // JSON file wrapper types
 interface TeamsFile {
@@ -105,6 +105,15 @@ const cache: Record<CacheKey, unknown[] | null> = {
   chiefs: null,
 };
 
+// Separate cache for config files (single objects, not arrays)
+// Use a Symbol sentinel to distinguish "not loaded" from "loaded but file missing (null)"
+const NOT_LOADED = Symbol('NOT_LOADED');
+type ConfigCacheValue = unknown | typeof NOT_LOADED;
+type ConfigCacheKey = 'rules';
+const configCache: Record<ConfigCacheKey, ConfigCacheValue> = {
+  rules: NOT_LOADED,
+};
+
 /**
  * Generic cached content loader.
  * Eliminates repetition across getTeams/getDrivers/getCircuits.
@@ -191,6 +200,16 @@ export const ConfigLoader = {
     return this.getChiefs().find((chief) => chief.id === id);
   },
 
+  getRules(): GameRules | null {
+    if (configCache.rules !== NOT_LOADED) {
+      return configCache.rules as GameRules | null;
+    }
+
+    const rules = loadConfigFile<GameRules>('rules.json');
+    configCache.rules = rules;
+    return rules;
+  },
+
   clearCache(): void {
     cache.teams = null;
     cache.drivers = null;
@@ -198,6 +217,7 @@ export const ConfigLoader = {
     cache.sponsors = null;
     cache.manufacturers = null;
     cache.chiefs = null;
+    configCache.rules = NOT_LOADED;
   },
 
   /** Get the data directory path (for debugging). */
