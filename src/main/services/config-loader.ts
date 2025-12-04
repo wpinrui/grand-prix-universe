@@ -101,7 +101,7 @@ function getCachedContent<TFile, TItem>(
 ): TItem[] {
   if (cache[cacheKey] === null) {
     const data = loadContentFile<TFile>(filename);
-    cache[cacheKey] = data ? extractor(data) : [];
+    cache[cacheKey] = data ? (extractor(data) ?? []) : [];
   }
   return cache[cacheKey] as TItem[];
 }
