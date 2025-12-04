@@ -1,0 +1,218 @@
+[
+  {
+    "id": "nexus-technologies",
+    "name": "Nexus Technologies",
+    "industry": "technology",
+    "tier": "title",
+    "payment": 45000000,
+    "minReputation": 75,
+    "rivalGroup": null
+  },
+  {
+    "id": "petromax-energy",
+    "name": "Petromax Energy",
+    "industry": "oil-gas",
+    "tier": "title",
+    "payment": 50000000,
+    "minReputation": 80,
+    "rivalGroup": "oil-companies"
+  },
+  {
+    "id": "meridian-bank",
+    "name": "Meridian Bank",
+    "industry": "finance",
+    "tier": "title",
+    "payment": 40000000,
+    "minReputation": 70,
+    "rivalGroup": "banks"
+  },
+  {
+    "id": "aurora-telecom",
+    "name": "Aurora Telecom",
+    "industry": "telecommunications",
+    "tier": "title",
+    "payment": 42000000,
+    "minReputation": 72,
+    "rivalGroup": "mobile-carriers"
+  },
+  {
+    "id": "zenith-motors",
+    "name": "Zenith Motors",
+    "industry": "automotive",
+    "tier": "title",
+    "payment": 48000000,
+    "minReputation": 78,
+    "rivalGroup": "car-manufacturers"
+  },
+  {
+    "id": "apex-petroleum",
+    "name": "Apex Petroleum",
+    "industry": "oil-gas",
+    "tier": "title",
+    "payment": 46000000,
+    "minReputation": 76,
+    "rivalGroup": "oil-companies"
+  },
+  {
+    "id": "quantum-software",
+    "name": "Quantum Software",
+    "industry": "technology",
+    "tier": "major",
+    "payment": 18000000,
+    "minReputation": 55,
+    "rivalGroup": null
+  },
+  {
+    "id": "vortex-energy-drinks",
+    "name": "Vortex Energy",
+    "industry": "beverages",
+    "tier": "major",
+    "payment": 15000000,
+    "minReputation": 50,
+    "rivalGroup": "energy-drinks"
+  },
+  {
+    "id": "pulse-energy-drinks",
+    "name": "Pulse Energy",
+    "industry": "beverages",
+    "tier": "major",
+    "payment": 14000000,
+    "minReputation": 48,
+    "rivalGroup": "energy-drinks"
+  },
+  {
+    "id": "stellar-airlines",
+    "name": "Stellar Airlines",
+    "industry": "aviation",
+    "tier": "major",
+    "payment": 20000000,
+    "minReputation": 60,
+    "rivalGroup": "airlines"
+  },
+  {
+    "id": "horizon-airways",
+    "name": "Horizon Airways",
+    "industry": "aviation",
+    "tier": "major",
+    "payment": 17000000,
+    "minReputation": 52,
+    "rivalGroup": "airlines"
+  },
+  {
+    "id": "chronos-watches",
+    "name": "Chronos Watches",
+    "industry": "luxury",
+    "tier": "major",
+    "payment": 12000000,
+    "minReputation": 65,
+    "rivalGroup": "watches"
+  },
+  {
+    "id": "titan-insurance",
+    "name": "Titan Insurance",
+    "industry": "insurance",
+    "tier": "major",
+    "payment": 16000000,
+    "minReputation": 50,
+    "rivalGroup": null
+  },
+  {
+    "id": "nova-mobile",
+    "name": "Nova Mobile",
+    "industry": "telecommunications",
+    "tier": "major",
+    "payment": 14000000,
+    "minReputation": 45,
+    "rivalGroup": "mobile-carriers"
+  },
+  {
+    "id": "summit-capital",
+    "name": "Summit Capital",
+    "industry": "finance",
+    "tier": "major",
+    "payment": 19000000,
+    "minReputation": 58,
+    "rivalGroup": "banks"
+  },
+  {
+    "id": "blaze-cola",
+    "name": "Blaze Cola",
+    "industry": "beverages",
+    "tier": "minor",
+    "payment": 5000000,
+    "minReputation": 30,
+    "rivalGroup": "soft-drinks"
+  },
+  {
+    "id": "fizz-pop",
+    "name": "Fizz Pop",
+    "industry": "beverages",
+    "tier": "minor",
+    "payment": 4500000,
+    "minReputation": 28,
+    "rivalGroup": "soft-drinks"
+  },
+  {
+    "id": "datalink-systems",
+    "name": "Datalink Systems",
+    "industry": "technology",
+    "tier": "minor",
+    "payment": 6000000,
+    "minReputation": 35,
+    "rivalGroup": null
+  },
+  {
+    "id": "trident-logistics",
+    "name": "Trident Logistics",
+    "industry": "logistics",
+    "tier": "minor",
+    "payment": 4000000,
+    "minReputation": 25,
+    "rivalGroup": null
+  },
+  {
+    "id": "echo-headphones",
+    "name": "Echo Audio",
+    "industry": "consumer-electronics",
+    "tier": "minor",
+    "payment": 3500000,
+    "minReputation": 20,
+    "rivalGroup": null
+  },
+  {
+    "id": "forge-tools",
+    "name": "Forge Industrial",
+    "industry": "industrial",
+    "tier": "minor",
+    "payment": 3000000,
+    "minReputation": 18,
+    "rivalGroup": null
+  },
+  {
+    "id": "alpine-water",
+    "name": "Alpine Springs",
+    "industry": "beverages",
+    "tier": "minor",
+    "payment": 2500000,
+    "minReputation": 15,
+    "rivalGroup": null
+  },
+  {
+    "id": "velocity-sportswear",
+    "name": "Velocity Sportswear",
+    "industry": "apparel",
+    "tier": "minor",
+    "payment": 4500000,
+    "minReputation": 30,
+    "rivalGroup": "sportswear"
+  },
+  {
+    "id": "sprint-apparel",
+    "name": "Sprint Athletics",
+    "industry": "apparel",
+    "tier": "minor",
+    "payment": 4000000,
+    "minReputation": 28,
+    "rivalGroup": "sportswear"
+  }
+]
