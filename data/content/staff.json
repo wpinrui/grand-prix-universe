@@ -150,7 +150,6 @@
       "salary": 1500000,
       "contractEnd": 0
     },
-
     {
       "id": "james-key",
       "firstName": "James",
@@ -301,7 +300,6 @@
       "salary": 2000000,
       "contractEnd": 0
     },
-
     {
       "id": "kenny-handkammer",
       "firstName": "Kenny",
@@ -452,7 +450,6 @@
       "salary": 350000,
       "contractEnd": 0
     },
-
     {
       "id": "zak-brown",
       "firstName": "Zak",
