@@ -87,7 +87,6 @@ export interface Driver {
   role: DriverRole;
   attributes: DriverAttributes;
   reputation: number; // 0-100, market value (results-biased, recency-biased)
-  morale: number; // 0-100, affects performance
   salary: number; // per-season salary in dollars
   contractEnd: number; // season number when contract expires
 }
@@ -102,10 +101,8 @@ export interface Staff {
   department: Department;
   quality: StaffQuality;
   teamId: string | null;
-  morale: number; // 0-100
   salary: number;
   contractEnd: number;
-  isStarWorker: boolean; // emerges from sustained high morale
 }
 
 /**
@@ -118,7 +115,6 @@ export interface Chief {
   role: ChiefRole;
   ability: number; // 0-100, critical to department performance
   teamId: string | null;
-  morale: number; // 0-100
   salary: number;
   contractEnd: number;
 }
