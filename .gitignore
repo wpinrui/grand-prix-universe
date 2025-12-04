@@ -41,5 +41,6 @@ npm-debug.log*
 # TypeScript
 *.tsbuildinfo
 
-# Electron
+# Electron / Vite
 release/
+.vite/
