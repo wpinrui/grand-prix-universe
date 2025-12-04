@@ -61,7 +61,7 @@
       "tier": "title",
       "payment": 42000000,
       "minReputation": 72,
-      "rivalGroup": "it-consulting"
+      "rivalGroup": null
     },
     {
       "id": "shell",
