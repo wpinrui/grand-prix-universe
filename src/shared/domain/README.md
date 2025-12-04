@@ -38,7 +38,7 @@ A driver's position within the team:
 ### ChiefRole
 Department head positions:
 - `designer` - Chief Designer, leads Design department
-- `technical-director` - Technical Director, leads Engineering
+- `engineer` - Chief Engineer, leads Engineering
 - `mechanic` - Chief Mechanic, leads Mechanics
 - `commercial` - Commercial Manager, leads Commercial
 
