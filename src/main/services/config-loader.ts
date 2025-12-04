@@ -22,8 +22,8 @@ import type {
   SeasonRegulations,
   CompoundsConfig,
   TyreCompoundConfig,
-  TyreCompound,
 } from '../../shared/domain';
+import { TyreCompound } from '../../shared/domain';
 
 // JSON file wrapper types
 interface TeamsFile {
@@ -248,12 +248,24 @@ export const ConfigLoader = {
 
   getCompounds(): TyreCompoundConfig[] {
     if (configCache.compounds === NOT_LOADED) {
-      configCache.compounds = loadConfigFile<CompoundsConfig>('compounds.json');
+      const config = loadConfigFile<CompoundsConfig>('compounds.json');
+      const compounds = config?.compounds;
+
+      if (!Array.isArray(compounds)) {
+        configCache.compounds = [];
+      } else {
+        const validIds = new Set(Object.values(TyreCompound));
+        configCache.compounds = compounds.filter((c) => {
+          if (!validIds.has(c.id)) {
+            console.warn(`Invalid compound ID "${c.id}" - must match TyreCompound enum`);
+            return false;
+          }
+          return true;
+        });
+      }
     }
 
-    const config = configCache.compounds as CompoundsConfig | null;
-    const compounds = config?.compounds;
-    return Array.isArray(compounds) ? compounds : [];
+    return configCache.compounds as TyreCompoundConfig[];
   },
 
   getCompoundById(id: TyreCompound): TyreCompoundConfig | undefined {
