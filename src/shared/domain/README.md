@@ -23,10 +23,13 @@ Skill tier for general staff (affects productivity and salary):
 
 ### TyreCompound
 Available tyre types for race assembly:
-- `dry-hard` - Durable, less grip
-- `dry-soft` - High grip, wears faster
+- `soft` - High grip, wears faster
+- `medium` - Balanced grip and durability
+- `hard` - Durable, less grip
 - `intermediate` - Light rain conditions
 - `wet` - Heavy rain conditions
+
+See also `TyreCompoundConfig` for detailed compound properties (grip, durability, colors).
 
 ### DriverRole
 A driver's position within the team:

@@ -20,7 +20,10 @@ import type {
   GameRules,
   Regulations,
   SeasonRegulations,
+  CompoundsConfig,
+  TyreCompoundConfig,
 } from '../../shared/domain';
+import { TyreCompound } from '../../shared/domain';
 
 // JSON file wrapper types
 interface TeamsFile {
@@ -119,10 +122,11 @@ const cache: Record<CacheKey, unknown[] | null> = {
 // Use a Symbol sentinel to distinguish "not loaded" from "loaded but file missing (null)"
 const NOT_LOADED = Symbol('NOT_LOADED');
 type ConfigCacheValue = unknown | typeof NOT_LOADED;
-type ConfigCacheKey = 'rules' | 'regulations';
+type ConfigCacheKey = 'rules' | 'regulations' | 'compounds';
 const configCache: Record<ConfigCacheKey, ConfigCacheValue> = {
   rules: NOT_LOADED,
   regulations: NOT_LOADED,
+  compounds: NOT_LOADED,
 };
 
 /**
@@ -242,6 +246,35 @@ export const ConfigLoader = {
     return seasonRegs ?? regulations.default;
   },
 
+  getCompounds(): TyreCompoundConfig[] {
+    if (configCache.compounds !== NOT_LOADED) {
+      return configCache.compounds as TyreCompoundConfig[];
+    }
+
+    const config = loadConfigFile<CompoundsConfig>('compounds.json');
+    const compounds = config?.compounds;
+
+    if (!Array.isArray(compounds)) {
+      configCache.compounds = [];
+      return [];
+    }
+
+    const validIds = new Set(Object.values(TyreCompound));
+    configCache.compounds = compounds.filter((c) => {
+      const isValid = validIds.has(c.id);
+      if (!isValid) {
+        console.warn(`Invalid compound ID "${c.id}" - must match TyreCompound enum`);
+      }
+      return isValid;
+    });
+
+    return configCache.compounds;
+  },
+
+  getCompoundById(id: TyreCompound): TyreCompoundConfig | undefined {
+    return this.getCompounds().find((compound) => compound.id === id);
+  },
+
   clearCache(): void {
     cache.teams = null;
     cache.drivers = null;
@@ -251,6 +284,7 @@ export const ConfigLoader = {
     cache.chiefs = null;
     configCache.rules = NOT_LOADED;
     configCache.regulations = NOT_LOADED;
+    configCache.compounds = NOT_LOADED;
   },
 
   /** Get the data directory path (for debugging). */
