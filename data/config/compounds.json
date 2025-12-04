@@ -1,0 +1,49 @@
+{
+  "compounds": [
+    {
+      "id": "soft",
+      "name": "Soft",
+      "shortName": "S",
+      "color": "#E12D2D",
+      "baseGrip": 95,
+      "baseDurability": 40,
+      "isWetCompound": false
+    },
+    {
+      "id": "medium",
+      "name": "Medium",
+      "shortName": "M",
+      "color": "#FFC526",
+      "baseGrip": 80,
+      "baseDurability": 65,
+      "isWetCompound": false
+    },
+    {
+      "id": "hard",
+      "name": "Hard",
+      "shortName": "H",
+      "color": "#FFFFFF",
+      "baseGrip": 65,
+      "baseDurability": 90,
+      "isWetCompound": false
+    },
+    {
+      "id": "intermediate",
+      "name": "Intermediate",
+      "shortName": "I",
+      "color": "#43B02A",
+      "baseGrip": 70,
+      "baseDurability": 75,
+      "isWetCompound": true
+    },
+    {
+      "id": "wet",
+      "name": "Wet",
+      "shortName": "W",
+      "color": "#0067AD",
+      "baseGrip": 55,
+      "baseDurability": 85,
+      "isWetCompound": true
+    }
+  ]
+}

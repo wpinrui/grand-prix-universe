@@ -15,6 +15,7 @@ import type {
   GameRules,
   Regulations,
   SeasonRegulations,
+  TyreCompoundConfig,
 } from './domain';
 
 /** Channel names for IPC communication */
@@ -33,6 +34,7 @@ export const IpcChannels = {
   CONFIG_GET_RULES: 'config:getRules',
   CONFIG_GET_REGULATIONS: 'config:getRegulations',
   CONFIG_GET_REGULATIONS_BY_SEASON: 'config:getRegulationsBySeason',
+  CONFIG_GET_COMPOUNDS: 'config:getCompounds',
 
   // Game state (placeholders for future implementation)
   GAME_NEW: 'game:new',
@@ -88,6 +90,10 @@ export interface IpcInvokeMap {
   [IpcChannels.CONFIG_GET_REGULATIONS_BY_SEASON]: {
     args: [season: number];
     result: SeasonRegulations | null;
+  };
+  [IpcChannels.CONFIG_GET_COMPOUNDS]: {
+    args: [];
+    result: TyreCompoundConfig[];
   };
   [IpcChannels.GAME_NEW]: {
     args: [teamId: string];

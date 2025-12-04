@@ -20,6 +20,9 @@ import type {
   GameRules,
   Regulations,
   SeasonRegulations,
+  CompoundsConfig,
+  TyreCompoundConfig,
+  TyreCompound,
 } from '../../shared/domain';
 
 // JSON file wrapper types
@@ -119,10 +122,11 @@ const cache: Record<CacheKey, unknown[] | null> = {
 // Use a Symbol sentinel to distinguish "not loaded" from "loaded but file missing (null)"
 const NOT_LOADED = Symbol('NOT_LOADED');
 type ConfigCacheValue = unknown | typeof NOT_LOADED;
-type ConfigCacheKey = 'rules' | 'regulations';
+type ConfigCacheKey = 'rules' | 'regulations' | 'compounds';
 const configCache: Record<ConfigCacheKey, ConfigCacheValue> = {
   rules: NOT_LOADED,
   regulations: NOT_LOADED,
+  compounds: NOT_LOADED,
 };
 
 /**
@@ -242,6 +246,21 @@ export const ConfigLoader = {
     return seasonRegs ?? regulations.default;
   },
 
+  getCompounds(): TyreCompoundConfig[] {
+    if (configCache.compounds !== NOT_LOADED) {
+      const cached = configCache.compounds as CompoundsConfig | null;
+      return cached?.compounds ?? [];
+    }
+
+    const config = loadConfigFile<CompoundsConfig>('compounds.json');
+    configCache.compounds = config;
+    return config?.compounds ?? [];
+  },
+
+  getCompoundById(id: TyreCompound): TyreCompoundConfig | undefined {
+    return this.getCompounds().find((compound) => compound.id === id);
+  },
+
   clearCache(): void {
     cache.teams = null;
     cache.drivers = null;
@@ -251,6 +270,7 @@ export const ConfigLoader = {
     cache.chiefs = null;
     configCache.rules = NOT_LOADED;
     configCache.regulations = NOT_LOADED;
+    configCache.compounds = NOT_LOADED;
   },
 
   /** Get the data directory path (for debugging). */

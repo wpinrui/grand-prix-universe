@@ -23,8 +23,9 @@ export enum StaffQuality {
 }
 
 export enum TyreCompound {
-  DryHard = 'dry-hard',
-  DrySoft = 'dry-soft',
+  Soft = 'soft',
+  Medium = 'medium',
+  Hard = 'hard',
   Intermediate = 'intermediate',
   Wet = 'wet',
 }
@@ -330,4 +331,26 @@ export interface SeasonRegulations {
 export interface Regulations {
   seasons: SeasonRegulations[];
   default: SeasonRegulations;
+}
+
+// =============================================================================
+// COMPOUND CONFIG TYPES (Tyre compound definitions)
+// =============================================================================
+
+/**
+ * TyreCompoundConfig - Defines properties of a tyre compound type
+ * Used by the race engine to determine grip, wear, and conditions
+ */
+export interface TyreCompoundConfig {
+  id: TyreCompound; // Must match TyreCompound enum value
+  name: string; // Display name, e.g. "Soft"
+  shortName: string; // 1-letter abbreviation for UI, e.g. "S"
+  color: string; // Hex color for UI visualization
+  baseGrip: number; // 0-100, relative grip level
+  baseDurability: number; // 0-100, how quickly it degrades
+  isWetCompound: boolean; // True for intermediate/wet compounds
+}
+
+export interface CompoundsConfig {
+  compounds: TyreCompoundConfig[];
 }
