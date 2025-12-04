@@ -1,0 +1,715 @@
+{
+  "sponsors": [
+    {
+      "id": "aramco",
+      "name": "Aramco",
+      "industry": "oil-gas",
+      "tier": "title",
+      "payment": 60000000,
+      "minReputation": 85,
+      "rivalGroup": "oil-companies"
+    },
+    {
+      "id": "petronas",
+      "name": "Petronas",
+      "industry": "oil-gas",
+      "tier": "title",
+      "payment": 55000000,
+      "minReputation": 82,
+      "rivalGroup": "oil-companies"
+    },
+    {
+      "id": "oracle",
+      "name": "Oracle",
+      "industry": "technology",
+      "tier": "title",
+      "payment": 50000000,
+      "minReputation": 80,
+      "rivalGroup": "enterprise-software"
+    },
+    {
+      "id": "santander",
+      "name": "Santander",
+      "industry": "finance",
+      "tier": "title",
+      "payment": 45000000,
+      "minReputation": 75,
+      "rivalGroup": "banks"
+    },
+    {
+      "id": "vodafone",
+      "name": "Vodafone",
+      "industry": "telecommunications",
+      "tier": "title",
+      "payment": 48000000,
+      "minReputation": 78,
+      "rivalGroup": "mobile-carriers"
+    },
+    {
+      "id": "att",
+      "name": "AT&T",
+      "industry": "telecommunications",
+      "tier": "title",
+      "payment": 46000000,
+      "minReputation": 76,
+      "rivalGroup": "mobile-carriers"
+    },
+    {
+      "id": "cognizant",
+      "name": "Cognizant",
+      "industry": "technology",
+      "tier": "title",
+      "payment": 42000000,
+      "minReputation": 72,
+      "rivalGroup": null
+    },
+    {
+      "id": "shell",
+      "name": "Shell",
+      "industry": "oil-gas",
+      "tier": "title",
+      "payment": 52000000,
+      "minReputation": 80,
+      "rivalGroup": "oil-companies"
+    },
+    {
+      "id": "mastercard",
+      "name": "Mastercard",
+      "industry": "payments",
+      "tier": "title",
+      "payment": 40000000,
+      "minReputation": 70,
+      "rivalGroup": "payment-networks"
+    },
+    {
+      "id": "bwt",
+      "name": "BWT",
+      "industry": "water-technology",
+      "tier": "title",
+      "payment": 35000000,
+      "minReputation": 65,
+      "rivalGroup": null
+    },
+    {
+      "id": "hp",
+      "name": "HP",
+      "industry": "technology",
+      "tier": "title",
+      "payment": 38000000,
+      "minReputation": 68,
+      "rivalGroup": "computer-hardware"
+    },
+    {
+      "id": "salesforce",
+      "name": "Salesforce",
+      "industry": "technology",
+      "tier": "title",
+      "payment": 44000000,
+      "minReputation": 74,
+      "rivalGroup": "enterprise-software"
+    },
+    {
+      "id": "aws",
+      "name": "AWS",
+      "industry": "technology",
+      "tier": "major",
+      "payment": 25000000,
+      "minReputation": 65,
+      "rivalGroup": "cloud-providers"
+    },
+    {
+      "id": "microsoft",
+      "name": "Microsoft",
+      "industry": "technology",
+      "tier": "major",
+      "payment": 24000000,
+      "minReputation": 63,
+      "rivalGroup": "cloud-providers"
+    },
+    {
+      "id": "google-cloud",
+      "name": "Google Cloud",
+      "industry": "technology",
+      "tier": "major",
+      "payment": 22000000,
+      "minReputation": 60,
+      "rivalGroup": "cloud-providers"
+    },
+    {
+      "id": "dell",
+      "name": "Dell Technologies",
+      "industry": "technology",
+      "tier": "major",
+      "payment": 18000000,
+      "minReputation": 55,
+      "rivalGroup": "computer-hardware"
+    },
+    {
+      "id": "lenovo",
+      "name": "Lenovo",
+      "industry": "technology",
+      "tier": "major",
+      "payment": 16000000,
+      "minReputation": 52,
+      "rivalGroup": "computer-hardware"
+    },
+    {
+      "id": "amd",
+      "name": "AMD",
+      "industry": "technology",
+      "tier": "major",
+      "payment": 15000000,
+      "minReputation": 50,
+      "rivalGroup": "chip-makers"
+    },
+    {
+      "id": "intel",
+      "name": "Intel",
+      "industry": "technology",
+      "tier": "major",
+      "payment": 16000000,
+      "minReputation": 52,
+      "rivalGroup": "chip-makers"
+    },
+    {
+      "id": "cisco",
+      "name": "Cisco",
+      "industry": "technology",
+      "tier": "major",
+      "payment": 14000000,
+      "minReputation": 48,
+      "rivalGroup": null
+    },
+    {
+      "id": "emirates",
+      "name": "Emirates",
+      "industry": "aviation",
+      "tier": "major",
+      "payment": 22000000,
+      "minReputation": 62,
+      "rivalGroup": "airlines"
+    },
+    {
+      "id": "qatar-airways",
+      "name": "Qatar Airways",
+      "industry": "aviation",
+      "tier": "major",
+      "payment": 20000000,
+      "minReputation": 58,
+      "rivalGroup": "airlines"
+    },
+    {
+      "id": "etihad",
+      "name": "Etihad Airways",
+      "industry": "aviation",
+      "tier": "major",
+      "payment": 18000000,
+      "minReputation": 55,
+      "rivalGroup": "airlines"
+    },
+    {
+      "id": "rolex",
+      "name": "Rolex",
+      "industry": "luxury",
+      "tier": "major",
+      "payment": 20000000,
+      "minReputation": 70,
+      "rivalGroup": "watches"
+    },
+    {
+      "id": "tag-heuer",
+      "name": "TAG Heuer",
+      "industry": "luxury",
+      "tier": "major",
+      "payment": 16000000,
+      "minReputation": 58,
+      "rivalGroup": "watches"
+    },
+    {
+      "id": "iwc",
+      "name": "IWC Schaffhausen",
+      "industry": "luxury",
+      "tier": "major",
+      "payment": 14000000,
+      "minReputation": 55,
+      "rivalGroup": "watches"
+    },
+    {
+      "id": "richard-mille",
+      "name": "Richard Mille",
+      "industry": "luxury",
+      "tier": "major",
+      "payment": 18000000,
+      "minReputation": 65,
+      "rivalGroup": "watches"
+    },
+    {
+      "id": "red-bull",
+      "name": "Red Bull",
+      "industry": "beverages",
+      "tier": "major",
+      "payment": 20000000,
+      "minReputation": 60,
+      "rivalGroup": "energy-drinks"
+    },
+    {
+      "id": "monster-energy",
+      "name": "Monster Energy",
+      "industry": "beverages",
+      "tier": "major",
+      "payment": 18000000,
+      "minReputation": 55,
+      "rivalGroup": "energy-drinks"
+    },
+    {
+      "id": "heineken",
+      "name": "Heineken",
+      "industry": "beverages",
+      "tier": "major",
+      "payment": 15000000,
+      "minReputation": 50,
+      "rivalGroup": "beer"
+    },
+    {
+      "id": "peroni",
+      "name": "Peroni",
+      "industry": "beverages",
+      "tier": "major",
+      "payment": 12000000,
+      "minReputation": 45,
+      "rivalGroup": "beer"
+    },
+    {
+      "id": "dhl",
+      "name": "DHL",
+      "industry": "logistics",
+      "tier": "major",
+      "payment": 16000000,
+      "minReputation": 52,
+      "rivalGroup": "logistics"
+    },
+    {
+      "id": "fedex",
+      "name": "FedEx",
+      "industry": "logistics",
+      "tier": "major",
+      "payment": 15000000,
+      "minReputation": 50,
+      "rivalGroup": "logistics"
+    },
+    {
+      "id": "ups",
+      "name": "UPS",
+      "industry": "logistics",
+      "tier": "major",
+      "payment": 14000000,
+      "minReputation": 48,
+      "rivalGroup": "logistics"
+    },
+    {
+      "id": "puma",
+      "name": "Puma",
+      "industry": "apparel",
+      "tier": "major",
+      "payment": 12000000,
+      "minReputation": 45,
+      "rivalGroup": "sportswear"
+    },
+    {
+      "id": "ubs",
+      "name": "UBS",
+      "industry": "finance",
+      "tier": "major",
+      "payment": 18000000,
+      "minReputation": 58,
+      "rivalGroup": "banks"
+    },
+    {
+      "id": "hsbc",
+      "name": "HSBC",
+      "industry": "finance",
+      "tier": "major",
+      "payment": 16000000,
+      "minReputation": 55,
+      "rivalGroup": "banks"
+    },
+    {
+      "id": "mobil-1",
+      "name": "Mobil 1",
+      "industry": "oil-gas",
+      "tier": "major",
+      "payment": 14000000,
+      "minReputation": 50,
+      "rivalGroup": "lubricants"
+    },
+    {
+      "id": "castrol",
+      "name": "Castrol",
+      "industry": "oil-gas",
+      "tier": "major",
+      "payment": 13000000,
+      "minReputation": 48,
+      "rivalGroup": "lubricants"
+    },
+    {
+      "id": "coca-cola",
+      "name": "Coca-Cola",
+      "industry": "beverages",
+      "tier": "minor",
+      "payment": 8000000,
+      "minReputation": 40,
+      "rivalGroup": "soft-drinks"
+    },
+    {
+      "id": "pepsi",
+      "name": "Pepsi",
+      "industry": "beverages",
+      "tier": "minor",
+      "payment": 7500000,
+      "minReputation": 38,
+      "rivalGroup": "soft-drinks"
+    },
+    {
+      "id": "nike",
+      "name": "Nike",
+      "industry": "apparel",
+      "tier": "minor",
+      "payment": 8000000,
+      "minReputation": 40,
+      "rivalGroup": "sportswear"
+    },
+    {
+      "id": "adidas",
+      "name": "Adidas",
+      "industry": "apparel",
+      "tier": "minor",
+      "payment": 7500000,
+      "minReputation": 38,
+      "rivalGroup": "sportswear"
+    },
+    {
+      "id": "visa",
+      "name": "Visa",
+      "industry": "payments",
+      "tier": "minor",
+      "payment": 7000000,
+      "minReputation": 35,
+      "rivalGroup": "payment-networks"
+    },
+    {
+      "id": "american-express",
+      "name": "American Express",
+      "industry": "payments",
+      "tier": "minor",
+      "payment": 6500000,
+      "minReputation": 35,
+      "rivalGroup": "payment-networks"
+    },
+    {
+      "id": "allianz",
+      "name": "Allianz",
+      "industry": "insurance",
+      "tier": "minor",
+      "payment": 6000000,
+      "minReputation": 32,
+      "rivalGroup": "insurance"
+    },
+    {
+      "id": "axa",
+      "name": "AXA",
+      "industry": "insurance",
+      "tier": "minor",
+      "payment": 5500000,
+      "minReputation": 30,
+      "rivalGroup": "insurance"
+    },
+    {
+      "id": "pirelli",
+      "name": "Pirelli",
+      "industry": "automotive",
+      "tier": "minor",
+      "payment": 6000000,
+      "minReputation": 32,
+      "rivalGroup": null
+    },
+    {
+      "id": "brembo",
+      "name": "Brembo",
+      "industry": "automotive",
+      "tier": "minor",
+      "payment": 5000000,
+      "minReputation": 28,
+      "rivalGroup": null
+    },
+    {
+      "id": "ray-ban",
+      "name": "Ray-Ban",
+      "industry": "luxury",
+      "tier": "minor",
+      "payment": 5500000,
+      "minReputation": 30,
+      "rivalGroup": "eyewear"
+    },
+    {
+      "id": "oakley",
+      "name": "Oakley",
+      "industry": "luxury",
+      "tier": "minor",
+      "payment": 5000000,
+      "minReputation": 28,
+      "rivalGroup": "eyewear"
+    },
+    {
+      "id": "sony",
+      "name": "Sony",
+      "industry": "consumer-electronics",
+      "tier": "minor",
+      "payment": 6000000,
+      "minReputation": 32,
+      "rivalGroup": "consumer-electronics"
+    },
+    {
+      "id": "samsung",
+      "name": "Samsung",
+      "industry": "consumer-electronics",
+      "tier": "minor",
+      "payment": 6500000,
+      "minReputation": 35,
+      "rivalGroup": "consumer-electronics"
+    },
+    {
+      "id": "lg",
+      "name": "LG",
+      "industry": "consumer-electronics",
+      "tier": "minor",
+      "payment": 5000000,
+      "minReputation": 28,
+      "rivalGroup": "consumer-electronics"
+    },
+    {
+      "id": "panasonic",
+      "name": "Panasonic",
+      "industry": "consumer-electronics",
+      "tier": "minor",
+      "payment": 4500000,
+      "minReputation": 25,
+      "rivalGroup": "consumer-electronics"
+    },
+    {
+      "id": "beats",
+      "name": "Beats by Dre",
+      "industry": "consumer-electronics",
+      "tier": "minor",
+      "payment": 4000000,
+      "minReputation": 22,
+      "rivalGroup": "headphones"
+    },
+    {
+      "id": "bose",
+      "name": "Bose",
+      "industry": "consumer-electronics",
+      "tier": "minor",
+      "payment": 4500000,
+      "minReputation": 25,
+      "rivalGroup": "headphones"
+    },
+    {
+      "id": "snapchat",
+      "name": "Snapchat",
+      "industry": "technology",
+      "tier": "minor",
+      "payment": 5000000,
+      "minReputation": 28,
+      "rivalGroup": "social-media"
+    },
+    {
+      "id": "tiktok",
+      "name": "TikTok",
+      "industry": "technology",
+      "tier": "minor",
+      "payment": 5500000,
+      "minReputation": 30,
+      "rivalGroup": "social-media"
+    },
+    {
+      "id": "x",
+      "name": "X",
+      "industry": "technology",
+      "tier": "minor",
+      "payment": 4500000,
+      "minReputation": 25,
+      "rivalGroup": "social-media"
+    },
+    {
+      "id": "logitech",
+      "name": "Logitech",
+      "industry": "technology",
+      "tier": "minor",
+      "payment": 3500000,
+      "minReputation": 20,
+      "rivalGroup": "gaming-peripherals"
+    },
+    {
+      "id": "razer",
+      "name": "Razer",
+      "industry": "technology",
+      "tier": "minor",
+      "payment": 3000000,
+      "minReputation": 18,
+      "rivalGroup": "gaming-peripherals"
+    },
+    {
+      "id": "steelseries",
+      "name": "SteelSeries",
+      "industry": "technology",
+      "tier": "minor",
+      "payment": 2500000,
+      "minReputation": 15,
+      "rivalGroup": "gaming-peripherals"
+    },
+    {
+      "id": "kaspersky",
+      "name": "Kaspersky",
+      "industry": "technology",
+      "tier": "minor",
+      "payment": 4000000,
+      "minReputation": 22,
+      "rivalGroup": "cybersecurity"
+    },
+    {
+      "id": "norton",
+      "name": "Norton",
+      "industry": "technology",
+      "tier": "minor",
+      "payment": 3500000,
+      "minReputation": 20,
+      "rivalGroup": "cybersecurity"
+    },
+    {
+      "id": "3m",
+      "name": "3M",
+      "industry": "industrial",
+      "tier": "minor",
+      "payment": 4000000,
+      "minReputation": 22,
+      "rivalGroup": null
+    },
+    {
+      "id": "hilton",
+      "name": "Hilton",
+      "industry": "hospitality",
+      "tier": "minor",
+      "payment": 5000000,
+      "minReputation": 28,
+      "rivalGroup": "hotels"
+    },
+    {
+      "id": "marriott",
+      "name": "Marriott",
+      "industry": "hospitality",
+      "tier": "minor",
+      "payment": 5500000,
+      "minReputation": 30,
+      "rivalGroup": "hotels"
+    },
+    {
+      "id": "crowne-plaza",
+      "name": "Crowne Plaza",
+      "industry": "hospitality",
+      "tier": "minor",
+      "payment": 4000000,
+      "minReputation": 22,
+      "rivalGroup": "hotels"
+    },
+    {
+      "id": "evian",
+      "name": "Evian",
+      "industry": "beverages",
+      "tier": "minor",
+      "payment": 3000000,
+      "minReputation": 18,
+      "rivalGroup": "bottled-water"
+    },
+    {
+      "id": "volvic",
+      "name": "Volvic",
+      "industry": "beverages",
+      "tier": "minor",
+      "payment": 2500000,
+      "minReputation": 15,
+      "rivalGroup": "bottled-water"
+    },
+    {
+      "id": "gatorade",
+      "name": "Gatorade",
+      "industry": "beverages",
+      "tier": "minor",
+      "payment": 4000000,
+      "minReputation": 22,
+      "rivalGroup": "sports-drinks"
+    },
+    {
+      "id": "powerade",
+      "name": "Powerade",
+      "industry": "beverages",
+      "tier": "minor",
+      "payment": 3500000,
+      "minReputation": 20,
+      "rivalGroup": "sports-drinks"
+    },
+    {
+      "id": "under-armour",
+      "name": "Under Armour",
+      "industry": "apparel",
+      "tier": "minor",
+      "payment": 4500000,
+      "minReputation": 25,
+      "rivalGroup": "sportswear"
+    },
+    {
+      "id": "alpinestars",
+      "name": "Alpinestars",
+      "industry": "apparel",
+      "tier": "minor",
+      "payment": 3000000,
+      "minReputation": 18,
+      "rivalGroup": "racing-gear"
+    },
+    {
+      "id": "sparco",
+      "name": "Sparco",
+      "industry": "apparel",
+      "tier": "minor",
+      "payment": 2500000,
+      "minReputation": 15,
+      "rivalGroup": "racing-gear"
+    },
+    {
+      "id": "omp",
+      "name": "OMP Racing",
+      "industry": "apparel",
+      "tier": "minor",
+      "payment": 2000000,
+      "minReputation": 12,
+      "rivalGroup": "racing-gear"
+    },
+    {
+      "id": "t-mobile",
+      "name": "T-Mobile",
+      "industry": "telecommunications",
+      "tier": "minor",
+      "payment": 5000000,
+      "minReputation": 28,
+      "rivalGroup": "mobile-carriers"
+    },
+    {
+      "id": "verizon",
+      "name": "Verizon",
+      "industry": "telecommunications",
+      "tier": "minor",
+      "payment": 5500000,
+      "minReputation": 30,
+      "rivalGroup": "mobile-carriers"
+    }
+  ]
+}
