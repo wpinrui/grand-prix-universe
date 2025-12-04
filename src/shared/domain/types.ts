@@ -49,6 +49,12 @@ export enum SponsorTier {
   Minor = 'minor', // Small cash sponsors, logo on car
 }
 
+export enum ManufacturerType {
+  Engine = 'engine',
+  Tyre = 'tyre',
+  Fuel = 'fuel',
+}
+
 // =============================================================================
 // CORE TYPES
 // =============================================================================
@@ -128,6 +134,18 @@ export interface Chief {
 // =============================================================================
 // TECHNICAL TYPES
 // =============================================================================
+
+/**
+ * Manufacturer - A company that supplies engines, tyres, or fuel
+ */
+export interface Manufacturer {
+  id: string; // kebab-case slug, e.g. "honda-racing"
+  name: string; // display name, e.g. "Honda Racing Development"
+  type: ManufacturerType;
+  reputation: number; // 0-100, affects attractiveness to teams
+  annualCost: number; // yearly contract cost in dollars
+  quality: number; // 0-100, base quality of products
+}
 
 /**
  * Engine specification - supplied by engine manufacturer

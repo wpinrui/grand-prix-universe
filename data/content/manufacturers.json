@@ -1,0 +1,44 @@
+{
+  "manufacturers": [
+    {
+      "id": "mercedes-hpe",
+      "name": "Mercedes-Benz HPE",
+      "type": "engine",
+      "reputation": 95,
+      "annualCost": 28000000,
+      "quality": 90
+    },
+    {
+      "id": "honda-rbpt",
+      "name": "Honda RBPT",
+      "type": "engine",
+      "reputation": 93,
+      "annualCost": 26000000,
+      "quality": 90
+    },
+    {
+      "id": "ferrari-pu",
+      "name": "Ferrari Power Unit",
+      "type": "engine",
+      "reputation": 85,
+      "annualCost": 20000000,
+      "quality": 77
+    },
+    {
+      "id": "renault-sport",
+      "name": "Renault Sport",
+      "type": "engine",
+      "reputation": 75,
+      "annualCost": 16000000,
+      "quality": 74
+    },
+    {
+      "id": "cosworth",
+      "name": "Cosworth Engineering",
+      "type": "engine",
+      "reputation": 55,
+      "annualCost": 8000000,
+      "quality": 53
+    }
+  ]
+}
