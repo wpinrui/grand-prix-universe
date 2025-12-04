@@ -247,14 +247,11 @@ export const ConfigLoader = {
   },
 
   getCompounds(): TyreCompoundConfig[] {
-    if (configCache.compounds !== NOT_LOADED) {
-      const cached = configCache.compounds as CompoundsConfig | null;
-      const compounds = cached?.compounds;
-      return Array.isArray(compounds) ? compounds : [];
+    if (configCache.compounds === NOT_LOADED) {
+      configCache.compounds = loadConfigFile<CompoundsConfig>('compounds.json');
     }
 
-    const config = loadConfigFile<CompoundsConfig>('compounds.json');
-    configCache.compounds = config;
+    const config = configCache.compounds as CompoundsConfig | null;
     const compounds = config?.compounds;
     return Array.isArray(compounds) ? compounds : [];
   },
