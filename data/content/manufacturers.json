@@ -6,7 +6,7 @@
       "type": "engine",
       "reputation": 95,
       "annualCost": 28000000,
-      "quality": 92
+      "quality": 90
     },
     {
       "id": "honda-rbpt",
@@ -14,7 +14,7 @@
       "type": "engine",
       "reputation": 93,
       "annualCost": 26000000,
-      "quality": 94
+      "quality": 90
     },
     {
       "id": "ferrari-pu",
@@ -22,7 +22,7 @@
       "type": "engine",
       "reputation": 85,
       "annualCost": 20000000,
-      "quality": 78
+      "quality": 77
     },
     {
       "id": "renault-sport",
@@ -30,7 +30,7 @@
       "type": "engine",
       "reputation": 75,
       "annualCost": 16000000,
-      "quality": 72
+      "quality": 74
     },
     {
       "id": "cosworth",
@@ -38,7 +38,7 @@
       "type": "engine",
       "reputation": 55,
       "annualCost": 8000000,
-      "quality": 58
+      "quality": 53
     }
   ]
 }
