@@ -6,6 +6,8 @@
  * replaced or augmented with full simulation logic later.
  */
 
+export { EngineManager } from './engine-manager';
+
 export {
   StubRaceEngine,
   StubDesignEngine,
