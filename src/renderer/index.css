@@ -1,29 +1,19 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+@import 'tailwindcss';
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
     Arial, sans-serif;
-  background: #1a1a1a;
-  color: #ffffff;
+  @apply bg-neutral-900 text-white;
 }
 
 .app {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
+  @apply flex flex-col items-center justify-center min-h-screen;
 }
 
 h1 {
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
+  @apply text-4xl mb-2;
 }
 
 p {
-  color: #888;
+  @apply text-neutral-400;
 }
