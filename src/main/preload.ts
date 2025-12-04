@@ -6,17 +6,17 @@
  */
 
 import { contextBridge, ipcRenderer } from 'electron';
-import type { IpcChannel, IpcInvokeMap } from '../shared/ipc';
+import type { IpcInvokeMap } from '../shared/ipc';
 
 /**
  * Expose a typed invoke function to the renderer.
  * All IPC calls from the renderer must go through this API.
  */
 contextBridge.exposeInMainWorld('electronAPI', {
-  invoke: <K extends IpcChannel>(
+  invoke: <K extends keyof IpcInvokeMap>(
     channel: K,
-    ...args: K extends keyof IpcInvokeMap ? IpcInvokeMap[K]['args'] : never[]
-  ): Promise<K extends keyof IpcInvokeMap ? IpcInvokeMap[K]['result'] : unknown> => {
+    ...args: IpcInvokeMap[K]['args']
+  ): Promise<IpcInvokeMap[K]['result']> => {
     return ipcRenderer.invoke(channel, ...args);
   },
 });
