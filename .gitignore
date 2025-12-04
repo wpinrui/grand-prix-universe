@@ -19,7 +19,8 @@ build/
 .env.*.local
 
 # Real F1 data (licensing - users add their own)
-data/override/
+data/override/*
+!data/override/.gitkeep
 
 # Save files (user-specific)
 saves/
