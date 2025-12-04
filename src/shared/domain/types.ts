@@ -38,7 +38,7 @@ export enum DriverRole {
 
 export enum ChiefRole {
   Designer = 'designer',
-  TechnicalDirector = 'technical-director',
+  Engineer = 'engineer', // Chief Engineer (renamed from Technical Director)
   Mechanic = 'mechanic',
   Commercial = 'commercial',
 }
