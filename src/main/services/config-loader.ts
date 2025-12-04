@@ -10,7 +10,7 @@
 import { app } from 'electron';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import type { Team, Driver, Circuit, Sponsor, Manufacturer } from '../../shared/domain';
+import type { Team, Driver, Circuit, Sponsor, Manufacturer, Chief } from '../../shared/domain';
 
 // JSON file wrapper types
 interface TeamsFile {
@@ -31,6 +31,10 @@ interface SponsorsFile {
 
 interface ManufacturersFile {
   manufacturers: Manufacturer[];
+}
+
+interface ChiefsFile {
+  chiefs: Chief[];
 }
 
 /**
@@ -91,13 +95,14 @@ function loadConfigFile<T>(filename: string): T | null {
 }
 
 // Unified cache for all content types
-type CacheKey = 'teams' | 'drivers' | 'circuits' | 'sponsors' | 'manufacturers';
+type CacheKey = 'teams' | 'drivers' | 'circuits' | 'sponsors' | 'manufacturers' | 'chiefs';
 const cache: Record<CacheKey, unknown[] | null> = {
   teams: null,
   drivers: null,
   circuits: null,
   sponsors: null,
   manufacturers: null,
+  chiefs: null,
 };
 
 /**
@@ -178,12 +183,21 @@ export const ConfigLoader = {
     return this.getManufacturers().find((manufacturer) => manufacturer.id === id);
   },
 
+  getChiefs(): Chief[] {
+    return getCachedContent<ChiefsFile, Chief>('chiefs', 'chiefs.json', (f) => f.chiefs);
+  },
+
+  getChiefById(id: string): Chief | undefined {
+    return this.getChiefs().find((chief) => chief.id === id);
+  },
+
   clearCache(): void {
     cache.teams = null;
     cache.drivers = null;
     cache.circuits = null;
     cache.sponsors = null;
     cache.manufacturers = null;
+    cache.chiefs = null;
   },
 
   /** Get the data directory path (for debugging). */
