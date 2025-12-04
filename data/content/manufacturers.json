@@ -5,40 +5,40 @@
       "name": "Mercedes-Benz HPE",
       "type": "engine",
       "reputation": 95,
-      "annualCost": 25000000,
+      "annualCost": 28000000,
       "quality": 92
-    },
-    {
-      "id": "ferrari-pu",
-      "name": "Ferrari Power Unit",
-      "type": "engine",
-      "reputation": 92,
-      "annualCost": 23000000,
-      "quality": 90
     },
     {
       "id": "honda-rbpt",
       "name": "Honda RBPT",
       "type": "engine",
-      "reputation": 94,
-      "annualCost": 24000000,
-      "quality": 93
+      "reputation": 93,
+      "annualCost": 26000000,
+      "quality": 94
+    },
+    {
+      "id": "ferrari-pu",
+      "name": "Ferrari Power Unit",
+      "type": "engine",
+      "reputation": 85,
+      "annualCost": 20000000,
+      "quality": 78
     },
     {
       "id": "renault-sport",
       "name": "Renault Sport",
       "type": "engine",
-      "reputation": 78,
-      "annualCost": 18000000,
-      "quality": 75
+      "reputation": 75,
+      "annualCost": 16000000,
+      "quality": 72
     },
     {
       "id": "cosworth",
       "name": "Cosworth Engineering",
       "type": "engine",
-      "reputation": 65,
-      "annualCost": 12000000,
-      "quality": 68
+      "reputation": 55,
+      "annualCost": 8000000,
+      "quality": 58
     }
   ]
 }
