@@ -10,7 +10,7 @@
 import { app } from 'electron';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import type { Team, Driver, Circuit } from '../../shared/domain';
+import type { Team, Driver, Circuit, Sponsor } from '../../shared/domain';
 
 // JSON file wrapper types
 interface TeamsFile {
@@ -23,6 +23,10 @@ interface DriversFile {
 
 interface CircuitsFile {
   circuits: Circuit[];
+}
+
+interface SponsorsFile {
+  sponsors: Sponsor[];
 }
 
 /**
@@ -83,11 +87,12 @@ function loadConfigFile<T>(filename: string): T | null {
 }
 
 // Unified cache for all content types
-type CacheKey = 'teams' | 'drivers' | 'circuits';
+type CacheKey = 'teams' | 'drivers' | 'circuits' | 'sponsors';
 const cache: Record<CacheKey, unknown[] | null> = {
   teams: null,
   drivers: null,
   circuits: null,
+  sponsors: null,
 };
 
 /**
@@ -148,10 +153,19 @@ export const ConfigLoader = {
     return this.getCircuits().find((circuit) => circuit.id === id);
   },
 
+  getSponsors(): Sponsor[] {
+    return getCachedContent<SponsorsFile, Sponsor>('sponsors', 'sponsors.json', (f) => f.sponsors);
+  },
+
+  getSponsorById(id: string): Sponsor | undefined {
+    return this.getSponsors().find((sponsor) => sponsor.id === id);
+  },
+
   clearCache(): void {
     cache.teams = null;
     cache.drivers = null;
     cache.circuits = null;
+    cache.sponsors = null;
   },
 
   /** Get the data directory path (for debugging). */
