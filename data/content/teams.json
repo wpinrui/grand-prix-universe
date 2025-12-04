@@ -11,9 +11,9 @@
       "factoryLevel": 95
     },
     {
-      "id": "silberpfeil-gp",
-      "name": "Silberpfeil GP",
-      "shortName": "SIL",
+      "id": "silver-arrow-racing",
+      "name": "Silver Arrow Racing",
+      "shortName": "SAR",
       "primaryColor": "#C0C0C0",
       "secondaryColor": "#00D2BE",
       "headquarters": "Germany",
@@ -61,9 +61,9 @@
       "factoryLevel": 55
     },
     {
-      "id": "verdant-racing",
-      "name": "Verdant Racing",
-      "shortName": "VER",
+      "id": "emerald-racing",
+      "name": "Emerald Racing",
+      "shortName": "EME",
       "primaryColor": "#006F62",
       "secondaryColor": "#00FF87",
       "headquarters": "United Kingdom",
@@ -71,9 +71,9 @@
       "factoryLevel": 52
     },
     {
-      "id": "liberty-racing",
-      "name": "Liberty Racing",
-      "shortName": "LIB",
+      "id": "eagle-racing",
+      "name": "Eagle Racing",
+      "shortName": "EAG",
       "primaryColor": "#FFFFFF",
       "secondaryColor": "#B91C1C",
       "headquarters": "United States",
@@ -81,9 +81,9 @@
       "factoryLevel": 48
     },
     {
-      "id": "precision-gp",
-      "name": "Precision GP",
-      "shortName": "PRE",
+      "id": "glacier-racing",
+      "name": "Glacier Racing",
+      "shortName": "GLA",
       "primaryColor": "#52B747",
       "secondaryColor": "#FFFFFF",
       "headquarters": "Switzerland",
@@ -91,9 +91,9 @@
       "factoryLevel": 40
     },
     {
-      "id": "tricolore-racing",
-      "name": "Tricolore Racing",
-      "shortName": "TRI",
+      "id": "azure-racing",
+      "name": "Azure Racing",
+      "shortName": "AZU",
       "primaryColor": "#0090FF",
       "secondaryColor": "#FF87BC",
       "headquarters": "France",
