@@ -1,0 +1,212 @@
+{
+  "manufacturers": [
+    {
+      "id": "mercedes-hpe",
+      "name": "Mercedes-Benz HPE",
+      "type": "engine",
+      "reputation": 95,
+      "annualCost": 25000000,
+      "quality": 92
+    },
+    {
+      "id": "ferrari-pu",
+      "name": "Ferrari Power Unit",
+      "type": "engine",
+      "reputation": 92,
+      "annualCost": 23000000,
+      "quality": 88
+    },
+    {
+      "id": "honda-hrd",
+      "name": "Honda Racing Development",
+      "type": "engine",
+      "reputation": 88,
+      "annualCost": 20000000,
+      "quality": 85
+    },
+    {
+      "id": "renault-sport",
+      "name": "Renault Sport",
+      "type": "engine",
+      "reputation": 80,
+      "annualCost": 16000000,
+      "quality": 78
+    },
+    {
+      "id": "cosworth",
+      "name": "Cosworth Engineering",
+      "type": "engine",
+      "reputation": 75,
+      "annualCost": 12000000,
+      "quality": 72
+    },
+    {
+      "id": "bmw-motorsport",
+      "name": "BMW Motorsport",
+      "type": "engine",
+      "reputation": 82,
+      "annualCost": 18000000,
+      "quality": 80
+    },
+    {
+      "id": "toyota-trd",
+      "name": "Toyota Racing Development",
+      "type": "engine",
+      "reputation": 78,
+      "annualCost": 15000000,
+      "quality": 76
+    },
+    {
+      "id": "mugen",
+      "name": "Mugen Motorsports",
+      "type": "engine",
+      "reputation": 70,
+      "annualCost": 10000000,
+      "quality": 68
+    },
+    {
+      "id": "mecachrome",
+      "name": "Mecachrome",
+      "type": "engine",
+      "reputation": 65,
+      "annualCost": 8000000,
+      "quality": 62
+    },
+    {
+      "id": "supertec",
+      "name": "Supertec",
+      "type": "engine",
+      "reputation": 55,
+      "annualCost": 5000000,
+      "quality": 52
+    },
+    {
+      "id": "pirelli",
+      "name": "Pirelli",
+      "type": "tyre",
+      "reputation": 90,
+      "annualCost": 8000000,
+      "quality": 88
+    },
+    {
+      "id": "bridgestone",
+      "name": "Bridgestone",
+      "type": "tyre",
+      "reputation": 92,
+      "annualCost": 9000000,
+      "quality": 90
+    },
+    {
+      "id": "michelin",
+      "name": "Michelin",
+      "type": "tyre",
+      "reputation": 88,
+      "annualCost": 7500000,
+      "quality": 86
+    },
+    {
+      "id": "goodyear",
+      "name": "Goodyear",
+      "type": "tyre",
+      "reputation": 82,
+      "annualCost": 6000000,
+      "quality": 80
+    },
+    {
+      "id": "dunlop",
+      "name": "Dunlop Motorsport",
+      "type": "tyre",
+      "reputation": 75,
+      "annualCost": 4500000,
+      "quality": 72
+    },
+    {
+      "id": "continental",
+      "name": "Continental Racing",
+      "type": "tyre",
+      "reputation": 70,
+      "annualCost": 3500000,
+      "quality": 68
+    },
+    {
+      "id": "yokohama",
+      "name": "Yokohama",
+      "type": "tyre",
+      "reputation": 72,
+      "annualCost": 4000000,
+      "quality": 70
+    },
+    {
+      "id": "avon",
+      "name": "Avon Tyres",
+      "type": "tyre",
+      "reputation": 60,
+      "annualCost": 2500000,
+      "quality": 58
+    },
+    {
+      "id": "shell",
+      "name": "Shell V-Power Racing",
+      "type": "fuel",
+      "reputation": 92,
+      "annualCost": 6000000,
+      "quality": 90
+    },
+    {
+      "id": "petronas",
+      "name": "Petronas Syntium",
+      "type": "fuel",
+      "reputation": 90,
+      "annualCost": 5500000,
+      "quality": 88
+    },
+    {
+      "id": "mobil1",
+      "name": "Mobil 1 Racing",
+      "type": "fuel",
+      "reputation": 88,
+      "annualCost": 5000000,
+      "quality": 86
+    },
+    {
+      "id": "castrol",
+      "name": "Castrol Edge",
+      "type": "fuel",
+      "reputation": 85,
+      "annualCost": 4500000,
+      "quality": 82
+    },
+    {
+      "id": "total",
+      "name": "TotalEnergies",
+      "type": "fuel",
+      "reputation": 82,
+      "annualCost": 4000000,
+      "quality": 80
+    },
+    {
+      "id": "gulf",
+      "name": "Gulf Oil Racing",
+      "type": "fuel",
+      "reputation": 78,
+      "annualCost": 3500000,
+      "quality": 75
+    },
+    {
+      "id": "elf",
+      "name": "Elf Racing",
+      "type": "fuel",
+      "reputation": 75,
+      "annualCost": 3000000,
+      "quality": 72
+    },
+    {
+      "id": "bp",
+      "name": "BP Ultimate Racing",
+      "type": "fuel",
+      "reputation": 80,
+      "annualCost": 3800000,
+      "quality": 78
+    }
+  ]
+}

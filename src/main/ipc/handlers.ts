@@ -39,6 +39,10 @@ export function registerIpcHandlers(): void {
     return ConfigLoader.getSponsors();
   });
 
+  ipcMain.handle(IpcChannels.CONFIG_GET_MANUFACTURERS, () => {
+    return ConfigLoader.getManufacturers();
+  });
+
   // Game handlers (stubs for now)
   ipcMain.handle(IpcChannels.GAME_NEW, (_event, _teamId: string) => {
     // TODO: Implement when GameStateManager exists
