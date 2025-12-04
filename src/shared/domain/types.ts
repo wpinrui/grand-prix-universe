@@ -43,6 +43,12 @@ export enum ChiefRole {
   Commercial = 'commercial',
 }
 
+export enum SponsorTier {
+  Title = 'title', // Name prefixed to team name (e.g., "Oracle Red Bull Racing")
+  Major = 'major', // Significant logo placement, good money
+  Minor = 'minor', // Small cash sponsors, logo on car
+}
+
 // =============================================================================
 // CORE TYPES
 // =============================================================================
@@ -199,4 +205,21 @@ export interface Circuit {
   lengthKm: number; // lap length in kilometers
   laps: number; // race distance in laps
   characteristics: CircuitCharacteristics;
+}
+
+// =============================================================================
+// COMMERCIAL TYPES
+// =============================================================================
+
+/**
+ * Sponsor - A commercial sponsor (team/cash sponsors, not technical suppliers)
+ */
+export interface Sponsor {
+  id: string; // kebab-case slug, e.g. "globex-corp"
+  name: string; // display name, e.g. "Globex Corporation"
+  industry: string; // e.g. "technology", "finance", "automotive"
+  tier: SponsorTier;
+  payment: number; // annual payment in dollars
+  minReputation: number; // 0-100, team must have at least this reputation
+  rivalGroup: string | null; // sponsors in same group are mutually exclusive
 }
