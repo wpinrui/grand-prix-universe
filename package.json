@@ -3,7 +3,7 @@
   "productName": "Grand Prix Universe",
   "version": "0.1.0",
   "description": "F1 team management simulation inspired by Grand Prix World",
-  "main": ".vite/build/main.js",
+  "main": ".vite/build/index.js",
   "scripts": {
     "start": "electron-forge start",
     "package": "electron-forge package",
