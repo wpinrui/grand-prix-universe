@@ -118,6 +118,7 @@ export interface Chief {
   role: ChiefRole;
   ability: number; // 0-100, critical to department performance
   teamId: string | null;
+  morale: number; // 0-100
   salary: number;
   contractEnd: number;
 }
@@ -136,7 +137,7 @@ export interface Engine {
   fuelEfficiency: number; // 0-100, lower fuel consumption
   power: number; // 0-100, straight-line speed
   reliability: number; // 0-100, resistance to failure
-  weight: number; // 0-100, higher = lighter (inverted for intuition)
+  lightness: number; // 0-100, lighter engines improve performance
 }
 
 /**
