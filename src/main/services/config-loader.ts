@@ -106,9 +106,12 @@ const cache: Record<CacheKey, unknown[] | null> = {
 };
 
 // Separate cache for config files (single objects, not arrays)
+// Use a Symbol sentinel to distinguish "not loaded" from "loaded but file missing (null)"
+const NOT_LOADED = Symbol('NOT_LOADED');
+type ConfigCacheValue = unknown | typeof NOT_LOADED;
 type ConfigCacheKey = 'rules';
-const configCache: Record<ConfigCacheKey, unknown | null> = {
-  rules: null,
+const configCache: Record<ConfigCacheKey, ConfigCacheValue> = {
+  rules: NOT_LOADED,
 };
 
 /**
@@ -198,8 +201,8 @@ export const ConfigLoader = {
   },
 
   getRules(): GameRules | null {
-    if (configCache.rules !== null) {
-      return configCache.rules as GameRules;
+    if (configCache.rules !== NOT_LOADED) {
+      return configCache.rules as GameRules | null;
     }
 
     const rules = loadConfigFile<GameRules>('rules.json');
@@ -214,7 +217,7 @@ export const ConfigLoader = {
     cache.sponsors = null;
     cache.manufacturers = null;
     cache.chiefs = null;
-    configCache.rules = null;
+    configCache.rules = NOT_LOADED;
   },
 
   /** Get the data directory path (for debugging). */
