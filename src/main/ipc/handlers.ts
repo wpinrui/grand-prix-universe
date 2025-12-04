@@ -6,6 +6,7 @@
 
 import { app, ipcMain } from 'electron';
 import { IpcChannels } from '../../shared/ipc';
+import { ConfigLoader } from '../services/config-loader';
 
 /**
  * Register all IPC handlers.
@@ -19,6 +20,19 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IpcChannels.APP_QUIT, () => {
     app.quit();
+  });
+
+  // Config/content handlers
+  ipcMain.handle(IpcChannels.CONFIG_GET_TEAMS, () => {
+    return ConfigLoader.getTeams();
+  });
+
+  ipcMain.handle(IpcChannels.CONFIG_GET_DRIVERS, () => {
+    return ConfigLoader.getDrivers();
+  });
+
+  ipcMain.handle(IpcChannels.CONFIG_GET_CIRCUITS, () => {
+    return ConfigLoader.getCircuits();
   });
 
   // Game handlers (stubs for now)
