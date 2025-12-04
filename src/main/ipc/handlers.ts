@@ -22,16 +22,19 @@ export function registerIpcHandlers(): void {
   });
 
   // Game handlers (stubs for now)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ipcMain.handle(IpcChannels.GAME_NEW, (_event, _teamId: string) => {
     // TODO: Implement when GameStateManager exists
     return { success: false };
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ipcMain.handle(IpcChannels.GAME_SAVE, (_event, _slotId: string) => {
     // TODO: Implement when SaveManager exists
     return { success: false };
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ipcMain.handle(IpcChannels.GAME_LOAD, (_event, _slotId: string) => {
     // TODO: Implement when SaveManager exists
     return { success: false };
