@@ -455,6 +455,7 @@ export interface ConstructorStanding {
   wins: number;
   podiums: number; // Any driver on podium counts
   polePositions: number;
+  fastestLaps: number;
 }
 
 // -----------------------------------------------------------------------------
@@ -504,7 +505,7 @@ export interface DriverRaceResult {
   finishPosition: number | null; // Final position (1-based), null if not classified
   gridPosition: number; // Where they started
   lapsCompleted: number;
-  totalTime: number; // in ms (0 if DNF)
+  totalTime?: number; // in ms, undefined if DNF
   gapToWinner?: number; // Time gap in ms (only for same-lap finishers)
   lapsBehind?: number; // Laps behind leader (only for lapped finishers)
   points: number; // Points earned this race
