@@ -506,7 +506,7 @@ export interface RacePositionResult {
   gridPosition: number; // Where they started
   lapsCompleted: number;
   totalTime: number; // in ms (0 if DNF)
-  gapToWinnerMs?: number; // Time gap in ms (only for same-lap finishers)
+  gapToWinner?: number; // Time gap in ms (only for same-lap finishers)
   lapsBehind?: number; // Laps behind leader (only for lapped finishers)
   points: number; // Points earned this race
   fastestLap: boolean; // Did they set fastest lap?
