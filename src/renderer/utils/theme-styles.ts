@@ -21,6 +21,14 @@ export const ACCENT_BUTTON_STYLE: CSSProperties = {
 };
 
 /**
+ * Primary accent button with visible border - for buttons that need border definition
+ */
+export const ACCENT_BORDERED_BUTTON_STYLE: CSSProperties = {
+  ...ACCENT_BUTTON_STYLE,
+  borderColor: 'var(--accent-500)',
+};
+
+/**
  * Muted accent button - secondary actions
  */
 export const ACCENT_MUTED_BUTTON_STYLE: CSSProperties = {

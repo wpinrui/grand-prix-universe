@@ -66,18 +66,23 @@ const MORALE_THRESHOLDS = {
 // FORMATTERS
 // ===========================================
 
-function getMoraleColor(value: number): string {
-  if (value >= MORALE_THRESHOLDS.EXCELLENT) return 'bg-emerald-500';
-  if (value >= MORALE_THRESHOLDS.GOOD) return 'bg-yellow-500';
-  if (value >= MORALE_THRESHOLDS.LOW) return 'bg-orange-500';
-  return 'bg-red-500';
+interface MoraleStyle {
+  colorClass: string;
+  glow: string;
 }
 
-function getMoraleGlow(value: number): string {
-  if (value >= MORALE_THRESHOLDS.EXCELLENT) return '0 0 8px rgba(16, 185, 129, 0.5)';
-  if (value >= MORALE_THRESHOLDS.GOOD) return '0 0 8px rgba(234, 179, 8, 0.5)';
-  if (value >= MORALE_THRESHOLDS.LOW) return '0 0 8px rgba(249, 115, 22, 0.5)';
-  return '0 0 8px rgba(239, 68, 68, 0.5)';
+const MORALE_STYLES = {
+  excellent: { colorClass: 'bg-emerald-500', glow: '0 0 8px rgba(16, 185, 129, 0.5)' },
+  good: { colorClass: 'bg-yellow-500', glow: '0 0 8px rgba(234, 179, 8, 0.5)' },
+  low: { colorClass: 'bg-orange-500', glow: '0 0 8px rgba(249, 115, 22, 0.5)' },
+  critical: { colorClass: 'bg-red-500', glow: '0 0 8px rgba(239, 68, 68, 0.5)' },
+} as const;
+
+function getMoraleStyle(value: number): MoraleStyle {
+  if (value >= MORALE_THRESHOLDS.EXCELLENT) return MORALE_STYLES.excellent;
+  if (value >= MORALE_THRESHOLDS.GOOD) return MORALE_STYLES.good;
+  if (value >= MORALE_THRESHOLDS.LOW) return MORALE_STYLES.low;
+  return MORALE_STYLES.critical;
 }
 
 // ===========================================
@@ -214,14 +219,12 @@ interface MoraleBarProps {
 }
 
 function MoraleBar({ label, value }: MoraleBarProps) {
+  const { colorClass, glow } = getMoraleStyle(value);
+
   return (
     <div className="flex items-center gap-4">
       <span className="text-sm font-medium text-secondary w-28">{label}</span>
-      <ProgressBar
-        value={value}
-        colorClass={getMoraleColor(value)}
-        glow={getMoraleGlow(value)}
-      />
+      <ProgressBar value={value} colorClass={colorClass} glow={glow} />
       <span className="text-sm font-bold text-primary w-10 text-right tabular-nums">{value}</span>
     </div>
   );

@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import type { Section, SubItem } from '../navigation';
-import { ACCENT_BUTTON_STYLE, ACCENT_NAV_INDICATOR_STYLE } from '../utils/theme-styles';
+import { ACCENT_BORDERED_BUTTON_STYLE, ACCENT_NAV_INDICATOR_STYLE } from '../utils/theme-styles';
 
 // ===========================================
 // SECTION NAV BUTTON (Sidebar)
@@ -76,19 +76,12 @@ export function SubNavButton({ subItem, isSelected, onClick }: SubNavButtonProps
     ? ''
     : 'bg-[var(--neutral-800)] border-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-750)] hover:text-primary hover:border-[var(--neutral-600)]';
 
-  const buttonStyle: CSSProperties = isSelected
-    ? {
-        ...ACCENT_BUTTON_STYLE,
-        borderColor: 'var(--accent-500)',
-      }
-    : {};
-
   return (
     <button
       type="button"
       onClick={onClick}
       className={`${baseClasses} ${stateClasses}`}
-      style={buttonStyle}
+      style={isSelected ? ACCENT_BORDERED_BUTTON_STYLE : undefined}
     >
       <Icon size={20} />
       <span>{subItem.label}</span>
@@ -133,19 +126,12 @@ export function IconButton({
     ? 'bg-[var(--neutral-800)] border-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-750)] hover:text-primary'
     : '';
 
-  const buttonStyle: CSSProperties = variant === 'accent'
-    ? {
-        ...ACCENT_BUTTON_STYLE,
-        borderColor: 'var(--accent-500)',
-      }
-    : {};
-
   return (
     <button
       type="button"
       onClick={onClick}
       className={`${baseClasses} ${variantClasses}`}
-      style={buttonStyle}
+      style={variant === 'accent' ? ACCENT_BORDERED_BUTTON_STYLE : undefined}
       title={title}
     >
       <Icon size={sizeConfig.icon} />

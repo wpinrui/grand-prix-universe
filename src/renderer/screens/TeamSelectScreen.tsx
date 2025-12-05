@@ -8,6 +8,7 @@ import type { Team, Driver } from '../../shared/domain';
 import { DriverRole } from '../../shared/domain';
 import { generateFace, type TeamColors } from '../utils/face-generator';
 import { TeamBadge } from '../components/TeamBadge';
+import { IconButton } from '../components/NavButtons';
 import { PRIMARY_BUTTON_CLASSES, GHOST_BUTTON_CLASSES } from '../utils/theme-styles';
 import { formatCurrency } from '../utils/format';
 
@@ -266,13 +267,12 @@ export function TeamSelectScreen() {
         <div className="p-6 border-b" style={{ borderColor: `color-mix(in srgb, ${selectedTeam.primaryColor} 15%, var(--neutral-750))` }}>
           <div className="flex items-center justify-between gap-4">
             {/* Prev button */}
-            <button
-              type="button"
+            <IconButton
+              icon={ChevronLeft}
               onClick={handlePrevTeam}
-              className="btn w-10 h-10 rounded-lg bg-[var(--neutral-800)] border border-[var(--neutral-700)] text-secondary hover:text-primary hover:border-[var(--neutral-600)] transition-all"
-            >
-              <ChevronLeft size={20} />
-            </button>
+              variant="ghost"
+              size="sm"
+            />
 
             {/* Team info */}
             <div className="flex-1 flex items-center gap-5">
@@ -296,13 +296,12 @@ export function TeamSelectScreen() {
             </div>
 
             {/* Next button */}
-            <button
-              type="button"
+            <IconButton
+              icon={ChevronRight}
               onClick={handleNextTeam}
-              className="btn w-10 h-10 rounded-lg bg-[var(--neutral-800)] border border-[var(--neutral-700)] text-secondary hover:text-primary hover:border-[var(--neutral-600)] transition-all"
-            >
-              <ChevronRight size={20} />
-            </button>
+              variant="ghost"
+              size="sm"
+            />
           </div>
         </div>
 
