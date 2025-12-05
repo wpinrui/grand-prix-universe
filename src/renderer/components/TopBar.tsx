@@ -19,7 +19,7 @@ export function TopBar({ sectionLabel, subItemLabel, currentDate, playerTeam }: 
         {/* Calendar Button */}
         <button
           type="button"
-          className="flex items-center gap-2 px-3 py-1.5 rounded cursor-pointer transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 rounded cursor-pointer transition-opacity hover:opacity-80"
           style={ACCENT_MUTED_BUTTON_STYLE}
           title="Calendar"
         >
