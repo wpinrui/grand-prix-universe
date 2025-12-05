@@ -506,7 +506,7 @@ export interface RacePositionResult {
   gridPosition: number; // Where they started
   lapsCompleted: number;
   totalTime: number; // In ms (0 if DNF)
-  gapToWinner: number; // Gap in ms or laps
+  gapToWinner: number; // Time gap in ms (for same-lap finishers) or laps behind (if status is 'lapped')
   points: number; // Points earned this race
   fastestLap: boolean; // Did they set fastest lap?
   fastestLapTime?: number; // Their fastest lap in ms
@@ -553,14 +553,10 @@ export interface DriverRuntimeState {
 
 /**
  * DepartmentMorale - Morale state for all departments
- * GPW uses 1-5 blocks, we use 0-100 scale
+ * GPW uses 1-5 blocks, we use 0-100 scale.
+ * Keyed by Department enum value, each value is 0-100.
  */
-export interface DepartmentMorale {
-  commercial: number; // 0-100
-  design: number; // 0-100
-  engineering: number; // 0-100
-  mechanics: number; // 0-100
-}
+export type DepartmentMorale = Record<Department, number>;
 
 /**
  * TeamRuntimeState - Mutable state for a team during gameplay
