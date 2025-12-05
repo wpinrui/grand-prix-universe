@@ -30,8 +30,7 @@ export function PlayerNameScreen() {
       <form onSubmit={handleSubmit} className="bg-gray-600 p-8 rounded shadow-lg w-full max-w-md">
         <h1 className="text-xl font-bold text-white mb-4">New Game</h1>
         <p className="text-gray-200 mb-6">
-          Please enter your name in the box below, and click the OK button in the bottom right hand
-          corner of the screen.
+          Please enter your name in the box below and click OK to continue.
         </p>
         <input
           ref={inputRef}
