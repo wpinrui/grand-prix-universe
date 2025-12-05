@@ -558,6 +558,16 @@ export interface DriverRuntimeState {
 export type DepartmentMorale = Record<Department, number>;
 
 /**
+ * DevelopmentTestingState - Progress tracking for development testing
+ * Reveals handling characteristics through test sessions
+ */
+export interface DevelopmentTestingState {
+  handlingRevealed: boolean;
+  handlingPercentage: number; // 0-100, revealed by dev testing
+  handlingProblemsFound: string[]; // Problem IDs discovered
+}
+
+/**
  * TeamRuntimeState - Mutable state for a team during gameplay
  * Keyed by teamId in GameState.teamStates
  */
@@ -568,10 +578,7 @@ export interface TeamRuntimeState {
   sponsorSatisfaction: Record<string, number>;
   // Testing progress
   setupPoints: number; // Accumulated from set-up testing
-  // Development testing state
-  handlingRevealed: boolean;
-  handlingPercentage: number; // 0-100, revealed by dev testing
-  handlingProblemsFound: string[]; // Problem IDs discovered
+  developmentTesting: DevelopmentTestingState;
 }
 
 /**
