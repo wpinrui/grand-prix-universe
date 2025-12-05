@@ -79,6 +79,11 @@ function DriverPhoto({ driver, teamColors }: DriverPhotoProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [imageError, setImageError] = useState(false);
 
+  // Reset error state when driver changes (consistent with TeamLogo pattern)
+  useEffect(() => {
+    setImageError(false);
+  }, [driver.id]);
+
   const shouldGenerateFace = !driver.photoUrl || imageError;
 
   useEffect(() => {
