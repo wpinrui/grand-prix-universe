@@ -33,7 +33,12 @@ Grand Prix Universe recreates the depth and feel of GPW with:
 
 ## Project Status
 
-**Current Phase:** Phase 0 - Project Setup
+**Current Phase:** Phase 3 - Game Loop & State (in progress)
+
+- ✅ Phase 0: Project Setup
+- ✅ Phase 1: Core Data & Types
+- ✅ Phase 2: Engine Abstractions
+- 🔄 Phase 3: Game Loop & State
 
 See [agents/proposal.md](agents/proposal.md) for full design document.
 
@@ -53,13 +58,13 @@ See [.claude/CLAUDE.md](.claude/CLAUDE.md) for development guidelines.
 
 ```bash
 # Install dependencies
-npm install
+yarn install
 
 # Run in development mode
-npm run dev
+yarn dev
 
 # Build for production
-npm run build
+yarn build
 ```
 
 ### Project Structure
@@ -84,10 +89,12 @@ npm run build
 ## Modding
 
 Grand Prix Universe is designed for modding. The `/data/override/` directory can contain:
-- `teams.json` - Real team names, colors, logos
+- `teams.json` - Real team names, colors, budgets
 - `drivers.json` - Real driver names and stats
-- `staff.json` - Real staff names
+- `chiefs.json` - Real department chiefs (designers, engineers, etc.)
 - `sponsors.json` - Real sponsor names
+- `circuits.json` - Real circuit names and characteristics
+- `manufacturers.json` - Real engine manufacturers
 
 Files in `/override/` take priority over the default fictional content in `/content/`.
 
