@@ -127,6 +127,22 @@ export const ACCENT_NAV_INDICATOR_STYLE: CSSProperties = {
 };
 
 // ===========================================
+// BUTTON CLASS CONSTANTS
+// ===========================================
+
+/**
+ * Primary action button - emerald CTA (New Game, OK, Start, etc.)
+ */
+export const PRIMARY_BUTTON_CLASSES =
+  'btn px-6 py-2 font-semibold bg-emerald-600 text-white border border-emerald-500 rounded-lg hover:bg-emerald-500 disabled:bg-[var(--neutral-700)] disabled:border-[var(--neutral-600)] disabled:text-muted disabled:cursor-not-allowed transition-all duration-200';
+
+/**
+ * Ghost button - secondary actions (Back, Cancel, etc.)
+ */
+export const GHOST_BUTTON_CLASSES =
+  'btn px-4 py-2 text-secondary hover:text-primary transition-colors';
+
+// ===========================================
 // UTILITY FUNCTIONS
 // ===========================================
 

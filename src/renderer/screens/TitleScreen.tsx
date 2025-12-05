@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Play } from 'lucide-react';
 import { RoutePaths } from '../routes';
+import { PRIMARY_BUTTON_CLASSES } from '../utils/theme-styles';
 
 export function TitleScreen() {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ export function TitleScreen() {
         <button
           type="button"
           onClick={() => navigate(RoutePaths.PLAYER_NAME)}
-          className="btn px-8 py-3 text-lg font-semibold bg-emerald-600 text-white border border-emerald-500 rounded-lg hover:bg-emerald-500 transition-all duration-200"
+          className={`${PRIMARY_BUTTON_CLASSES} px-8 py-3 text-lg`}
         >
           <Play size={20} />
           <span>New Game</span>

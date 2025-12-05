@@ -8,6 +8,8 @@ import type { Team, Driver } from '../../shared/domain';
 import { DriverRole } from '../../shared/domain';
 import { generateFace, type TeamColors } from '../utils/face-generator';
 import { TeamBadge } from '../components/TeamBadge';
+import { PRIMARY_BUTTON_CLASSES, GHOST_BUTTON_CLASSES } from '../utils/theme-styles';
+import { formatCurrency } from '../utils/format';
 
 interface LocationState {
   playerName: string;
@@ -73,14 +75,6 @@ function DriverPhoto({ driver, teamColors }: DriverPhotoProps) {
       <div ref={containerRef} style={{ marginTop: FACE_VERTICAL_OFFSET }} />
     </div>
   );
-}
-
-function formatBudget(budget: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(budget);
 }
 
 function getDriverRolePriority(role: DriverRole): number {
@@ -291,7 +285,7 @@ export function TeamSelectScreen() {
                   {selectedTeam.name}
                 </h2>
                 <p className="text-secondary text-sm">
-                  {selectedTeam.headquarters} · {formatBudget(selectedTeam.budget)}
+                  {selectedTeam.headquarters} · {formatCurrency(selectedTeam.budget)}
                 </p>
               </div>
 
@@ -363,7 +357,7 @@ export function TeamSelectScreen() {
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="btn px-4 py-2 text-secondary hover:text-primary transition-colors"
+            className={GHOST_BUTTON_CLASSES}
           >
             <ArrowLeft size={18} />
             <span>Back</span>
@@ -380,7 +374,7 @@ export function TeamSelectScreen() {
               type="button"
               onClick={handleStartGame}
               disabled={isStarting}
-              className="btn px-6 py-2 font-semibold bg-emerald-600 text-white border border-emerald-500 rounded-lg hover:bg-emerald-500 disabled:bg-[var(--neutral-700)] disabled:border-[var(--neutral-600)] disabled:text-muted disabled:cursor-not-allowed transition-all duration-200"
+              className={PRIMARY_BUTTON_CLASSES}
             >
               <span>{isStarting ? 'Starting...' : 'OK'}</span>
               <ArrowRight size={18} />

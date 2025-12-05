@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { RoutePaths } from '../routes';
+import { PRIMARY_BUTTON_CLASSES, GHOST_BUTTON_CLASSES } from '../utils/theme-styles';
 
 /**
  * Player Name Screen - Collects the player's name before team selection.
@@ -48,7 +49,7 @@ export function PlayerNameScreen() {
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="btn px-4 py-2 text-secondary hover:text-primary transition-colors"
+            className={GHOST_BUTTON_CLASSES}
           >
             <ArrowLeft size={18} />
             <span>Back</span>
@@ -56,7 +57,7 @@ export function PlayerNameScreen() {
           <button
             type="submit"
             disabled={!isValid}
-            className="btn px-6 py-2 font-semibold bg-emerald-600 text-white border border-emerald-500 rounded-lg hover:bg-emerald-500 disabled:bg-[var(--neutral-700)] disabled:border-[var(--neutral-600)] disabled:text-muted disabled:cursor-not-allowed transition-all duration-200"
+            className={PRIMARY_BUTTON_CLASSES}
           >
             <span>OK</span>
             <ArrowRight size={18} />

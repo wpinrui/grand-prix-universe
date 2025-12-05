@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 import { useDerivedGameState } from '../hooks';
 import { TeamBadge } from '../components/TeamBadge';
 import { ACCENT_CARD_STYLE, ACCENT_TEXT_STYLE } from '../utils/theme-styles';
+import { formatCurrency, formatAnnualSalary } from '../utils/format';
 import type {
   Driver,
   Chief,
@@ -64,25 +65,6 @@ const MORALE_THRESHOLDS = {
 // ===========================================
 // FORMATTERS
 // ===========================================
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
-function formatCompactAmount(amount: number): string {
-  if (amount >= 1_000_000) {
-    return `${(amount / 1_000_000).toFixed(1)}M`;
-  }
-  return `${(amount / 1_000).toFixed(0)}K`;
-}
-
-function formatAnnualSalary(amount: number): string {
-  return `$${formatCompactAmount(amount)}/yr`;
-}
 
 function getMoraleColor(value: number): string {
   if (value >= MORALE_THRESHOLDS.EXCELLENT) return 'bg-emerald-500';
