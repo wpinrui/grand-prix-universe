@@ -26,6 +26,10 @@ import type {
   Team,
   Sponsor,
   Manufacturer,
+  Circuit,
+  Chief,
+  Rules,
+  Regulations,
 } from '../../shared/domain';
 import {
   GamePhase,
@@ -149,6 +153,75 @@ function createInitialTeamState(
  */
 function isRacingDriver(driver: Driver): driver is Driver & { teamId: string } {
   return driver.teamId !== null && driver.role !== DriverRole.Test;
+}
+
+/** All entity arrays loaded from config */
+interface LoadedEntities {
+  teams: Team[];
+  drivers: Driver[];
+  chiefs: Chief[];
+  sponsors: Sponsor[];
+  manufacturers: Manufacturer[];
+  circuits: Circuit[];
+}
+
+/**
+ * Validates input parameters for new game creation.
+ * Throws descriptive errors for invalid inputs.
+ */
+function validateNewGameParams(params: NewGameParams): void {
+  const { playerName, teamId, seasonNumber = DEFAULT_STARTING_SEASON } = params;
+
+  if (!playerName.trim()) {
+    throw new Error('Player name cannot be empty');
+  }
+  if (!Number.isInteger(seasonNumber) || seasonNumber < 1) {
+    throw new Error('Season number must be a positive integer');
+  }
+
+  const team = ConfigLoader.getTeamById(teamId);
+  if (!team) {
+    throw new Error(`Team not found: ${teamId}`);
+  }
+
+  const rules = ConfigLoader.getRules();
+  if (!rules) {
+    throw new Error('Game rules not found');
+  }
+
+  const regulations = ConfigLoader.getRegulationsBySeason(seasonNumber);
+  if (!regulations) {
+    throw new Error(`Regulations not found for season ${seasonNumber}`);
+  }
+}
+
+/**
+ * Loads all entities from config and clones them for game state.
+ * Cloning prevents mutations from corrupting the config cache.
+ */
+function loadAndCloneEntities(): LoadedEntities {
+  const teams = ConfigLoader.getTeams();
+  const drivers = ConfigLoader.getDrivers();
+  const chiefs = ConfigLoader.getChiefs();
+  const sponsors = ConfigLoader.getSponsors();
+  const manufacturers = ConfigLoader.getManufacturers();
+  const circuits = ConfigLoader.getCircuits();
+
+  assertNonEmpty(teams, 'teams');
+  assertNonEmpty(drivers, 'drivers');
+  assertNonEmpty(circuits, 'circuits');
+  assertNonEmpty(sponsors, 'sponsors');
+  assertNonEmpty(manufacturers, 'manufacturers');
+  assertNonEmpty(chiefs, 'chiefs');
+
+  return {
+    teams: cloneDeep(teams),
+    drivers: cloneDeep(drivers),
+    chiefs: cloneDeep(chiefs),
+    sponsors: cloneDeep(sponsors),
+    manufacturers: cloneDeep(manufacturers),
+    circuits: cloneDeep(circuits),
+  };
 }
 
 /**
@@ -311,6 +384,87 @@ function createInitialManufacturerContracts(
   return contracts;
 }
 
+/** Parameters for building the complete game state */
+interface BuildGameStateParams {
+  playerName: string;
+  teamId: string;
+  seasonNumber: number;
+  entities: LoadedEntities;
+  rules: Rules;
+  regulations: Regulations;
+}
+
+/**
+ * Assembles all components into a complete GameState object
+ */
+function buildGameState(params: BuildGameStateParams): GameState {
+  const { playerName, teamId, seasonNumber, entities, rules, regulations } = params;
+  const { teams, drivers, chiefs, sponsors, manufacturers, circuits } = entities;
+
+  // Create runtime states
+  const driverStates = createAllDriverStates(drivers);
+  const teamStates = createAllTeamStates(teams);
+
+  // Create season data
+  const currentSeason: SeasonData = {
+    seasonNumber,
+    calendar: createCalendar(circuits.map((c) => c.id)),
+    driverStandings: createInitialDriverStandings(drivers),
+    constructorStandings: createInitialConstructorStandings(teams),
+    regulations,
+  };
+
+  // Create initial contracts
+  const sponsorDeals = createInitialSponsorDeals(teams, sponsors, seasonNumber);
+  const manufacturerContracts = createInitialManufacturerContracts(
+    teams,
+    manufacturers,
+    seasonNumber
+  );
+
+  // Create player info and date
+  const player: PlayerInfo = {
+    name: playerName,
+    teamId,
+    careerStartSeason: seasonNumber,
+  };
+
+  const currentDate: GameDate = {
+    season: seasonNumber,
+    week: PRE_SEASON_START_WEEK,
+  };
+
+  // Assemble complete game state
+  const now = new Date().toISOString();
+  return {
+    version: SAVE_VERSION,
+    createdAt: now,
+    lastSavedAt: now,
+
+    player,
+    currentDate,
+    phase: GamePhase.PreSeason,
+
+    currentSeason,
+
+    teams,
+    drivers,
+    chiefs,
+    sponsors,
+    manufacturers,
+    circuits,
+
+    driverStates,
+    teamStates,
+
+    sponsorDeals,
+    manufacturerContracts,
+
+    pastSeasons: [],
+    rules,
+  };
+}
+
 /**
  * GameStateManager - Singleton service for managing game state
  */
@@ -324,125 +478,28 @@ export const GameStateManager = {
   createNewGame(params: NewGameParams): GameState {
     const { playerName, teamId, seasonNumber = DEFAULT_STARTING_SEASON } = params;
 
-    // Validate input parameters (fail-fast)
-    if (!playerName.trim()) {
-      throw new Error('Player name cannot be empty');
-    }
-    if (!Number.isInteger(seasonNumber) || seasonNumber < 1) {
-      throw new Error('Season number must be a positive integer');
-    }
+    // Validate all inputs and dependencies (fail-fast)
+    validateNewGameParams(params);
 
-    // Validate critical dependencies
-    const team = ConfigLoader.getTeamById(teamId);
-    if (!team) {
-      throw new Error(`Team not found: ${teamId}`);
-    }
-
+    // Load required single-instance config (validated above, but TypeScript needs explicit checks)
     const rules = ConfigLoader.getRules();
-    if (!rules) {
-      throw new Error('Game rules not found');
-    }
-
     const regulations = ConfigLoader.getRegulationsBySeason(seasonNumber);
-    if (!regulations) {
-      throw new Error(`Regulations not found for season ${seasonNumber}`);
+    if (!rules || !regulations) {
+      throw new Error('Internal error: config validation passed but data is missing');
     }
 
-    // Load all entities from config
-    const teams = ConfigLoader.getTeams();
-    const drivers = ConfigLoader.getDrivers();
-    const chiefs = ConfigLoader.getChiefs();
-    const sponsors = ConfigLoader.getSponsors();
-    const manufacturers = ConfigLoader.getManufacturers();
-    const circuits = ConfigLoader.getCircuits();
+    // Load and clone all entities (prevents cache corruption during gameplay)
+    const entities = loadAndCloneEntities();
 
-    // Validate critical arrays are not empty (fail-fast)
-    assertNonEmpty(teams, 'teams');
-    assertNonEmpty(drivers, 'drivers');
-    assertNonEmpty(circuits, 'circuits');
-    assertNonEmpty(sponsors, 'sponsors');
-    assertNonEmpty(manufacturers, 'manufacturers');
-    assertNonEmpty(chiefs, 'chiefs');
-
-    // Clone entities FIRST to prevent cache corruption (they evolve during play)
-    // All derived data below uses cloned entities for consistency
-    const clonedTeams = cloneDeep(teams);
-    const clonedDrivers = cloneDeep(drivers);
-    const clonedChiefs = cloneDeep(chiefs);
-    const clonedSponsors = cloneDeep(sponsors);
-    const clonedManufacturers = cloneDeep(manufacturers);
-    const clonedCircuits = cloneDeep(circuits);
-
-    // Create runtime states (using cloned data)
-    const driverStates = createAllDriverStates(clonedDrivers);
-    const teamStates = createAllTeamStates(clonedTeams);
-
-    // Create calendar from circuits
-    const calendar = createCalendar(clonedCircuits.map((c) => c.id));
-
-    // Create initial standings
-    const driverStandings = createInitialDriverStandings(clonedDrivers);
-    const constructorStandings = createInitialConstructorStandings(clonedTeams);
-
-    // Create season data
-    const currentSeason: SeasonData = {
-      seasonNumber,
-      calendar,
-      driverStandings,
-      constructorStandings,
-      regulations: cloneDeep(regulations),
-    };
-
-    // Create initial contracts
-    const sponsorDeals = createInitialSponsorDeals(clonedTeams, clonedSponsors, seasonNumber);
-    const manufacturerContracts = createInitialManufacturerContracts(
-      clonedTeams,
-      clonedManufacturers,
-      seasonNumber
-    );
-
-    // Create player info
-    const player: PlayerInfo = {
-      name: playerName,
+    // Build the game state
+    const gameState = buildGameState({
+      playerName,
       teamId,
-      careerStartSeason: seasonNumber,
-    };
-
-    // Create current date
-    const currentDate: GameDate = {
-      season: seasonNumber,
-      week: PRE_SEASON_START_WEEK,
-    };
-
-    // Build complete game state
-    const now = new Date().toISOString();
-    const gameState: GameState = {
-      version: SAVE_VERSION,
-      createdAt: now,
-      lastSavedAt: now,
-
-      player,
-      currentDate,
-      phase: GamePhase.PreSeason,
-
-      currentSeason,
-
-      teams: clonedTeams,
-      drivers: clonedDrivers,
-      chiefs: clonedChiefs,
-      sponsors: clonedSponsors,
-      manufacturers: clonedManufacturers,
-      circuits: clonedCircuits,
-
-      driverStates,
-      teamStates,
-
-      sponsorDeals,
-      manufacturerContracts,
-
-      pastSeasons: [],
+      seasonNumber,
+      entities,
       rules: cloneDeep(rules),
-    };
+      regulations: cloneDeep(regulations),
+    });
 
     // Store as current state
     GameStateManager.currentState = gameState;
