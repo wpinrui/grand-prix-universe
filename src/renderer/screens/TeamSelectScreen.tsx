@@ -149,6 +149,11 @@ export function TeamSelectScreen() {
     );
   }
 
+  // TypeScript guard: selectedTeam is always set when teams exist (auto-selected on load)
+  if (!selectedTeam) {
+    return null;
+  }
+
   return (
     <div className="team-select-screen flex flex-col min-h-screen bg-gray-800">
       {/* Header */}
@@ -168,7 +173,7 @@ export function TeamSelectScreen() {
                 setStartError(null);
               }}
               className={`w-full text-left px-4 py-3 border-b border-gray-600 transition-colors ${
-                selectedTeam?.id === team.id
+                selectedTeam.id === team.id
                   ? 'bg-blue-600 text-white'
                   : 'text-gray-200 hover:bg-gray-600'
               }`}
@@ -186,56 +191,48 @@ export function TeamSelectScreen() {
 
         {/* Right column: Team details */}
         <div className="flex-1 p-6 overflow-y-auto">
-          {selectedTeam ? (
-            <div className="max-w-2xl">
-              {/* Team header with color swatches */}
-              <div className="flex items-start gap-6 mb-6">
-                <ColorSwatch
-                  primary={selectedTeam.primaryColor}
-                  secondary={selectedTeam.secondaryColor}
-                />
-                <div>
-                  <h2 className="text-3xl font-bold text-white">{selectedTeam.name}</h2>
-                  <p className="text-gray-400">{selectedTeam.shortName}</p>
-                </div>
-              </div>
-
-              {/* Team info */}
-              <div className="space-y-4 mb-6">
-                <div>
-                  <span className="text-gray-400 text-sm uppercase tracking-wide">Principal</span>
-                  <p className="text-white text-lg">{selectedTeam.principal}</p>
-                </div>
-
-                <div>
-                  <span className="text-gray-400 text-sm uppercase tracking-wide">
-                    Headquarters
-                  </span>
-                  <p className="text-white text-lg">{selectedTeam.headquarters}</p>
-                </div>
-
-                <div>
-                  <span className="text-gray-400 text-sm uppercase tracking-wide">Budget</span>
-                  <p className="text-white text-lg">{formatBudget(selectedTeam.budget)}</p>
-                </div>
-
-                <div>
-                  <span className="text-gray-400 text-sm uppercase tracking-wide">
-                    Factory Level
-                  </span>
-                  <p className="text-white text-lg">{selectedTeam.factoryLevel}/100</p>
-                </div>
-              </div>
-
-              {/* Team description */}
+          <div className="max-w-2xl">
+            {/* Team header with color swatches */}
+            <div className="flex items-start gap-6 mb-6">
+              <ColorSwatch
+                primary={selectedTeam.primaryColor}
+                secondary={selectedTeam.secondaryColor}
+              />
               <div>
-                <span className="text-gray-400 text-sm uppercase tracking-wide">About</span>
-                <p className="text-gray-200 mt-1 leading-relaxed">{selectedTeam.description}</p>
+                <h2 className="text-3xl font-bold text-white">{selectedTeam.name}</h2>
+                <p className="text-gray-400">{selectedTeam.shortName}</p>
               </div>
             </div>
-          ) : (
-            <p className="text-gray-400">Select a team to view details</p>
-          )}
+
+            {/* Team info */}
+            <div className="space-y-4 mb-6">
+              <div>
+                <span className="text-gray-400 text-sm uppercase tracking-wide">Principal</span>
+                <p className="text-white text-lg">{selectedTeam.principal}</p>
+              </div>
+
+              <div>
+                <span className="text-gray-400 text-sm uppercase tracking-wide">Headquarters</span>
+                <p className="text-white text-lg">{selectedTeam.headquarters}</p>
+              </div>
+
+              <div>
+                <span className="text-gray-400 text-sm uppercase tracking-wide">Budget</span>
+                <p className="text-white text-lg">{formatBudget(selectedTeam.budget)}</p>
+              </div>
+
+              <div>
+                <span className="text-gray-400 text-sm uppercase tracking-wide">Factory Level</span>
+                <p className="text-white text-lg">{selectedTeam.factoryLevel}/100</p>
+              </div>
+            </div>
+
+            {/* Team description */}
+            <div>
+              <span className="text-gray-400 text-sm uppercase tracking-wide">About</span>
+              <p className="text-gray-200 mt-1 leading-relaxed">{selectedTeam.description}</p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -251,14 +248,14 @@ export function TeamSelectScreen() {
 
           <div className="flex items-center gap-4">
             {startError && <span className="text-red-400">{startError}</span>}
-            {selectedTeam && !startError && (
+            {!startError && (
               <span className="text-gray-300">
                 Do you want to manage <span className="text-white font-medium">{selectedTeam.name}</span>?
               </span>
             )}
             <button
               onClick={handleStartGame}
-              disabled={!selectedTeam || isStarting}
+              disabled={isStarting}
               className="px-6 py-2 bg-green-600 text-white rounded disabled:bg-gray-600 disabled:cursor-not-allowed hover:bg-green-700 transition-colors"
             >
               {isStarting ? 'Starting...' : 'OK'}
