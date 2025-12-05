@@ -40,7 +40,7 @@ export function TeamSelectScreen() {
       <h1>Select Your Team</h1>
       <p>Welcome, {playerName}! Team list will go here.</p>
       <div className="actions flex gap-4">
-        <button onClick={() => navigate(RoutePaths.PLAYER_NAME)}>Back</button>
+        <button onClick={() => navigate(-1)}>Back</button>
         <button onClick={() => navigate(RoutePaths.GAME)}>Start Game (placeholder)</button>
       </div>
     </div>
