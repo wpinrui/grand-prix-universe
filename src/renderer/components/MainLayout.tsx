@@ -62,7 +62,7 @@ export function MainLayout() {
               title="Calendar"
             >
               <Calendar size={18} />
-              <span className="text-sm">Week 1, March 1998</span>
+              <span className="text-sm">Week 1, March 2025</span>
             </button>
             {/* Budget */}
             <div className="text-xl font-semibold text-green-400">$50,000,000</div>
