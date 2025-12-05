@@ -6,12 +6,11 @@
  */
 
 import { useEffect } from 'react';
-import { generatePalette, paletteToCssVars } from '../utils/color-palette';
-
-/**
- * Default color when no team is selected (neutral blue)
- */
-const DEFAULT_PRIMARY_COLOR = '#3b82f6';
+import {
+  generatePalette,
+  paletteToCssVars,
+  DEFAULT_PRIMARY_COLOR,
+} from '../utils/color-palette';
 
 /**
  * Apply team-based theming to the entire app.

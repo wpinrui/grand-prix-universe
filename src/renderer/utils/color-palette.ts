@@ -8,6 +8,11 @@
 import chroma, { contrast } from 'chroma-js';
 
 /**
+ * Default color when no team is selected (neutral blue)
+ */
+export const DEFAULT_PRIMARY_COLOR = '#3b82f6';
+
+/**
  * Generated color palette with all theme colors
  */
 export interface ColorPalette {
@@ -60,15 +65,17 @@ export function generatePalette(primaryColor: string): ColorPalette {
     base = chroma(primaryColor);
   } catch {
     // Fallback to a default blue if invalid color
-    base = chroma('#3b82f6');
+    base = chroma(DEFAULT_PRIMARY_COLOR);
   }
 
   // Get HSL values for manipulation
   const [h, s] = base.hsl();
-  const hue = Number.isNaN(h) ? 0 : h; // Handle achromatic colors
+  // Handle achromatic colors (pure black/white have NaN hue and saturation)
+  const hue = Number.isNaN(h) ? 0 : h;
+  const rawSaturation = Number.isNaN(s) ? 0 : s;
 
   // Ensure minimum saturation for a vibrant palette
-  const saturation = Math.max(s, 0.3);
+  const saturation = Math.max(rawSaturation, 0.3);
 
   // Generate shades by adjusting lightness
   // Lighter shades (50-400) go toward white
