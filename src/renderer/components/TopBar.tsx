@@ -1,5 +1,6 @@
 import { Calendar } from 'lucide-react';
 import type { GameDate, Team } from '../../shared/domain';
+import { ACCENT_MUTED_BUTTON_STYLE, ACCENT_TEXT_STYLE } from '../utils/theme-styles';
 
 interface TopBarProps {
   sectionLabel: string;
@@ -18,7 +19,8 @@ export function TopBar({ sectionLabel, subItemLabel, currentDate, playerTeam }: 
         {/* Calendar Button */}
         <button
           type="button"
-          className="flex items-center gap-2 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded cursor-pointer transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 rounded cursor-pointer transition-opacity hover:opacity-80"
+          style={ACCENT_MUTED_BUTTON_STYLE}
           title="Calendar"
         >
           <Calendar size={18} />
@@ -29,7 +31,7 @@ export function TopBar({ sectionLabel, subItemLabel, currentDate, playerTeam }: 
           </span>
         </button>
         {/* Budget */}
-        <div className="text-xl font-semibold text-green-400">
+        <div className="text-xl font-semibold" style={ACCENT_TEXT_STYLE}>
           {playerTeam ? `$${playerTeam.budget.toLocaleString()}` : '—'}
         </div>
       </div>
