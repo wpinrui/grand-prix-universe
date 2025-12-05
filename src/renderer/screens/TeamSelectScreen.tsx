@@ -256,7 +256,7 @@ export function TeamSelectScreen() {
 
   if (isLoading) {
     return (
-      <div className="team-select-screen flex items-center justify-center min-h-screen bg-gray-800">
+      <div className="team-select-screen flex items-center justify-center w-full min-h-screen bg-gray-800">
         <p className="text-white">Loading...</p>
       </div>
     );
@@ -264,12 +264,12 @@ export function TeamSelectScreen() {
 
   if (loadError) {
     return (
-      <div className="team-select-screen flex flex-col items-center justify-center min-h-screen bg-gray-800 gap-4">
+      <div className="team-select-screen flex flex-col items-center justify-center w-full min-h-screen bg-gray-800 gap-4">
         <p className="text-red-400">{loadError}</p>
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="px-4 py-2 text-gray-300 hover:text-white transition-colors"
+          className="px-4 py-2 text-gray-300 hover:text-white transition-colors cursor-pointer"
         >
           Go Back
         </button>
@@ -279,12 +279,12 @@ export function TeamSelectScreen() {
 
   if (teams.length === 0) {
     return (
-      <div className="team-select-screen flex flex-col items-center justify-center min-h-screen bg-gray-800 gap-4">
+      <div className="team-select-screen flex flex-col items-center justify-center w-full min-h-screen bg-gray-800 gap-4">
         <p className="text-gray-400">No teams available.</p>
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="px-4 py-2 text-gray-300 hover:text-white transition-colors"
+          className="px-4 py-2 text-gray-300 hover:text-white transition-colors cursor-pointer"
         >
           Go Back
         </button>
@@ -298,7 +298,7 @@ export function TeamSelectScreen() {
   }
 
   return (
-    <div className="team-select-screen flex flex-col min-h-screen bg-gray-800">
+    <div className="team-select-screen flex flex-col w-full min-h-screen bg-gray-800">
       {/* Header */}
       <header className="bg-gray-900 p-4 border-b border-gray-700">
         <h1 className="text-2xl font-bold text-white">Select Team</h1>
@@ -316,7 +316,7 @@ export function TeamSelectScreen() {
                 setSelectedTeam(team);
                 setStartError(null);
               }}
-              className={`w-full text-left px-4 py-3 border-b border-gray-600 transition-colors ${
+              className={`w-full text-left px-4 py-3 border-b border-gray-600 transition-colors cursor-pointer ${
                 selectedTeam.id === team.id
                   ? 'bg-blue-600 text-white'
                   : 'text-gray-200 hover:bg-gray-600'
@@ -410,7 +410,7 @@ export function TeamSelectScreen() {
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="px-4 py-2 text-gray-300 hover:text-white transition-colors"
+            className="px-4 py-2 text-gray-300 hover:text-white transition-colors cursor-pointer"
           >
             Back
           </button>
@@ -426,7 +426,7 @@ export function TeamSelectScreen() {
               type="button"
               onClick={handleStartGame}
               disabled={isStarting}
-              className="px-6 py-2 bg-green-600 text-white rounded disabled:bg-gray-600 disabled:cursor-not-allowed hover:bg-green-700 transition-colors"
+              className="px-6 py-2 bg-green-600 text-white rounded cursor-pointer disabled:bg-gray-600 disabled:cursor-not-allowed hover:bg-green-700 transition-colors"
             >
               {isStarting ? 'Starting...' : 'OK'}
             </button>
