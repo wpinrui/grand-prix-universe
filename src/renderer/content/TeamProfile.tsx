@@ -255,8 +255,8 @@ export function TeamProfile() {
     );
   }
 
-  const teamDrivers = gameState.drivers.filter((d) => d.teamId === playerTeam.id);
-  const teamChiefs = gameState.chiefs.filter((c) => c.teamId === playerTeam.id);
+  const teamDrivers = gameState.drivers.filter((driver) => driver.teamId === playerTeam.id);
+  const teamChiefs = gameState.chiefs.filter((chief) => chief.teamId === playerTeam.id);
   const teamState = gameState.teamStates[playerTeam.id];
 
   return (
