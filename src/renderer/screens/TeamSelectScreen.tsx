@@ -203,7 +203,7 @@ export function TeamSelectScreen() {
         </div>
 
         {/* Middle column: Drivers */}
-        <div className="w-56 bg-gray-750 border-r border-gray-600 overflow-y-auto">
+        <div className="w-56 bg-gray-800 border-r border-gray-600 overflow-y-auto">
           <div className="p-3 border-b border-gray-600">
             <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Drivers</h3>
           </div>
