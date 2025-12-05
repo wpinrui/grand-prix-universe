@@ -57,11 +57,15 @@ function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
-function formatSalary(amount: number): string {
+function formatCompactAmount(amount: number): string {
   if (amount >= 1_000_000) {
     return `${(amount / 1_000_000).toFixed(1)}M`;
   }
   return `${(amount / 1_000).toFixed(0)}K`;
+}
+
+function formatAnnualSalary(amount: number): string {
+  return `$${formatCompactAmount(amount)}/yr`;
 }
 
 interface StatCardProps {
@@ -88,7 +92,18 @@ function SectionHeading({ children }: SectionHeadingProps) {
 
 interface ProgressBarProps {
   value: number;
-  colorClass?: string;
+  colorClass: string;
+}
+
+function ProgressBar({ value, colorClass }: ProgressBarProps) {
+  return (
+    <div className="flex-1 bg-gray-700 rounded-full h-2">
+      <div
+        className={`h-2 rounded-full ${colorClass}`}
+        style={{ width: `${value}%` }}
+      />
+    </div>
+  );
 }
 
 function getMoraleColor(value: number): string {
@@ -96,18 +111,6 @@ function getMoraleColor(value: number): string {
   if (value >= 60) return 'bg-yellow-500';
   if (value >= 40) return 'bg-orange-500';
   return 'bg-red-500';
-}
-
-function ProgressBar({ value, colorClass }: ProgressBarProps) {
-  const barColor = colorClass ?? getMoraleColor(value);
-  return (
-    <div className="flex-1 bg-gray-700 rounded-full h-2">
-      <div
-        className={`h-2 rounded-full ${barColor}`}
-        style={{ width: `${value}%` }}
-      />
-    </div>
-  );
 }
 
 interface DriverCardProps {
@@ -140,7 +143,7 @@ function DriverCard({ driver }: DriverCardProps) {
           {driver.nationality} | Rep: {driver.reputation}
         </div>
         <div className="text-xs text-gray-500">
-          Salary: ${formatSalary(driver.salary)}/yr | Contract: S{driver.contractEnd}
+          Salary: {formatAnnualSalary(driver.salary)} | Contract: S{driver.contractEnd}
         </div>
       </div>
     </div>
@@ -161,7 +164,7 @@ function ChiefCard({ chief }: ChiefCardProps) {
         {chief.firstName} {chief.lastName}
       </div>
       <div className="text-xs text-gray-500 mt-1">
-        Ability: {chief.ability} | Salary: ${formatSalary(chief.salary)}/yr
+        Ability: {chief.ability} | Salary: {formatAnnualSalary(chief.salary)}
       </div>
     </div>
   );
@@ -176,7 +179,7 @@ function MoraleBar({ label, value }: MoraleBarProps) {
   return (
     <div className="flex items-center gap-2">
       <span className="text-xs text-gray-400 w-24">{label}</span>
-      <ProgressBar value={value} />
+      <ProgressBar value={value} colorClass={getMoraleColor(value)} />
       <span className="text-xs text-gray-500 w-8 text-right">{value}</span>
     </div>
   );
