@@ -28,7 +28,7 @@ interface NavButtonBaseProps {
 
 function NavButtonBase({ icon: Icon, label, isSelected, onClick, variant }: NavButtonBaseProps) {
   const styles = VARIANT_STYLES[variant];
-  const className = `${styles.base} ${isSelected ? '' : styles.unselected}`;
+  const className = isSelected ? styles.base : `${styles.base} ${styles.unselected}`;
 
   return (
     <button
