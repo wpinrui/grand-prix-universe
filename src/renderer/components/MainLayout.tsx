@@ -10,6 +10,7 @@ import { useDerivedGameState, useTeamTheme } from '../hooks';
 import { SectionButton } from './NavButtons';
 import { TopBar } from './TopBar';
 import { BottomBar } from './BottomBar';
+import { TeamProfile } from '../content';
 
 export function MainLayout() {
   const [selectedSectionId, setSelectedSectionId] = useState<SectionId>(defaultSection);
@@ -59,11 +60,15 @@ export function MainLayout() {
 
         {/* Content Area */}
         <main className="content flex-1 p-8 overflow-auto">
-          <div className="flex items-center justify-center h-full text-gray-500">
-            <p className="text-2xl">
-              {selectedSection.label}: {selectedSubItem.label}
-            </p>
-          </div>
+          {selectedSectionId === 'team' && selectedSubItemId === 'profile' ? (
+            <TeamProfile />
+          ) : (
+            <div className="flex items-center justify-center h-full text-gray-500">
+              <p className="text-2xl">
+                {selectedSection.label}: {selectedSubItem.label}
+              </p>
+            </div>
+          )}
         </main>
 
         <BottomBar
