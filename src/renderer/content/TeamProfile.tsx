@@ -114,14 +114,14 @@ function StatCard({ label, value, accent = false }: StatCardProps) {
 
   return (
     <div
-      className="card p-4"
+      className="card p-5"
       style={cardStyle}
     >
-      <div className="text-xs font-medium text-muted uppercase tracking-wider mb-1">
+      <div className="text-sm font-medium text-muted uppercase tracking-wider mb-1">
         {label}
       </div>
       <div
-        className="text-lg font-bold text-primary"
+        className="text-xl font-bold text-primary"
         style={valueStyle}
       >
         {value}
@@ -136,7 +136,7 @@ interface SectionHeadingProps {
 
 function SectionHeading({ children }: SectionHeadingProps) {
   return (
-    <h2 className="text-base font-bold text-primary uppercase tracking-wide mb-4 flex items-center gap-3">
+    <h2 className="text-lg font-bold text-primary uppercase tracking-wide mb-4 flex items-center gap-3">
       <span>{children}</span>
       <div className="flex-1 h-px bg-[var(--neutral-750)]" />
     </h2>
@@ -233,14 +233,14 @@ interface MoraleBarProps {
 
 function MoraleBar({ label, value }: MoraleBarProps) {
   return (
-    <div className="flex items-center gap-3">
-      <span className="text-xs font-medium text-secondary w-24">{label}</span>
+    <div className="flex items-center gap-4">
+      <span className="text-sm font-medium text-secondary w-28">{label}</span>
       <ProgressBar
         value={value}
         colorClass={getMoraleColor(value)}
         glow={getMoraleGlow(value)}
       />
-      <span className="text-xs font-bold text-primary w-8 text-right tabular-nums">{value}</span>
+      <span className="text-sm font-bold text-primary w-10 text-right tabular-nums">{value}</span>
     </div>
   );
 }
@@ -259,16 +259,16 @@ function StaffSummary({ teamState }: StaffSummaryProps) {
           0
         );
         return (
-          <div key={dept} className="flex items-center gap-3">
-            <span className="text-xs font-medium text-secondary w-24">{DEPARTMENT_LABELS[dept]}</span>
-            <span className="text-sm font-bold text-primary">{total}</span>
-            <span className="text-xs text-muted">
+          <div key={dept} className="flex items-center gap-4">
+            <span className="text-sm font-medium text-secondary w-28">{DEPARTMENT_LABELS[dept]}</span>
+            <span className="text-base font-bold text-primary">{total}</span>
+            <span className="text-sm text-muted">
               ({STAFF_QUALITY_ORDER.map((quality) => counts[quality] || 0).join('/')})
             </span>
           </div>
         );
       })}
-      <div className="text-xs text-muted pt-2 border-t border-[var(--neutral-800)]">
+      <div className="text-sm text-muted pt-3 border-t border-[var(--neutral-800)]">
         Quality breakdown: {STAFF_QUALITY_ORDER.map((q) => STAFF_QUALITY_LABELS[q]).join(' / ')}
       </div>
     </div>
@@ -283,20 +283,20 @@ function DevelopmentTestingSection({ teamState }: DevelopmentTestingSectionProps
   const { handlingPercentage, handlingProblemsFound } = teamState.developmentTesting;
 
   return (
-    <div className="card p-4" style={ACCENT_CARD_STYLE}>
-      <div className="flex items-center gap-3 mb-2">
-        <span className="text-sm font-medium text-secondary">Handling Knowledge</span>
+    <div className="card p-5" style={ACCENT_CARD_STYLE}>
+      <div className="flex items-center gap-4 mb-2">
+        <span className="text-base font-medium text-secondary">Handling Knowledge</span>
         <ProgressBar
           value={handlingPercentage}
           colorClass="bg-[var(--accent-500)]"
           glow="0 0 8px color-mix(in srgb, var(--accent-500) 50%, transparent)"
         />
-        <span className="text-sm font-bold tabular-nums" style={ACCENT_TEXT_STYLE}>
+        <span className="text-base font-bold tabular-nums" style={ACCENT_TEXT_STYLE}>
           {handlingPercentage}%
         </span>
       </div>
       {handlingProblemsFound.length > 0 && (
-        <div className="text-xs text-muted">
+        <div className="text-sm text-muted">
           Problems found: {handlingProblemsFound.join(', ')}
         </div>
       )}

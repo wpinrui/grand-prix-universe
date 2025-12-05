@@ -47,8 +47,8 @@ export function SectionButton({ section, isSelected, onClick }: SectionButtonPro
         }}
       />
 
-      <Icon size={22} className="shrink-0" />
-      <span className="text-sm font-semibold tracking-wide">{section.label}</span>
+      <Icon size={24} className="shrink-0" />
+      <span className="text-base font-semibold tracking-wide">{section.label}</span>
     </button>
   );
 }
@@ -67,8 +67,8 @@ export function SubNavButton({ subItem, isSelected, onClick }: SubNavButtonProps
   const Icon = subItem.icon;
 
   const baseClasses = `
-    btn flex items-center gap-2 px-3 py-2 rounded-lg
-    text-sm font-medium transition-all duration-200
+    btn flex items-center gap-2 px-4 py-2.5 rounded-lg
+    text-base font-medium transition-all duration-200
     border
   `;
 
@@ -90,7 +90,7 @@ export function SubNavButton({ subItem, isSelected, onClick }: SubNavButtonProps
       className={`${baseClasses} ${stateClasses}`}
       style={buttonStyle}
     >
-      <Icon size={18} />
+      <Icon size={20} />
       <span>{subItem.label}</span>
     </button>
   );
@@ -109,9 +109,9 @@ interface IconButtonProps {
 }
 
 const ICON_BUTTON_SIZES = {
-  sm: { button: 'w-8 h-8', icon: 16 },
-  md: { button: 'w-10 h-10', icon: 20 },
-  lg: { button: 'w-12 h-12', icon: 24 },
+  sm: { button: 'w-10 h-10', icon: 18 },
+  md: { button: 'w-12 h-12', icon: 22 },
+  lg: { button: 'w-14 h-14', icon: 28 },
 } as const;
 
 export function IconButton({
