@@ -16,7 +16,15 @@ import type {
   Regulations,
   SeasonRegulations,
   TyreCompoundConfig,
+  GameState,
 } from './domain';
+
+/** Parameters for creating a new game via IPC */
+export interface NewGameIpcParams {
+  playerName: string;
+  teamId: string;
+  seasonNumber?: number;
+}
 
 /** Channel names for IPC communication */
 export const IpcChannels = {
@@ -96,8 +104,8 @@ export interface IpcInvokeMap {
     result: TyreCompoundConfig[];
   };
   [IpcChannels.GAME_NEW]: {
-    args: [teamId: string];
-    result: { success: boolean };
+    args: [params: NewGameIpcParams];
+    result: GameState;
   };
   [IpcChannels.GAME_SAVE]: {
     args: [slotId: string];
@@ -109,7 +117,7 @@ export interface IpcInvokeMap {
   };
   [IpcChannels.GAME_GET_STATE]: {
     args: [];
-    result: unknown; // Will be typed properly when GameState is defined
+    result: GameState | null;
   };
 }
 
