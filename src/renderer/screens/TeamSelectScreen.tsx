@@ -10,7 +10,7 @@ import { generateFace, type TeamColors } from '../utils/face-generator';
 import { TeamBadge } from '../components/TeamBadge';
 import { IconButton } from '../components/NavButtons';
 import { PRIMARY_BUTTON_CLASSES, GHOST_BUTTON_CLASSES } from '../utils/theme-styles';
-import { formatCurrency } from '../utils/format';
+import { formatCurrency, DRIVER_ROLE_LABELS } from '../utils/format';
 
 interface LocationState {
   playerName: string;
@@ -110,18 +110,6 @@ function getDriverRolePriority(role: DriverRole): number {
   }
 }
 
-function formatDriverRole(role: DriverRole): string {
-  switch (role) {
-    case DriverRole.First:
-      return '#1 driver';
-    case DriverRole.Second:
-      return '#2 driver';
-    case DriverRole.Equal:
-      return 'Equal status';
-    case DriverRole.Test:
-      return 'Test driver';
-  }
-}
 
 // ===========================================
 // MAIN COMPONENT
@@ -349,7 +337,7 @@ export function TeamSelectScreen() {
                       <p className="text-primary font-medium truncate">
                         {driver.firstName} {driver.lastName}
                       </p>
-                      <p className="text-muted text-sm">{formatDriverRole(driver.role)}</p>
+                      <p className="text-muted text-sm">{DRIVER_ROLE_LABELS[driver.role]}</p>
                     </div>
                   </div>
                 ))

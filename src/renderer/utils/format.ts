@@ -2,6 +2,23 @@
  * Shared formatting utilities
  */
 
+import type { DriverRole } from '../../shared/domain';
+
+// ===========================================
+// DRIVER ROLE LABELS
+// ===========================================
+
+export const DRIVER_ROLE_LABELS: Record<DriverRole, string> = {
+  first: '1st Driver',
+  second: '2nd Driver',
+  equal: 'Driver',
+  test: 'Test Driver',
+};
+
+// ===========================================
+// CURRENCY FORMATTERS
+// ===========================================
+
 /**
  * Format a number as USD currency (e.g., $1,000,000)
  */

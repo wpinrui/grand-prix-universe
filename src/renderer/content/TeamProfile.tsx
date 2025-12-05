@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 import { useDerivedGameState } from '../hooks';
 import { TeamBadge } from '../components/TeamBadge';
 import { ACCENT_CARD_STYLE, ACCENT_TEXT_STYLE } from '../utils/theme-styles';
-import { formatCurrency, formatAnnualSalary } from '../utils/format';
+import { formatCurrency, formatAnnualSalary, DRIVER_ROLE_LABELS } from '../utils/format';
 import type {
   Driver,
   Chief,
@@ -10,7 +10,6 @@ import type {
   Department,
   StaffQuality,
   ChiefRole,
-  DriverRole,
 } from '../../shared/domain';
 
 // ===========================================
@@ -39,13 +38,6 @@ const CHIEF_ROLE_LABELS: Record<ChiefRole, string> = {
   engineer: 'Chief Engineer',
   mechanic: 'Chief Mechanic',
   commercial: 'Commercial Director',
-};
-
-const DRIVER_ROLE_LABELS: Record<DriverRole, string> = {
-  first: '1st Driver',
-  second: '2nd Driver',
-  equal: 'Driver',
-  test: 'Test Driver',
 };
 
 const STAFF_QUALITY_LABELS: Record<StaffQuality, string> = {
