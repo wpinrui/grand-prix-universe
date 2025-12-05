@@ -30,6 +30,7 @@ import type {
   Chief,
   GameRules,
   SeasonRegulations,
+  NewGameParams,
 } from '../../shared/domain';
 import {
   GamePhase,
@@ -87,13 +88,6 @@ function assertNonEmpty<T>(array: T[], entityName: string): void {
  */
 function cloneDeep<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
-}
-
-/** Parameters for creating a new game */
-export interface NewGameParams {
-  playerName: string;
-  teamId: string;
-  seasonNumber?: number; // Defaults to DEFAULT_STARTING_SEASON
 }
 
 /**

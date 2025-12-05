@@ -365,6 +365,20 @@ export interface CompoundsConfig {
 }
 
 // =============================================================================
+// GAME CREATION TYPES
+// =============================================================================
+
+/**
+ * NewGameParams - Parameters for creating a new game
+ * Used by both IPC layer and GameStateManager service
+ */
+export interface NewGameParams {
+  playerName: string;
+  teamId: string;
+  seasonNumber?: number;
+}
+
+// =============================================================================
 // GAME STATE TYPES
 // =============================================================================
 

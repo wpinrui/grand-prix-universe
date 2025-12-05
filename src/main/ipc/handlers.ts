@@ -6,7 +6,9 @@
 
 import { app, ipcMain } from 'electron';
 import { IpcChannels } from '../../shared/ipc';
+import type { NewGameParams } from '../../shared/domain';
 import { ConfigLoader } from '../services/config-loader';
+import { GameStateManager } from '../services/game-state-manager';
 
 /**
  * Register all IPC handlers.
@@ -63,12 +65,16 @@ export function registerIpcHandlers(): void {
     return ConfigLoader.getCompounds();
   });
 
-  // Game handlers (stubs for now)
-  ipcMain.handle(IpcChannels.GAME_NEW, (_event, _teamId: string) => {
-    // TODO: Implement when GameStateManager exists
-    return { success: false };
+  // Game state handlers
+  ipcMain.handle(IpcChannels.GAME_NEW, (_event, params: NewGameParams) => {
+    return GameStateManager.createNewGame(params);
   });
 
+  ipcMain.handle(IpcChannels.GAME_GET_STATE, () => {
+    return GameStateManager.getCurrentState();
+  });
+
+  // Save/Load handlers (stubs for now)
   ipcMain.handle(IpcChannels.GAME_SAVE, (_event, _slotId: string) => {
     // TODO: Implement when SaveManager exists
     return { success: false };
@@ -77,10 +83,5 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IpcChannels.GAME_LOAD, (_event, _slotId: string) => {
     // TODO: Implement when SaveManager exists
     return { success: false };
-  });
-
-  ipcMain.handle(IpcChannels.GAME_GET_STATE, () => {
-    // TODO: Implement when GameStateManager exists
-    return null;
   });
 }
