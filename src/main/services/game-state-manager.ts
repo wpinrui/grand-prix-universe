@@ -175,6 +175,9 @@ function validateNewGameParams(params: NewGameParams): void {
   if (!playerName.trim()) {
     throw new Error('Player name cannot be empty');
   }
+  if (!teamId.trim()) {
+    throw new Error('Team ID cannot be empty');
+  }
   if (!Number.isInteger(seasonNumber) || seasonNumber < 1) {
     throw new Error('Season number must be a positive integer');
   }
