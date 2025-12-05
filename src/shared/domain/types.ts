@@ -455,7 +455,6 @@ export interface ConstructorStanding {
   wins: number;
   podiums: number; // Any driver on podium counts
   polePositions: number;
-  fastestLaps: number;
 }
 
 // -----------------------------------------------------------------------------
