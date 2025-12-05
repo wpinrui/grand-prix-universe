@@ -163,7 +163,10 @@ export function TeamSelectScreen() {
           {teams.map((team) => (
             <button
               key={team.id}
-              onClick={() => setSelectedTeam(team)}
+              onClick={() => {
+                setSelectedTeam(team);
+                setStartError(null);
+              }}
               className={`w-full text-left px-4 py-3 border-b border-gray-600 transition-colors ${
                 selectedTeam?.id === team.id
                   ? 'bg-blue-600 text-white'
