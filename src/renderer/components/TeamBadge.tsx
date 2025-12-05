@@ -1,7 +1,7 @@
 import type { Team } from '../../shared/domain';
 
-const FALLBACK_PRIMARY_COLOR = '#666';
-const FALLBACK_SECONDARY_COLOR = '#444';
+const FALLBACK_PRIMARY_COLOR = '#52525e';
+const FALLBACK_SECONDARY_COLOR = '#3f3f48';
 
 interface TeamBadgeProps {
   team: Team | null;
@@ -13,25 +13,46 @@ interface TeamBadgeProps {
  * Shows gray placeholder when no team is provided.
  */
 export function TeamBadge({ team, className = 'w-14 h-12' }: TeamBadgeProps) {
+  const primaryColor = team?.primaryColor ?? FALLBACK_PRIMARY_COLOR;
+  const secondaryColor = team?.secondaryColor ?? FALLBACK_SECONDARY_COLOR;
+
   if (team?.logoUrl) {
     return (
-      <img
-        src={team.logoUrl}
-        alt={team.name}
-        className={`${className} object-contain rounded`}
-      />
+      <div
+        className={`${className} rounded-lg overflow-hidden shadow-md`}
+        style={{
+          boxShadow: `0 4px 12px ${primaryColor}33, 0 0 20px ${primaryColor}22`,
+        }}
+      >
+        <img
+          src={team.logoUrl}
+          alt={team.name}
+          className="w-full h-full object-contain"
+        />
+      </div>
     );
   }
 
+  // Color swatch fallback with diagonal split
   return (
-    <div className={`flex rounded overflow-hidden ${className}`}>
+    <div
+      className={`${className} rounded-lg overflow-hidden shadow-md relative`}
+      style={{
+        boxShadow: `0 4px 12px ${primaryColor}33, 0 0 20px ${primaryColor}22`,
+      }}
+    >
+      {/* Primary color (full background) */}
       <div
-        className="w-1/2 h-full"
-        style={{ backgroundColor: team?.primaryColor ?? FALLBACK_PRIMARY_COLOR }}
+        className="absolute inset-0"
+        style={{ backgroundColor: primaryColor }}
       />
+      {/* Secondary color (diagonal) */}
       <div
-        className="w-1/2 h-full"
-        style={{ backgroundColor: team?.secondaryColor ?? FALLBACK_SECONDARY_COLOR }}
+        className="absolute inset-0"
+        style={{
+          backgroundColor: secondaryColor,
+          clipPath: 'polygon(100% 0, 100% 100%, 0 100%)',
+        }}
       />
     </div>
   );
