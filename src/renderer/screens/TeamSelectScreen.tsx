@@ -59,6 +59,7 @@ export function TeamSelectScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isStarting, setIsStarting] = useState(false);
+  const [startError, setStartError] = useState<string | null>(null);
 
   // Redirect to player name screen if accessed without valid state
   useEffect(() => {
@@ -93,6 +94,7 @@ export function TeamSelectScreen() {
     if (!selectedTeam || !playerName) return;
 
     setIsStarting(true);
+    setStartError(null);
     try {
       await window.api.invoke(IpcChannels.GAME_NEW, {
         playerName,
@@ -101,6 +103,7 @@ export function TeamSelectScreen() {
       navigate(RoutePaths.GAME);
     } catch (error) {
       console.error('Failed to start game:', error);
+      setStartError('Failed to start game. Please try again.');
       setIsStarting(false);
     }
   };
@@ -244,7 +247,8 @@ export function TeamSelectScreen() {
           </button>
 
           <div className="flex items-center gap-4">
-            {selectedTeam && (
+            {startError && <span className="text-red-400">{startError}</span>}
+            {selectedTeam && !startError && (
               <span className="text-gray-300">
                 Do you want to manage <span className="text-white font-medium">{selectedTeam.name}</span>?
               </span>
