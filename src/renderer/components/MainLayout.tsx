@@ -27,7 +27,7 @@ export function MainLayout() {
   return (
     <div className="main-layout flex w-full h-screen bg-gray-900 text-white">
       {/* Left Sidebar */}
-      <aside className="sidebar flex flex-col w-16 bg-gray-800 border-r border-gray-700">
+      <aside className="sidebar flex flex-col w-24 bg-gray-800 border-r border-gray-700">
         {sections.map((section) => {
           const Icon = section.icon;
           const isSelected = section.id === selectedSectionId;
@@ -36,12 +36,12 @@ export function MainLayout() {
               key={section.id}
               type="button"
               onClick={() => handleSectionClick(section)}
-              className={`flex flex-col items-center justify-center h-16 cursor-pointer transition-colors ${
+              className={`flex flex-col items-center justify-center py-3 cursor-pointer transition-colors ${
                 isSelected ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-gray-700 hover:text-white'
               }`}
-              title={section.label}
             >
-              <Icon size={24} />
+              <Icon size={20} />
+              <span className="text-[10px] mt-1 font-medium">{section.label}</span>
             </button>
           );
         })}
@@ -83,14 +83,14 @@ export function MainLayout() {
                   key={subItem.id}
                   type="button"
                   onClick={() => handleSubItemClick(subItem.id)}
-                  className={`flex items-center justify-center w-10 h-10 rounded cursor-pointer transition-colors ${
+                  className={`flex flex-col items-center justify-center px-3 py-1 rounded cursor-pointer transition-colors ${
                     isSelected
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-700 text-gray-400 hover:bg-gray-600 hover:text-white'
                   }`}
-                  title={subItem.label}
                 >
-                  <SubIcon size={20} />
+                  <SubIcon size={16} />
+                  <span className="text-[9px] mt-0.5 font-medium">{subItem.label}</span>
                 </button>
               );
             })}
