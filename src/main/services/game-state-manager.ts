@@ -149,9 +149,10 @@ function createInitialTeamState(
 }
 
 /**
- * Type guard to check if driver has a team and is a racing driver (not test driver)
+ * Type guard: driver has a race seat (assigned to a team and not a test driver)
+ * Used to filter drivers for championship standings
  */
-function isRacingDriver(driver: Driver): driver is Driver & { teamId: string } {
+function hasRaceSeat(driver: Driver): driver is Driver & { teamId: string } {
   return driver.teamId !== null && driver.role !== DriverRole.Test;
 }
 
@@ -254,10 +255,10 @@ function createAllTeamStates(teams: Team[]): Record<string, TeamRuntimeState> {
 
 /**
  * Creates initial driver standings (all zeros, positions assigned by array order)
- * Only includes racing drivers (first/second/equal), not test drivers
+ * Only includes drivers with race seats (excludes test drivers and free agents)
  */
 function createInitialDriverStandings(drivers: Driver[]): DriverStanding[] {
-  return drivers.filter(isRacingDriver).map((driver, index) => ({
+  return drivers.filter(hasRaceSeat).map((driver, index) => ({
     driverId: driver.id,
     teamId: driver.teamId,
     points: 0,
