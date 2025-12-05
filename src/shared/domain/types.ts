@@ -505,7 +505,7 @@ export interface RacePositionResult {
   finishPosition: number | null; // Final position (1-based), null if not classified
   gridPosition: number; // Where they started
   lapsCompleted: number;
-  totalTime: number; // In ms (0 if DNF)
+  totalTime: number; // in ms (0 if DNF)
   gapToWinnerMs?: number; // Time gap in ms (only for same-lap finishers)
   lapsBehind?: number; // Laps behind leader (only for lapped finishers)
   points: number; // Points earned this race
@@ -527,7 +527,7 @@ export interface RaceWeekendResult {
   race: RacePositionResult[];
   weather: WeatherCondition; // Dominant weather during race
   fastestLapDriverId: string;
-  fastestLapTime: number; // In ms
+  fastestLapTime: number; // in ms
 }
 
 // -----------------------------------------------------------------------------
@@ -542,10 +542,8 @@ export interface DriverRuntimeState {
   morale: number; // 0-100, affects performance
   fitness: number; // 0-100, reduced by injury
   fatigue: number; // 0-100, increases over season
-  isInjured: boolean;
-  injuryWeeksRemaining: number;
-  isBanned: boolean; // Race ban
-  banRacesRemaining: number;
+  injuryWeeksRemaining: number; // >0 means injured
+  banRacesRemaining: number; // >0 means banned from racing
   isAngry: boolean; // From contract disputes, refuses to test
   // Regulation tracking
   engineUnitsUsed: number; // For grid penalty tracking
