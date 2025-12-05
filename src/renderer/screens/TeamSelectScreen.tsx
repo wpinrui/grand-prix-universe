@@ -72,7 +72,7 @@ export function TeamSelectScreen() {
   useEffect(() => {
     async function loadTeams() {
       try {
-        const loadedTeams = await window.api.invoke(IpcChannels.CONFIG_GET_TEAMS);
+        const loadedTeams = await window.electronAPI.invoke(IpcChannels.CONFIG_GET_TEAMS);
         setTeams(loadedTeams);
         if (loadedTeams.length > 0) {
           setSelectedTeam(loadedTeams[0]);
@@ -96,7 +96,7 @@ export function TeamSelectScreen() {
     setIsStarting(true);
     setStartError(null);
     try {
-      await window.api.invoke(IpcChannels.GAME_NEW, {
+      await window.electronAPI.invoke(IpcChannels.GAME_NEW, {
         playerName,
         teamId: selectedTeam.id,
       });
