@@ -1,16 +1,15 @@
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
-import { TitleScreen } from './screens/TitleScreen';
-import { TeamSelectScreen } from './screens/TeamSelectScreen';
-import { GameScreen } from './screens/GameScreen';
+import { Routes as AppRoutes } from './routes';
+import { TitleScreen, TeamSelectScreen, GameScreen } from './screens';
 
 function App() {
   return (
     <MemoryRouter>
       <div className="app">
         <Routes>
-          <Route path="/" element={<TitleScreen />} />
-          <Route path="/team-select" element={<TeamSelectScreen />} />
-          <Route path="/game" element={<GameScreen />} />
+          <Route path={AppRoutes.TITLE} element={<TitleScreen />} />
+          <Route path={AppRoutes.TEAM_SELECT} element={<TeamSelectScreen />} />
+          <Route path={AppRoutes.GAME} element={<GameScreen />} />
         </Routes>
       </div>
     </MemoryRouter>
