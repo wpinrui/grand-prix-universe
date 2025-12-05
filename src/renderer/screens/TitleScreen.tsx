@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Play, Download, FolderOpen, Loader2 } from 'lucide-react';
+import { Play, Plus, FolderOpen, Loader2 } from 'lucide-react';
 import { RoutePaths } from '../routes';
 import { PRIMARY_BUTTON_CLASSES, GHOST_BUTTON_CLASSES } from '../utils/theme-styles';
 import { useSavesList, useLoadGame } from '../hooks/useIpc';
@@ -8,6 +8,7 @@ import { useSavesList, useLoadGame } from '../hooks/useIpc';
 export function TitleScreen() {
   const navigate = useNavigate();
   const [isLoadingContinue, setIsLoadingContinue] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const { data: saves } = useSavesList();
   const loadGame = useLoadGame();
@@ -18,11 +19,13 @@ export function TitleScreen() {
   const handleContinue = async () => {
     if (!mostRecentSave) return;
     setIsLoadingContinue(true);
+    setLoadError(null);
     const result = await loadGame.mutateAsync(mostRecentSave.filename);
     if (result.success) {
       navigate(RoutePaths.GAME);
     } else {
       setIsLoadingContinue(false);
+      setLoadError('Failed to load save. Try Load Game to select another.');
     }
   };
 
@@ -37,6 +40,13 @@ export function TitleScreen() {
         <p className="text-secondary text-lg mb-10">
           F1 Team Management Simulation
         </p>
+
+        {/* Load error feedback */}
+        {loadError && (
+          <div className="card p-3 mb-6 bg-red-600/20 border-red-600/30 text-red-300 text-sm text-left">
+            {loadError}
+          </div>
+        )}
 
         {/* Menu */}
         <div className="flex flex-col gap-3">
@@ -75,7 +85,7 @@ export function TitleScreen() {
             onClick={() => navigate(RoutePaths.PLAYER_NAME)}
             className={`${hasSaves ? GHOST_BUTTON_CLASSES : PRIMARY_BUTTON_CLASSES} px-8 py-3 text-lg justify-center`}
           >
-            <Download size={20} />
+            <Plus size={20} />
             <span>New Game</span>
           </button>
         </div>
