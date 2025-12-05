@@ -166,8 +166,9 @@ export const SaveManager = {
           if (isValidGameState(data)) {
             saves.push(extractSaveInfo(filename, data, stats.size));
           }
-        } catch {
-          // Skip invalid/corrupted save files
+        } catch (error) {
+          // Skip invalid/corrupted save files, but log for debugging
+          console.warn(`[SaveManager] Skipping invalid save file: ${filename}`, error);
           continue;
         }
       }
@@ -178,8 +179,9 @@ export const SaveManager = {
       );
 
       return saves;
-    } catch {
+    } catch (error) {
       // If saves directory doesn't exist or can't be read, return empty
+      console.warn('[SaveManager] Could not read saves directory', error);
       return [];
     }
   },
@@ -194,31 +196,9 @@ export const SaveManager = {
       const filePath = path.join(savesDir, safeFilename);
       await fs.unlink(filePath);
       return true;
-    } catch {
+    } catch (error) {
+      console.warn(`[SaveManager] Failed to delete save: ${filename}`, error);
       return false;
     }
-  },
-
-  /**
-   * Checks if a save file exists
-   */
-  async saveExists(filename: string): Promise<boolean> {
-    try {
-      const savesDir = await getSavesDir();
-      const safeFilename = sanitizeFilename(filename);
-      const filePath = path.join(savesDir, safeFilename);
-      await fs.access(filePath);
-      return true;
-    } catch {
-      return false;
-    }
-  },
-
-  /**
-   * Gets the full path to the saves directory
-   * Useful for debugging or showing to user
-   */
-  async getSavesPath(): Promise<string> {
-    return getSavesDir();
   },
 };
