@@ -44,12 +44,15 @@ function ColorSwatch({ primary, secondary }: { primary: string; secondary: strin
  * Team logo component - displays logo image or falls back to color swatches
  */
 function TeamLogo({ team }: { team: Team }) {
-  if (team.logoUrl) {
+  const [imageError, setImageError] = useState(false);
+
+  if (team.logoUrl && !imageError) {
     return (
       <img
         src={team.logoUrl}
         alt={`${team.name} logo`}
         className="w-16 h-16 object-contain"
+        onError={() => setImageError(true)}
       />
     );
   }
@@ -61,12 +64,15 @@ function TeamLogo({ team }: { team: Team }) {
  */
 function DriverPhoto({ driver }: { driver: Driver }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [imageError, setImageError] = useState(false);
+
+  const shouldGenerateFace = !driver.photoUrl || imageError;
 
   useEffect(() => {
     const container = containerRef.current;
 
-    // Only generate face if no photo URL and container exists
-    if (!driver.photoUrl && container) {
+    // Generate face if no photo URL or photo failed to load
+    if (shouldGenerateFace && container) {
       container.innerHTML = '';
       generateFace(container, driver.id, driver.nationality);
     }
@@ -77,14 +83,15 @@ function DriverPhoto({ driver }: { driver: Driver }) {
         container.innerHTML = '';
       }
     };
-  }, [driver.id, driver.nationality, driver.photoUrl]);
+  }, [driver.id, driver.nationality, shouldGenerateFace]);
 
-  if (driver.photoUrl) {
+  if (driver.photoUrl && !imageError) {
     return (
       <img
         src={driver.photoUrl}
         alt={`${driver.firstName} ${driver.lastName}`}
         className="w-16 h-16 rounded-full object-cover"
+        onError={() => setImageError(true)}
       />
     );
   }
