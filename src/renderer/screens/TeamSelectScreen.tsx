@@ -84,7 +84,7 @@ export function TeamSelectScreen() {
         }
       } catch (error) {
         console.error('Failed to load data:', error);
-        setLoadError('Failed to load teams. Please try again.');
+        setLoadError('Failed to load game data. Please try again.');
       } finally {
         setIsLoading(false);
       }
@@ -217,7 +217,9 @@ export function TeamSelectScreen() {
                   <p className="text-white font-medium">
                     {driver.firstName} {driver.lastName}
                   </p>
-                  <p className="text-gray-400 text-sm capitalize">{driver.role} driver</p>
+                  <p className="text-gray-400 text-sm">
+                    {driver.role === 'equal' ? 'Equal status' : `#${driver.role === 'first' ? '1' : '2'} driver`}
+                  </p>
                 </div>
               ))}
             </div>
