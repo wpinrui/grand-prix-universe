@@ -328,6 +328,9 @@ export const GameStateManager = {
     if (!playerName.trim()) {
       throw new Error('Player name cannot be empty');
     }
+    if (!Number.isInteger(seasonNumber) || seasonNumber < 1) {
+      throw new Error('Season number must be a positive integer');
+    }
 
     // Validate critical dependencies
     const team = ConfigLoader.getTeamById(teamId);
