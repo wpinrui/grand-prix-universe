@@ -3,6 +3,9 @@ import type { LucideIcon } from 'lucide-react';
 import type { Section, SubItem } from '../navigation';
 import { ACCENT_BORDERED_BUTTON_STYLE, GHOST_BORDERED_BUTTON_CLASSES } from '../utils/theme-styles';
 
+/** Shared base classes for bordered nav buttons */
+const BORDERED_BUTTON_BASE = 'btn rounded-lg transition-all duration-200 border';
+
 // ===========================================
 // SECTION NAV BUTTON (Sidebar)
 // ===========================================
@@ -53,13 +56,7 @@ interface SubNavButtonProps {
 
 export function SubNavButton({ subItem, isSelected, onClick }: SubNavButtonProps) {
   const Icon = subItem.icon;
-
-  const baseClasses = `
-    btn flex items-center gap-2 px-4 py-2.5 rounded-lg
-    text-base font-medium transition-all duration-200
-    border
-  `;
-
+  const baseClasses = `${BORDERED_BUTTON_BASE} flex items-center gap-2 px-4 py-2.5 text-base font-medium`;
   const stateClasses = isSelected ? '' : GHOST_BORDERED_BUTTON_CLASSES;
 
   return (
@@ -101,13 +98,7 @@ export function IconButton({
   size = 'md',
 }: IconButtonProps) {
   const sizeConfig = ICON_BUTTON_SIZES[size];
-
-  const baseClasses = `
-    btn ${sizeConfig.button} rounded-lg
-    transition-all duration-200
-    border
-  `;
-
+  const baseClasses = `${BORDERED_BUTTON_BASE} ${sizeConfig.button}`;
   const variantClasses = variant === 'ghost' ? GHOST_BORDERED_BUTTON_CLASSES : '';
 
   return (

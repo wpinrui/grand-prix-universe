@@ -11,10 +11,8 @@ import type { CSSProperties } from 'react';
 // ACCENT BUTTON STYLES
 // ===========================================
 
-/**
- * Primary accent button - prominent actions, selected states
- */
-export const ACCENT_BUTTON_STYLE: CSSProperties = {
+/** Base accent button style (internal use) */
+const ACCENT_BUTTON_BASE: CSSProperties = {
   backgroundColor: 'var(--accent-600)',
   color: 'var(--accent-contrast)',
   boxShadow: '0 0 15px color-mix(in srgb, var(--accent-500) 40%, transparent)',
@@ -24,26 +22,17 @@ export const ACCENT_BUTTON_STYLE: CSSProperties = {
  * Primary accent button with visible border - for buttons that need border definition
  */
 export const ACCENT_BORDERED_BUTTON_STYLE: CSSProperties = {
-  ...ACCENT_BUTTON_STYLE,
+  ...ACCENT_BUTTON_BASE,
   borderColor: 'var(--accent-500)',
 };
 
 /**
- * Muted accent button - secondary actions
+ * Muted accent button - secondary actions (calendar button, etc.)
  */
 export const ACCENT_MUTED_BUTTON_STYLE: CSSProperties = {
   backgroundColor: 'var(--accent-900)',
   color: 'var(--accent-300)',
   borderColor: 'var(--accent-800)',
-};
-
-/**
- * Ghost accent button - tertiary actions, hover reveals accent
- */
-export const ACCENT_GHOST_BUTTON_STYLE: CSSProperties = {
-  backgroundColor: 'transparent',
-  color: 'var(--accent-400)',
-  borderColor: 'var(--accent-700)',
 };
 
 // ===========================================
@@ -57,22 +46,8 @@ export const ACCENT_TEXT_STYLE: CSSProperties = {
   color: 'var(--accent-400)',
 };
 
-/**
- * Bright accent text - extra emphasis
- */
-export const ACCENT_TEXT_BRIGHT_STYLE: CSSProperties = {
-  color: 'var(--accent-300)',
-};
-
-/**
- * Muted accent text - subtle accent
- */
-export const ACCENT_TEXT_MUTED_STYLE: CSSProperties = {
-  color: 'var(--accent-600)',
-};
-
 // ===========================================
-// SURFACE & CARD STYLES
+// CARD STYLES
 // ===========================================
 
 /**
@@ -81,45 +56,6 @@ export const ACCENT_TEXT_MUTED_STYLE: CSSProperties = {
 export const ACCENT_CARD_STYLE: CSSProperties = {
   borderColor: 'var(--accent-800)',
   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 0 15px color-mix(in srgb, var(--accent-600) 15%, transparent)',
-};
-
-/**
- * Card with stronger accent presence
- */
-export const ACCENT_CARD_STRONG_STYLE: CSSProperties = {
-  borderColor: 'var(--accent-700)',
-  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 0 20px color-mix(in srgb, var(--accent-500) 25%, transparent)',
-};
-
-// ===========================================
-// BORDER STYLES
-// ===========================================
-
-/**
- * Subtle accent border
- */
-export const ACCENT_BORDER_STYLE: CSSProperties = {
-  borderColor: 'var(--accent-800)',
-};
-
-/**
- * Accent border with glow
- */
-export const ACCENT_BORDER_GLOW_STYLE: CSSProperties = {
-  borderColor: 'var(--accent-600)',
-  boxShadow: '0 0 10px color-mix(in srgb, var(--accent-500) 30%, transparent)',
-};
-
-// ===========================================
-// PROGRESS BAR FILL STYLES
-// ===========================================
-
-/**
- * Accent-colored progress fill
- */
-export const ACCENT_PROGRESS_STYLE: CSSProperties = {
-  backgroundColor: 'var(--accent-500)',
-  boxShadow: '0 0 8px color-mix(in srgb, var(--accent-500) 50%, transparent)',
 };
 
 // ===========================================
@@ -143,25 +79,3 @@ export const GHOST_BUTTON_CLASSES =
  */
 export const GHOST_BORDERED_BUTTON_CLASSES =
   'bg-[var(--neutral-800)] border-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-750)] hover:text-primary hover:border-[var(--neutral-600)]';
-
-// ===========================================
-// UTILITY FUNCTIONS
-// ===========================================
-
-/**
- * Merge base styles with accent styles conditionally
- */
-export function withAccent(
-  baseStyles: CSSProperties,
-  accentStyles: CSSProperties,
-  condition: boolean
-): CSSProperties {
-  return condition ? { ...baseStyles, ...accentStyles } : baseStyles;
-}
-
-/**
- * CSS variable getter for dynamic accent shades
- */
-export function accentVar(shade: number): string {
-  return `var(--accent-${shade})`;
-}

@@ -11,11 +11,6 @@ interface TopBarProps {
 }
 
 export function TopBar({ sectionLabel, subItemLabel, currentDate, playerTeam }: TopBarProps) {
-  const calendarButtonStyle: CSSProperties = {
-    ...ACCENT_MUTED_BUTTON_STYLE,
-    border: '1px solid var(--accent-800)',
-  };
-
   const budgetStyle: CSSProperties = {
     ...ACCENT_TEXT_STYLE,
     textShadow: '0 0 20px color-mix(in srgb, var(--accent-400) 30%, transparent)',
@@ -39,8 +34,8 @@ export function TopBar({ sectionLabel, subItemLabel, currentDate, playerTeam }: 
         {/* Calendar Button */}
         <button
           type="button"
-          className="btn flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 hover:brightness-110"
-          style={calendarButtonStyle}
+          className="btn flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium transition-all duration-200 hover:brightness-110"
+          style={ACCENT_MUTED_BUTTON_STYLE}
           title="View Calendar"
         >
           <Calendar size={16} />
