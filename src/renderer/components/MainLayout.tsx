@@ -8,6 +8,7 @@ import {
   type Section,
 } from '../navigation';
 import { useGameState } from '../hooks';
+import { TeamBadge } from './TeamBadge';
 
 export function MainLayout() {
   const [selectedSectionId, setSelectedSectionId] = useState<SectionId>(defaultSection);
@@ -95,25 +96,7 @@ export function MainLayout() {
 
         {/* Bottom Bar */}
         <footer className="bottom-bar flex items-center h-16 px-5 bg-gray-800 border-t border-gray-700">
-          {/* Team Logo */}
-          {playerTeam?.logoUrl ? (
-            <img
-              src={playerTeam.logoUrl}
-              alt={playerTeam.name}
-              className="w-14 h-12 object-contain rounded"
-            />
-          ) : (
-            <div className="flex gap-0.5 rounded overflow-hidden">
-              <div
-                className="w-7 h-12"
-                style={{ backgroundColor: playerTeam?.primaryColor ?? '#666' }}
-              />
-              <div
-                className="w-7 h-12"
-                style={{ backgroundColor: playerTeam?.secondaryColor ?? '#444' }}
-              />
-            </div>
-          )}
+          <TeamBadge team={playerTeam} />
 
           {/* Sub-navigation */}
           <nav className="sub-nav flex items-center ml-5 gap-2">
