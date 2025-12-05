@@ -5,7 +5,8 @@
  */
 
 import { app, ipcMain } from 'electron';
-import { IpcChannels, NewGameIpcParams } from '../../shared/ipc';
+import { IpcChannels } from '../../shared/ipc';
+import type { NewGameParams } from '../../shared/domain';
 import { ConfigLoader } from '../services/config-loader';
 import { GameStateManager } from '../services/game-state-manager';
 
@@ -65,7 +66,7 @@ export function registerIpcHandlers(): void {
   });
 
   // Game state handlers
-  ipcMain.handle(IpcChannels.GAME_NEW, (_event, params: NewGameIpcParams) => {
+  ipcMain.handle(IpcChannels.GAME_NEW, (_event, params: NewGameParams) => {
     return GameStateManager.createNewGame(params);
   });
 

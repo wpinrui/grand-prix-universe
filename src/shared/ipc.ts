@@ -17,14 +17,8 @@ import type {
   SeasonRegulations,
   TyreCompoundConfig,
   GameState,
+  NewGameParams,
 } from './domain';
-
-/** Parameters for creating a new game via IPC */
-export interface NewGameIpcParams {
-  playerName: string;
-  teamId: string;
-  seasonNumber?: number;
-}
 
 /** Channel names for IPC communication */
 export const IpcChannels = {
@@ -44,11 +38,12 @@ export const IpcChannels = {
   CONFIG_GET_REGULATIONS_BY_SEASON: 'config:getRegulationsBySeason',
   CONFIG_GET_COMPOUNDS: 'config:getCompounds',
 
-  // Game state (placeholders for future implementation)
+  // Game state
   GAME_NEW: 'game:new',
+  GAME_GET_STATE: 'game:getState',
+  // Save/load (placeholders for future implementation)
   GAME_SAVE: 'game:save',
   GAME_LOAD: 'game:load',
-  GAME_GET_STATE: 'game:getState',
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];
@@ -104,7 +99,7 @@ export interface IpcInvokeMap {
     result: TyreCompoundConfig[];
   };
   [IpcChannels.GAME_NEW]: {
-    args: [params: NewGameIpcParams];
+    args: [params: NewGameParams];
     result: GameState;
   };
   [IpcChannels.GAME_SAVE]: {
