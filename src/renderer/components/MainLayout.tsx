@@ -9,6 +9,7 @@ import {
 } from '../navigation';
 import { useGameState } from '../hooks';
 import { TeamBadge } from './TeamBadge';
+import { SectionButton, SubNavButton } from './NavButtons';
 
 export function MainLayout() {
   const [selectedSectionId, setSelectedSectionId] = useState<SectionId>(defaultSection);
@@ -38,23 +39,14 @@ export function MainLayout() {
     <div className="main-layout flex w-full h-screen bg-gray-900 text-white">
       {/* Left Sidebar */}
       <aside className="sidebar flex flex-col w-40 bg-gray-800 border-r border-gray-700">
-        {sections.map((section) => {
-          const Icon = section.icon;
-          const isSelected = section.id === selectedSectionId;
-          return (
-            <button
-              key={section.id}
-              type="button"
-              onClick={() => handleSectionClick(section)}
-              className={`flex items-center gap-3 px-4 py-4 cursor-pointer transition-colors ${
-                isSelected ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-gray-700 hover:text-white'
-              }`}
-            >
-              <Icon size={24} />
-              <span className="text-sm font-medium">{section.label}</span>
-            </button>
-          );
-        })}
+        {sections.map((section) => (
+          <SectionButton
+            key={section.id}
+            section={section}
+            isSelected={section.id === selectedSectionId}
+            onClick={() => handleSectionClick(section)}
+          />
+        ))}
       </aside>
 
       {/* Main Area */}
@@ -100,25 +92,14 @@ export function MainLayout() {
 
           {/* Sub-navigation */}
           <nav className="sub-nav flex items-center ml-5 gap-2">
-            {selectedSection.subItems.map((subItem) => {
-              const SubIcon = subItem.icon;
-              const isSelected = subItem.id === selectedSubItemId;
-              return (
-                <button
-                  key={subItem.id}
-                  type="button"
-                  onClick={() => handleSubItemClick(subItem.id)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded cursor-pointer transition-colors ${
-                    isSelected
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-700 text-gray-400 hover:bg-gray-600 hover:text-white'
-                  }`}
-                >
-                  <SubIcon size={20} />
-                  <span className="text-sm font-medium">{subItem.label}</span>
-                </button>
-              );
-            })}
+            {selectedSection.subItems.map((subItem) => (
+              <SubNavButton
+                key={subItem.id}
+                subItem={subItem}
+                isSelected={subItem.id === selectedSubItemId}
+                onClick={() => handleSubItemClick(subItem.id)}
+              />
+            ))}
           </nav>
 
           {/* Spacer */}
