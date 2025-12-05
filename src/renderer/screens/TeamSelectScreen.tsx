@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { display, generate } from 'facesjs';
 import { RoutePaths } from '../routes';
 import { IpcChannels } from '../../shared/ipc';
 import type { Team, Driver } from '../../shared/domain';
@@ -36,6 +37,88 @@ function ColorSwatch({ primary, secondary }: { primary: string; secondary: strin
         title={`Secondary: ${secondary}`}
       />
     </div>
+  );
+}
+
+/**
+ * Team logo component - displays logo image or falls back to color swatches
+ */
+function TeamLogo({ team }: { team: Team }) {
+  if (team.logoUrl) {
+    return (
+      <img
+        src={team.logoUrl}
+        alt={`${team.name} logo`}
+        className="w-16 h-16 object-contain"
+      />
+    );
+  }
+  return <ColorSwatch primary={team.primaryColor} secondary={team.secondaryColor} />;
+}
+
+/**
+ * Simple string hash function for deterministic seeding
+ */
+function hashString(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+}
+
+/**
+ * Creates a seeded random number generator for consistent face generation
+ */
+function seededRandom(seed: number): () => number {
+  let s = seed;
+  return function () {
+    s = (s * 16807) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+/**
+ * Driver photo component - displays photo or falls back to faces.js procedural generation
+ */
+function DriverPhoto({ driver }: { driver: Driver }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!driver.photoUrl && containerRef.current) {
+      containerRef.current.innerHTML = '';
+
+      // Use seeded random for consistent face per driver ID
+      const seed = hashString(driver.id);
+      const originalRandom = Math.random;
+      Math.random = seededRandom(seed);
+
+      try {
+        const face = generate();
+        display(containerRef.current, face, { width: 48, height: 48 });
+      } finally {
+        Math.random = originalRandom;
+      }
+    }
+  }, [driver.id, driver.photoUrl]);
+
+  if (driver.photoUrl) {
+    return (
+      <img
+        src={driver.photoUrl}
+        alt={`${driver.firstName} ${driver.lastName}`}
+        className="w-12 h-12 rounded-full object-cover"
+      />
+    );
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      className="w-12 h-12 rounded-full overflow-hidden bg-gray-600"
+    />
   );
 }
 
@@ -247,12 +330,15 @@ export function TeamSelectScreen() {
               {teamDrivers.map((driver) => (
                 <div
                   key={driver.id}
-                  className="bg-gray-700 rounded p-3 border border-gray-600"
+                  className="bg-gray-700 rounded p-3 border border-gray-600 flex items-center gap-3"
                 >
-                  <p className="text-white font-medium">
-                    {driver.firstName} {driver.lastName}
-                  </p>
-                  <p className="text-gray-400 text-sm">{formatDriverRole(driver.role)}</p>
+                  <DriverPhoto driver={driver} />
+                  <div>
+                    <p className="text-white font-medium">
+                      {driver.firstName} {driver.lastName}
+                    </p>
+                    <p className="text-gray-400 text-sm">{formatDriverRole(driver.role)}</p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -264,12 +350,9 @@ export function TeamSelectScreen() {
         {/* Right column: Team details */}
         <div className="flex-1 p-6 overflow-y-auto">
           <div className="max-w-2xl">
-            {/* Team header with color swatches */}
+            {/* Team header with logo or color swatches */}
             <div className="flex items-start gap-6 mb-6">
-              <ColorSwatch
-                primary={selectedTeam.primaryColor}
-                secondary={selectedTeam.secondaryColor}
-              />
+              <TeamLogo team={selectedTeam} />
               <div>
                 <h2 className="text-3xl font-bold text-white">{selectedTeam.name}</h2>
                 <p className="text-gray-400">{selectedTeam.shortName}</p>
