@@ -59,10 +59,15 @@ function TeamLogo({ team }: { team: Team }) {
   return <ColorSwatch primary={team.primaryColor} secondary={team.secondaryColor} />;
 }
 
+interface DriverPhotoProps {
+  driver: Driver;
+  teamColors: { primary: string; secondary: string };
+}
+
 /**
  * Driver photo component - displays photo or falls back to faces.js procedural generation
  */
-function DriverPhoto({ driver }: { driver: Driver }) {
+function DriverPhoto({ driver, teamColors }: DriverPhotoProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [imageError, setImageError] = useState(false);
 
@@ -72,10 +77,10 @@ function DriverPhoto({ driver }: { driver: Driver }) {
     const container = containerRef.current;
 
     // Generate face if no photo URL or photo failed to load
-    // Render slightly smaller (56px) to fit more of face in 64px circle
+    // Render slightly smaller (50px) to fit more of face in 64px circle
     if (shouldGenerateFace && container) {
       container.innerHTML = '';
-      generateFace(container, driver.id, driver.nationality, 50);
+      generateFace(container, driver.id, driver.nationality, teamColors, 50);
     }
 
     // Cleanup on unmount or before re-running effect
@@ -84,7 +89,7 @@ function DriverPhoto({ driver }: { driver: Driver }) {
         container.innerHTML = '';
       }
     };
-  }, [driver.id, driver.nationality, shouldGenerateFace]);
+  }, [driver.id, driver.nationality, teamColors, shouldGenerateFace]);
 
   if (driver.photoUrl && !imageError) {
     return (
@@ -319,7 +324,13 @@ export function TeamSelectScreen() {
                   key={driver.id}
                   className="bg-gray-700 rounded p-3 border border-gray-600 flex items-center gap-3"
                 >
-                  <DriverPhoto driver={driver} />
+                  <DriverPhoto
+                    driver={driver}
+                    teamColors={{
+                      primary: selectedTeam.primaryColor,
+                      secondary: selectedTeam.secondaryColor,
+                    }}
+                  />
                   <div>
                     <p className="text-white font-medium">
                       {driver.firstName} {driver.lastName}

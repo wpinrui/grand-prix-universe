@@ -132,18 +132,28 @@ function pickFromArray<T>(arr: T[], rand: () => number): T {
 const FACEJS_SEED_OFFSET = 1000;
 
 /**
+ * Team colors for racing suit
+ */
+interface TeamColors {
+  primary: string;
+  secondary: string;
+}
+
+/**
  * Generates a face into the provided container element.
  * Uses deterministic seeding based on the provided ID for consistent results.
  *
  * @param container - The DOM element to render the face into
  * @param id - Unique identifier used for deterministic seeding
  * @param nationality - ISO country code for nationality-appropriate appearance
- * @param size - Width and height of the rendered face (default: 64)
+ * @param teamColors - Team colors for the racing suit
+ * @param size - Width of the rendered face (default: 64)
  */
 export function generateFace(
   container: HTMLElement,
   id: string,
   nationality: string,
+  teamColors: TeamColors,
   size = 64
 ): void {
   const seed = hashString(id);
@@ -159,9 +169,14 @@ export function generateFace(
 
   try {
     const face = generate({
+      teamColors: [teamColors.primary, teamColors.secondary, '#ffffff'],
       body: { color: skinColor },
+      jersey: { id: 'jersey2' },
       hair: { color: hairColor },
       head: { shave: `rgba(0,0,0,${0.05 + rand() * 0.15})` },
+      // Remove extras - drivers are in racing suits, not casual wear
+      accessories: { id: 'none' },
+      glasses: { id: 'none' },
     });
     display(container, face, { width: size, height: size });
   } finally {
