@@ -57,6 +57,7 @@ export function TeamSelectScreen() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [isStarting, setIsStarting] = useState(false);
 
   // Redirect to player name screen if accessed without valid state
@@ -77,6 +78,7 @@ export function TeamSelectScreen() {
         }
       } catch (error) {
         console.error('Failed to load teams:', error);
+        setLoadError('Failed to load teams. Please try again.');
       } finally {
         setIsLoading(false);
       }
@@ -112,6 +114,34 @@ export function TeamSelectScreen() {
     return (
       <div className="team-select-screen flex items-center justify-center min-h-screen bg-gray-800">
         <p className="text-white">Loading teams...</p>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="team-select-screen flex flex-col items-center justify-center min-h-screen bg-gray-800 gap-4">
+        <p className="text-red-400">{loadError}</p>
+        <button
+          onClick={() => navigate(-1)}
+          className="px-4 py-2 text-gray-300 hover:text-white transition-colors"
+        >
+          Go Back
+        </button>
+      </div>
+    );
+  }
+
+  if (teams.length === 0) {
+    return (
+      <div className="team-select-screen flex flex-col items-center justify-center min-h-screen bg-gray-800 gap-4">
+        <p className="text-gray-400">No teams available.</p>
+        <button
+          onClick={() => navigate(-1)}
+          className="px-4 py-2 text-gray-300 hover:text-white transition-colors"
+        >
+          Go Back
+        </button>
       </div>
     );
   }
