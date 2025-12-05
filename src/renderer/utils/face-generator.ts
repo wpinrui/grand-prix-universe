@@ -128,8 +128,11 @@ function pickFromArray<T>(arr: T[], rand: () => number): T {
   return arr[Math.floor(rand() * arr.length)];
 }
 
-// Seed offset to ensure facesjs internal randomization uses different sequence than appearance selection
+// Seed offset ensures facesjs internal randomization uses a different sequence than appearance selection
 const FACEJS_SEED_OFFSET = 1000;
+
+// Racing suit jersey style from facesjs library
+const RACING_SUIT_JERSEY_ID = 'jersey2';
 
 /**
  * Team colors for racing suit
@@ -159,7 +162,7 @@ export function generateFace(
   const seed = hashString(id);
   const rand = seededRandom(seed);
 
-  const profile = NATIONALITY_PROFILE_MAP[nationality] || APPEARANCE_PROFILES.northernEuropean;
+  const profile = NATIONALITY_PROFILE_MAP[nationality] ?? APPEARANCE_PROFILES.northernEuropean;
   const skinColor = pickFromArray(profile.skinColors, rand);
   const hairColor = pickFromArray(profile.hairColors, rand);
 
@@ -171,8 +174,9 @@ export function generateFace(
     const face = generate({
       teamColors: [teamColors.primary, teamColors.secondary, '#ffffff'],
       body: { color: skinColor },
-      jersey: { id: 'jersey2' },
+      jersey: { id: RACING_SUIT_JERSEY_ID },
       hair: { color: hairColor },
+      // Subtle stubble effect: 5-20% opacity black overlay on head
       head: { shave: `rgba(0,0,0,${0.05 + rand() * 0.15})` },
       // Remove extras - drivers are in racing suits, not casual wear
       accessories: { id: 'none' },
