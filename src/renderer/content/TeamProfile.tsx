@@ -25,6 +25,8 @@ const DEPARTMENT_LABELS: Record<Department, string> = {
   mechanics: 'Mechanics',
 };
 
+const DEPARTMENTS = Object.keys(DEPARTMENT_LABELS) as Department[];
+
 const CHIEF_ROLE_LABELS: Record<ChiefRole, string> = {
   designer: 'Chief Designer',
   engineer: 'Chief Engineer',
@@ -66,6 +68,14 @@ function StatCard({ label, value }: StatCardProps) {
       <div className="text-lg font-semibold text-white">{value}</div>
     </div>
   );
+}
+
+interface SectionHeadingProps {
+  children: React.ReactNode;
+}
+
+function SectionHeading({ children }: SectionHeadingProps) {
+  return <h2 className="text-lg font-semibold text-white mb-3">{children}</h2>;
 }
 
 interface ProgressBarProps {
@@ -169,11 +179,9 @@ interface StaffSummaryProps {
 }
 
 function StaffSummary({ teamState }: StaffSummaryProps) {
-  const departments = Object.keys(DEPARTMENT_LABELS) as Department[];
-
   return (
     <div className="space-y-2">
-      {departments.map((dept) => {
+      {DEPARTMENTS.map((dept) => {
         const counts = teamState.staffCounts[dept];
         const total = STAFF_QUALITY_ORDER.reduce(
           (sum, quality) => sum + (counts[quality] || 0),
@@ -192,6 +200,29 @@ function StaffSummary({ teamState }: StaffSummaryProps) {
       <div className="text-xs text-gray-600 mt-1">
         (Excellent/VeryGood/Good/Average/Trainee)
       </div>
+    </div>
+  );
+}
+
+interface DevelopmentTestingSectionProps {
+  teamState: TeamRuntimeState;
+}
+
+function DevelopmentTestingSection({ teamState }: DevelopmentTestingSectionProps) {
+  const { handlingPercentage, handlingProblemsFound } = teamState.developmentTesting;
+
+  return (
+    <div className="bg-gray-800 rounded-lg p-4">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-sm text-gray-400">Handling Knowledge:</span>
+        <ProgressBar value={handlingPercentage} colorClass="bg-blue-500" />
+        <span className="text-sm text-white">{handlingPercentage}%</span>
+      </div>
+      {handlingProblemsFound.length > 0 && (
+        <div className="text-xs text-gray-500">
+          Problems found: {handlingProblemsFound.join(', ')}
+        </div>
+      )}
     </div>
   );
 }
@@ -233,7 +264,7 @@ export function TeamProfile() {
 
       {/* Drivers Section */}
       <div>
-        <h2 className="text-lg font-semibold text-white mb-3">Drivers</h2>
+        <SectionHeading>Drivers</SectionHeading>
         {teamDrivers.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {teamDrivers.map((driver) => (
@@ -247,7 +278,7 @@ export function TeamProfile() {
 
       {/* Chiefs Section */}
       <div>
-        <h2 className="text-lg font-semibold text-white mb-3">Department Chiefs</h2>
+        <SectionHeading>Department Chiefs</SectionHeading>
         {teamChiefs.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {teamChiefs.map((chief) => (
@@ -262,9 +293,9 @@ export function TeamProfile() {
       {/* Department Morale */}
       {teamState && (
         <div>
-          <h2 className="text-lg font-semibold text-white mb-3">Department Morale</h2>
+          <SectionHeading>Department Morale</SectionHeading>
           <div className="bg-gray-800 rounded-lg p-4 space-y-2">
-            {(Object.keys(DEPARTMENT_LABELS) as Department[]).map((dept) => (
+            {DEPARTMENTS.map((dept) => (
               <MoraleBar
                 key={dept}
                 label={DEPARTMENT_LABELS[dept]}
@@ -278,7 +309,7 @@ export function TeamProfile() {
       {/* Staff Counts */}
       {teamState && (
         <div>
-          <h2 className="text-lg font-semibold text-white mb-3">Staff</h2>
+          <SectionHeading>Staff</SectionHeading>
           <div className="bg-gray-800 rounded-lg p-4">
             <StaffSummary teamState={teamState} />
           </div>
@@ -288,24 +319,8 @@ export function TeamProfile() {
       {/* Development Testing Progress */}
       {teamState && (
         <div>
-          <h2 className="text-lg font-semibold text-white mb-3">Development Testing</h2>
-          <div className="bg-gray-800 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-sm text-gray-400">Handling Knowledge:</span>
-              <ProgressBar
-                value={teamState.developmentTesting.handlingPercentage}
-                colorClass="bg-blue-500"
-              />
-              <span className="text-sm text-white">
-                {teamState.developmentTesting.handlingPercentage}%
-              </span>
-            </div>
-            {teamState.developmentTesting.handlingProblemsFound.length > 0 && (
-              <div className="text-xs text-gray-500">
-                Problems found: {teamState.developmentTesting.handlingProblemsFound.join(', ')}
-              </div>
-            )}
-          </div>
+          <SectionHeading>Development Testing</SectionHeading>
+          <DevelopmentTestingSection teamState={teamState} />
         </div>
       )}
     </div>
