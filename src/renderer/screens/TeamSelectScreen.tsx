@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -6,6 +7,7 @@ import { IpcChannels } from '../../shared/ipc';
 import type { Team, Driver } from '../../shared/domain';
 import { DriverRole } from '../../shared/domain';
 import { generateFace, type TeamColors } from '../utils/face-generator';
+import { TeamBadge } from '../components/TeamBadge';
 
 interface LocationState {
   playerName: string;
@@ -242,12 +244,24 @@ export function TeamSelectScreen() {
     );
   }
 
+  // Subtle accent-tinted card styling
+  const cardStyle: CSSProperties = {
+    background: `linear-gradient(145deg,
+      color-mix(in srgb, ${selectedTeam.primaryColor} 8%, var(--neutral-800)) 0%,
+      color-mix(in srgb, ${selectedTeam.primaryColor} 3%, var(--neutral-850)) 100%)`,
+    borderColor: `color-mix(in srgb, ${selectedTeam.primaryColor} 20%, var(--neutral-700))`,
+    boxShadow: `0 4px 20px rgba(0,0,0,0.4), 0 0 40px color-mix(in srgb, ${selectedTeam.primaryColor} 10%, transparent)`,
+  };
+
   return (
     <div className="team-select-screen flex items-center justify-center w-full min-h-screen surface-base p-8">
-      {/* Central card */}
-      <div className="card w-full max-w-4xl">
+      {/* Central card with subtle team accent */}
+      <div
+        className="w-full max-w-4xl rounded-xl border transition-all duration-300"
+        style={cardStyle}
+      >
         {/* Header */}
-        <div className="p-6 border-b border-[var(--neutral-750)]">
+        <div className="p-6 border-b" style={{ borderColor: `color-mix(in srgb, ${selectedTeam.primaryColor} 15%, var(--neutral-750))` }}>
           <h1 className="text-2xl font-bold text-primary">Select Team</h1>
           <p className="text-secondary mt-1">
             Choose the team you want to manage, {playerName}
@@ -255,7 +269,7 @@ export function TeamSelectScreen() {
         </div>
 
         {/* Team selector with arrows */}
-        <div className="p-6 border-b border-[var(--neutral-750)]">
+        <div className="p-6 border-b" style={{ borderColor: `color-mix(in srgb, ${selectedTeam.primaryColor} 15%, var(--neutral-750))` }}>
           <div className="flex items-center justify-between gap-4">
             {/* Prev button */}
             <button
@@ -268,25 +282,8 @@ export function TeamSelectScreen() {
 
             {/* Team info */}
             <div className="flex-1 flex items-center gap-5">
-              {/* Team badge */}
-              <div
-                className="w-16 h-14 rounded-lg overflow-hidden relative shrink-0"
-                style={{
-                  boxShadow: `0 4px 12px ${selectedTeam.primaryColor}33`,
-                }}
-              >
-                <div
-                  className="absolute inset-0"
-                  style={{ backgroundColor: selectedTeam.primaryColor }}
-                />
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    backgroundColor: selectedTeam.secondaryColor,
-                    clipPath: 'polygon(100% 0, 100% 100%, 0 100%)',
-                  }}
-                />
-              </div>
+              {/* Team logo */}
+              <TeamBadge team={selectedTeam} className="w-16 h-14" />
 
               {/* Team name & info */}
               <div className="flex-1 min-w-0">
@@ -362,7 +359,7 @@ export function TeamSelectScreen() {
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-[var(--neutral-750)] flex items-center justify-between">
+        <div className="p-6 border-t flex items-center justify-between" style={{ borderColor: `color-mix(in srgb, ${selectedTeam.primaryColor} 15%, var(--neutral-750))` }}>
           <button
             type="button"
             onClick={() => navigate(-1)}
