@@ -10,8 +10,7 @@ if (started) {
 
 const createWindow = () => {
   const mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 720,
+    fullscreen: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
     },
@@ -24,8 +23,6 @@ const createWindow = () => {
       path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`),
     );
   }
-
-  mainWindow.webContents.openDevTools();
 };
 
 app.on('ready', () => {
