@@ -131,6 +131,31 @@ function hasTeam(driver: Driver): driver is Driver & { teamId: string } {
 }
 
 /**
+ * Creates runtime states for all drivers
+ */
+function createAllDriverStates(drivers: Driver[]): Record<string, DriverRuntimeState> {
+  const states: Record<string, DriverRuntimeState> = {};
+  for (const driver of drivers) {
+    states[driver.id] = createInitialDriverState();
+  }
+  return states;
+}
+
+/**
+ * Creates runtime states for all teams
+ */
+function createAllTeamStates(teams: Team[]): Record<string, TeamRuntimeState> {
+  const states: Record<string, TeamRuntimeState> = {};
+  for (const team of teams) {
+    states[team.id] = createInitialTeamState(
+      team.initialSponsorIds,
+      team.initialStaffCounts
+    );
+  }
+  return states;
+}
+
+/**
  * Creates initial driver standings (all zeros, positions assigned by team order)
  */
 function createInitialDriverStandings(drivers: Driver[]): DriverStanding[] {
@@ -304,20 +329,16 @@ export const GameStateManager = {
     if (circuits.length === 0) {
       throw new Error('No circuits found in config data');
     }
+    if (sponsors.length === 0) {
+      throw new Error('No sponsors found in config data');
+    }
+    if (manufacturers.length === 0) {
+      throw new Error('No manufacturers found in config data');
+    }
 
     // Create runtime states
-    const driverStates: Record<string, DriverRuntimeState> = {};
-    for (const driver of drivers) {
-      driverStates[driver.id] = createInitialDriverState();
-    }
-
-    const teamStates: Record<string, TeamRuntimeState> = {};
-    for (const t of teams) {
-      teamStates[t.id] = createInitialTeamState(
-        t.initialSponsorIds,
-        t.initialStaffCounts
-      );
-    }
+    const driverStates = createAllDriverStates(drivers);
+    const teamStates = createAllTeamStates(teams);
 
     // Create calendar from circuits
     const calendar = createCalendar(circuits.map((c) => c.id));
