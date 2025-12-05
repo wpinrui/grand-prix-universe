@@ -24,6 +24,8 @@ import type {
   ActiveManufacturerContract,
   Driver,
   Team,
+  Sponsor,
+  Manufacturer,
 } from '../../shared/domain';
 import {
   GamePhase,
@@ -176,15 +178,20 @@ function createCalendar(circuitIds: string[]): CalendarEntry[] {
  */
 function createInitialSponsorDeals(
   teams: Team[],
+  sponsors: Sponsor[],
   seasonNumber: number
 ): ActiveSponsorDeal[] {
   const deals: ActiveSponsorDeal[] = [];
-  const sponsors = ConfigLoader.getSponsors();
 
   for (const team of teams) {
     for (const sponsorId of team.initialSponsorIds) {
       const sponsor = sponsors.find((s) => s.id === sponsorId);
-      if (!sponsor) continue;
+      if (!sponsor) {
+        console.warn(
+          `Sponsor "${sponsorId}" not found for team "${team.id}" - skipping`
+        );
+        continue;
+      }
 
       deals.push({
         sponsorId,
@@ -207,16 +214,21 @@ function createInitialSponsorDeals(
  */
 function createInitialManufacturerContracts(
   teams: Team[],
+  manufacturers: Manufacturer[],
   seasonNumber: number
 ): ActiveManufacturerContract[] {
   const contracts: ActiveManufacturerContract[] = [];
-  const manufacturers = ConfigLoader.getManufacturers();
 
   for (const team of teams) {
     const manufacturer = manufacturers.find(
       (m) => m.id === team.initialEngineManufacturerId
     );
-    if (!manufacturer) continue;
+    if (!manufacturer) {
+      console.warn(
+        `Manufacturer "${team.initialEngineManufacturerId}" not found for team "${team.id}" - skipping`
+      );
+      continue;
+    }
 
     // Determine deal type based on team/manufacturer relationship
     // Works teams: manufacturer name appears in team name or same HQ country
@@ -251,10 +263,20 @@ export const GameStateManager = {
   createNewGame(params: NewGameParams): GameState {
     const { playerName, teamId, seasonNumber = 1 } = params;
 
-    // Validate team exists
+    // Validate critical dependencies first (fail-fast)
     const team = ConfigLoader.getTeamById(teamId);
     if (!team) {
       throw new Error(`Team not found: ${teamId}`);
+    }
+
+    const rules = ConfigLoader.getRules();
+    if (!rules) {
+      throw new Error('Game rules not found');
+    }
+
+    const regulations = ConfigLoader.getRegulationsBySeason(seasonNumber);
+    if (!regulations) {
+      throw new Error(`Regulations not found for season ${seasonNumber}`);
     }
 
     // Load all entities from config
@@ -264,15 +286,6 @@ export const GameStateManager = {
     const sponsors = ConfigLoader.getSponsors();
     const manufacturers = ConfigLoader.getManufacturers();
     const circuits = ConfigLoader.getCircuits();
-    const rules = ConfigLoader.getRules();
-    const regulations = ConfigLoader.getRegulationsBySeason(seasonNumber);
-
-    if (!rules) {
-      throw new Error('Game rules not found');
-    }
-    if (!regulations) {
-      throw new Error(`Regulations not found for season ${seasonNumber}`);
-    }
 
     // Create runtime states
     const driverStates: Record<string, DriverRuntimeState> = {};
@@ -305,9 +318,10 @@ export const GameStateManager = {
     };
 
     // Create initial contracts
-    const sponsorDeals = createInitialSponsorDeals(teams, seasonNumber);
+    const sponsorDeals = createInitialSponsorDeals(teams, sponsors, seasonNumber);
     const manufacturerContracts = createInitialManufacturerContracts(
       teams,
+      manufacturers,
       seasonNumber
     );
 
