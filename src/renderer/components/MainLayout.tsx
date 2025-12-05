@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check } from 'lucide-react';
+import { Check, Calendar } from 'lucide-react';
 import {
   sections,
   defaultSection,
@@ -41,7 +41,7 @@ export function MainLayout() {
               }`}
             >
               <Icon size={24} />
-              <span className="text-xs font-medium">{section.label}</span>
+              <span className="text-sm font-medium">{section.label}</span>
             </button>
           );
         })}
@@ -54,7 +54,19 @@ export function MainLayout() {
           <div className="text-xl font-semibold">
             {selectedSection.label}: {selectedSubItem?.label}
           </div>
-          <div className="text-xl font-mono text-green-400">$50,000,000</div>
+          <div className="flex items-center gap-4">
+            {/* Calendar Button */}
+            <button
+              type="button"
+              className="flex items-center gap-2 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded cursor-pointer transition-colors"
+              title="Calendar"
+            >
+              <Calendar size={18} />
+              <span className="text-sm">Week 1, March 1998</span>
+            </button>
+            {/* Budget */}
+            <div className="text-xl font-semibold text-green-400">$50,000,000</div>
+          </div>
         </header>
 
         {/* Content Area */}
@@ -90,7 +102,7 @@ export function MainLayout() {
                   }`}
                 >
                   <SubIcon size={20} />
-                  <span className="text-xs font-medium">{subItem.label}</span>
+                  <span className="text-sm font-medium">{subItem.label}</span>
                 </button>
               );
             })}
