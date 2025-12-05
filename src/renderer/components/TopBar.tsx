@@ -1,6 +1,6 @@
 import { Calendar } from 'lucide-react';
 import type { GameDate, Team } from '../../shared/domain';
-import { ACCENT_MUTED_BUTTON_STYLE, ACCENT_TEXT_STYLE } from '../utils/color-palette';
+import { ACCENT_MUTED_BUTTON_STYLE, ACCENT_TEXT_STYLE } from '../utils/theme-styles';
 
 interface TopBarProps {
   sectionLabel: string;

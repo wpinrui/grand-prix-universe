@@ -1,5 +1,5 @@
 import type { Section, SubItem } from '../navigation';
-import { ACCENT_BUTTON_STYLE } from '../utils/color-palette';
+import { ACCENT_BUTTON_STYLE } from '../utils/theme-styles';
 
 interface SectionButtonProps {
   section: Section;

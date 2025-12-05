@@ -1,7 +1,7 @@
 import { Check } from 'lucide-react';
 import type { Section } from '../navigation';
 import type { Team, CalendarEntry } from '../../shared/domain';
-import { ACCENT_BUTTON_STYLE } from '../utils/color-palette';
+import { ACCENT_BUTTON_STYLE } from '../utils/theme-styles';
 import { TeamBadge } from './TeamBadge';
 import { SubNavButton } from './NavButtons';
 
