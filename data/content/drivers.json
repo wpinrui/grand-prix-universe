@@ -51,7 +51,7 @@
       "nationality": "GB",
       "dateOfBirth": "1999-11-13",
       "teamId": "mclaren",
-      "role": "first",
+      "role": "equal",
       "attributes": {
         "pace": 80,
         "consistency": 73,
@@ -95,7 +95,7 @@
       "nationality": "AU",
       "dateOfBirth": "2001-04-06",
       "teamId": "mclaren",
-      "role": "second",
+      "role": "equal",
       "attributes": {
         "pace": 76,
         "consistency": 72,
@@ -139,7 +139,7 @@
       "nationality": "ES",
       "dateOfBirth": "1994-09-01",
       "teamId": "williams",
-      "role": "first",
+      "role": "equal",
       "attributes": {
         "pace": 72,
         "consistency": 72,
@@ -183,7 +183,7 @@
       "nationality": "DE",
       "dateOfBirth": "1987-08-19",
       "teamId": "kick-sauber",
-      "role": "first",
+      "role": "equal",
       "attributes": {
         "pace": 65,
         "consistency": 64,
@@ -205,7 +205,7 @@
       "nationality": "TH",
       "dateOfBirth": "1996-03-23",
       "teamId": "williams",
-      "role": "second",
+      "role": "equal",
       "attributes": {
         "pace": 70,
         "consistency": 71,
@@ -249,7 +249,7 @@
       "nationality": "FR",
       "dateOfBirth": "1996-02-07",
       "teamId": "alpine",
-      "role": "first",
+      "role": "equal",
       "attributes": {
         "pace": 71,
         "consistency": 68,
@@ -293,7 +293,7 @@
       "nationality": "GB",
       "dateOfBirth": "2005-05-08",
       "teamId": "haas",
-      "role": "first",
+      "role": "equal",
       "attributes": {
         "pace": 56,
         "consistency": 51,
@@ -315,7 +315,7 @@
       "nationality": "FR",
       "dateOfBirth": "1996-09-17",
       "teamId": "haas",
-      "role": "second",
+      "role": "equal",
       "attributes": {
         "pace": 68,
         "consistency": 67,
@@ -337,7 +337,7 @@
       "nationality": "FR",
       "dateOfBirth": "2004-09-28",
       "teamId": "racing-bulls",
-      "role": "second",
+      "role": "equal",
       "attributes": {
         "pace": 62,
         "consistency": 58,
@@ -403,7 +403,7 @@
       "nationality": "NZ",
       "dateOfBirth": "2002-02-11",
       "teamId": "racing-bulls",
-      "role": "first",
+      "role": "equal",
       "attributes": {
         "pace": 52,
         "consistency": 48,
@@ -425,7 +425,7 @@
       "nationality": "BR",
       "dateOfBirth": "2004-10-14",
       "teamId": "kick-sauber",
-      "role": "second",
+      "role": "equal",
       "attributes": {
         "pace": 58,
         "consistency": 55,
@@ -469,7 +469,7 @@
       "nationality": "AU",
       "dateOfBirth": "2003-01-20",
       "teamId": "alpine",
-      "role": "second",
+      "role": "equal",
       "attributes": {
         "pace": 52,
         "consistency": 48,

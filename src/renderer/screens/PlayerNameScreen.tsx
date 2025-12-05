@@ -26,7 +26,7 @@ export function PlayerNameScreen() {
   };
 
   return (
-    <div className="player-name-screen flex items-center justify-center min-h-screen bg-gray-800">
+    <div className="player-name-screen flex items-center justify-center w-full min-h-screen bg-gray-800">
       <form onSubmit={handleSubmit} className="bg-gray-600 p-8 rounded shadow-lg w-full max-w-md">
         <h1 className="text-xl font-bold text-white mb-4">New Game</h1>
         <p className="text-gray-200 mb-6">
@@ -44,7 +44,7 @@ export function PlayerNameScreen() {
           <button
             type="submit"
             disabled={!isValid}
-            className="px-6 py-2 bg-green-600 text-white rounded disabled:bg-gray-500 disabled:cursor-not-allowed hover:bg-green-700 transition-colors"
+            className="px-6 py-2 bg-green-600 text-white rounded cursor-pointer disabled:bg-gray-500 disabled:cursor-not-allowed hover:bg-green-700 transition-colors"
           >
             OK
           </button>
