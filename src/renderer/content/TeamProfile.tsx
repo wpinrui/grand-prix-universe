@@ -41,6 +41,14 @@ const DRIVER_ROLE_LABELS: Record<DriverRole, string> = {
   test: 'Test Driver',
 };
 
+const STAFF_QUALITY_LABELS: Record<StaffQuality, string> = {
+  excellent: 'Excellent',
+  'very-good': 'Very Good',
+  good: 'Good',
+  average: 'Average',
+  trainee: 'Trainee',
+};
+
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -198,7 +206,7 @@ function StaffSummary({ teamState }: StaffSummaryProps) {
         );
       })}
       <div className="text-xs text-gray-600 mt-1">
-        (Excellent/VeryGood/Good/Average/Trainee)
+        ({STAFF_QUALITY_ORDER.map((q) => STAFF_QUALITY_LABELS[q]).join('/')})
       </div>
     </div>
   );
