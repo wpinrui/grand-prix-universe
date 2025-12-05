@@ -81,7 +81,135 @@ function seededRandom(seed: number): () => number {
 }
 
 /**
+ * Appearance profile for nationality-based face generation
+ */
+interface AppearanceProfile {
+  skinColors: string[];
+  hairColors: string[];
+}
+
+/**
+ * Get appearance profile based on nationality code
+ */
+function getAppearanceProfile(nationality: string): AppearanceProfile {
+  // East Asian
+  const eastAsian: AppearanceProfile = {
+    skinColors: ['#f5e1d0', '#ecd4c0', '#e8c9a8', '#dfc19d'],
+    hairColors: ['#090806', '#1c1c1c', '#2a2a2a', '#0f0f0f'],
+  };
+
+  // South/Southeast Asian
+  const southAsian: AppearanceProfile = {
+    skinColors: ['#c9a16a', '#b8935a', '#a67c52', '#c4a574'],
+    hairColors: ['#090806', '#1c1c1c', '#2a2a2a'],
+  };
+
+  // Northern European (pale, varied hair)
+  const northernEuropean: AppearanceProfile = {
+    skinColors: ['#ffe0c0', '#ffd5b5', '#ffccaa', '#f5d0b0'],
+    hairColors: ['#b89778', '#a67b5b', '#8b7355', '#3b3024', '#1c1c1c', '#d4a76a'],
+  };
+
+  // Southern/Mediterranean European
+  const mediterranean: AppearanceProfile = {
+    skinColors: ['#e8c9a8', '#d4a574', '#c9a16a', '#deb887'],
+    hairColors: ['#2a2a2a', '#3b3024', '#1c1c1c', '#4a3728'],
+  };
+
+  // Latin American (diverse, Mediterranean to mixed)
+  const latinAmerican: AppearanceProfile = {
+    skinColors: ['#d4a574', '#c9a16a', '#b8935a', '#deb887', '#e8c9a8'],
+    hairColors: ['#1c1c1c', '#2a2a2a', '#3b3024', '#090806'],
+  };
+
+  // African/Caribbean
+  const african: AppearanceProfile = {
+    skinColors: ['#8d5524', '#6b4226', '#5a3825', '#704020'],
+    hairColors: ['#090806', '#0f0f0f', '#1c1c1c'],
+  };
+
+  // Middle Eastern/North African
+  const middleEastern: AppearanceProfile = {
+    skinColors: ['#c9a16a', '#b8935a', '#d4a574', '#c4a574'],
+    hairColors: ['#090806', '#1c1c1c', '#2a2a2a'],
+  };
+
+  // Map nationality codes to profiles
+  const profileMap: Record<string, AppearanceProfile> = {
+    // East Asian
+    JP: eastAsian,
+    CN: eastAsian,
+    KR: eastAsian,
+    SG: eastAsian,
+
+    // South/Southeast Asian
+    TH: southAsian,
+    IN: southAsian,
+    ID: southAsian,
+
+    // Northern European
+    GB: northernEuropean,
+    DE: northernEuropean,
+    NL: northernEuropean,
+    BE: northernEuropean,
+    DK: northernEuropean,
+    SE: northernEuropean,
+    NO: northernEuropean,
+    FI: northernEuropean,
+    IE: northernEuropean,
+    AT: northernEuropean,
+    CH: northernEuropean,
+    PL: northernEuropean,
+    CZ: northernEuropean,
+    RU: northernEuropean,
+
+    // Mediterranean
+    IT: mediterranean,
+    ES: mediterranean,
+    PT: mediterranean,
+    FR: mediterranean,
+    MC: mediterranean,
+    GR: mediterranean,
+    BG: northernEuropean,
+
+    // Latin American
+    BR: latinAmerican,
+    MX: latinAmerican,
+    AR: latinAmerican,
+    CO: latinAmerican,
+    VE: latinAmerican,
+    PE: latinAmerican,
+    PY: latinAmerican,
+
+    // Oceania (mostly European descent)
+    AU: northernEuropean,
+    NZ: northernEuropean,
+
+    // North American (diverse, default to Northern European)
+    US: northernEuropean,
+    CA: northernEuropean,
+
+    // African/Caribbean
+    BB: african,
+
+    // Middle Eastern
+    AE: middleEastern,
+    SA: middleEastern,
+  };
+
+  return profileMap[nationality] || northernEuropean;
+}
+
+/**
+ * Pick item from array using seeded random
+ */
+function pickFromArray<T>(arr: T[], rand: () => number): T {
+  return arr[Math.floor(rand() * arr.length)];
+}
+
+/**
  * Driver photo component - displays photo or falls back to faces.js procedural generation
+ * Uses nationality-appropriate appearance traits for believable faces
  */
 function DriverPhoto({ driver }: { driver: Driver }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -92,24 +220,36 @@ function DriverPhoto({ driver }: { driver: Driver }) {
 
       // Use seeded random for consistent face per driver ID
       const seed = hashString(driver.id);
+      const rand = seededRandom(seed);
+
+      // Get nationality-appropriate appearance
+      const profile = getAppearanceProfile(driver.nationality);
+      const skinColor = pickFromArray(profile.skinColors, rand);
+      const hairColor = pickFromArray(profile.hairColors, rand);
+
+      // Generate face with nationality-appropriate overrides
       const originalRandom = Math.random;
-      Math.random = seededRandom(seed);
+      Math.random = seededRandom(seed + 1000); // Different seed for other random features
 
       try {
-        const face = generate();
-        display(containerRef.current, face, { width: 48, height: 48 });
+        const face = generate({
+          body: { color: skinColor },
+          hair: { color: hairColor },
+          head: { shave: `rgba(0,0,0,${0.05 + rand() * 0.15})` },
+        });
+        display(containerRef.current, face, { width: 64, height: 64 });
       } finally {
         Math.random = originalRandom;
       }
     }
-  }, [driver.id, driver.photoUrl]);
+  }, [driver.id, driver.nationality, driver.photoUrl]);
 
   if (driver.photoUrl) {
     return (
       <img
         src={driver.photoUrl}
         alt={`${driver.firstName} ${driver.lastName}`}
-        className="w-12 h-12 rounded-full object-cover"
+        className="w-16 h-16 rounded-full object-cover"
       />
     );
   }
@@ -117,7 +257,7 @@ function DriverPhoto({ driver }: { driver: Driver }) {
   return (
     <div
       ref={containerRef}
-      className="w-12 h-12 rounded-full overflow-hidden bg-gray-600"
+      className="w-16 h-16 rounded-full overflow-hidden bg-gray-600"
     />
   );
 }
@@ -321,7 +461,7 @@ export function TeamSelectScreen() {
         </div>
 
         {/* Middle column: Drivers */}
-        <div className="w-56 bg-gray-800 border-r border-gray-600 overflow-y-auto">
+        <div className="w-72 bg-gray-800 border-r border-gray-600 overflow-y-auto">
           <div className="p-3 border-b border-gray-600">
             <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Drivers</h3>
           </div>
