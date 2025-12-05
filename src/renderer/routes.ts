@@ -5,6 +5,7 @@
  */
 export const RoutePaths = {
   TITLE: '/',
+  PLAYER_NAME: '/player-name',
   TEAM_SELECT: '/team-select',
   GAME: '/game',
 } as const;
