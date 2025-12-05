@@ -353,7 +353,8 @@ export const GameStateManager = {
     assertNonEmpty(manufacturers, 'manufacturers');
     assertNonEmpty(chiefs, 'chiefs');
 
-    // Clone entities to prevent cache corruption (they evolve during play)
+    // Clone entities FIRST to prevent cache corruption (they evolve during play)
+    // All derived data below uses cloned entities for consistency
     const clonedTeams = cloneDeep(teams);
     const clonedDrivers = cloneDeep(drivers);
     const clonedChiefs = cloneDeep(chiefs);
@@ -361,16 +362,16 @@ export const GameStateManager = {
     const clonedManufacturers = cloneDeep(manufacturers);
     const clonedCircuits = cloneDeep(circuits);
 
-    // Create runtime states
-    const driverStates = createAllDriverStates(drivers);
-    const teamStates = createAllTeamStates(teams);
+    // Create runtime states (using cloned data)
+    const driverStates = createAllDriverStates(clonedDrivers);
+    const teamStates = createAllTeamStates(clonedTeams);
 
     // Create calendar from circuits
-    const calendar = createCalendar(circuits.map((c) => c.id));
+    const calendar = createCalendar(clonedCircuits.map((c) => c.id));
 
     // Create initial standings
-    const driverStandings = createInitialDriverStandings(drivers);
-    const constructorStandings = createInitialConstructorStandings(teams);
+    const driverStandings = createInitialDriverStandings(clonedDrivers);
+    const constructorStandings = createInitialConstructorStandings(clonedTeams);
 
     // Create season data
     const currentSeason: SeasonData = {
@@ -382,10 +383,10 @@ export const GameStateManager = {
     };
 
     // Create initial contracts
-    const sponsorDeals = createInitialSponsorDeals(teams, sponsors, seasonNumber);
+    const sponsorDeals = createInitialSponsorDeals(clonedTeams, clonedSponsors, seasonNumber);
     const manufacturerContracts = createInitialManufacturerContracts(
-      teams,
-      manufacturers,
+      clonedTeams,
+      clonedManufacturers,
       seasonNumber
     );
 
