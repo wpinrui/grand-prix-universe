@@ -77,6 +77,14 @@ function assertNonEmpty<T>(array: T[], entityName: string): void {
   }
 }
 
+/**
+ * Deep clones a value to prevent cache corruption.
+ * Entities in GameState will evolve during play - we must not mutate ConfigLoader's cache.
+ */
+function cloneDeep<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
+}
+
 /** Parameters for creating a new game */
 export interface NewGameParams {
   playerName: string;
@@ -166,14 +174,6 @@ function createAllTeamStates(teams: Team[]): Record<string, TeamRuntimeState> {
     );
   }
   return states;
-}
-
-/**
- * Deep clones a value to prevent cache corruption.
- * Entities in GameState will evolve during play - we must not mutate ConfigLoader's cache.
- */
-function cloneDeep<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
 }
 
 /**
