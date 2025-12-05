@@ -28,8 +28,8 @@ import type {
   Manufacturer,
   Circuit,
   Chief,
-  Rules,
-  Regulations,
+  GameRules,
+  SeasonRegulations,
 } from '../../shared/domain';
 import {
   GamePhase,
@@ -393,8 +393,8 @@ interface BuildGameStateParams {
   teamId: string;
   seasonNumber: number;
   entities: LoadedEntities;
-  rules: Rules;
-  regulations: Regulations;
+  rules: GameRules;
+  regulations: SeasonRegulations;
 }
 
 /**
