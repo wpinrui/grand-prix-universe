@@ -32,6 +32,7 @@ import {
   Department,
   ManufacturerType,
   ManufacturerDealType,
+  DriverRole,
 } from '../../shared/domain';
 
 /** Current save format version */
@@ -63,6 +64,15 @@ const FIRST_RACE_WEEK = 10;
 
 /** Last race typically in late November (week 48) */
 const LAST_RACE_WEEK = 48;
+
+/**
+ * Asserts that an array is not empty, throwing a descriptive error if it is
+ */
+function assertNonEmpty<T>(array: T[], entityName: string): void {
+  if (array.length === 0) {
+    throw new Error(`No ${entityName} found in config data`);
+  }
+}
 
 /** Parameters for creating a new game */
 export interface NewGameParams {
@@ -124,10 +134,10 @@ function createInitialTeamState(
 }
 
 /**
- * Type guard to check if driver has a team
+ * Type guard to check if driver has a team and is a racing driver (not test driver)
  */
-function hasTeam(driver: Driver): driver is Driver & { teamId: string } {
-  return driver.teamId !== null;
+function isRacingDriver(driver: Driver): driver is Driver & { teamId: string } {
+  return driver.teamId !== null && driver.role !== DriverRole.Test;
 }
 
 /**
@@ -164,10 +174,11 @@ function cloneDeep<T>(value: T): T {
 }
 
 /**
- * Creates initial driver standings (all zeros, positions assigned by team order)
+ * Creates initial driver standings (all zeros, positions assigned by array order)
+ * Only includes racing drivers (first/second/equal), not test drivers
  */
 function createInitialDriverStandings(drivers: Driver[]): DriverStanding[] {
-  return drivers.filter(hasTeam).map((driver, index) => ({
+  return drivers.filter(isRacingDriver).map((driver, index) => ({
     driverId: driver.id,
     teamId: driver.teamId,
     points: 0,
@@ -335,24 +346,12 @@ export const GameStateManager = {
     const circuits = ConfigLoader.getCircuits();
 
     // Validate critical arrays are not empty (fail-fast)
-    if (teams.length === 0) {
-      throw new Error('No teams found in config data');
-    }
-    if (drivers.length === 0) {
-      throw new Error('No drivers found in config data');
-    }
-    if (circuits.length === 0) {
-      throw new Error('No circuits found in config data');
-    }
-    if (sponsors.length === 0) {
-      throw new Error('No sponsors found in config data');
-    }
-    if (manufacturers.length === 0) {
-      throw new Error('No manufacturers found in config data');
-    }
-    if (chiefs.length === 0) {
-      throw new Error('No chiefs found in config data');
-    }
+    assertNonEmpty(teams, 'teams');
+    assertNonEmpty(drivers, 'drivers');
+    assertNonEmpty(circuits, 'circuits');
+    assertNonEmpty(sponsors, 'sponsors');
+    assertNonEmpty(manufacturers, 'manufacturers');
+    assertNonEmpty(chiefs, 'chiefs');
 
     // Clone entities to prevent cache corruption (they evolve during play)
     const clonedTeams = cloneDeep(teams);
