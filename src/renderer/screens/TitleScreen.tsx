@@ -1,20 +1,30 @@
 import { useNavigate } from 'react-router-dom';
+import { Play } from 'lucide-react';
 import { RoutePaths } from '../routes';
 
 export function TitleScreen() {
   const navigate = useNavigate();
 
   return (
-    <div className="title-screen flex flex-col items-center justify-center w-full min-h-screen bg-gray-800">
-      <h1 className="text-4xl font-bold text-white">Grand Prix Universe</h1>
-      <p className="text-gray-300 mt-2">F1 Team Management Simulation</p>
-      <div className="menu mt-8">
+    <div className="title-screen flex items-center justify-center w-full min-h-screen surface-base">
+      {/* Central card */}
+      <div className="card p-12 text-center max-w-lg">
+        {/* Title */}
+        <h1 className="text-4xl font-bold text-primary tracking-tight mb-2">
+          Grand Prix Universe
+        </h1>
+        <p className="text-secondary text-lg mb-10">
+          F1 Team Management Simulation
+        </p>
+
+        {/* Menu */}
         <button
           type="button"
           onClick={() => navigate(RoutePaths.PLAYER_NAME)}
-          className="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 transition-colors cursor-pointer"
+          className="btn px-8 py-3 text-lg font-semibold bg-emerald-600 text-white border border-emerald-500 rounded-lg hover:bg-emerald-500 transition-all duration-200"
         >
-          New Game
+          <Play size={20} />
+          <span>New Game</span>
         </button>
       </div>
     </div>
