@@ -10,6 +10,7 @@ export function TitleScreen() {
       <p>F1 Team Management Simulation</p>
       <div className="menu mt-8">
         <button
+          type="button"
           onClick={() => navigate(RoutePaths.PLAYER_NAME)}
           className="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 transition-colors cursor-pointer"
         >
