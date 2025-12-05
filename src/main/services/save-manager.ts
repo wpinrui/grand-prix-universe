@@ -60,6 +60,14 @@ function extractSaveInfo(
 }
 
 /**
+ * Sanitizes a filename to prevent path traversal attacks.
+ * Strips any directory components, returning only the base filename.
+ */
+function sanitizeFilename(filename: string): string {
+  return path.basename(filename);
+}
+
+/**
  * Validates that a loaded object matches the GameState structure
  * Basic validation - checks required top-level fields exist
  */
@@ -117,7 +125,8 @@ export const SaveManager = {
   async load(filename: string): Promise<LoadResult> {
     try {
       const savesDir = await getSavesDir();
-      const filePath = path.join(savesDir, filename);
+      const safeFilename = sanitizeFilename(filename);
+      const filePath = path.join(savesDir, safeFilename);
 
       const jsonData = await fs.readFile(filePath, 'utf-8');
       const data: unknown = JSON.parse(jsonData);
@@ -181,7 +190,8 @@ export const SaveManager = {
   async deleteSave(filename: string): Promise<boolean> {
     try {
       const savesDir = await getSavesDir();
-      const filePath = path.join(savesDir, filename);
+      const safeFilename = sanitizeFilename(filename);
+      const filePath = path.join(savesDir, safeFilename);
       await fs.unlink(filePath);
       return true;
     } catch {
@@ -195,7 +205,8 @@ export const SaveManager = {
   async saveExists(filename: string): Promise<boolean> {
     try {
       const savesDir = await getSavesDir();
-      const filePath = path.join(savesDir, filename);
+      const safeFilename = sanitizeFilename(filename);
+      const filePath = path.join(savesDir, safeFilename);
       await fs.access(filePath);
       return true;
     } catch {
