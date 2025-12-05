@@ -106,10 +106,16 @@ function ProgressBar({ value, colorClass }: ProgressBarProps) {
   );
 }
 
+const MORALE_THRESHOLDS = {
+  EXCELLENT: 80,
+  GOOD: 60,
+  LOW: 40,
+} as const;
+
 function getMoraleColor(value: number): string {
-  if (value >= 80) return 'bg-green-500';
-  if (value >= 60) return 'bg-yellow-500';
-  if (value >= 40) return 'bg-orange-500';
+  if (value >= MORALE_THRESHOLDS.EXCELLENT) return 'bg-green-500';
+  if (value >= MORALE_THRESHOLDS.GOOD) return 'bg-yellow-500';
+  if (value >= MORALE_THRESHOLDS.LOW) return 'bg-orange-500';
   return 'bg-red-500';
 }
 
@@ -209,7 +215,7 @@ function StaffSummary({ teamState }: StaffSummaryProps) {
         );
       })}
       <div className="text-xs text-gray-600 mt-1">
-        ({STAFF_QUALITY_ORDER.map((q) => STAFF_QUALITY_LABELS[q]).join('/')})
+        ({STAFF_QUALITY_ORDER.map((quality) => STAFF_QUALITY_LABELS[quality]).join('/')})
       </div>
     </div>
   );
