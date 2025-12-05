@@ -25,14 +25,20 @@ function hashString(str: string): number {
   return Math.abs(hash);
 }
 
+// Park-Miller PRNG constants (MINSTD variant)
+const PRNG_MULTIPLIER = 16807;
+const PRNG_MODULUS = 2147483647; // 2^31 - 1
+const PRNG_SCALE = 2147483646; // PRNG_MODULUS - 1
+
 /**
- * Creates a seeded random number generator for consistent face generation
+ * Creates a seeded random number generator using Park-Miller PRNG.
+ * Produces deterministic sequence for consistent face generation.
  */
 function seededRandom(seed: number): () => number {
   let s = seed;
   return function () {
-    s = (s * 16807) % 2147483647;
-    return (s - 1) / 2147483646;
+    s = (s * PRNG_MULTIPLIER) % PRNG_MODULUS;
+    return (s - 1) / PRNG_SCALE;
   };
 }
 
