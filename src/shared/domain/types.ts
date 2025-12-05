@@ -502,11 +502,12 @@ export interface DriverQualifyingResult {
 export interface RacePositionResult {
   driverId: string;
   teamId: string;
-  finishPosition: number; // Final position (1-based, 0 = DNF)
+  finishPosition: number | null; // Final position (1-based), null if not classified
   gridPosition: number; // Where they started
   lapsCompleted: number;
   totalTime: number; // In ms (0 if DNF)
-  gapToWinner: number; // Time gap in ms (for same-lap finishers) or laps behind (if status is 'lapped')
+  gapToWinnerMs?: number; // Time gap in ms (only for same-lap finishers)
+  lapsBehind?: number; // Laps behind leader (only for lapped finishers)
   points: number; // Points earned this race
   fastestLap: boolean; // Did they set fastest lap?
   fastestLapTime?: number; // Their fastest lap in ms
