@@ -87,3 +87,19 @@ export const GHOST_BUTTON_CLASSES =
  */
 export const GHOST_BORDERED_BUTTON_CLASSES =
   'bg-[var(--neutral-800)] border-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-750)] hover:text-primary hover:border-[var(--neutral-600)]';
+
+// ===========================================
+// ALERT CLASS CONSTANTS
+// ===========================================
+
+/**
+ * Error alert - for error messages and failure feedback
+ */
+export const ERROR_ALERT_CLASSES =
+  'card p-3 bg-red-600/20 border-red-600/30 text-red-300 text-sm';
+
+/**
+ * Success alert - for success messages and confirmation feedback
+ */
+export const SUCCESS_ALERT_CLASSES =
+  'card p-3 bg-emerald-600/20 border-emerald-600/30 text-emerald-300 text-sm';

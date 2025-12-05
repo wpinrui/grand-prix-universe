@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Play, Plus, FolderOpen, Loader2 } from 'lucide-react';
 import { RoutePaths } from '../routes';
-import { PRIMARY_BUTTON_CLASSES, GHOST_BUTTON_CLASSES } from '../utils/theme-styles';
-import { useSavesList, useLoadGame } from '../hooks/useIpc';
+import { PRIMARY_BUTTON_CLASSES, GHOST_BUTTON_CLASSES, ERROR_ALERT_CLASSES } from '../utils/theme-styles';
+import { useSavesList, useLoadGame } from '../hooks';
 
 export function TitleScreen() {
   const navigate = useNavigate();
@@ -20,12 +20,17 @@ export function TitleScreen() {
     if (!mostRecentSave) return;
     setIsLoadingContinue(true);
     setLoadError(null);
-    const result = await loadGame.mutateAsync(mostRecentSave.filename);
-    if (result.success) {
-      navigate(RoutePaths.GAME);
-    } else {
+    try {
+      const result = await loadGame.mutateAsync(mostRecentSave.filename);
+      if (result.success) {
+        navigate(RoutePaths.GAME);
+      } else {
+        setLoadError('Failed to load save. Try Load Game to select another.');
+      }
+    } catch {
+      setLoadError('Failed to load save. Please try again.');
+    } finally {
       setIsLoadingContinue(false);
-      setLoadError('Failed to load save. Try Load Game to select another.');
     }
   };
 
@@ -43,9 +48,7 @@ export function TitleScreen() {
 
         {/* Load error feedback */}
         {loadError && (
-          <div className="card p-3 mb-6 bg-red-600/20 border-red-600/30 text-red-300 text-sm text-left">
-            {loadError}
-          </div>
+          <div className={`${ERROR_ALERT_CLASSES} mb-6 text-left`}>{loadError}</div>
         )}
 
         {/* Menu */}

@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { Save, Loader2, FolderOpen } from 'lucide-react';
-import { useSavesList, useSaveGame, useLoadGame, useDeleteSave, useTeamsById, useOpenSavesFolder } from '../hooks/useIpc';
+import { useSavesList, useSaveGame, useLoadGame, useTeamsById, useOpenSavesFolder, useDeleteConfirmation } from '../hooks';
 import { DeleteConfirmDialog } from '../components/DeleteConfirmDialog';
 import { SaveCard } from '../components/SaveCard';
-import { PRIMARY_BUTTON_CLASSES, GHOST_BUTTON_CLASSES } from '../utils/theme-styles';
+import { PRIMARY_BUTTON_CLASSES, GHOST_BUTTON_CLASSES, ERROR_ALERT_CLASSES, SUCCESS_ALERT_CLASSES } from '../utils/theme-styles';
 import { getSaveDisplayName } from '../utils/format';
-import type { SaveSlotInfo } from '../../shared/ipc';
 
 // ===========================================
 // TYPES
@@ -20,15 +19,15 @@ interface SavedGamesProps {
 // ===========================================
 
 export function SavedGames({ onNavigateToProfile }: SavedGamesProps) {
-  const [deleteTarget, setDeleteTarget] = useState<SaveSlotInfo | null>(null);
   const [loadingFilename, setLoadingFilename] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const { data: saves, isLoading: savesLoading } = useSavesList();
   const teamsById = useTeamsById();
   const saveGame = useSaveGame();
   const loadGame = useLoadGame();
-  const deleteSave = useDeleteSave();
   const openSavesFolder = useOpenSavesFolder();
+  const { deleteTarget, requestDelete, cancelDelete, confirmDelete } = useDeleteConfirmation();
 
   const handleSave = () => {
     saveGame.mutate();
@@ -36,17 +35,18 @@ export function SavedGames({ onNavigateToProfile }: SavedGamesProps) {
 
   const handleLoad = async (filename: string) => {
     setLoadingFilename(filename);
-    const result = await loadGame.mutateAsync(filename);
-    setLoadingFilename(null);
-    if (result.success) {
-      onNavigateToProfile();
-    }
-  };
-
-  const handleDeleteConfirm = () => {
-    if (deleteTarget) {
-      deleteSave.mutate(deleteTarget.filename);
-      setDeleteTarget(null);
+    setLoadError(null);
+    try {
+      const result = await loadGame.mutateAsync(filename);
+      if (result.success) {
+        onNavigateToProfile();
+      } else {
+        setLoadError('Failed to load save. The file may be corrupted.');
+      }
+    } catch {
+      setLoadError('Failed to load save. Please try again.');
+    } finally {
+      setLoadingFilename(null);
     }
   };
 
@@ -88,17 +88,16 @@ export function SavedGames({ onNavigateToProfile }: SavedGamesProps) {
 
       {/* Save success feedback */}
       {saveGame.isSuccess && (
-        <div className="card p-3 bg-emerald-600/20 border-emerald-600/30 text-emerald-300 text-sm">
-          Game saved successfully!
-        </div>
+        <div className={SUCCESS_ALERT_CLASSES}>Game saved successfully!</div>
       )}
 
       {/* Save error feedback */}
       {saveGame.isError && (
-        <div className="card p-3 bg-red-600/20 border-red-600/30 text-red-300 text-sm">
-          Failed to save game. Please try again.
-        </div>
+        <div className={ERROR_ALERT_CLASSES}>Failed to save game. Please try again.</div>
       )}
+
+      {/* Load error feedback */}
+      {loadError && <div className={ERROR_ALERT_CLASSES}>{loadError}</div>}
 
       {/* Saves list */}
       {savesLoading ? (
@@ -113,7 +112,7 @@ export function SavedGames({ onNavigateToProfile }: SavedGamesProps) {
               save={save}
               team={teamsById[save.teamId]}
               onLoad={() => handleLoad(save.filename)}
-              onDelete={() => setDeleteTarget(save)}
+              onDelete={() => requestDelete(save)}
               isLoading={loadingFilename === save.filename}
             />
           ))}
@@ -132,8 +131,8 @@ export function SavedGames({ onNavigateToProfile }: SavedGamesProps) {
       {deleteTarget && (
         <DeleteConfirmDialog
           saveName={getSaveDisplayName(deleteTarget)}
-          onConfirm={handleDeleteConfirm}
-          onCancel={() => setDeleteTarget(null)}
+          onConfirm={confirmDelete}
+          onCancel={cancelDelete}
         />
       )}
     </div>

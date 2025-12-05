@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import { useSavesList, useLoadGame, useDeleteSave, useTeamsById } from '../hooks/useIpc';
+import { useSavesList, useLoadGame, useTeamsById, useDeleteConfirmation } from '../hooks';
 import { DeleteConfirmDialog } from '../components/DeleteConfirmDialog';
 import { SaveCard } from '../components/SaveCard';
-import { GHOST_BUTTON_CLASSES } from '../utils/theme-styles';
+import { GHOST_BUTTON_CLASSES, ERROR_ALERT_CLASSES } from '../utils/theme-styles';
 import { getSaveDisplayName } from '../utils/format';
 import { RoutePaths } from '../routes';
-import type { SaveSlotInfo } from '../../shared/ipc';
 
 // ===========================================
 // MAIN COMPONENT
@@ -15,31 +14,28 @@ import type { SaveSlotInfo } from '../../shared/ipc';
 
 export function LoadGameScreen() {
   const navigate = useNavigate();
-  const [deleteTarget, setDeleteTarget] = useState<SaveSlotInfo | null>(null);
   const [loadingFilename, setLoadingFilename] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const { data: saves, isLoading: savesLoading } = useSavesList();
   const teamsById = useTeamsById();
   const loadGame = useLoadGame();
-  const deleteSave = useDeleteSave();
+  const { deleteTarget, requestDelete, cancelDelete, confirmDelete } = useDeleteConfirmation();
 
   const handleLoad = async (filename: string) => {
     setLoadingFilename(filename);
     setLoadError(null);
-    const result = await loadGame.mutateAsync(filename);
-    if (result.success) {
-      navigate(RoutePaths.GAME);
-    } else {
+    try {
+      const result = await loadGame.mutateAsync(filename);
+      if (result.success) {
+        navigate(RoutePaths.GAME);
+      } else {
+        setLoadError('Failed to load save. The file may be corrupted.');
+      }
+    } catch {
+      setLoadError('Failed to load save. Please try again.');
+    } finally {
       setLoadingFilename(null);
-      setLoadError('Failed to load save. The file may be corrupted.');
-    }
-  };
-
-  const handleDeleteConfirm = () => {
-    if (deleteTarget) {
-      deleteSave.mutate(deleteTarget.filename);
-      setDeleteTarget(null);
     }
   };
 
@@ -59,11 +55,7 @@ export function LoadGameScreen() {
         </div>
 
         {/* Load error feedback */}
-        {loadError && (
-          <div className="card p-3 mb-4 bg-red-600/20 border-red-600/30 text-red-300 text-sm">
-            {loadError}
-          </div>
-        )}
+        {loadError && <div className={`${ERROR_ALERT_CLASSES} mb-4`}>{loadError}</div>}
 
         {/* Saves list */}
         {savesLoading ? (
@@ -78,7 +70,7 @@ export function LoadGameScreen() {
                 save={save}
                 team={teamsById[save.teamId]}
                 onLoad={() => handleLoad(save.filename)}
-                onDelete={() => setDeleteTarget(save)}
+                onDelete={() => requestDelete(save)}
                 isLoading={loadingFilename === save.filename}
               />
             ))}
@@ -93,8 +85,8 @@ export function LoadGameScreen() {
         {deleteTarget && (
           <DeleteConfirmDialog
             saveName={getSaveDisplayName(deleteTarget)}
-            onConfirm={handleDeleteConfirm}
-            onCancel={() => setDeleteTarget(null)}
+            onConfirm={confirmDelete}
+            onCancel={cancelDelete}
           />
         )}
       </div>
