@@ -21,13 +21,13 @@ export function TeamBadge({ team, className = 'w-14 h-12' }: TeamBadgeProps) {
   }
 
   return (
-    <div className="flex gap-0.5 rounded overflow-hidden">
+    <div className={`flex rounded overflow-hidden ${className}`}>
       <div
-        className="w-7 h-12"
+        className="w-1/2 h-full"
         style={{ backgroundColor: team?.primaryColor ?? '#666' }}
       />
       <div
-        className="w-7 h-12"
+        className="w-1/2 h-full"
         style={{ backgroundColor: team?.secondaryColor ?? '#444' }}
       />
     </div>
