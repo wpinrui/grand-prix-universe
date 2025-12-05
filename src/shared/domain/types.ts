@@ -485,21 +485,20 @@ export enum WeatherCondition {
 
 /**
  * DriverQualifyingResult - A driver's qualifying performance
- * Named to avoid conflict with engine placeholder type
  */
 export interface DriverQualifyingResult {
   driverId: string;
   teamId: string;
-  position: number; // Grid position (1-based)
+  gridPosition: number; // Grid position earned (1-based)
   bestLapTime: number; // in ms
   gapToFirst: number; // Gap to pole in ms (0 for pole sitter)
   knockedOutInSession?: number; // Q1=1, Q2=2, undefined if made Q3
 }
 
 /**
- * RacePositionResult - A driver's race result
+ * DriverRaceResult - A driver's race result
  */
-export interface RacePositionResult {
+export interface DriverRaceResult {
   driverId: string;
   teamId: string;
   finishPosition: number | null; // Final position (1-based), null if not classified
@@ -524,7 +523,7 @@ export interface RaceWeekendResult {
   circuitId: string;
   seasonNumber: number;
   qualifying: DriverQualifyingResult[];
-  race: RacePositionResult[];
+  race: DriverRaceResult[];
   weather: WeatherCondition; // Dominant weather during race
   fastestLapDriverId: string;
   fastestLapTime: number; // in ms
@@ -562,8 +561,7 @@ export type DepartmentMorale = Record<Department, number>;
  * Reveals handling characteristics through test sessions
  */
 export interface DevelopmentTestingState {
-  handlingRevealed: boolean;
-  handlingPercentage: number; // 0-100, revealed by dev testing
+  handlingPercentage: number; // 0-100, how much is revealed (0 = unknown)
   handlingProblemsFound: string[]; // Problem IDs discovered
 }
 
