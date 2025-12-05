@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import {
   sections,
   defaultSection,
@@ -6,7 +6,7 @@ import {
   type SectionId,
   type Section,
 } from '../navigation';
-import { useGameState } from '../hooks';
+import { useDerivedGameState } from '../hooks';
 import { SectionButton } from './NavButtons';
 import { TopBar } from './TopBar';
 import { BottomBar } from './BottomBar';
@@ -15,19 +15,7 @@ export function MainLayout() {
   const [selectedSectionId, setSelectedSectionId] = useState<SectionId>(defaultSection);
   const [selectedSubItemId, setSelectedSubItemId] = useState<string>(defaultSubItem);
 
-  const { data: gameState } = useGameState();
-
-  // Derive player's team from game state
-  const playerTeam = useMemo(() => {
-    if (!gameState) return null;
-    return gameState.teams.find((t) => t.id === gameState.player.teamId) ?? null;
-  }, [gameState]);
-
-  // Derive next upcoming race from calendar
-  const nextRace = useMemo(() => {
-    if (!gameState) return null;
-    return gameState.currentSeason.calendar.find((entry) => !entry.completed && !entry.cancelled) ?? null;
-  }, [gameState]);
+  const { gameState, playerTeam, nextRace } = useDerivedGameState();
 
   // Safe: selectedSectionId always matches a valid section (defaults to 'team')
   const selectedSection = sections.find((s) => s.id === selectedSectionId) ?? sections[0];
