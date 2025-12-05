@@ -111,24 +111,38 @@ export function generatePalette(primaryColor: string): ColorPalette {
 }
 
 /**
+ * CSS custom property names for each palette key
+ */
+const PALETTE_TO_CSS_VAR: Record<keyof ColorPalette, string> = {
+  accent50: '--accent-50',
+  accent100: '--accent-100',
+  accent200: '--accent-200',
+  accent300: '--accent-300',
+  accent400: '--accent-400',
+  accent500: '--accent-500',
+  accent600: '--accent-600',
+  accent700: '--accent-700',
+  accent800: '--accent-800',
+  accent900: '--accent-900',
+  accentContrast: '--accent-contrast',
+  accentContrastSubtle: '--accent-contrast-subtle',
+  surface: '--surface',
+  surfaceElevated: '--surface-elevated',
+  surfaceMuted: '--surface-muted',
+};
+
+/**
+ * CSS variable record type for theme colors
+ */
+export type ThemeCssVars = Record<(typeof PALETTE_TO_CSS_VAR)[keyof ColorPalette], string>;
+
+/**
  * Convert palette to CSS custom properties
  */
-export function paletteToCssVars(palette: ColorPalette): Record<string, string> {
-  return {
-    '--accent-50': palette.accent50,
-    '--accent-100': palette.accent100,
-    '--accent-200': palette.accent200,
-    '--accent-300': palette.accent300,
-    '--accent-400': palette.accent400,
-    '--accent-500': palette.accent500,
-    '--accent-600': palette.accent600,
-    '--accent-700': palette.accent700,
-    '--accent-800': palette.accent800,
-    '--accent-900': palette.accent900,
-    '--accent-contrast': palette.accentContrast,
-    '--accent-contrast-subtle': palette.accentContrastSubtle,
-    '--surface': palette.surface,
-    '--surface-elevated': palette.surfaceElevated,
-    '--surface-muted': palette.surfaceMuted,
-  };
+export function paletteToCssVars(palette: ColorPalette): ThemeCssVars {
+  const result: Record<string, string> = {};
+  for (const [key, cssVar] of Object.entries(PALETTE_TO_CSS_VAR)) {
+    result[cssVar] = palette[key as keyof ColorPalette];
+  }
+  return result as ThemeCssVars;
 }
