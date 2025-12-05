@@ -6,8 +6,8 @@ export function TitleScreen() {
 
   return (
     <div className="title-screen flex flex-col items-center justify-center w-full min-h-screen bg-gray-800">
-      <h1>Grand Prix Universe</h1>
-      <p>F1 Team Management Simulation</p>
+      <h1 className="text-4xl font-bold text-white">Grand Prix Universe</h1>
+      <p className="text-gray-300 mt-2">F1 Team Management Simulation</p>
       <div className="menu mt-8">
         <button
           type="button"
