@@ -1,5 +1,7 @@
+import type { CSSProperties } from 'react';
 import { useDerivedGameState } from '../hooks';
 import { TeamBadge } from '../components/TeamBadge';
+import { ACCENT_CARD_STYLE, ACCENT_TEXT_STYLE } from '../utils/theme-styles';
 import type {
   Driver,
   Chief,
@@ -9,6 +11,10 @@ import type {
   ChiefRole,
   DriverRole,
 } from '../../shared/domain';
+
+// ===========================================
+// CONSTANTS
+// ===========================================
 
 const STAFF_QUALITY_ORDER: StaffQuality[] = [
   'excellent',
@@ -49,6 +55,16 @@ const STAFF_QUALITY_LABELS: Record<StaffQuality, string> = {
   trainee: 'Trainee',
 };
 
+const MORALE_THRESHOLDS = {
+  EXCELLENT: 80,
+  GOOD: 60,
+  LOW: 40,
+} as const;
+
+// ===========================================
+// FORMATTERS
+// ===========================================
+
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -68,16 +84,48 @@ function formatAnnualSalary(amount: number): string {
   return `$${formatCompactAmount(amount)}/yr`;
 }
 
+function getMoraleColor(value: number): string {
+  if (value >= MORALE_THRESHOLDS.EXCELLENT) return 'bg-emerald-500';
+  if (value >= MORALE_THRESHOLDS.GOOD) return 'bg-yellow-500';
+  if (value >= MORALE_THRESHOLDS.LOW) return 'bg-orange-500';
+  return 'bg-red-500';
+}
+
+function getMoraleGlow(value: number): string {
+  if (value >= MORALE_THRESHOLDS.EXCELLENT) return '0 0 8px rgba(16, 185, 129, 0.5)';
+  if (value >= MORALE_THRESHOLDS.GOOD) return '0 0 8px rgba(234, 179, 8, 0.5)';
+  if (value >= MORALE_THRESHOLDS.LOW) return '0 0 8px rgba(249, 115, 22, 0.5)';
+  return '0 0 8px rgba(239, 68, 68, 0.5)';
+}
+
+// ===========================================
+// SHARED COMPONENTS
+// ===========================================
+
 interface StatCardProps {
   label: string;
   value: React.ReactNode;
+  accent?: boolean;
 }
 
-function StatCard({ label, value }: StatCardProps) {
+function StatCard({ label, value, accent = false }: StatCardProps) {
+  const cardStyle: CSSProperties = accent ? ACCENT_CARD_STYLE : {};
+  const valueStyle: CSSProperties = accent ? ACCENT_TEXT_STYLE : {};
+
   return (
-    <div className="bg-gray-800 rounded-lg p-4">
-      <div className="text-xs text-gray-400 mb-1">{label}</div>
-      <div className="text-lg font-semibold text-white">{value}</div>
+    <div
+      className="card p-4"
+      style={cardStyle}
+    >
+      <div className="text-xs font-medium text-muted uppercase tracking-wider mb-1">
+        {label}
+      </div>
+      <div
+        className="text-lg font-bold text-primary"
+        style={valueStyle}
+      >
+        {value}
+      </div>
     </div>
   );
 }
@@ -87,37 +135,37 @@ interface SectionHeadingProps {
 }
 
 function SectionHeading({ children }: SectionHeadingProps) {
-  return <h2 className="text-lg font-semibold text-white mb-3">{children}</h2>;
+  return (
+    <h2 className="text-base font-bold text-primary uppercase tracking-wide mb-4 flex items-center gap-3">
+      <span>{children}</span>
+      <div className="flex-1 h-px bg-[var(--neutral-750)]" />
+    </h2>
+  );
 }
 
 interface ProgressBarProps {
   value: number;
   colorClass: string;
+  glow?: string;
 }
 
-function ProgressBar({ value, colorClass }: ProgressBarProps) {
+function ProgressBar({ value, colorClass, glow }: ProgressBarProps) {
   return (
-    <div className="flex-1 bg-gray-700 rounded-full h-2">
+    <div className="progress-track flex-1 h-2">
       <div
-        className={`h-2 rounded-full ${colorClass}`}
-        style={{ width: `${value}%` }}
+        className={`progress-fill h-2 ${colorClass}`}
+        style={{
+          width: `${value}%`,
+          boxShadow: glow,
+        }}
       />
     </div>
   );
 }
 
-const MORALE_THRESHOLDS = {
-  EXCELLENT: 80,
-  GOOD: 60,
-  LOW: 40,
-} as const;
-
-function getMoraleColor(value: number): string {
-  if (value >= MORALE_THRESHOLDS.EXCELLENT) return 'bg-green-500';
-  if (value >= MORALE_THRESHOLDS.GOOD) return 'bg-yellow-500';
-  if (value >= MORALE_THRESHOLDS.LOW) return 'bg-orange-500';
-  return 'bg-red-500';
-}
+// ===========================================
+// DRIVER & CHIEF CARDS
+// ===========================================
 
 interface DriverCardProps {
   driver: Driver;
@@ -125,31 +173,29 @@ interface DriverCardProps {
 
 function DriverCard({ driver }: DriverCardProps) {
   return (
-    <div className="bg-gray-800 rounded-lg p-4 flex gap-4">
+    <div className="card p-4 flex gap-4">
       {/* Driver photo or placeholder */}
-      <div className="w-16 h-20 bg-gray-700 rounded flex items-center justify-center text-gray-500 text-xs shrink-0">
+      <div className="w-16 h-20 rounded-lg overflow-hidden shrink-0 surface-inset flex items-center justify-center">
         {driver.photoUrl ? (
           <img
             src={driver.photoUrl}
             alt={`${driver.firstName} ${driver.lastName}`}
-            className="w-full h-full object-cover rounded"
+            className="w-full h-full object-cover"
           />
         ) : (
-          'No Photo'
+          <span className="text-xs text-muted">No Photo</span>
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="font-semibold text-white">
+        <div className="font-bold text-primary">
           {driver.firstName} {driver.lastName}
         </div>
-        <div className="text-sm text-gray-400">
+        <div className="text-sm font-medium text-secondary">
           {DRIVER_ROLE_LABELS[driver.role] ?? driver.role}
         </div>
-        <div className="text-xs text-gray-500 mt-1">
-          {driver.nationality} | Rep: {driver.reputation}
-        </div>
-        <div className="text-xs text-gray-500">
-          Salary: {formatAnnualSalary(driver.salary)} | Contract: S{driver.contractEnd}
+        <div className="text-xs text-muted mt-2 space-y-0.5">
+          <div>{driver.nationality} · Rep: {driver.reputation}</div>
+          <div>Salary: {formatAnnualSalary(driver.salary)} · Contract: S{driver.contractEnd}</div>
         </div>
       </div>
     </div>
@@ -162,19 +208,23 @@ interface ChiefCardProps {
 
 function ChiefCard({ chief }: ChiefCardProps) {
   return (
-    <div className="bg-gray-800 rounded-lg p-3">
-      <div className="text-xs text-gray-400 mb-1">
+    <div className="card p-3">
+      <div className="text-xs font-medium text-muted uppercase tracking-wider mb-1">
         {CHIEF_ROLE_LABELS[chief.role] ?? chief.role}
       </div>
-      <div className="font-semibold text-white">
+      <div className="font-bold text-primary">
         {chief.firstName} {chief.lastName}
       </div>
-      <div className="text-xs text-gray-500 mt-1">
-        Ability: {chief.ability} | Salary: {formatAnnualSalary(chief.salary)}
+      <div className="text-xs text-muted mt-2">
+        Ability: {chief.ability} · {formatAnnualSalary(chief.salary)}
       </div>
     </div>
   );
 }
+
+// ===========================================
+// MORALE & STAFF SECTIONS
+// ===========================================
 
 interface MoraleBarProps {
   label: string;
@@ -183,10 +233,14 @@ interface MoraleBarProps {
 
 function MoraleBar({ label, value }: MoraleBarProps) {
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-xs text-gray-400 w-24">{label}</span>
-      <ProgressBar value={value} colorClass={getMoraleColor(value)} />
-      <span className="text-xs text-gray-500 w-8 text-right">{value}</span>
+    <div className="flex items-center gap-3">
+      <span className="text-xs font-medium text-secondary w-24">{label}</span>
+      <ProgressBar
+        value={value}
+        colorClass={getMoraleColor(value)}
+        glow={getMoraleGlow(value)}
+      />
+      <span className="text-xs font-bold text-primary w-8 text-right tabular-nums">{value}</span>
     </div>
   );
 }
@@ -197,7 +251,7 @@ interface StaffSummaryProps {
 
 function StaffSummary({ teamState }: StaffSummaryProps) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {DEPARTMENTS.map((dept) => {
         const counts = teamState.staffCounts[dept];
         const total = STAFF_QUALITY_ORDER.reduce(
@@ -205,17 +259,17 @@ function StaffSummary({ teamState }: StaffSummaryProps) {
           0
         );
         return (
-          <div key={dept} className="flex items-center gap-2">
-            <span className="text-xs text-gray-400 w-24">{DEPARTMENT_LABELS[dept]}</span>
-            <span className="text-xs text-white">{total} staff</span>
-            <span className="text-xs text-gray-500">
+          <div key={dept} className="flex items-center gap-3">
+            <span className="text-xs font-medium text-secondary w-24">{DEPARTMENT_LABELS[dept]}</span>
+            <span className="text-sm font-bold text-primary">{total}</span>
+            <span className="text-xs text-muted">
               ({STAFF_QUALITY_ORDER.map((quality) => counts[quality] || 0).join('/')})
             </span>
           </div>
         );
       })}
-      <div className="text-xs text-gray-600 mt-1">
-        ({STAFF_QUALITY_ORDER.map((quality) => STAFF_QUALITY_LABELS[quality]).join('/')})
+      <div className="text-xs text-muted pt-2 border-t border-[var(--neutral-800)]">
+        Quality breakdown: {STAFF_QUALITY_ORDER.map((q) => STAFF_QUALITY_LABELS[q]).join(' / ')}
       </div>
     </div>
   );
@@ -229,14 +283,20 @@ function DevelopmentTestingSection({ teamState }: DevelopmentTestingSectionProps
   const { handlingPercentage, handlingProblemsFound } = teamState.developmentTesting;
 
   return (
-    <div className="bg-gray-800 rounded-lg p-4">
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-sm text-gray-400">Handling Knowledge:</span>
-        <ProgressBar value={handlingPercentage} colorClass="bg-blue-500" />
-        <span className="text-sm text-white">{handlingPercentage}%</span>
+    <div className="card p-4" style={ACCENT_CARD_STYLE}>
+      <div className="flex items-center gap-3 mb-2">
+        <span className="text-sm font-medium text-secondary">Handling Knowledge</span>
+        <ProgressBar
+          value={handlingPercentage}
+          colorClass="bg-[var(--accent-500)]"
+          glow="0 0 8px color-mix(in srgb, var(--accent-500) 50%, transparent)"
+        />
+        <span className="text-sm font-bold tabular-nums" style={ACCENT_TEXT_STYLE}>
+          {handlingPercentage}%
+        </span>
       </div>
       {handlingProblemsFound.length > 0 && (
-        <div className="text-xs text-gray-500">
+        <div className="text-xs text-muted">
           Problems found: {handlingProblemsFound.join(', ')}
         </div>
       )}
@@ -244,13 +304,17 @@ function DevelopmentTestingSection({ teamState }: DevelopmentTestingSectionProps
   );
 }
 
+// ===========================================
+// MAIN COMPONENT
+// ===========================================
+
 export function TeamProfile() {
   const { gameState, playerTeam } = useDerivedGameState();
 
   if (!gameState || !playerTeam) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-500">
-        <p>Loading team data...</p>
+      <div className="flex items-center justify-center h-full">
+        <p className="text-secondary">Loading team data...</p>
       </div>
     );
   }
@@ -260,27 +324,33 @@ export function TeamProfile() {
   const teamState = gameState.teamStates[playerTeam.id];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 max-w-6xl">
       {/* Team Header */}
       <div className="flex items-start gap-6">
         <TeamBadge team={playerTeam} className="w-24 h-20" />
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-white">{playerTeam.name}</h1>
-          <div className="text-gray-400">Principal: {playerTeam.principal}</div>
-          <div className="text-gray-500 text-sm mt-2">{playerTeam.description}</div>
+          <h1 className="text-2xl font-bold text-primary tracking-tight">
+            {playerTeam.name}
+          </h1>
+          <div className="text-secondary font-medium mt-1">
+            Principal: {playerTeam.principal}
+          </div>
+          <p className="text-sm text-muted mt-2 max-w-2xl leading-relaxed">
+            {playerTeam.description}
+          </p>
         </div>
       </div>
 
       {/* Team Info Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Budget" value={formatCurrency(playerTeam.budget)} />
+        <StatCard label="Budget" value={formatCurrency(playerTeam.budget)} accent />
         <StatCard label="Headquarters" value={playerTeam.headquarters} />
         <StatCard label="Factory Level" value={`${playerTeam.factoryLevel}/100`} />
         <StatCard label="Setup Points" value={teamState?.setupPoints ?? 0} />
       </div>
 
       {/* Drivers Section */}
-      <div>
+      <section>
         <SectionHeading>Drivers</SectionHeading>
         {teamDrivers.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -289,12 +359,12 @@ export function TeamProfile() {
             ))}
           </div>
         ) : (
-          <div className="text-gray-500">No drivers contracted</div>
+          <p className="text-muted">No drivers contracted</p>
         )}
-      </div>
+      </section>
 
       {/* Chiefs Section */}
-      <div>
+      <section>
         <SectionHeading>Department Chiefs</SectionHeading>
         {teamChiefs.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -303,15 +373,15 @@ export function TeamProfile() {
             ))}
           </div>
         ) : (
-          <div className="text-gray-500">No chiefs assigned</div>
+          <p className="text-muted">No chiefs assigned</p>
         )}
-      </div>
+      </section>
 
       {/* Department Morale */}
       {teamState && (
-        <div>
+        <section>
           <SectionHeading>Department Morale</SectionHeading>
-          <div className="bg-gray-800 rounded-lg p-4 space-y-2">
+          <div className="card p-5 space-y-3">
             {DEPARTMENTS.map((dept) => (
               <MoraleBar
                 key={dept}
@@ -320,25 +390,25 @@ export function TeamProfile() {
               />
             ))}
           </div>
-        </div>
+        </section>
       )}
 
       {/* Staff Counts */}
       {teamState && (
-        <div>
+        <section>
           <SectionHeading>Staff</SectionHeading>
-          <div className="bg-gray-800 rounded-lg p-4">
+          <div className="card p-5">
             <StaffSummary teamState={teamState} />
           </div>
-        </div>
+        </section>
       )}
 
       {/* Development Testing Progress */}
       {teamState && (
-        <div>
+        <section>
           <SectionHeading>Development Testing</SectionHeading>
           <DevelopmentTestingSection teamState={teamState} />
-        </div>
+        </section>
       )}
     </div>
   );
