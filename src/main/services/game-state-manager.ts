@@ -156,6 +156,14 @@ function createAllTeamStates(teams: Team[]): Record<string, TeamRuntimeState> {
 }
 
 /**
+ * Deep clones an array of entities to prevent cache corruption.
+ * Entities in GameState will evolve during play - we must not mutate ConfigLoader's cache.
+ */
+function cloneEntities<T>(entities: T[]): T[] {
+  return JSON.parse(JSON.stringify(entities)) as T[];
+}
+
+/**
  * Creates initial driver standings (all zeros, positions assigned by team order)
  */
 function createInitialDriverStandings(drivers: Driver[]): DriverStanding[] {
@@ -335,6 +343,17 @@ export const GameStateManager = {
     if (manufacturers.length === 0) {
       throw new Error('No manufacturers found in config data');
     }
+    if (chiefs.length === 0) {
+      throw new Error('No chiefs found in config data');
+    }
+
+    // Clone entities to prevent cache corruption (they evolve during play)
+    const clonedTeams = cloneEntities(teams);
+    const clonedDrivers = cloneEntities(drivers);
+    const clonedChiefs = cloneEntities(chiefs);
+    const clonedSponsors = cloneEntities(sponsors);
+    const clonedManufacturers = cloneEntities(manufacturers);
+    const clonedCircuits = cloneEntities(circuits);
 
     // Create runtime states
     const driverStates = createAllDriverStates(drivers);
@@ -390,12 +409,12 @@ export const GameStateManager = {
 
       currentSeason,
 
-      teams,
-      drivers,
-      chiefs,
-      sponsors,
-      manufacturers,
-      circuits,
+      teams: clonedTeams,
+      drivers: clonedDrivers,
+      chiefs: clonedChiefs,
+      sponsors: clonedSponsors,
+      manufacturers: clonedManufacturers,
+      circuits: clonedCircuits,
 
       driverStates,
       teamStates,
