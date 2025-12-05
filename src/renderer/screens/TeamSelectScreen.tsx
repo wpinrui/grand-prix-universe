@@ -110,7 +110,6 @@ function getDriverRolePriority(role: DriverRole): number {
   }
 }
 
-
 // ===========================================
 // MAIN COMPONENT
 // ===========================================
@@ -221,7 +220,7 @@ export function TeamSelectScreen() {
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="btn px-4 py-2 text-secondary hover:text-primary"
+          className={GHOST_BUTTON_CLASSES}
         >
           <ArrowLeft size={18} />
           <span>Go Back</span>
@@ -237,7 +236,7 @@ export function TeamSelectScreen() {
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="btn px-4 py-2 text-secondary hover:text-primary"
+          className={GHOST_BUTTON_CLASSES}
         >
           <ArrowLeft size={18} />
           <span>Go Back</span>
