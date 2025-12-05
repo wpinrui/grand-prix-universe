@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Routes } from '../routes';
+import { RoutePaths } from '../routes';
 
 export function TitleScreen() {
   const navigate = useNavigate();
@@ -9,7 +9,7 @@ export function TitleScreen() {
       <h1>Grand Prix Universe</h1>
       <p>F1 Team Management Simulation</p>
       <div className="menu">
-        <button onClick={() => navigate(Routes.TEAM_SELECT)}>New Game</button>
+        <button onClick={() => navigate(RoutePaths.TEAM_SELECT)}>New Game</button>
       </div>
     </div>
   );

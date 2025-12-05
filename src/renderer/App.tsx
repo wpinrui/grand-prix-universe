@@ -1,5 +1,5 @@
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
-import { Routes as AppRoutes } from './routes';
+import { RoutePaths } from './routes';
 import { TitleScreen, TeamSelectScreen, GameScreen } from './screens';
 
 function App() {
@@ -7,9 +7,9 @@ function App() {
     <MemoryRouter>
       <div className="app">
         <Routes>
-          <Route path={AppRoutes.TITLE} element={<TitleScreen />} />
-          <Route path={AppRoutes.TEAM_SELECT} element={<TeamSelectScreen />} />
-          <Route path={AppRoutes.GAME} element={<GameScreen />} />
+          <Route path={RoutePaths.TITLE} element={<TitleScreen />} />
+          <Route path={RoutePaths.TEAM_SELECT} element={<TeamSelectScreen />} />
+          <Route path={RoutePaths.GAME} element={<GameScreen />} />
         </Routes>
       </div>
     </MemoryRouter>
