@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import { useSavesList, useLoadGame, useDeleteSave, useTeams } from '../hooks/useIpc';
+import { useSavesList, useLoadGame, useDeleteSave, useTeamsById } from '../hooks/useIpc';
 import { DeleteConfirmDialog } from '../components/DeleteConfirmDialog';
 import { SaveCard } from '../components/SaveCard';
 import { GHOST_BUTTON_CLASSES } from '../utils/theme-styles';
+import { getSaveDisplayName } from '../utils/format';
 import { RoutePaths } from '../routes';
 import type { SaveSlotInfo } from '../../shared/ipc';
-import type { Team } from '../../shared/domain';
 
 // ===========================================
 // MAIN COMPONENT
@@ -20,14 +20,9 @@ export function LoadGameScreen() {
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const { data: saves, isLoading: savesLoading } = useSavesList();
-  const { data: teams } = useTeams();
+  const teamsById = useTeamsById();
   const loadGame = useLoadGame();
   const deleteSave = useDeleteSave();
-
-  const teamsById = teams?.reduce<Record<string, Team>>((acc, team) => {
-    acc[team.id] = team;
-    return acc;
-  }, {}) ?? {};
 
   const handleLoad = async (filename: string) => {
     setLoadingFilename(filename);
@@ -97,7 +92,7 @@ export function LoadGameScreen() {
         {/* Delete confirmation dialog */}
         {deleteTarget && (
           <DeleteConfirmDialog
-            saveName={`${deleteTarget.teamName} - ${deleteTarget.playerName}`}
+            saveName={getSaveDisplayName(deleteTarget)}
             onConfirm={handleDeleteConfirm}
             onCancel={() => setDeleteTarget(null)}
           />

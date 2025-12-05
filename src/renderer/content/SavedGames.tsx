@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Save, Loader2, FolderOpen } from 'lucide-react';
-import { useSavesList, useSaveGame, useLoadGame, useDeleteSave, useTeams, useOpenSavesFolder } from '../hooks/useIpc';
+import { useSavesList, useSaveGame, useLoadGame, useDeleteSave, useTeamsById, useOpenSavesFolder } from '../hooks/useIpc';
 import { DeleteConfirmDialog } from '../components/DeleteConfirmDialog';
 import { SaveCard } from '../components/SaveCard';
 import { PRIMARY_BUTTON_CLASSES, GHOST_BUTTON_CLASSES } from '../utils/theme-styles';
+import { getSaveDisplayName } from '../utils/format';
 import type { SaveSlotInfo } from '../../shared/ipc';
-import type { Team } from '../../shared/domain';
 
 // ===========================================
 // TYPES
@@ -24,16 +24,11 @@ export function SavedGames({ onNavigateToProfile }: SavedGamesProps) {
   const [loadingFilename, setLoadingFilename] = useState<string | null>(null);
 
   const { data: saves, isLoading: savesLoading } = useSavesList();
-  const { data: teams } = useTeams();
+  const teamsById = useTeamsById();
   const saveGame = useSaveGame();
   const loadGame = useLoadGame();
   const deleteSave = useDeleteSave();
   const openSavesFolder = useOpenSavesFolder();
-
-  const teamsById = teams?.reduce<Record<string, Team>>((acc, team) => {
-    acc[team.id] = team;
-    return acc;
-  }, {}) ?? {};
 
   const handleSave = () => {
     saveGame.mutate();
@@ -136,7 +131,7 @@ export function SavedGames({ onNavigateToProfile }: SavedGamesProps) {
       {/* Delete confirmation dialog */}
       {deleteTarget && (
         <DeleteConfirmDialog
-          saveName={`${deleteTarget.teamName} - ${deleteTarget.playerName}`}
+          saveName={getSaveDisplayName(deleteTarget)}
           onConfirm={handleDeleteConfirm}
           onCancel={() => setDeleteTarget(null)}
         />

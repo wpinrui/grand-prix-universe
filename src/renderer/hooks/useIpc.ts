@@ -6,7 +6,7 @@
  * Game state has shorter cache time and can be manually invalidated.
  */
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { IpcChannels, type SaveResult, type LoadResult, type SaveSlotInfo } from '../../shared/ipc';
 import type {
@@ -202,6 +202,22 @@ export function useOpenSavesFolder() {
 // =============================================================================
 // UTILITY HOOKS
 // =============================================================================
+
+/**
+ * Returns teams indexed by their ID for O(1) lookups.
+ * Commonly needed when displaying saves with team info.
+ */
+export function useTeamsById() {
+  const { data: teams } = useTeams();
+  const teamsById = useMemo(() => {
+    if (!teams) return {};
+    return teams.reduce<Record<string, Team>>((acc, team) => {
+      acc[team.id] = team;
+      return acc;
+    }, {});
+  }, [teams]);
+  return teamsById;
+}
 
 /**
  * Invalidate game state cache - call after any action that modifies game state

@@ -3,6 +3,7 @@
  */
 
 import type { DriverRole } from '../../shared/domain';
+import type { SaveSlotInfo } from '../../shared/ipc';
 
 // ===========================================
 // DRIVER ROLE LABELS
@@ -63,4 +64,15 @@ export function formatDateTime(isoString: string): string {
     hour: 'numeric',
     minute: '2-digit',
   });
+}
+
+// ===========================================
+// SAVE FILE FORMATTERS
+// ===========================================
+
+/**
+ * Format a save's display name (e.g., "Ferrari - John Smith")
+ */
+export function getSaveDisplayName(save: SaveSlotInfo): string {
+  return `${save.teamName} - ${save.playerName}`;
 }
