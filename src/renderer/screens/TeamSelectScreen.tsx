@@ -72,9 +72,10 @@ function DriverPhoto({ driver }: { driver: Driver }) {
     const container = containerRef.current;
 
     // Generate face if no photo URL or photo failed to load
+    // Render slightly smaller (56px) to fit more of face in 64px circle
     if (shouldGenerateFace && container) {
       container.innerHTML = '';
-      generateFace(container, driver.id, driver.nationality);
+      generateFace(container, driver.id, driver.nationality, 50);
     }
 
     // Cleanup on unmount or before re-running effect
@@ -96,11 +97,15 @@ function DriverPhoto({ driver }: { driver: Driver }) {
     );
   }
 
+  // SVG viewBox is 400x600 (portrait), so at 56px wide it renders 56x84
+  // Center horizontally and shift up to show face
   return (
-    <div
-      ref={containerRef}
-      className="w-16 h-16 rounded-full overflow-hidden bg-gray-600"
-    />
+    <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-600 flex justify-center">
+      <div
+        ref={containerRef}
+        style={{ marginTop: '-6px' }}
+      />
+    </div>
   );
 }
 
