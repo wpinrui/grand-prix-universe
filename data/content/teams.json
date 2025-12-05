@@ -8,7 +8,9 @@
       "secondaryColor": "#0057B8",
       "headquarters": "United Kingdom",
       "budget": 220000000,
-      "factoryLevel": 95
+      "factoryLevel": 95,
+      "engineManufacturerId": "mercedes-hpe",
+      "initialSponsorIds": ["vodafone", "aws", "rolex"]
     },
     {
       "id": "silver-arrow-motorsport",
@@ -18,7 +20,9 @@
       "secondaryColor": "#00D2BE",
       "headquarters": "Germany",
       "budget": 200000000,
-      "factoryLevel": 90
+      "factoryLevel": 90,
+      "engineManufacturerId": "mercedes-hpe",
+      "initialSponsorIds": ["petronas", "monster-energy", "iwc"]
     },
     {
       "id": "crimson-bull-racing",
@@ -28,7 +32,9 @@
       "secondaryColor": "#DC2626",
       "headquarters": "Austria",
       "budget": 195000000,
-      "factoryLevel": 88
+      "factoryLevel": 88,
+      "engineManufacturerId": "honda-rbpt",
+      "initialSponsorIds": ["oracle", "red-bull", "tag-heuer"]
     },
     {
       "id": "scuderia-veloce",
@@ -38,7 +44,9 @@
       "secondaryColor": "#FBBF24",
       "headquarters": "Italy",
       "budget": 190000000,
-      "factoryLevel": 86
+      "factoryLevel": 86,
+      "engineManufacturerId": "ferrari-pu",
+      "initialSponsorIds": ["shell", "richard-mille", "ups"]
     },
     {
       "id": "willards-gp-team",
@@ -48,7 +56,9 @@
       "secondaryColor": "#FFFFFF",
       "headquarters": "United Kingdom",
       "budget": 120000000,
-      "factoryLevel": 65
+      "factoryLevel": 65,
+      "engineManufacturerId": "mercedes-hpe",
+      "initialSponsorIds": ["hp", "dhl"]
     },
     {
       "id": "toro-minore",
@@ -58,7 +68,9 @@
       "secondaryColor": "#FFFFFF",
       "headquarters": "Italy",
       "budget": 100000000,
-      "factoryLevel": 55
+      "factoryLevel": 55,
+      "engineManufacturerId": "honda-rbpt",
+      "initialSponsorIds": ["dell", "cisco"]
     },
     {
       "id": "emerald-racing-team",
@@ -68,7 +80,9 @@
       "secondaryColor": "#00FF87",
       "headquarters": "United Kingdom",
       "budget": 95000000,
-      "factoryLevel": 52
+      "factoryLevel": 52,
+      "engineManufacturerId": "mercedes-hpe",
+      "initialSponsorIds": ["amd", "castrol"]
     },
     {
       "id": "automation-gp",
@@ -78,7 +92,9 @@
       "secondaryColor": "#B91C1C",
       "headquarters": "United States",
       "budget": 90000000,
-      "factoryLevel": 48
+      "factoryLevel": 48,
+      "engineManufacturerId": "ferrari-pu",
+      "initialSponsorIds": ["fedex", "visa"]
     },
     {
       "id": "sabre-grand-prix",
@@ -88,7 +104,9 @@
       "secondaryColor": "#FFFFFF",
       "headquarters": "Switzerland",
       "budget": 75000000,
-      "factoryLevel": 40
+      "factoryLevel": 40,
+      "engineManufacturerId": "ferrari-pu",
+      "initialSponsorIds": ["coca-cola", "allianz"]
     },
     {
       "id": "team-alfie",
@@ -98,7 +116,9 @@
       "secondaryColor": "#FF87BC",
       "headquarters": "France",
       "budget": 60000000,
-      "factoryLevel": 32
+      "factoryLevel": 32,
+      "engineManufacturerId": "renault-sport",
+      "initialSponsorIds": ["axa", "pirelli"]
     }
   ]
 }

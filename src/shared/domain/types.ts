@@ -78,6 +78,8 @@ export interface Team {
   headquarters: string; // country/location
   budget: number; // current balance in dollars
   factoryLevel: number; // 0-100, affects staff/facility limits
+  engineManufacturerId: string; // initial engine supplier
+  initialSponsorIds: string[]; // sponsor IDs for game start
 }
 
 /**
