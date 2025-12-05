@@ -6,6 +6,7 @@
  * Game state has shorter cache time and can be manually invalidated.
  */
 
+import { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { IpcChannels, type SaveResult, type LoadResult, type SaveSlotInfo } from '../../shared/ipc';
 import type {
@@ -201,5 +202,8 @@ export function useDeleteSave() {
  */
 export function useInvalidateGameState() {
   const queryClient = useQueryClient();
-  return () => queryClient.invalidateQueries({ queryKey: queryKeys.gameState });
+  return useCallback(
+    () => queryClient.invalidateQueries({ queryKey: queryKeys.gameState }),
+    [queryClient]
+  );
 }
