@@ -5,7 +5,7 @@
  * All colors are adjusted to ensure readable contrast.
  */
 
-import chroma from 'chroma-js';
+import chroma, { contrast } from 'chroma-js';
 
 /**
  * Generated color palette with all theme colors
@@ -37,8 +37,8 @@ export interface ColorPalette {
  * Get a contrasting text color (white or black) for a given background
  */
 function getContrastColor(background: string): string {
-  const whiteContrast = chroma.contrast(background, 'white');
-  const blackContrast = chroma.contrast(background, 'black');
+  const whiteContrast = contrast(background, 'white');
+  const blackContrast = contrast(background, 'black');
   return whiteContrast >= blackContrast ? '#ffffff' : '#000000';
 }
 
