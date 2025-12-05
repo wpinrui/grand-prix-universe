@@ -24,7 +24,6 @@ import type {
   ActiveManufacturerContract,
   Driver,
   Team,
-  SeasonRegulations,
 } from '../../shared/domain';
 import {
   GamePhase,
@@ -42,6 +41,18 @@ const PRE_SEASON_START_WEEK = 1;
 /** Default contract duration in seasons */
 const DEFAULT_CONTRACT_DURATION = 3;
 
+/** Initial morale for drivers and departments (0-100 scale) */
+const INITIAL_MORALE = 70;
+
+/** Initial fitness for drivers (0-100 scale, 100 = fully fit) */
+const INITIAL_FITNESS = 100;
+
+/** Initial fatigue for drivers (0-100 scale, 0 = fresh) */
+const INITIAL_FATIGUE = 0;
+
+/** Initial sponsor satisfaction (0-100 scale, 60 = neutral-good) */
+const INITIAL_SPONSOR_SATISFACTION = 60;
+
 /** Parameters for creating a new game */
 export interface NewGameParams {
   playerName: string;
@@ -54,9 +65,9 @@ export interface NewGameParams {
  */
 function createInitialDriverState(): DriverRuntimeState {
   return {
-    morale: 70, // Start at good baseline
-    fitness: 100, // Fully fit
-    fatigue: 0, // Fresh at season start
+    morale: INITIAL_MORALE,
+    fitness: INITIAL_FITNESS,
+    fatigue: INITIAL_FATIGUE,
     injuryWeeksRemaining: 0,
     banRacesRemaining: 0,
     isAngry: false,
@@ -70,10 +81,10 @@ function createInitialDriverState(): DriverRuntimeState {
  */
 function createInitialDepartmentMorale(): DepartmentMorale {
   return {
-    [Department.Commercial]: 70,
-    [Department.Design]: 70,
-    [Department.Engineering]: 70,
-    [Department.Mechanics]: 70,
+    [Department.Commercial]: INITIAL_MORALE,
+    [Department.Design]: INITIAL_MORALE,
+    [Department.Engineering]: INITIAL_MORALE,
+    [Department.Mechanics]: INITIAL_MORALE,
   };
 }
 
@@ -84,10 +95,9 @@ function createInitialTeamState(
   sponsorIds: string[],
   initialStaffCounts: DepartmentStaffCounts
 ): TeamRuntimeState {
-  // Initialize sponsor satisfaction at 60 (neutral-good)
   const sponsorSatisfaction: Record<string, number> = {};
   for (const sponsorId of sponsorIds) {
-    sponsorSatisfaction[sponsorId] = 60;
+    sponsorSatisfaction[sponsorId] = INITIAL_SPONSOR_SATISFACTION;
   }
 
   return {
@@ -291,7 +301,7 @@ export const GameStateManager = {
       calendar,
       driverStandings,
       constructorStandings,
-      regulations: regulations as SeasonRegulations,
+      regulations,
     };
 
     // Create initial contracts
