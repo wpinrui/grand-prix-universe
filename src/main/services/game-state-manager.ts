@@ -379,7 +379,7 @@ export const GameStateManager = {
       calendar,
       driverStandings,
       constructorStandings,
-      regulations,
+      regulations: cloneDeep(regulations),
     };
 
     // Create initial contracts
@@ -430,7 +430,7 @@ export const GameStateManager = {
       manufacturerContracts,
 
       pastSeasons: [],
-      rules,
+      rules: cloneDeep(rules),
     };
 
     // Store as current state
