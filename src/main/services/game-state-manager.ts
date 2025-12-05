@@ -55,6 +55,9 @@ const INITIAL_FATIGUE = 0;
 /** Initial sponsor satisfaction (0-100 scale, 60 = neutral-good) */
 const INITIAL_SPONSOR_SATISFACTION = 60;
 
+/** Initial bonus level for new contracts (0 = no bonus) */
+const INITIAL_BONUS_LEVEL = 0;
+
 /** First race typically in March (week 10) */
 const FIRST_RACE_WEEK = 10;
 
@@ -190,10 +193,9 @@ function createInitialSponsorDeals(
     for (const sponsorId of team.initialSponsorIds) {
       const sponsor = sponsors.find((s) => s.id === sponsorId);
       if (!sponsor) {
-        console.warn(
-          `Sponsor "${sponsorId}" not found for team "${team.id}" - skipping`
+        throw new Error(
+          `Data integrity error: sponsor "${sponsorId}" not found for team "${team.id}"`
         );
-        continue;
       }
 
       deals.push({
@@ -201,7 +203,7 @@ function createInitialSponsorDeals(
         teamId: team.id,
         tier: sponsor.tier,
         annualPayment: sponsor.payment,
-        bonusLevel: 0, // No bonus at start
+        bonusLevel: INITIAL_BONUS_LEVEL,
         guaranteed: false,
         startSeason: seasonNumber,
         endSeason: seasonNumber + DEFAULT_CONTRACT_DURATION - 1,
@@ -227,24 +229,20 @@ function createInitialManufacturerContracts(
       (m) => m.id === team.initialEngineManufacturerId
     );
     if (!manufacturer) {
-      console.warn(
-        `Manufacturer "${team.initialEngineManufacturerId}" not found for team "${team.id}" - skipping`
+      throw new Error(
+        `Data integrity error: manufacturer "${team.initialEngineManufacturerId}" not found for team "${team.id}"`
       );
-      continue;
     }
 
-    // Determine deal type based on team/manufacturer relationship
-    // Works teams: manufacturer name appears in team name or same HQ country
-    // For simplicity, all start as customer deals
-    const dealType = ManufacturerDealType.Customer;
-
+    // All teams start as customer deals for simplicity
+    // Works team detection could be added later (e.g., matching HQ country)
     contracts.push({
       manufacturerId: manufacturer.id,
       teamId: team.id,
       type: ManufacturerType.Engine,
-      dealType,
+      dealType: ManufacturerDealType.Customer,
       annualCost: manufacturer.annualCost,
-      bonusLevel: 0,
+      bonusLevel: INITIAL_BONUS_LEVEL,
       startSeason: seasonNumber,
       endSeason: seasonNumber + DEFAULT_CONTRACT_DURATION - 1,
     });
@@ -289,6 +287,17 @@ export const GameStateManager = {
     const sponsors = ConfigLoader.getSponsors();
     const manufacturers = ConfigLoader.getManufacturers();
     const circuits = ConfigLoader.getCircuits();
+
+    // Validate critical arrays are not empty (fail-fast)
+    if (teams.length === 0) {
+      throw new Error('No teams found in config data');
+    }
+    if (drivers.length === 0) {
+      throw new Error('No drivers found in config data');
+    }
+    if (circuits.length === 0) {
+      throw new Error('No circuits found in config data');
+    }
 
     // Create runtime states
     const driverStates: Record<string, DriverRuntimeState> = {};
