@@ -15,14 +15,13 @@ interface TeamBadgeProps {
 export function TeamBadge({ team, className = 'w-14 h-12' }: TeamBadgeProps) {
   const primaryColor = team?.primaryColor ?? FALLBACK_PRIMARY_COLOR;
   const secondaryColor = team?.secondaryColor ?? FALLBACK_SECONDARY_COLOR;
+  const badgeGlow = `0 4px 12px ${primaryColor}33, 0 0 20px ${primaryColor}22`;
 
   if (team?.logoUrl) {
     return (
       <div
         className={`${className} rounded-lg overflow-hidden shadow-md`}
-        style={{
-          boxShadow: `0 4px 12px ${primaryColor}33, 0 0 20px ${primaryColor}22`,
-        }}
+        style={{ boxShadow: badgeGlow }}
       >
         <img
           src={team.logoUrl}
@@ -37,9 +36,7 @@ export function TeamBadge({ team, className = 'w-14 h-12' }: TeamBadgeProps) {
   return (
     <div
       className={`${className} rounded-lg overflow-hidden shadow-md relative`}
-      style={{
-        boxShadow: `0 4px 12px ${primaryColor}33, 0 0 20px ${primaryColor}22`,
-      }}
+      style={{ boxShadow: badgeGlow }}
     >
       {/* Primary color (full background) */}
       <div
