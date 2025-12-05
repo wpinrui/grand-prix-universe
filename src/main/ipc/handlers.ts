@@ -7,8 +7,7 @@
 import { app, ipcMain } from 'electron';
 import { IpcChannels } from '../../shared/ipc';
 import type { NewGameParams } from '../../shared/domain';
-import { ConfigLoader } from '../services/config-loader';
-import { GameStateManager } from '../services/game-state-manager';
+import { ConfigLoader, GameStateManager, SaveManager } from '../services';
 
 /**
  * Register all IPC handlers.
@@ -74,14 +73,20 @@ export function registerIpcHandlers(): void {
     return GameStateManager.getCurrentState();
   });
 
-  // Save/Load handlers (stubs for now)
-  ipcMain.handle(IpcChannels.GAME_SAVE, (_event, _slotId: string) => {
-    // TODO: Implement when SaveManager exists
-    return { success: false };
+  // Save/Load handlers
+  ipcMain.handle(IpcChannels.GAME_SAVE, async () => {
+    return GameStateManager.saveGame();
   });
 
-  ipcMain.handle(IpcChannels.GAME_LOAD, (_event, _slotId: string) => {
-    // TODO: Implement when SaveManager exists
-    return { success: false };
+  ipcMain.handle(IpcChannels.GAME_LOAD, async (_event, filename: string) => {
+    return GameStateManager.loadGame(filename);
+  });
+
+  ipcMain.handle(IpcChannels.GAME_LIST_SAVES, async () => {
+    return SaveManager.listSaves();
+  });
+
+  ipcMain.handle(IpcChannels.GAME_DELETE_SAVE, async (_event, filename: string) => {
+    return SaveManager.deleteSave(filename);
   });
 }
