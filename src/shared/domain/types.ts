@@ -56,6 +56,12 @@ export enum ManufacturerType {
   Fuel = 'fuel',
 }
 
+export enum ManufacturerDealType {
+  Customer = 'customer', // You pay for supplies
+  Partner = 'partner', // Free supplies, no cash
+  Works = 'works', // Free supplies + cash + R&D priority
+}
+
 // =============================================================================
 // CORE TYPES
 // =============================================================================
@@ -487,7 +493,7 @@ export interface DriverQualifyingResult {
   position: number; // Grid position (1-based)
   bestLapTime: number; // In milliseconds
   gapToFirst: number; // Gap to pole in ms (0 for pole sitter)
-  knockedOutInSession?: number; // Q1=1, Q2=2, null if made Q3
+  knockedOutInSession?: number; // Q1=1, Q2=2, undefined if made Q3
 }
 
 /**
@@ -551,9 +557,9 @@ export interface DriverRuntimeState {
  */
 export interface DepartmentMorale {
   commercial: number; // 0-100
-  design: number;
-  engineering: number;
-  mechanics: number;
+  design: number; // 0-100
+  engineering: number; // 0-100
+  mechanics: number; // 0-100
 }
 
 /**
@@ -599,15 +605,6 @@ export interface ActiveManufacturerContract {
   bonusLevel: number; // 0-3, affects R&D access
   startSeason: number;
   endSeason: number;
-}
-
-/**
- * ManufacturerDealType - Type of technical supplier relationship
- */
-export enum ManufacturerDealType {
-  Customer = 'customer', // You pay for supplies
-  Partner = 'partner', // Free supplies, no cash
-  Works = 'works', // Free supplies + cash + R&D priority
 }
 
 // -----------------------------------------------------------------------------
