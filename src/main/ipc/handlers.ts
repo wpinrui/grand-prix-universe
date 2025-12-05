@@ -7,9 +7,7 @@
 import { app, ipcMain } from 'electron';
 import { IpcChannels } from '../../shared/ipc';
 import type { NewGameParams } from '../../shared/domain';
-import { ConfigLoader } from '../services/config-loader';
-import { GameStateManager } from '../services/game-state-manager';
-import { SaveManager } from '../services/save-manager';
+import { ConfigLoader, GameStateManager, SaveManager } from '../services';
 
 /**
  * Register all IPC handlers.
@@ -77,26 +75,11 @@ export function registerIpcHandlers(): void {
 
   // Save/Load handlers
   ipcMain.handle(IpcChannels.GAME_SAVE, async () => {
-    const state = GameStateManager.getCurrentState();
-    if (!state) {
-      return { success: false, error: 'No active game to save' };
-    }
-    const result = await SaveManager.save(state);
-    // Sync in-memory state's lastSavedAt with what was written to disk
-    if (result.success && result.savedAt) {
-      state.lastSavedAt = result.savedAt;
-    }
-    return result;
+    return GameStateManager.saveGame();
   });
 
   ipcMain.handle(IpcChannels.GAME_LOAD, async (_event, filename: string) => {
-    const result = await SaveManager.load(filename);
-    if (result.success && result.state) {
-      // Update GameStateManager with loaded state and start auto-save
-      GameStateManager.currentState = result.state;
-      GameStateManager.startAutoSave();
-    }
-    return result;
+    return GameStateManager.loadGame(filename);
   });
 
   ipcMain.handle(IpcChannels.GAME_LIST_SAVES, async () => {

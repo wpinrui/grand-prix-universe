@@ -9,6 +9,7 @@
 
 import { ConfigLoader } from './config-loader';
 import { SaveManager } from './save-manager';
+import type { SaveResult, LoadResult } from '../../shared/ipc';
 import type {
   GameState,
   GameDate,
@@ -476,12 +477,9 @@ let autoSaveTimer: ReturnType<typeof setInterval> | null = null;
 function startAutoSave(): void {
   stopAutoSave(); // Clear any existing timer
   autoSaveTimer = setInterval(async () => {
-    const state = GameStateManager.currentState;
-    if (state) {
-      const result = await SaveManager.save(state);
-      if (result.success && result.savedAt) {
-        // Sync in-memory state's lastSavedAt with what was written to disk
-        state.lastSavedAt = result.savedAt;
+    if (GameStateManager.currentState) {
+      const result = await GameStateManager.saveGame();
+      if (result.success) {
         console.log(`[AutoSave] Saved to ${result.filename}`);
       } else {
         console.error(`[AutoSave] Failed: ${result.error}`);
@@ -564,5 +562,34 @@ export const GameStateManager = {
   clearState(): void {
     stopAutoSave();
     GameStateManager.currentState = null;
+  },
+
+  /**
+   * Saves the current game state to a new file.
+   * Handles timestamp syncing automatically.
+   */
+  async saveGame(): Promise<SaveResult> {
+    const state = GameStateManager.currentState;
+    if (!state) {
+      return { success: false, error: 'No active game to save' };
+    }
+    const result = await SaveManager.save(state);
+    if (result.success && result.savedAt) {
+      state.lastSavedAt = result.savedAt;
+    }
+    return result;
+  },
+
+  /**
+   * Loads a game state from a save file.
+   * Sets it as the current state and starts auto-save.
+   */
+  async loadGame(filename: string): Promise<LoadResult> {
+    const result = await SaveManager.load(filename);
+    if (result.success && result.state) {
+      GameStateManager.currentState = result.state;
+      startAutoSave();
+    }
+    return result;
   },
 };
