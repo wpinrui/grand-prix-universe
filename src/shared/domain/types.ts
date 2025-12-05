@@ -491,7 +491,7 @@ export interface DriverQualifyingResult {
   teamId: string;
   gridPosition: number; // Grid position earned (1-based)
   bestLapTime: number; // in ms
-  gapToFirst: number; // Gap to pole in ms (0 for pole sitter)
+  gapToPole: number; // in ms (0 for pole sitter)
   knockedOutInSession?: number; // Q1=1, Q2=2, undefined if made Q3
 }
 
