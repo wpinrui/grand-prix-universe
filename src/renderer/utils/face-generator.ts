@@ -15,7 +15,7 @@ interface AppearanceProfile {
 /**
  * Simple string hash function for deterministic seeding
  */
-export function hashString(str: string): number {
+function hashString(str: string): number {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
@@ -28,7 +28,7 @@ export function hashString(str: string): number {
 /**
  * Creates a seeded random number generator for consistent face generation
  */
-export function seededRandom(seed: number): () => number {
+function seededRandom(seed: number): () => number {
   let s = seed;
   return function () {
     s = (s * 16807) % 2147483647;
