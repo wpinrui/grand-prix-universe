@@ -67,6 +67,12 @@ export enum ManufacturerDealType {
 // =============================================================================
 
 /**
+ * StaffCounts - Anonymous staff pool tracked by quality level
+ * GPW-style: staff are not named individuals, just counts per quality tier
+ */
+export type StaffCounts = Record<StaffQuality, number>;
+
+/**
  * DepartmentStaffCounts - Staff counts for all departments
  * Keyed by Department enum value
  */
@@ -118,12 +124,6 @@ export interface Driver {
   salary: number; // per-season salary in dollars
   contractEnd: number; // season number when contract expires
 }
-
-/**
- * StaffCounts - Anonymous staff pool tracked by quality level
- * GPW-style: staff are not named individuals, just counts per quality tier
- */
-export type StaffCounts = Record<StaffQuality, number>;
 
 /**
  * Chief - Department head with significant impact on team performance
