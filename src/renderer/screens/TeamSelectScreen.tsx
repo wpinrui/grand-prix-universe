@@ -126,6 +126,7 @@ export function TeamSelectScreen() {
       <div className="team-select-screen flex flex-col items-center justify-center min-h-screen bg-gray-800 gap-4">
         <p className="text-red-400">{loadError}</p>
         <button
+          type="button"
           onClick={() => navigate(-1)}
           className="px-4 py-2 text-gray-300 hover:text-white transition-colors"
         >
@@ -140,6 +141,7 @@ export function TeamSelectScreen() {
       <div className="team-select-screen flex flex-col items-center justify-center min-h-screen bg-gray-800 gap-4">
         <p className="text-gray-400">No teams available.</p>
         <button
+          type="button"
           onClick={() => navigate(-1)}
           className="px-4 py-2 text-gray-300 hover:text-white transition-colors"
         >
@@ -167,6 +169,7 @@ export function TeamSelectScreen() {
         <div className="w-64 bg-gray-700 border-r border-gray-600 overflow-y-auto">
           {teams.map((team) => (
             <button
+              type="button"
               key={team.id}
               onClick={() => {
                 setSelectedTeam(team);
@@ -240,6 +243,7 @@ export function TeamSelectScreen() {
       <footer className="bg-gray-900 p-4 border-t border-gray-700">
         <div className="flex items-center justify-between">
           <button
+            type="button"
             onClick={() => navigate(-1)}
             className="px-4 py-2 text-gray-300 hover:text-white transition-colors"
           >
@@ -254,6 +258,7 @@ export function TeamSelectScreen() {
               </span>
             )}
             <button
+              type="button"
               onClick={handleStartGame}
               disabled={isStarting}
               className="px-6 py-2 bg-green-600 text-white rounded disabled:bg-gray-600 disabled:cursor-not-allowed hover:bg-green-700 transition-colors"
