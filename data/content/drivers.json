@@ -6,6 +6,7 @@
       "lastName": "Van der Berg",
       "nationality": "NL",
       "dateOfBirth": "1997-09-30",
+      "photoUrl": null,
       "teamId": "crimson-bull-racing",
       "role": "first",
       "attributes": {
@@ -40,7 +41,8 @@
       },
       "reputation": 92,
       "salary": 25000000,
-      "contractEnd": 4
+      "contractEnd": 4,
+      "photoUrl": null
     },
     {
       "id": "lando-norrington",
@@ -61,7 +63,8 @@
       },
       "reputation": 91,
       "salary": 20000000,
-      "contractEnd": 3
+      "contractEnd": 3,
+      "photoUrl": null
     },
     {
       "id": "george-rutherford",
@@ -82,7 +85,8 @@
       },
       "reputation": 88,
       "salary": 15000000,
-      "contractEnd": 3
+      "contractEnd": 3,
+      "photoUrl": null
     },
     {
       "id": "oscar-piatti",
@@ -103,7 +107,8 @@
       },
       "reputation": 85,
       "salary": 8000000,
-      "contractEnd": 2
+      "contractEnd": 2,
+      "photoUrl": null
     },
     {
       "id": "lewis-hampton",
@@ -124,7 +129,8 @@
       },
       "reputation": 98,
       "salary": 50000000,
-      "contractEnd": 3
+      "contractEnd": 3,
+      "photoUrl": null
     },
     {
       "id": "carlos-santander",
@@ -145,7 +151,8 @@
       },
       "reputation": 86,
       "salary": 10000000,
-      "contractEnd": 3
+      "contractEnd": 3,
+      "photoUrl": null
     },
     {
       "id": "fernando-alvarado",
@@ -166,7 +173,8 @@
       },
       "reputation": 95,
       "salary": 18000000,
-      "contractEnd": 2
+      "contractEnd": 2,
+      "photoUrl": null
     },
     {
       "id": "nico-hulsmann",
@@ -187,7 +195,8 @@
       },
       "reputation": 75,
       "salary": 5000000,
-      "contractEnd": 2
+      "contractEnd": 2,
+      "photoUrl": null
     },
     {
       "id": "alex-albrecht",
@@ -208,7 +217,8 @@
       },
       "reputation": 79,
       "salary": 5000000,
-      "contractEnd": 3
+      "contractEnd": 3,
+      "photoUrl": null
     },
     {
       "id": "kimi-antonioli",
@@ -229,7 +239,8 @@
       },
       "reputation": 72,
       "salary": 1500000,
-      "contractEnd": 2
+      "contractEnd": 2,
+      "photoUrl": null
     },
     {
       "id": "pierre-gaspard",
@@ -250,7 +261,8 @@
       },
       "reputation": 77,
       "salary": 6000000,
-      "contractEnd": 3
+      "contractEnd": 3,
+      "photoUrl": null
     },
     {
       "id": "valtteri-bohm",
@@ -271,7 +283,8 @@
       },
       "reputation": 70,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "oliver-bearley",
@@ -292,7 +305,8 @@
       },
       "reputation": 71,
       "salary": 1500000,
-      "contractEnd": 3
+      "contractEnd": 3,
+      "photoUrl": null
     },
     {
       "id": "esteban-ochoa",
@@ -313,7 +327,8 @@
       },
       "reputation": 73,
       "salary": 4000000,
-      "contractEnd": 2
+      "contractEnd": 2,
+      "photoUrl": null
     },
     {
       "id": "isack-hadjari",
@@ -334,7 +349,8 @@
       },
       "reputation": 74,
       "salary": 1000000,
-      "contractEnd": 2
+      "contractEnd": 2,
+      "photoUrl": null
     },
     {
       "id": "sergio-pereira",
@@ -355,7 +371,8 @@
       },
       "reputation": 72,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "yuki-tanaka",
@@ -376,7 +393,8 @@
       },
       "reputation": 74,
       "salary": 3000000,
-      "contractEnd": 2
+      "contractEnd": 2,
+      "photoUrl": null
     },
     {
       "id": "liam-lawley",
@@ -397,7 +415,8 @@
       },
       "reputation": 65,
       "salary": 2000000,
-      "contractEnd": 2
+      "contractEnd": 2,
+      "photoUrl": null
     },
     {
       "id": "gabriel-bertolini",
@@ -418,7 +437,8 @@
       },
       "reputation": 73,
       "salary": 1000000,
-      "contractEnd": 3
+      "contractEnd": 3,
+      "photoUrl": null
     },
     {
       "id": "lance-stronach",
@@ -439,7 +459,8 @@
       },
       "reputation": 55,
       "salary": 1000000,
-      "contractEnd": 2
+      "contractEnd": 2,
+      "photoUrl": null
     },
     {
       "id": "jack-dooley",
@@ -460,7 +481,8 @@
       },
       "reputation": 68,
       "salary": 1000000,
-      "contractEnd": 2
+      "contractEnd": 2,
+      "photoUrl": null
     },
     {
       "id": "daniel-riccardi",
@@ -481,7 +503,8 @@
       },
       "reputation": 75,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "nico-rosenberg",
@@ -502,7 +525,8 @@
       },
       "reputation": 78,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "stefan-vandoorn",
@@ -523,7 +547,8 @@
       },
       "reputation": 62,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "jason-burton",
@@ -544,7 +569,8 @@
       },
       "reputation": 72,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "stefan-vetter",
@@ -565,7 +591,8 @@
       },
       "reputation": 85,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "kimmo-raikola",
@@ -586,7 +613,8 @@
       },
       "reputation": 75,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "karl-magnusson",
@@ -607,7 +635,8 @@
       },
       "reputation": 62,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "mike-schumann",
@@ -628,7 +657,8 @@
       },
       "reputation": 58,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "zhou-guanhua",
@@ -649,7 +679,8 @@
       },
       "reputation": 55,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "nick-latorre",
@@ -670,7 +701,8 @@
       },
       "reputation": 45,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "niek-de-vriese",
@@ -691,7 +723,8 @@
       },
       "reputation": 55,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "liam-sargent",
@@ -712,7 +745,8 @@
       },
       "reputation": 48,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "paulo-maldonato",
@@ -733,7 +767,8 @@
       },
       "reputation": 50,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "martin-eriksen",
@@ -754,7 +789,8 @@
       },
       "reputation": 52,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "eduardo-gutierrez",
@@ -775,7 +811,8 @@
       },
       "reputation": 48,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "jolyon-palmerston",
@@ -796,7 +833,8 @@
       },
       "reputation": 45,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "pascal-werner",
@@ -817,7 +855,8 @@
       },
       "reputation": 58,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "rio-hartono",
@@ -838,7 +877,8 @@
       },
       "reputation": 40,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "felipe-nascimento",
@@ -859,7 +899,8 @@
       },
       "reputation": 50,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "roberto-merino",
@@ -880,7 +921,8 @@
       },
       "reputation": 42,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "will-stevenson",
@@ -901,7 +943,8 @@
       },
       "reputation": 40,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "antonio-giovanelli",
@@ -922,7 +965,8 @@
       },
       "reputation": 58,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "filipe-massini",
@@ -943,7 +987,8 @@
       },
       "reputation": 68,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "romain-grosnier",
@@ -964,7 +1009,8 @@
       },
       "reputation": 60,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "danil-kvyatov",
@@ -985,7 +1031,8 @@
       },
       "reputation": 55,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "roman-stanko",
@@ -1006,7 +1053,8 @@
       },
       "reputation": 48,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "leonardo-fornari",
@@ -1027,7 +1075,8 @@
       },
       "reputation": 45,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "nikola-todorov",
@@ -1048,7 +1097,8 @@
       },
       "reputation": 46,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "arvid-lindberg",
@@ -1069,7 +1119,8 @@
       },
       "reputation": 50,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "oliver-goth",
@@ -1090,7 +1141,8 @@
       },
       "reputation": 44,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "richard-vermeer",
@@ -1111,7 +1163,8 @@
       },
       "reputation": 46,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "luke-brownlee",
@@ -1132,7 +1185,8 @@
       },
       "reputation": 45,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "dino-begovic",
@@ -1153,7 +1207,8 @@
       },
       "reputation": 42,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "sebastian-montana",
@@ -1174,7 +1229,8 @@
       },
       "reputation": 44,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "gabriele-minelli",
@@ -1195,7 +1251,8 @@
       },
       "reputation": 46,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "jak-crawford",
@@ -1216,7 +1273,8 @@
       },
       "reputation": 44,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "kush-mahindra",
@@ -1237,7 +1295,8 @@
       },
       "reputation": 42,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "victor-martin",
@@ -1258,7 +1317,8 @@
       },
       "reputation": 45,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "ritomo-miyazaki",
@@ -1279,7 +1339,8 @@
       },
       "reputation": 44,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "martinius-stenson",
@@ -1300,7 +1361,8 @@
       },
       "reputation": 40,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "alexander-dunn",
@@ -1321,7 +1383,8 @@
       },
       "reputation": 42,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "joshua-duerk",
@@ -1342,7 +1405,8 @@
       },
       "reputation": 40,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "cian-sheehan",
@@ -1363,7 +1427,8 @@
       },
       "reputation": 38,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "laurens-van-hoorn",
@@ -1384,7 +1449,8 @@
       },
       "reputation": 40,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "tasanapol-intara",
@@ -1405,7 +1471,8 @@
       },
       "reputation": 38,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "john-bennett",
@@ -1426,7 +1493,8 @@
       },
       "reputation": 40,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "rafael-villareal",
@@ -1447,7 +1515,8 @@
       },
       "reputation": 38,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "rafael-camargo",
@@ -1468,7 +1537,8 @@
       },
       "reputation": 45,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "charlie-wurzburg",
@@ -1489,7 +1559,8 @@
       },
       "reputation": 42,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "ugo-okonkwo",
@@ -1510,7 +1581,8 @@
       },
       "reputation": 42,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "tuukka-tapio",
@@ -1531,7 +1603,8 @@
       },
       "reputation": 40,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "james-wharburton",
@@ -1552,7 +1625,8 @@
       },
       "reputation": 42,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "mari-boyar",
@@ -1573,7 +1647,8 @@
       },
       "reputation": 44,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "noel-leonetti",
@@ -1594,7 +1669,8 @@
       },
       "reputation": 40,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "brando-badini",
@@ -1615,7 +1691,8 @@
       },
       "reputation": 38,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "noah-stromberg",
@@ -1636,7 +1713,8 @@
       },
       "reputation": 40,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "fernando-barreto",
@@ -1657,7 +1735,8 @@
       },
       "reputation": 40,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "nikita-johnstone",
@@ -1678,7 +1757,8 @@
       },
       "reputation": 38,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "tim-tramnitz",
@@ -1699,7 +1779,8 @@
       },
       "reputation": 40,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "bruno-del-rio",
@@ -1720,7 +1801,8 @@
       },
       "reputation": 38,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "alessandro-giusti",
@@ -1741,7 +1823,8 @@
       },
       "reputation": 36,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "theophile-noel",
@@ -1762,7 +1845,8 @@
       },
       "reputation": 38,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "james-hadley",
@@ -1783,7 +1867,8 @@
       },
       "reputation": 38,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "ivan-dominguez",
@@ -1804,7 +1889,8 @@
       },
       "reputation": 36,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "callum-voison",
@@ -1825,7 +1911,8 @@
       },
       "reputation": 40,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "louis-sharpe",
@@ -1846,7 +1933,8 @@
       },
       "reputation": 38,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "roman-bielinski",
@@ -1867,7 +1955,8 @@
       },
       "reputation": 36,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "nicola-marinelli",
@@ -1888,7 +1977,8 @@
       },
       "reputation": 36,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "brad-ben",
@@ -1909,7 +1999,8 @@
       },
       "reputation": 38,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "nicola-lacosta",
@@ -1930,7 +2021,8 @@
       },
       "reputation": 34,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "matias-zagal",
@@ -1951,7 +2043,8 @@
       },
       "reputation": 36,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "christian-ho",
@@ -1972,7 +2065,8 @@
       },
       "reputation": 38,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "gerrard-xia",
@@ -1993,7 +2087,8 @@
       },
       "reputation": 34,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "jake-dennison",
@@ -2014,7 +2109,8 @@
       },
       "reputation": 58,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "felipe-drugovic",
@@ -2035,7 +2131,8 @@
       },
       "reputation": 56,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "jean-eric-verne",
@@ -2056,7 +2153,8 @@
       },
       "reputation": 62,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "nick-cassini",
@@ -2077,7 +2175,8 @@
       },
       "reputation": 60,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "dan-tickner",
@@ -2098,7 +2197,8 @@
       },
       "reputation": 52,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "pepe-martinez",
@@ -2119,7 +2219,8 @@
       },
       "reputation": 48,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "maximilian-guenther",
@@ -2140,7 +2241,8 @@
       },
       "reputation": 56,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "taylor-barnett",
@@ -2161,7 +2263,8 @@
       },
       "reputation": 45,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "sebastien-buehler",
@@ -2182,7 +2285,8 @@
       },
       "reputation": 64,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "joel-eriksen",
@@ -2203,7 +2307,8 @@
       },
       "reputation": 52,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "mitch-everton",
@@ -2224,7 +2329,8 @@
       },
       "reputation": 60,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "antonio-felix",
@@ -2245,7 +2351,8 @@
       },
       "reputation": 62,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "lucas-di-greco",
@@ -2266,7 +2373,8 @@
       },
       "reputation": 64,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "zane-malone",
@@ -2287,7 +2395,8 @@
       },
       "reputation": 52,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "edoardo-mortari",
@@ -2308,7 +2417,8 @@
       },
       "reputation": 60,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "oliver-rowlands",
@@ -2329,7 +2439,8 @@
       },
       "reputation": 58,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "norman-neto",
@@ -2350,7 +2461,8 @@
       },
       "reputation": 54,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "nico-mueller",
@@ -2371,7 +2483,8 @@
       },
       "reputation": 56,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     },
     {
       "id": "franco-coletti",
@@ -2392,7 +2505,8 @@
       },
       "reputation": 65,
       "salary": 0,
-      "contractEnd": 0
+      "contractEnd": 0,
+      "photoUrl": null
     }
   ]
 }
