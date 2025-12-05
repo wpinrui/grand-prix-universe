@@ -18,7 +18,8 @@ export function TopBar({ sectionLabel, subItemLabel, currentDate, playerTeam }: 
         {/* Calendar Button */}
         <button
           type="button"
-          className="flex items-center gap-2 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded cursor-pointer transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 rounded cursor-pointer transition-colors"
+          style={{ backgroundColor: 'var(--accent-800)', color: 'var(--accent-200)' }}
           title="Calendar"
         >
           <Calendar size={18} />
@@ -29,7 +30,7 @@ export function TopBar({ sectionLabel, subItemLabel, currentDate, playerTeam }: 
           </span>
         </button>
         {/* Budget */}
-        <div className="text-xl font-semibold text-green-400">
+        <div className="text-xl font-semibold" style={{ color: 'var(--accent-400)' }}>
           {playerTeam ? `$${playerTeam.budget.toLocaleString()}` : '—'}
         </div>
       </div>

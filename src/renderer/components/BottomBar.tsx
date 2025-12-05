@@ -50,7 +50,8 @@ export function BottomBar({
       {/* Advance Button */}
       <button
         type="button"
-        className="flex items-center justify-center w-12 h-12 bg-green-600 hover:bg-green-500 rounded cursor-pointer transition-colors"
+        className="flex items-center justify-center w-12 h-12 rounded cursor-pointer transition-opacity hover:opacity-80"
+        style={{ backgroundColor: 'var(--accent-600)', color: 'var(--accent-contrast)' }}
         title="Advance"
       >
         <Check size={28} />

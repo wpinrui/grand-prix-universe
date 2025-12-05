@@ -6,7 +6,7 @@ import {
   type SectionId,
   type Section,
 } from '../navigation';
-import { useDerivedGameState } from '../hooks';
+import { useDerivedGameState, useTeamTheme } from '../hooks';
 import { SectionButton } from './NavButtons';
 import { TopBar } from './TopBar';
 import { BottomBar } from './BottomBar';
@@ -16,6 +16,9 @@ export function MainLayout() {
   const [selectedSubItemId, setSelectedSubItemId] = useState<string>(defaultSubItem);
 
   const { gameState, playerTeam, nextRace } = useDerivedGameState();
+
+  // Apply team-based theming (CSS variables on :root)
+  useTeamTheme(playerTeam?.primaryColor ?? null);
 
   // Safe: selectedSectionId always matches a valid section (defaults to 'team')
   const selectedSection = sections.find((s) => s.id === selectedSectionId) ?? sections[0];
