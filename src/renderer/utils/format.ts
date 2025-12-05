@@ -46,3 +46,21 @@ export function formatCompact(amount: number): string {
 export function formatAnnualSalary(amount: number): string {
   return `$${formatCompact(amount)}/yr`;
 }
+
+// ===========================================
+// DATE/TIME FORMATTERS
+// ===========================================
+
+/**
+ * Format an ISO date string as a readable date/time (e.g., "Dec 6, 2025 at 3:45 PM")
+ */
+export function formatDateTime(isoString: string): string {
+  const date = new Date(isoString);
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}

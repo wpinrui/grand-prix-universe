@@ -10,7 +10,7 @@ import { useDerivedGameState, useTeamTheme } from '../hooks';
 import { SectionButton } from './NavButtons';
 import { TopBar } from './TopBar';
 import { BottomBar } from './BottomBar';
-import { TeamProfile } from '../content';
+import { TeamProfile, SavedGames } from '../content';
 
 export function MainLayout() {
   const [selectedSectionId, setSelectedSectionId] = useState<SectionId>(defaultSection);
@@ -35,8 +35,17 @@ export function MainLayout() {
     setSelectedSubItemId(subItemId);
   };
 
+  // Navigation helper for content components
+  const navigateToProfile = () => {
+    setSelectedSectionId('team');
+    setSelectedSubItemId('profile');
+  };
+
   // Check if showing placeholder content (not implemented screens)
-  const isPlaceholder = !(selectedSectionId === 'team' && selectedSubItemId === 'profile');
+  const isImplemented =
+    (selectedSectionId === 'team' && selectedSubItemId === 'profile') ||
+    (selectedSectionId === 'options' && selectedSubItemId === 'saved-games');
+  const isPlaceholder = !isImplemented;
 
   return (
     <div className="main-layout flex w-full h-screen surface-base text-primary">
@@ -72,6 +81,8 @@ export function MainLayout() {
         >
           {selectedSectionId === 'team' && selectedSubItemId === 'profile' ? (
             <TeamProfile />
+          ) : selectedSectionId === 'options' && selectedSubItemId === 'saved-games' ? (
+            <SavedGames onNavigateToProfile={navigateToProfile} />
           ) : (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
