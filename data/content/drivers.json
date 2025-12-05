@@ -28,6 +28,7 @@
       "lastName": "Lefevre",
       "nationality": "MC",
       "dateOfBirth": "1997-10-16",
+      "photoUrl": null,
       "teamId": "scuderia-veloce",
       "role": "equal",
       "attributes": {
@@ -41,8 +42,7 @@
       },
       "reputation": 92,
       "salary": 25000000,
-      "contractEnd": 4,
-      "photoUrl": null
+      "contractEnd": 4
     },
     {
       "id": "lando-norrington",
@@ -50,6 +50,7 @@
       "lastName": "Norrington",
       "nationality": "GB",
       "dateOfBirth": "1999-11-13",
+      "photoUrl": null,
       "teamId": "papaya-racing",
       "role": "first",
       "attributes": {
@@ -63,8 +64,7 @@
       },
       "reputation": 91,
       "salary": 20000000,
-      "contractEnd": 3,
-      "photoUrl": null
+      "contractEnd": 3
     },
     {
       "id": "george-rutherford",
@@ -72,6 +72,7 @@
       "lastName": "Rutherford",
       "nationality": "GB",
       "dateOfBirth": "1998-02-15",
+      "photoUrl": null,
       "teamId": "silver-arrow-motorsport",
       "role": "first",
       "attributes": {
@@ -85,8 +86,7 @@
       },
       "reputation": 88,
       "salary": 15000000,
-      "contractEnd": 3,
-      "photoUrl": null
+      "contractEnd": 3
     },
     {
       "id": "oscar-piatti",
@@ -94,6 +94,7 @@
       "lastName": "Piatti",
       "nationality": "AU",
       "dateOfBirth": "2001-04-06",
+      "photoUrl": null,
       "teamId": "papaya-racing",
       "role": "second",
       "attributes": {
@@ -107,8 +108,7 @@
       },
       "reputation": 85,
       "salary": 8000000,
-      "contractEnd": 2,
-      "photoUrl": null
+      "contractEnd": 2
     },
     {
       "id": "lewis-hampton",
@@ -116,6 +116,7 @@
       "lastName": "Hampton",
       "nationality": "GB",
       "dateOfBirth": "1985-01-07",
+      "photoUrl": null,
       "teamId": "scuderia-veloce",
       "role": "equal",
       "attributes": {
@@ -129,8 +130,7 @@
       },
       "reputation": 98,
       "salary": 50000000,
-      "contractEnd": 3,
-      "photoUrl": null
+      "contractEnd": 3
     },
     {
       "id": "carlos-santander",
@@ -138,6 +138,7 @@
       "lastName": "Santander",
       "nationality": "ES",
       "dateOfBirth": "1994-09-01",
+      "photoUrl": null,
       "teamId": "willards-gp-team",
       "role": "first",
       "attributes": {
@@ -151,8 +152,7 @@
       },
       "reputation": 86,
       "salary": 10000000,
-      "contractEnd": 3,
-      "photoUrl": null
+      "contractEnd": 3
     },
     {
       "id": "fernando-alvarado",
@@ -160,6 +160,7 @@
       "lastName": "Alvarado",
       "nationality": "ES",
       "dateOfBirth": "1981-07-29",
+      "photoUrl": null,
       "teamId": "emerald-racing-team",
       "role": "first",
       "attributes": {
@@ -173,8 +174,7 @@
       },
       "reputation": 95,
       "salary": 18000000,
-      "contractEnd": 2,
-      "photoUrl": null
+      "contractEnd": 2
     },
     {
       "id": "nico-hulsmann",
@@ -182,6 +182,7 @@
       "lastName": "Hulsmann",
       "nationality": "DE",
       "dateOfBirth": "1987-08-19",
+      "photoUrl": null,
       "teamId": "sabre-grand-prix",
       "role": "first",
       "attributes": {
@@ -195,8 +196,7 @@
       },
       "reputation": 75,
       "salary": 5000000,
-      "contractEnd": 2,
-      "photoUrl": null
+      "contractEnd": 2
     },
     {
       "id": "alex-albrecht",
@@ -204,6 +204,7 @@
       "lastName": "Albrecht",
       "nationality": "TH",
       "dateOfBirth": "1996-03-23",
+      "photoUrl": null,
       "teamId": "willards-gp-team",
       "role": "second",
       "attributes": {
@@ -217,8 +218,7 @@
       },
       "reputation": 79,
       "salary": 5000000,
-      "contractEnd": 3,
-      "photoUrl": null
+      "contractEnd": 3
     },
     {
       "id": "kimi-antonioli",
@@ -226,6 +226,7 @@
       "lastName": "Antonioli",
       "nationality": "IT",
       "dateOfBirth": "2006-08-25",
+      "photoUrl": null,
       "teamId": "silver-arrow-motorsport",
       "role": "second",
       "attributes": {
@@ -239,8 +240,7 @@
       },
       "reputation": 72,
       "salary": 1500000,
-      "contractEnd": 2,
-      "photoUrl": null
+      "contractEnd": 2
     },
     {
       "id": "pierre-gaspard",
@@ -248,6 +248,7 @@
       "lastName": "Gaspard",
       "nationality": "FR",
       "dateOfBirth": "1996-02-07",
+      "photoUrl": null,
       "teamId": "team-alfie",
       "role": "first",
       "attributes": {
@@ -261,8 +262,7 @@
       },
       "reputation": 77,
       "salary": 6000000,
-      "contractEnd": 3,
-      "photoUrl": null
+      "contractEnd": 3
     },
     {
       "id": "valtteri-bohm",
@@ -270,6 +270,7 @@
       "lastName": "Bohm",
       "nationality": "FI",
       "dateOfBirth": "1989-08-28",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -283,8 +284,7 @@
       },
       "reputation": 70,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "oliver-bearley",
@@ -292,6 +292,7 @@
       "lastName": "Bearley",
       "nationality": "GB",
       "dateOfBirth": "2005-05-08",
+      "photoUrl": null,
       "teamId": "automation-gp",
       "role": "first",
       "attributes": {
@@ -305,8 +306,7 @@
       },
       "reputation": 71,
       "salary": 1500000,
-      "contractEnd": 3,
-      "photoUrl": null
+      "contractEnd": 3
     },
     {
       "id": "esteban-ochoa",
@@ -314,6 +314,7 @@
       "lastName": "Ochoa",
       "nationality": "FR",
       "dateOfBirth": "1996-09-17",
+      "photoUrl": null,
       "teamId": "automation-gp",
       "role": "second",
       "attributes": {
@@ -327,8 +328,7 @@
       },
       "reputation": 73,
       "salary": 4000000,
-      "contractEnd": 2,
-      "photoUrl": null
+      "contractEnd": 2
     },
     {
       "id": "isack-hadjari",
@@ -336,6 +336,7 @@
       "lastName": "Hadjari",
       "nationality": "FR",
       "dateOfBirth": "2004-09-28",
+      "photoUrl": null,
       "teamId": "toro-minore",
       "role": "second",
       "attributes": {
@@ -349,8 +350,7 @@
       },
       "reputation": 74,
       "salary": 1000000,
-      "contractEnd": 2,
-      "photoUrl": null
+      "contractEnd": 2
     },
     {
       "id": "sergio-pereira",
@@ -358,6 +358,7 @@
       "lastName": "Pereira",
       "nationality": "MX",
       "dateOfBirth": "1990-01-26",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -371,8 +372,7 @@
       },
       "reputation": 72,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "yuki-tanaka",
@@ -380,6 +380,7 @@
       "lastName": "Tanaka",
       "nationality": "JP",
       "dateOfBirth": "2000-05-11",
+      "photoUrl": null,
       "teamId": "crimson-bull-racing",
       "role": "second",
       "attributes": {
@@ -393,8 +394,7 @@
       },
       "reputation": 74,
       "salary": 3000000,
-      "contractEnd": 2,
-      "photoUrl": null
+      "contractEnd": 2
     },
     {
       "id": "liam-lawley",
@@ -402,6 +402,7 @@
       "lastName": "Lawley",
       "nationality": "NZ",
       "dateOfBirth": "2002-02-11",
+      "photoUrl": null,
       "teamId": "toro-minore",
       "role": "first",
       "attributes": {
@@ -415,8 +416,7 @@
       },
       "reputation": 65,
       "salary": 2000000,
-      "contractEnd": 2,
-      "photoUrl": null
+      "contractEnd": 2
     },
     {
       "id": "gabriel-bertolini",
@@ -424,6 +424,7 @@
       "lastName": "Bertolini",
       "nationality": "BR",
       "dateOfBirth": "2004-10-14",
+      "photoUrl": null,
       "teamId": "sabre-grand-prix",
       "role": "second",
       "attributes": {
@@ -437,8 +438,7 @@
       },
       "reputation": 73,
       "salary": 1000000,
-      "contractEnd": 3,
-      "photoUrl": null
+      "contractEnd": 3
     },
     {
       "id": "lance-stronach",
@@ -446,6 +446,7 @@
       "lastName": "Stronach",
       "nationality": "CA",
       "dateOfBirth": "1998-10-29",
+      "photoUrl": null,
       "teamId": "emerald-racing-team",
       "role": "second",
       "attributes": {
@@ -459,8 +460,7 @@
       },
       "reputation": 55,
       "salary": 1000000,
-      "contractEnd": 2,
-      "photoUrl": null
+      "contractEnd": 2
     },
     {
       "id": "jack-dooley",
@@ -468,6 +468,7 @@
       "lastName": "Dooley",
       "nationality": "AU",
       "dateOfBirth": "2003-01-20",
+      "photoUrl": null,
       "teamId": "team-alfie",
       "role": "second",
       "attributes": {
@@ -481,8 +482,7 @@
       },
       "reputation": 68,
       "salary": 1000000,
-      "contractEnd": 2,
-      "photoUrl": null
+      "contractEnd": 2
     },
     {
       "id": "daniel-riccardi",
@@ -490,6 +490,7 @@
       "lastName": "Riccardi",
       "nationality": "AU",
       "dateOfBirth": "1989-07-01",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -503,8 +504,7 @@
       },
       "reputation": 75,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "nico-rosenberg",
@@ -512,6 +512,7 @@
       "lastName": "Rosenberg",
       "nationality": "DE",
       "dateOfBirth": "1985-06-27",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -525,8 +526,7 @@
       },
       "reputation": 78,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "stefan-vandoorn",
@@ -534,6 +534,7 @@
       "lastName": "Vandoorn",
       "nationality": "BE",
       "dateOfBirth": "1992-03-26",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -547,8 +548,7 @@
       },
       "reputation": 62,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "jason-burton",
@@ -556,6 +556,7 @@
       "lastName": "Burton",
       "nationality": "GB",
       "dateOfBirth": "1980-01-19",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -569,8 +570,7 @@
       },
       "reputation": 72,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "stefan-vetter",
@@ -578,6 +578,7 @@
       "lastName": "Vetter",
       "nationality": "DE",
       "dateOfBirth": "1987-07-03",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -591,8 +592,7 @@
       },
       "reputation": 85,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "kimmo-raikola",
@@ -600,6 +600,7 @@
       "lastName": "Raikola",
       "nationality": "FI",
       "dateOfBirth": "1979-10-17",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -613,8 +614,7 @@
       },
       "reputation": 75,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "karl-magnusson",
@@ -622,6 +622,7 @@
       "lastName": "Magnusson",
       "nationality": "DK",
       "dateOfBirth": "1992-10-05",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -635,8 +636,7 @@
       },
       "reputation": 62,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "mike-schumann",
@@ -644,6 +644,7 @@
       "lastName": "Schumann",
       "nationality": "DE",
       "dateOfBirth": "1999-03-22",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -657,8 +658,7 @@
       },
       "reputation": 58,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "zhou-guanhua",
@@ -666,6 +666,7 @@
       "lastName": "Guanhua",
       "nationality": "CN",
       "dateOfBirth": "1999-05-30",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -679,8 +680,7 @@
       },
       "reputation": 55,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "nick-latorre",
@@ -688,6 +688,7 @@
       "lastName": "Latorre",
       "nationality": "CA",
       "dateOfBirth": "1995-06-29",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -701,8 +702,7 @@
       },
       "reputation": 45,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "niek-de-vriese",
@@ -710,6 +710,7 @@
       "lastName": "de Vriese",
       "nationality": "NL",
       "dateOfBirth": "1995-02-06",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -723,8 +724,7 @@
       },
       "reputation": 55,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "liam-sargent",
@@ -732,6 +732,7 @@
       "lastName": "Sargent",
       "nationality": "US",
       "dateOfBirth": "1999-12-31",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -745,8 +746,7 @@
       },
       "reputation": 48,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "paulo-maldonato",
@@ -754,6 +754,7 @@
       "lastName": "Maldonato",
       "nationality": "VE",
       "dateOfBirth": "1985-03-09",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -767,8 +768,7 @@
       },
       "reputation": 50,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "martin-eriksen",
@@ -776,6 +776,7 @@
       "lastName": "Eriksen",
       "nationality": "SE",
       "dateOfBirth": "1990-09-02",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -789,8 +790,7 @@
       },
       "reputation": 52,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "eduardo-gutierrez",
@@ -798,6 +798,7 @@
       "lastName": "Gutierrez",
       "nationality": "MX",
       "dateOfBirth": "1991-08-05",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -811,8 +812,7 @@
       },
       "reputation": 48,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "jolyon-palmerston",
@@ -820,6 +820,7 @@
       "lastName": "Palmerston",
       "nationality": "GB",
       "dateOfBirth": "1991-01-20",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -833,8 +834,7 @@
       },
       "reputation": 45,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "pascal-werner",
@@ -842,6 +842,7 @@
       "lastName": "Werner",
       "nationality": "DE",
       "dateOfBirth": "1994-10-18",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -855,8 +856,7 @@
       },
       "reputation": 58,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "rio-hartono",
@@ -864,6 +864,7 @@
       "lastName": "Hartono",
       "nationality": "ID",
       "dateOfBirth": "1993-01-22",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -877,8 +878,7 @@
       },
       "reputation": 40,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "felipe-nascimento",
@@ -886,6 +886,7 @@
       "lastName": "Nascimento",
       "nationality": "BR",
       "dateOfBirth": "1992-08-21",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -899,8 +900,7 @@
       },
       "reputation": 50,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "roberto-merino",
@@ -908,6 +908,7 @@
       "lastName": "Merino",
       "nationality": "ES",
       "dateOfBirth": "1991-03-22",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -921,8 +922,7 @@
       },
       "reputation": 42,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "will-stevenson",
@@ -930,6 +930,7 @@
       "lastName": "Stevenson",
       "nationality": "GB",
       "dateOfBirth": "1991-06-28",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -943,8 +944,7 @@
       },
       "reputation": 40,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "antonio-giovanelli",
@@ -952,6 +952,7 @@
       "lastName": "Giovanelli",
       "nationality": "IT",
       "dateOfBirth": "1993-12-14",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -965,8 +966,7 @@
       },
       "reputation": 58,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "filipe-massini",
@@ -974,6 +974,7 @@
       "lastName": "Massini",
       "nationality": "BR",
       "dateOfBirth": "1981-04-25",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -987,8 +988,7 @@
       },
       "reputation": 68,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "romain-grosnier",
@@ -996,6 +996,7 @@
       "lastName": "Grosnier",
       "nationality": "FR",
       "dateOfBirth": "1986-04-17",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1009,8 +1010,7 @@
       },
       "reputation": 60,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "danil-kvyatov",
@@ -1018,6 +1018,7 @@
       "lastName": "Kvyatov",
       "nationality": "RU",
       "dateOfBirth": "1994-04-26",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1031,8 +1032,7 @@
       },
       "reputation": 55,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "roman-stanko",
@@ -1040,6 +1040,7 @@
       "lastName": "Stanko",
       "nationality": "CZ",
       "dateOfBirth": "2003-11-14",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1053,8 +1054,7 @@
       },
       "reputation": 48,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "leonardo-fornari",
@@ -1062,6 +1062,7 @@
       "lastName": "Fornari",
       "nationality": "IT",
       "dateOfBirth": "2005-03-28",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1075,8 +1076,7 @@
       },
       "reputation": 45,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "nikola-todorov",
@@ -1084,6 +1084,7 @@
       "lastName": "Todorov",
       "nationality": "BG",
       "dateOfBirth": "2006-08-08",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1097,8 +1098,7 @@
       },
       "reputation": 46,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "arvid-lindberg",
@@ -1106,6 +1106,7 @@
       "lastName": "Lindberg",
       "nationality": "GB",
       "dateOfBirth": "2007-04-17",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1119,8 +1120,7 @@
       },
       "reputation": 50,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "oliver-goth",
@@ -1128,6 +1128,7 @@
       "lastName": "Goth",
       "nationality": "DE",
       "dateOfBirth": "2004-08-15",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1141,8 +1142,7 @@
       },
       "reputation": 44,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "richard-vermeer",
@@ -1150,6 +1150,7 @@
       "lastName": "Vermeer",
       "nationality": "NL",
       "dateOfBirth": "2000-12-16",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1163,8 +1164,7 @@
       },
       "reputation": 46,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "luke-brownlee",
@@ -1172,6 +1172,7 @@
       "lastName": "Brownlee",
       "nationality": "GB",
       "dateOfBirth": "2002-09-03",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1185,8 +1186,7 @@
       },
       "reputation": 45,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "dino-begovic",
@@ -1194,6 +1194,7 @@
       "lastName": "Begovic",
       "nationality": "SE",
       "dateOfBirth": "2004-08-11",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1207,8 +1208,7 @@
       },
       "reputation": 42,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "sebastian-montana",
@@ -1216,6 +1216,7 @@
       "lastName": "Montana",
       "nationality": "CO",
       "dateOfBirth": "2005-10-12",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1229,8 +1230,7 @@
       },
       "reputation": 44,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "gabriele-minelli",
@@ -1238,6 +1238,7 @@
       "lastName": "Minelli",
       "nationality": "IT",
       "dateOfBirth": "2005-03-20",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1251,8 +1252,7 @@
       },
       "reputation": 46,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "jak-crawford",
@@ -1260,6 +1260,7 @@
       "lastName": "Crawford",
       "nationality": "US",
       "dateOfBirth": "2003-12-19",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1273,8 +1274,7 @@
       },
       "reputation": 44,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "kush-mahindra",
@@ -1282,6 +1282,7 @@
       "lastName": "Mahindra",
       "nationality": "IN",
       "dateOfBirth": "2002-01-16",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1295,8 +1296,7 @@
       },
       "reputation": 42,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "victor-martin",
@@ -1304,6 +1304,7 @@
       "lastName": "Martin",
       "nationality": "FR",
       "dateOfBirth": "2001-07-14",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1317,8 +1318,7 @@
       },
       "reputation": 45,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "ritomo-miyazaki",
@@ -1326,6 +1326,7 @@
       "lastName": "Miyazaki",
       "nationality": "JP",
       "dateOfBirth": "2002-08-21",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1339,8 +1340,7 @@
       },
       "reputation": 44,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "martinius-stenson",
@@ -1348,6 +1348,7 @@
       "lastName": "Stenson",
       "nationality": "NO",
       "dateOfBirth": "2006-05-03",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1361,8 +1362,7 @@
       },
       "reputation": 40,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "alexander-dunn",
@@ -1370,6 +1370,7 @@
       "lastName": "Dunn",
       "nationality": "IE",
       "dateOfBirth": "2004-06-25",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1383,8 +1384,7 @@
       },
       "reputation": 42,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "joshua-duerk",
@@ -1392,6 +1392,7 @@
       "lastName": "Duerk",
       "nationality": "PY",
       "dateOfBirth": "2003-08-14",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1405,8 +1406,7 @@
       },
       "reputation": 40,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "cian-sheehan",
@@ -1414,6 +1414,7 @@
       "lastName": "Sheehan",
       "nationality": "GB",
       "dateOfBirth": "2004-02-19",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1427,8 +1428,7 @@
       },
       "reputation": 38,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "laurens-van-hoorn",
@@ -1436,6 +1436,7 @@
       "lastName": "Van Hoorn",
       "nationality": "NL",
       "dateOfBirth": "2005-07-12",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1449,8 +1450,7 @@
       },
       "reputation": 40,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "tasanapol-intara",
@@ -1458,6 +1458,7 @@
       "lastName": "Intara",
       "nationality": "TH",
       "dateOfBirth": "2004-04-15",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1471,8 +1472,7 @@
       },
       "reputation": 38,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "john-bennett",
@@ -1480,6 +1480,7 @@
       "lastName": "Bennett",
       "nationality": "GB",
       "dateOfBirth": "2004-03-22",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1493,8 +1494,7 @@
       },
       "reputation": 40,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "rafael-villareal",
@@ -1502,6 +1502,7 @@
       "lastName": "Villareal",
       "nationality": "MX",
       "dateOfBirth": "2004-06-18",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1515,8 +1516,7 @@
       },
       "reputation": 38,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "rafael-camargo",
@@ -1524,6 +1524,7 @@
       "lastName": "Camargo",
       "nationality": "BR",
       "dateOfBirth": "2005-05-02",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1537,8 +1538,7 @@
       },
       "reputation": 45,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "charlie-wurzburg",
@@ -1546,6 +1546,7 @@
       "lastName": "Wurzburg",
       "nationality": "AT",
       "dateOfBirth": "2005-02-07",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1559,8 +1560,7 @@
       },
       "reputation": 42,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "ugo-okonkwo",
@@ -1568,6 +1568,7 @@
       "lastName": "Okonkwo",
       "nationality": "US",
       "dateOfBirth": "2007-04-06",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1581,8 +1582,7 @@
       },
       "reputation": 42,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "tuukka-tapio",
@@ -1590,6 +1590,7 @@
       "lastName": "Tapio",
       "nationality": "FI",
       "dateOfBirth": "2006-08-18",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1603,8 +1604,7 @@
       },
       "reputation": 40,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "james-wharburton",
@@ -1612,6 +1612,7 @@
       "lastName": "Wharburton",
       "nationality": "AU",
       "dateOfBirth": "2006-03-14",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1625,8 +1626,7 @@
       },
       "reputation": 42,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "mari-boyar",
@@ -1634,6 +1634,7 @@
       "lastName": "Boyar",
       "nationality": "ES",
       "dateOfBirth": "2005-06-08",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1647,8 +1648,7 @@
       },
       "reputation": 44,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "noel-leonetti",
@@ -1656,6 +1656,7 @@
       "lastName": "Leonetti",
       "nationality": "MX",
       "dateOfBirth": "2005-12-11",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1669,8 +1670,7 @@
       },
       "reputation": 40,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "brando-badini",
@@ -1678,6 +1678,7 @@
       "lastName": "Badini",
       "nationality": "IT",
       "dateOfBirth": "2006-03-15",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1691,8 +1692,7 @@
       },
       "reputation": 38,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "noah-stromberg",
@@ -1700,6 +1700,7 @@
       "lastName": "Stromberg",
       "nationality": "DK",
       "dateOfBirth": "2006-01-22",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1713,8 +1714,7 @@
       },
       "reputation": 40,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "fernando-barreto",
@@ -1722,6 +1722,7 @@
       "lastName": "Barreto",
       "nationality": "BR",
       "dateOfBirth": "2005-02-03",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1735,8 +1736,7 @@
       },
       "reputation": 40,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "nikita-johnstone",
@@ -1744,6 +1744,7 @@
       "lastName": "Johnstone",
       "nationality": "AU",
       "dateOfBirth": "2006-07-19",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1757,8 +1758,7 @@
       },
       "reputation": 38,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "tim-tramnitz",
@@ -1766,6 +1766,7 @@
       "lastName": "Tramnitz",
       "nationality": "DE",
       "dateOfBirth": "2005-11-08",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1779,8 +1780,7 @@
       },
       "reputation": 40,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "bruno-del-rio",
@@ -1788,6 +1788,7 @@
       "lastName": "Del Rio",
       "nationality": "ES",
       "dateOfBirth": "2006-04-12",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1801,8 +1802,7 @@
       },
       "reputation": 38,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "alessandro-giusti",
@@ -1810,6 +1810,7 @@
       "lastName": "Giusti",
       "nationality": "FR",
       "dateOfBirth": "2005-09-30",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1823,8 +1824,7 @@
       },
       "reputation": 36,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "theophile-noel",
@@ -1832,6 +1832,7 @@
       "lastName": "Noel",
       "nationality": "FR",
       "dateOfBirth": "2006-06-14",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1845,8 +1846,7 @@
       },
       "reputation": 38,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "james-hadley",
@@ -1854,6 +1854,7 @@
       "lastName": "Hadley",
       "nationality": "GB",
       "dateOfBirth": "2006-02-08",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1867,8 +1868,7 @@
       },
       "reputation": 38,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "ivan-dominguez",
@@ -1876,6 +1876,7 @@
       "lastName": "Dominguez",
       "nationality": "PT",
       "dateOfBirth": "2005-08-22",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1889,8 +1890,7 @@
       },
       "reputation": 36,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "callum-voison",
@@ -1898,6 +1898,7 @@
       "lastName": "Voison",
       "nationality": "GB",
       "dateOfBirth": "2006-05-17",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1911,8 +1912,7 @@
       },
       "reputation": 40,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "louis-sharpe",
@@ -1920,6 +1920,7 @@
       "lastName": "Sharpe",
       "nationality": "GB",
       "dateOfBirth": "2006-11-03",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1933,8 +1934,7 @@
       },
       "reputation": 38,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "roman-bielinski",
@@ -1942,6 +1942,7 @@
       "lastName": "Bielinski",
       "nationality": "PL",
       "dateOfBirth": "2006-03-28",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1955,8 +1956,7 @@
       },
       "reputation": 36,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "nicola-marinelli",
@@ -1964,6 +1964,7 @@
       "lastName": "Marinelli",
       "nationality": "IT",
       "dateOfBirth": "2005-10-14",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1977,8 +1978,7 @@
       },
       "reputation": 36,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "brad-ben",
@@ -1986,6 +1986,7 @@
       "lastName": "Ben",
       "nationality": "US",
       "dateOfBirth": "2006-07-05",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1999,8 +2000,7 @@
       },
       "reputation": 38,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "nicola-lacosta",
@@ -2008,6 +2008,7 @@
       "lastName": "Lacosta",
       "nationality": "IT",
       "dateOfBirth": "2006-01-19",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2021,8 +2022,7 @@
       },
       "reputation": 34,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "matias-zagal",
@@ -2030,6 +2030,7 @@
       "lastName": "Zagal",
       "nationality": "PE",
       "dateOfBirth": "2006-04-08",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2043,8 +2044,7 @@
       },
       "reputation": 36,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "christian-ho",
@@ -2052,6 +2052,7 @@
       "lastName": "Ho",
       "nationality": "SG",
       "dateOfBirth": "2005-12-25",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2065,8 +2066,7 @@
       },
       "reputation": 38,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "gerrard-xia",
@@ -2074,6 +2074,7 @@
       "lastName": "Xia",
       "nationality": "CN",
       "dateOfBirth": "2006-09-11",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2087,8 +2088,7 @@
       },
       "reputation": 34,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "jake-dennison",
@@ -2096,6 +2096,7 @@
       "lastName": "Dennison",
       "nationality": "GB",
       "dateOfBirth": "1995-06-16",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2109,8 +2110,7 @@
       },
       "reputation": 58,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "felipe-drugovic",
@@ -2118,6 +2118,7 @@
       "lastName": "Drugovic",
       "nationality": "BR",
       "dateOfBirth": "1999-05-12",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2131,8 +2132,7 @@
       },
       "reputation": 56,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "jean-eric-verne",
@@ -2140,6 +2140,7 @@
       "lastName": "Verne",
       "nationality": "FR",
       "dateOfBirth": "1990-04-25",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2153,8 +2154,7 @@
       },
       "reputation": 62,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "nick-cassini",
@@ -2162,6 +2162,7 @@
       "lastName": "Cassini",
       "nationality": "NZ",
       "dateOfBirth": "1994-08-19",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2175,8 +2176,7 @@
       },
       "reputation": 60,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "dan-tickner",
@@ -2184,6 +2184,7 @@
       "lastName": "Tickner",
       "nationality": "GB",
       "dateOfBirth": "1999-06-08",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2197,8 +2198,7 @@
       },
       "reputation": 52,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "pepe-martinez",
@@ -2206,6 +2206,7 @@
       "lastName": "Martinez",
       "nationality": "ES",
       "dateOfBirth": "2004-05-13",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2219,8 +2220,7 @@
       },
       "reputation": 48,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "maximilian-guenther",
@@ -2228,6 +2228,7 @@
       "lastName": "Guenther",
       "nationality": "DE",
       "dateOfBirth": "1997-07-02",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2241,8 +2242,7 @@
       },
       "reputation": 56,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "taylor-barnett",
@@ -2250,6 +2250,7 @@
       "lastName": "Barnett",
       "nationality": "GB",
       "dateOfBirth": "2005-04-19",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2263,8 +2264,7 @@
       },
       "reputation": 45,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "sebastien-buehler",
@@ -2272,6 +2272,7 @@
       "lastName": "Buehler",
       "nationality": "CH",
       "dateOfBirth": "1988-10-31",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2285,8 +2286,7 @@
       },
       "reputation": 64,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "joel-eriksen",
@@ -2294,6 +2294,7 @@
       "lastName": "Eriksen",
       "nationality": "SE",
       "dateOfBirth": "1998-04-10",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2307,8 +2308,7 @@
       },
       "reputation": 52,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "mitch-everton",
@@ -2316,6 +2316,7 @@
       "lastName": "Everton",
       "nationality": "NZ",
       "dateOfBirth": "1994-06-24",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2329,8 +2330,7 @@
       },
       "reputation": 60,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "antonio-felix",
@@ -2338,6 +2338,7 @@
       "lastName": "Felix",
       "nationality": "PT",
       "dateOfBirth": "1991-08-31",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2351,8 +2352,7 @@
       },
       "reputation": 62,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "lucas-di-greco",
@@ -2360,6 +2360,7 @@
       "lastName": "di Greco",
       "nationality": "BR",
       "dateOfBirth": "1984-08-11",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2373,8 +2374,7 @@
       },
       "reputation": 64,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "zane-malone",
@@ -2382,6 +2382,7 @@
       "lastName": "Malone",
       "nationality": "BB",
       "dateOfBirth": "2004-03-22",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2395,8 +2396,7 @@
       },
       "reputation": 52,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "edoardo-mortari",
@@ -2404,6 +2404,7 @@
       "lastName": "Mortari",
       "nationality": "CH",
       "dateOfBirth": "1987-01-12",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2417,8 +2418,7 @@
       },
       "reputation": 60,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "oliver-rowlands",
@@ -2426,6 +2426,7 @@
       "lastName": "Rowlands",
       "nationality": "GB",
       "dateOfBirth": "1992-08-10",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2439,8 +2440,7 @@
       },
       "reputation": 58,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "norman-neto",
@@ -2448,6 +2448,7 @@
       "lastName": "Neto",
       "nationality": "FR",
       "dateOfBirth": "1992-04-09",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2461,8 +2462,7 @@
       },
       "reputation": 54,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "nico-mueller",
@@ -2470,6 +2470,7 @@
       "lastName": "Mueller",
       "nationality": "CH",
       "dateOfBirth": "1992-02-25",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2483,8 +2484,7 @@
       },
       "reputation": 56,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     },
     {
       "id": "franco-coletti",
@@ -2492,6 +2492,7 @@
       "lastName": "Coletti",
       "nationality": "AR",
       "dateOfBirth": "2003-05-27",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2505,8 +2506,7 @@
       },
       "reputation": 65,
       "salary": 0,
-      "contractEnd": 0,
-      "photoUrl": null
+      "contractEnd": 0
     }
   ]
 }
