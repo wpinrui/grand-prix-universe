@@ -6,6 +6,8 @@ import type {
   TeamRuntimeState,
   Department,
   StaffQuality,
+  ChiefRole,
+  DriverRole,
 } from '../../shared/domain';
 
 const STAFF_QUALITY_ORDER: StaffQuality[] = [
@@ -23,14 +25,14 @@ const DEPARTMENT_LABELS: Record<Department, string> = {
   mechanics: 'Mechanics',
 };
 
-const CHIEF_ROLE_LABELS: Record<string, string> = {
+const CHIEF_ROLE_LABELS: Record<ChiefRole, string> = {
   designer: 'Chief Designer',
   engineer: 'Chief Engineer',
   mechanic: 'Chief Mechanic',
   commercial: 'Commercial Director',
 };
 
-const DRIVER_ROLE_LABELS: Record<string, string> = {
+const DRIVER_ROLE_LABELS: Record<DriverRole, string> = {
   first: '1st Driver',
   second: '2nd Driver',
   equal: 'Driver',
@@ -50,6 +52,44 @@ function formatSalary(amount: number): string {
     return `${(amount / 1_000_000).toFixed(1)}M`;
   }
   return `${(amount / 1_000).toFixed(0)}K`;
+}
+
+interface StatCardProps {
+  label: string;
+  value: React.ReactNode;
+}
+
+function StatCard({ label, value }: StatCardProps) {
+  return (
+    <div className="bg-gray-800 rounded-lg p-4">
+      <div className="text-xs text-gray-400 mb-1">{label}</div>
+      <div className="text-lg font-semibold text-white">{value}</div>
+    </div>
+  );
+}
+
+interface ProgressBarProps {
+  value: number;
+  colorClass?: string;
+}
+
+function getMoraleColor(value: number): string {
+  if (value >= 80) return 'bg-green-500';
+  if (value >= 60) return 'bg-yellow-500';
+  if (value >= 40) return 'bg-orange-500';
+  return 'bg-red-500';
+}
+
+function ProgressBar({ value, colorClass }: ProgressBarProps) {
+  const barColor = colorClass ?? getMoraleColor(value);
+  return (
+    <div className="flex-1 bg-gray-700 rounded-full h-2">
+      <div
+        className={`h-2 rounded-full ${barColor}`}
+        style={{ width: `${value}%` }}
+      />
+    </div>
+  );
 }
 
 interface DriverCardProps {
@@ -115,22 +155,10 @@ interface MoraleBarProps {
 }
 
 function MoraleBar({ label, value }: MoraleBarProps) {
-  const getBarColor = (v: number) => {
-    if (v >= 80) return 'bg-green-500';
-    if (v >= 60) return 'bg-yellow-500';
-    if (v >= 40) return 'bg-orange-500';
-    return 'bg-red-500';
-  };
-
   return (
     <div className="flex items-center gap-2">
       <span className="text-xs text-gray-400 w-24">{label}</span>
-      <div className="flex-1 bg-gray-700 rounded-full h-2">
-        <div
-          className={`h-2 rounded-full ${getBarColor(value)}`}
-          style={{ width: `${value}%` }}
-        />
-      </div>
+      <ProgressBar value={value} />
       <span className="text-xs text-gray-500 w-8 text-right">{value}</span>
     </div>
   );
@@ -147,13 +175,16 @@ function StaffSummary({ teamState }: StaffSummaryProps) {
     <div className="space-y-2">
       {departments.map((dept) => {
         const counts = teamState.staffCounts[dept];
-        const total = STAFF_QUALITY_ORDER.reduce((sum, q) => sum + (counts[q] || 0), 0);
+        const total = STAFF_QUALITY_ORDER.reduce(
+          (sum, quality) => sum + (counts[quality] || 0),
+          0
+        );
         return (
           <div key={dept} className="flex items-center gap-2">
             <span className="text-xs text-gray-400 w-24">{DEPARTMENT_LABELS[dept]}</span>
             <span className="text-xs text-white">{total} staff</span>
             <span className="text-xs text-gray-500">
-              ({STAFF_QUALITY_ORDER.map((q) => counts[q] || 0).join('/')})
+              ({STAFF_QUALITY_ORDER.map((quality) => counts[quality] || 0).join('/')})
             </span>
           </div>
         );
@@ -194,24 +225,10 @@ export function TeamProfile() {
 
       {/* Team Info Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-gray-800 rounded-lg p-4">
-          <div className="text-xs text-gray-400 mb-1">Budget</div>
-          <div className="text-lg font-semibold text-white">
-            {formatCurrency(playerTeam.budget)}
-          </div>
-        </div>
-        <div className="bg-gray-800 rounded-lg p-4">
-          <div className="text-xs text-gray-400 mb-1">Headquarters</div>
-          <div className="text-lg font-semibold text-white">{playerTeam.headquarters}</div>
-        </div>
-        <div className="bg-gray-800 rounded-lg p-4">
-          <div className="text-xs text-gray-400 mb-1">Factory Level</div>
-          <div className="text-lg font-semibold text-white">{playerTeam.factoryLevel}/100</div>
-        </div>
-        <div className="bg-gray-800 rounded-lg p-4">
-          <div className="text-xs text-gray-400 mb-1">Setup Points</div>
-          <div className="text-lg font-semibold text-white">{teamState?.setupPoints ?? 0}</div>
-        </div>
+        <StatCard label="Budget" value={formatCurrency(playerTeam.budget)} />
+        <StatCard label="Headquarters" value={playerTeam.headquarters} />
+        <StatCard label="Factory Level" value={`${playerTeam.factoryLevel}/100`} />
+        <StatCard label="Setup Points" value={teamState?.setupPoints ?? 0} />
       </div>
 
       {/* Drivers Section */}
@@ -275,12 +292,10 @@ export function TeamProfile() {
           <div className="bg-gray-800 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-sm text-gray-400">Handling Knowledge:</span>
-              <div className="flex-1 bg-gray-700 rounded-full h-2">
-                <div
-                  className="h-2 rounded-full bg-blue-500"
-                  style={{ width: `${teamState.developmentTesting.handlingPercentage}%` }}
-                />
-              </div>
+              <ProgressBar
+                value={teamState.developmentTesting.handlingPercentage}
+                colorClass="bg-blue-500"
+              />
               <span className="text-sm text-white">
                 {teamState.developmentTesting.handlingPercentage}%
               </span>
