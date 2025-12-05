@@ -20,6 +20,42 @@ import type {
   NewGameParams,
 } from './domain';
 
+// =============================================================================
+// SAVE/LOAD TYPES
+// =============================================================================
+
+/**
+ * Metadata about a save file, used for displaying save slots
+ */
+export interface SaveSlotInfo {
+  filename: string;
+  playerName: string;
+  teamId: string;
+  teamName: string;
+  seasonNumber: number;
+  weekNumber: number;
+  savedAt: string; // ISO date string
+  fileSize: number; // bytes
+}
+
+/**
+ * Result of a save operation
+ */
+export interface SaveResult {
+  success: boolean;
+  filename?: string; // Generated filename on success
+  error?: string; // Error message on failure
+}
+
+/**
+ * Result of a load operation
+ */
+export interface LoadResult {
+  success: boolean;
+  state?: GameState; // Loaded state on success
+  error?: string; // Error message on failure
+}
+
 /** Channel names for IPC communication */
 export const IpcChannels = {
   // App lifecycle
@@ -41,9 +77,12 @@ export const IpcChannels = {
   // Game state
   GAME_NEW: 'game:new',
   GAME_GET_STATE: 'game:getState',
-  // Save/load (placeholders for future implementation)
+
+  // Save/load
   GAME_SAVE: 'game:save',
   GAME_LOAD: 'game:load',
+  GAME_LIST_SAVES: 'game:listSaves',
+  GAME_DELETE_SAVE: 'game:deleteSave',
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];
@@ -102,17 +141,27 @@ export interface IpcInvokeMap {
     args: [params: NewGameParams];
     result: GameState;
   };
-  [IpcChannels.GAME_SAVE]: {
-    args: [slotId: string];
-    result: { success: boolean };
-  };
-  [IpcChannels.GAME_LOAD]: {
-    args: [slotId: string];
-    result: { success: boolean };
-  };
   [IpcChannels.GAME_GET_STATE]: {
     args: [];
     result: GameState | null;
+  };
+
+  // Save/load
+  [IpcChannels.GAME_SAVE]: {
+    args: [];
+    result: SaveResult;
+  };
+  [IpcChannels.GAME_LOAD]: {
+    args: [filename: string];
+    result: LoadResult;
+  };
+  [IpcChannels.GAME_LIST_SAVES]: {
+    args: [];
+    result: SaveSlotInfo[];
+  };
+  [IpcChannels.GAME_DELETE_SAVE]: {
+    args: [filename: string];
+    result: boolean;
   };
 }
 

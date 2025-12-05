@@ -9,6 +9,7 @@ import { IpcChannels } from '../../shared/ipc';
 import type { NewGameParams } from '../../shared/domain';
 import { ConfigLoader } from '../services/config-loader';
 import { GameStateManager } from '../services/game-state-manager';
+import { SaveManager } from '../services/save-manager';
 
 /**
  * Register all IPC handlers.
@@ -74,14 +75,29 @@ export function registerIpcHandlers(): void {
     return GameStateManager.getCurrentState();
   });
 
-  // Save/Load handlers (stubs for now)
-  ipcMain.handle(IpcChannels.GAME_SAVE, (_event, _slotId: string) => {
-    // TODO: Implement when SaveManager exists
-    return { success: false };
+  // Save/Load handlers
+  ipcMain.handle(IpcChannels.GAME_SAVE, async () => {
+    const state = GameStateManager.getCurrentState();
+    if (!state) {
+      return { success: false, error: 'No active game to save' };
+    }
+    return SaveManager.save(state);
   });
 
-  ipcMain.handle(IpcChannels.GAME_LOAD, (_event, _slotId: string) => {
-    // TODO: Implement when SaveManager exists
-    return { success: false };
+  ipcMain.handle(IpcChannels.GAME_LOAD, async (_event, filename: string) => {
+    const result = await SaveManager.load(filename);
+    if (result.success && result.state) {
+      // Update GameStateManager with loaded state
+      GameStateManager.currentState = result.state;
+    }
+    return result;
+  });
+
+  ipcMain.handle(IpcChannels.GAME_LIST_SAVES, async () => {
+    return SaveManager.listSaves();
+  });
+
+  ipcMain.handle(IpcChannels.GAME_DELETE_SAVE, async (_event, filename: string) => {
+    return SaveManager.deleteSave(filename);
   });
 }
