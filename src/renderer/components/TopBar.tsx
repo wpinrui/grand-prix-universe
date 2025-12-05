@@ -3,7 +3,7 @@ import type { GameDate, Team } from '../../shared/domain';
 
 interface TopBarProps {
   sectionLabel: string;
-  subItemLabel: string | undefined;
+  subItemLabel: string;
   currentDate: GameDate | null;
   playerTeam: Team | null;
 }
@@ -12,7 +12,7 @@ export function TopBar({ sectionLabel, subItemLabel, currentDate, playerTeam }: 
   return (
     <header className="top-bar flex items-center justify-between h-14 px-5 bg-gray-800 border-b border-gray-700">
       <div className="text-xl font-semibold">
-        {sectionLabel}{subItemLabel && `: ${subItemLabel}`}
+        {sectionLabel}: {subItemLabel}
       </div>
       <div className="flex items-center gap-4">
         {/* Calendar Button */}
