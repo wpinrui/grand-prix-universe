@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Check, Calendar } from 'lucide-react';
 import {
   sections,
@@ -7,10 +7,19 @@ import {
   type SectionId,
   type Section,
 } from '../navigation';
+import { useGameState } from '../hooks';
 
 export function MainLayout() {
   const [selectedSectionId, setSelectedSectionId] = useState<SectionId>(defaultSection);
   const [selectedSubItemId, setSelectedSubItemId] = useState<string>(defaultSubItem);
+
+  const { data: gameState } = useGameState();
+
+  // Derive player's team from game state
+  const playerTeam = useMemo(() => {
+    if (!gameState) return null;
+    return gameState.teams.find((t) => t.id === gameState.player.teamId) ?? null;
+  }, [gameState]);
 
   const selectedSection = sections.find((s) => s.id === selectedSectionId) as Section;
   const selectedSubItem = selectedSection.subItems.find((sub) => sub.id === selectedSubItemId);
@@ -62,10 +71,16 @@ export function MainLayout() {
               title="Calendar"
             >
               <Calendar size={18} />
-              <span className="text-sm">Week 1, March 2025</span>
+              <span className="text-sm">
+                {gameState
+                  ? `Week ${gameState.currentDate.week}, Season ${gameState.currentDate.season}`
+                  : '—'}
+              </span>
             </button>
             {/* Budget */}
-            <div className="text-xl font-semibold text-green-400">$50,000,000</div>
+            <div className="text-xl font-semibold text-green-400">
+              {playerTeam ? `$${playerTeam.budget.toLocaleString()}` : '—'}
+            </div>
           </div>
         </header>
 
@@ -80,10 +95,25 @@ export function MainLayout() {
 
         {/* Bottom Bar */}
         <footer className="bottom-bar flex items-center h-16 px-5 bg-gray-800 border-t border-gray-700">
-          {/* Team Logo Placeholder */}
-          <div className="w-14 h-12 bg-gray-600 rounded flex items-center justify-center text-xs text-gray-400">
-            LOGO
-          </div>
+          {/* Team Logo */}
+          {playerTeam?.logoUrl ? (
+            <img
+              src={playerTeam.logoUrl}
+              alt={playerTeam.name}
+              className="w-14 h-12 object-contain rounded"
+            />
+          ) : (
+            <div className="flex gap-0.5 rounded overflow-hidden">
+              <div
+                className="w-7 h-12"
+                style={{ backgroundColor: playerTeam?.primaryColor ?? '#666' }}
+              />
+              <div
+                className="w-7 h-12"
+                style={{ backgroundColor: playerTeam?.secondaryColor ?? '#444' }}
+              />
+            </div>
+          )}
 
           {/* Sub-navigation */}
           <nav className="sub-nav flex items-center ml-5 gap-2">
