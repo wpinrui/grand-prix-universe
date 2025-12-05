@@ -88,6 +88,9 @@ export interface Team {
   primaryColor: string; // hex color for UI theming
   secondaryColor: string;
   headquarters: string; // country/location
+  principal: string; // team principal/boss name, e.g. "Frank Williams"
+  description: string; // 2-4 sentence team bio/history for team selection screen
+  logoUrl: string | null; // URL to team logo image, null = use color swatches as fallback
   budget: number; // current balance in dollars
   factoryLevel: number; // 0-100, affects staff/facility limits
   initialEngineManufacturerId: string; // engine supplier at game start
@@ -117,6 +120,7 @@ export interface Driver {
   lastName: string;
   nationality: string; // country code, e.g. "GB", "DE"
   dateOfBirth: string; // ISO date string
+  photoUrl: string | null; // URL to driver photo, null = use faces.js procedural generation
   teamId: string | null; // null if free agent
   role: DriverRole;
   attributes: DriverAttributes;

@@ -6,6 +6,7 @@
       "lastName": "Van der Berg",
       "nationality": "NL",
       "dateOfBirth": "1997-09-30",
+      "photoUrl": null,
       "teamId": "crimson-bull-racing",
       "role": "first",
       "attributes": {
@@ -27,6 +28,7 @@
       "lastName": "Lefevre",
       "nationality": "MC",
       "dateOfBirth": "1997-10-16",
+      "photoUrl": null,
       "teamId": "scuderia-veloce",
       "role": "equal",
       "attributes": {
@@ -48,6 +50,7 @@
       "lastName": "Norrington",
       "nationality": "GB",
       "dateOfBirth": "1999-11-13",
+      "photoUrl": null,
       "teamId": "papaya-racing",
       "role": "first",
       "attributes": {
@@ -69,6 +72,7 @@
       "lastName": "Rutherford",
       "nationality": "GB",
       "dateOfBirth": "1998-02-15",
+      "photoUrl": null,
       "teamId": "silver-arrow-motorsport",
       "role": "first",
       "attributes": {
@@ -90,6 +94,7 @@
       "lastName": "Piatti",
       "nationality": "AU",
       "dateOfBirth": "2001-04-06",
+      "photoUrl": null,
       "teamId": "papaya-racing",
       "role": "second",
       "attributes": {
@@ -111,6 +116,7 @@
       "lastName": "Hampton",
       "nationality": "GB",
       "dateOfBirth": "1985-01-07",
+      "photoUrl": null,
       "teamId": "scuderia-veloce",
       "role": "equal",
       "attributes": {
@@ -132,6 +138,7 @@
       "lastName": "Santander",
       "nationality": "ES",
       "dateOfBirth": "1994-09-01",
+      "photoUrl": null,
       "teamId": "willards-gp-team",
       "role": "first",
       "attributes": {
@@ -153,6 +160,7 @@
       "lastName": "Alvarado",
       "nationality": "ES",
       "dateOfBirth": "1981-07-29",
+      "photoUrl": null,
       "teamId": "emerald-racing-team",
       "role": "first",
       "attributes": {
@@ -174,6 +182,7 @@
       "lastName": "Hulsmann",
       "nationality": "DE",
       "dateOfBirth": "1987-08-19",
+      "photoUrl": null,
       "teamId": "sabre-grand-prix",
       "role": "first",
       "attributes": {
@@ -195,6 +204,7 @@
       "lastName": "Albrecht",
       "nationality": "TH",
       "dateOfBirth": "1996-03-23",
+      "photoUrl": null,
       "teamId": "willards-gp-team",
       "role": "second",
       "attributes": {
@@ -216,6 +226,7 @@
       "lastName": "Antonioli",
       "nationality": "IT",
       "dateOfBirth": "2006-08-25",
+      "photoUrl": null,
       "teamId": "silver-arrow-motorsport",
       "role": "second",
       "attributes": {
@@ -237,6 +248,7 @@
       "lastName": "Gaspard",
       "nationality": "FR",
       "dateOfBirth": "1996-02-07",
+      "photoUrl": null,
       "teamId": "team-alfie",
       "role": "first",
       "attributes": {
@@ -258,6 +270,7 @@
       "lastName": "Bohm",
       "nationality": "FI",
       "dateOfBirth": "1989-08-28",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -279,6 +292,7 @@
       "lastName": "Bearley",
       "nationality": "GB",
       "dateOfBirth": "2005-05-08",
+      "photoUrl": null,
       "teamId": "automation-gp",
       "role": "first",
       "attributes": {
@@ -300,6 +314,7 @@
       "lastName": "Ochoa",
       "nationality": "FR",
       "dateOfBirth": "1996-09-17",
+      "photoUrl": null,
       "teamId": "automation-gp",
       "role": "second",
       "attributes": {
@@ -321,6 +336,7 @@
       "lastName": "Hadjari",
       "nationality": "FR",
       "dateOfBirth": "2004-09-28",
+      "photoUrl": null,
       "teamId": "toro-minore",
       "role": "second",
       "attributes": {
@@ -342,6 +358,7 @@
       "lastName": "Pereira",
       "nationality": "MX",
       "dateOfBirth": "1990-01-26",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -363,6 +380,7 @@
       "lastName": "Tanaka",
       "nationality": "JP",
       "dateOfBirth": "2000-05-11",
+      "photoUrl": null,
       "teamId": "crimson-bull-racing",
       "role": "second",
       "attributes": {
@@ -384,6 +402,7 @@
       "lastName": "Lawley",
       "nationality": "NZ",
       "dateOfBirth": "2002-02-11",
+      "photoUrl": null,
       "teamId": "toro-minore",
       "role": "first",
       "attributes": {
@@ -405,6 +424,7 @@
       "lastName": "Bertolini",
       "nationality": "BR",
       "dateOfBirth": "2004-10-14",
+      "photoUrl": null,
       "teamId": "sabre-grand-prix",
       "role": "second",
       "attributes": {
@@ -426,6 +446,7 @@
       "lastName": "Stronach",
       "nationality": "CA",
       "dateOfBirth": "1998-10-29",
+      "photoUrl": null,
       "teamId": "emerald-racing-team",
       "role": "second",
       "attributes": {
@@ -447,6 +468,7 @@
       "lastName": "Dooley",
       "nationality": "AU",
       "dateOfBirth": "2003-01-20",
+      "photoUrl": null,
       "teamId": "team-alfie",
       "role": "second",
       "attributes": {
@@ -468,6 +490,7 @@
       "lastName": "Riccardi",
       "nationality": "AU",
       "dateOfBirth": "1989-07-01",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -489,6 +512,7 @@
       "lastName": "Rosenberg",
       "nationality": "DE",
       "dateOfBirth": "1985-06-27",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -510,6 +534,7 @@
       "lastName": "Vandoorn",
       "nationality": "BE",
       "dateOfBirth": "1992-03-26",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -531,6 +556,7 @@
       "lastName": "Burton",
       "nationality": "GB",
       "dateOfBirth": "1980-01-19",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -552,6 +578,7 @@
       "lastName": "Vetter",
       "nationality": "DE",
       "dateOfBirth": "1987-07-03",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -573,6 +600,7 @@
       "lastName": "Raikola",
       "nationality": "FI",
       "dateOfBirth": "1979-10-17",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -594,6 +622,7 @@
       "lastName": "Magnusson",
       "nationality": "DK",
       "dateOfBirth": "1992-10-05",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -615,6 +644,7 @@
       "lastName": "Schumann",
       "nationality": "DE",
       "dateOfBirth": "1999-03-22",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -636,6 +666,7 @@
       "lastName": "Guanhua",
       "nationality": "CN",
       "dateOfBirth": "1999-05-30",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -657,6 +688,7 @@
       "lastName": "Latorre",
       "nationality": "CA",
       "dateOfBirth": "1995-06-29",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -678,6 +710,7 @@
       "lastName": "de Vriese",
       "nationality": "NL",
       "dateOfBirth": "1995-02-06",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -699,6 +732,7 @@
       "lastName": "Sargent",
       "nationality": "US",
       "dateOfBirth": "1999-12-31",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -720,6 +754,7 @@
       "lastName": "Maldonato",
       "nationality": "VE",
       "dateOfBirth": "1985-03-09",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -741,6 +776,7 @@
       "lastName": "Eriksen",
       "nationality": "SE",
       "dateOfBirth": "1990-09-02",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -762,6 +798,7 @@
       "lastName": "Gutierrez",
       "nationality": "MX",
       "dateOfBirth": "1991-08-05",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -783,6 +820,7 @@
       "lastName": "Palmerston",
       "nationality": "GB",
       "dateOfBirth": "1991-01-20",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -804,6 +842,7 @@
       "lastName": "Werner",
       "nationality": "DE",
       "dateOfBirth": "1994-10-18",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -825,6 +864,7 @@
       "lastName": "Hartono",
       "nationality": "ID",
       "dateOfBirth": "1993-01-22",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -846,6 +886,7 @@
       "lastName": "Nascimento",
       "nationality": "BR",
       "dateOfBirth": "1992-08-21",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -867,6 +908,7 @@
       "lastName": "Merino",
       "nationality": "ES",
       "dateOfBirth": "1991-03-22",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -888,6 +930,7 @@
       "lastName": "Stevenson",
       "nationality": "GB",
       "dateOfBirth": "1991-06-28",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -909,6 +952,7 @@
       "lastName": "Giovanelli",
       "nationality": "IT",
       "dateOfBirth": "1993-12-14",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -930,6 +974,7 @@
       "lastName": "Massini",
       "nationality": "BR",
       "dateOfBirth": "1981-04-25",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -951,6 +996,7 @@
       "lastName": "Grosnier",
       "nationality": "FR",
       "dateOfBirth": "1986-04-17",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -972,6 +1018,7 @@
       "lastName": "Kvyatov",
       "nationality": "RU",
       "dateOfBirth": "1994-04-26",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -993,6 +1040,7 @@
       "lastName": "Stanko",
       "nationality": "CZ",
       "dateOfBirth": "2003-11-14",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1014,6 +1062,7 @@
       "lastName": "Fornari",
       "nationality": "IT",
       "dateOfBirth": "2005-03-28",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1035,6 +1084,7 @@
       "lastName": "Todorov",
       "nationality": "BG",
       "dateOfBirth": "2006-08-08",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1056,6 +1106,7 @@
       "lastName": "Lindberg",
       "nationality": "GB",
       "dateOfBirth": "2007-04-17",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1077,6 +1128,7 @@
       "lastName": "Goth",
       "nationality": "DE",
       "dateOfBirth": "2004-08-15",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1098,6 +1150,7 @@
       "lastName": "Vermeer",
       "nationality": "NL",
       "dateOfBirth": "2000-12-16",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1119,6 +1172,7 @@
       "lastName": "Brownlee",
       "nationality": "GB",
       "dateOfBirth": "2002-09-03",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1140,6 +1194,7 @@
       "lastName": "Begovic",
       "nationality": "SE",
       "dateOfBirth": "2004-08-11",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1161,6 +1216,7 @@
       "lastName": "Montana",
       "nationality": "CO",
       "dateOfBirth": "2005-10-12",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1182,6 +1238,7 @@
       "lastName": "Minelli",
       "nationality": "IT",
       "dateOfBirth": "2005-03-20",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1203,6 +1260,7 @@
       "lastName": "Crawford",
       "nationality": "US",
       "dateOfBirth": "2003-12-19",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1224,6 +1282,7 @@
       "lastName": "Mahindra",
       "nationality": "IN",
       "dateOfBirth": "2002-01-16",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1245,6 +1304,7 @@
       "lastName": "Martin",
       "nationality": "FR",
       "dateOfBirth": "2001-07-14",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1266,6 +1326,7 @@
       "lastName": "Miyazaki",
       "nationality": "JP",
       "dateOfBirth": "2002-08-21",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1287,6 +1348,7 @@
       "lastName": "Stenson",
       "nationality": "NO",
       "dateOfBirth": "2006-05-03",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1308,6 +1370,7 @@
       "lastName": "Dunn",
       "nationality": "IE",
       "dateOfBirth": "2004-06-25",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1329,6 +1392,7 @@
       "lastName": "Duerk",
       "nationality": "PY",
       "dateOfBirth": "2003-08-14",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1350,6 +1414,7 @@
       "lastName": "Sheehan",
       "nationality": "GB",
       "dateOfBirth": "2004-02-19",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1371,6 +1436,7 @@
       "lastName": "Van Hoorn",
       "nationality": "NL",
       "dateOfBirth": "2005-07-12",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1392,6 +1458,7 @@
       "lastName": "Intara",
       "nationality": "TH",
       "dateOfBirth": "2004-04-15",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1413,6 +1480,7 @@
       "lastName": "Bennett",
       "nationality": "GB",
       "dateOfBirth": "2004-03-22",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1434,6 +1502,7 @@
       "lastName": "Villareal",
       "nationality": "MX",
       "dateOfBirth": "2004-06-18",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1455,6 +1524,7 @@
       "lastName": "Camargo",
       "nationality": "BR",
       "dateOfBirth": "2005-05-02",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1476,6 +1546,7 @@
       "lastName": "Wurzburg",
       "nationality": "AT",
       "dateOfBirth": "2005-02-07",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1497,6 +1568,7 @@
       "lastName": "Okonkwo",
       "nationality": "US",
       "dateOfBirth": "2007-04-06",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1518,6 +1590,7 @@
       "lastName": "Tapio",
       "nationality": "FI",
       "dateOfBirth": "2006-08-18",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1539,6 +1612,7 @@
       "lastName": "Wharburton",
       "nationality": "AU",
       "dateOfBirth": "2006-03-14",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1560,6 +1634,7 @@
       "lastName": "Boyar",
       "nationality": "ES",
       "dateOfBirth": "2005-06-08",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1581,6 +1656,7 @@
       "lastName": "Leonetti",
       "nationality": "MX",
       "dateOfBirth": "2005-12-11",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1602,6 +1678,7 @@
       "lastName": "Badini",
       "nationality": "IT",
       "dateOfBirth": "2006-03-15",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1623,6 +1700,7 @@
       "lastName": "Stromberg",
       "nationality": "DK",
       "dateOfBirth": "2006-01-22",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1644,6 +1722,7 @@
       "lastName": "Barreto",
       "nationality": "BR",
       "dateOfBirth": "2005-02-03",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1665,6 +1744,7 @@
       "lastName": "Johnstone",
       "nationality": "AU",
       "dateOfBirth": "2006-07-19",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1686,6 +1766,7 @@
       "lastName": "Tramnitz",
       "nationality": "DE",
       "dateOfBirth": "2005-11-08",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1707,6 +1788,7 @@
       "lastName": "Del Rio",
       "nationality": "ES",
       "dateOfBirth": "2006-04-12",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1728,6 +1810,7 @@
       "lastName": "Giusti",
       "nationality": "FR",
       "dateOfBirth": "2005-09-30",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1749,6 +1832,7 @@
       "lastName": "Noel",
       "nationality": "FR",
       "dateOfBirth": "2006-06-14",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1770,6 +1854,7 @@
       "lastName": "Hadley",
       "nationality": "GB",
       "dateOfBirth": "2006-02-08",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1791,6 +1876,7 @@
       "lastName": "Dominguez",
       "nationality": "PT",
       "dateOfBirth": "2005-08-22",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1812,6 +1898,7 @@
       "lastName": "Voison",
       "nationality": "GB",
       "dateOfBirth": "2006-05-17",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1833,6 +1920,7 @@
       "lastName": "Sharpe",
       "nationality": "GB",
       "dateOfBirth": "2006-11-03",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1854,6 +1942,7 @@
       "lastName": "Bielinski",
       "nationality": "PL",
       "dateOfBirth": "2006-03-28",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1875,6 +1964,7 @@
       "lastName": "Marinelli",
       "nationality": "IT",
       "dateOfBirth": "2005-10-14",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1896,6 +1986,7 @@
       "lastName": "Ben",
       "nationality": "US",
       "dateOfBirth": "2006-07-05",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1917,6 +2008,7 @@
       "lastName": "Lacosta",
       "nationality": "IT",
       "dateOfBirth": "2006-01-19",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1938,6 +2030,7 @@
       "lastName": "Zagal",
       "nationality": "PE",
       "dateOfBirth": "2006-04-08",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1959,6 +2052,7 @@
       "lastName": "Ho",
       "nationality": "SG",
       "dateOfBirth": "2005-12-25",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -1980,6 +2074,7 @@
       "lastName": "Xia",
       "nationality": "CN",
       "dateOfBirth": "2006-09-11",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2001,6 +2096,7 @@
       "lastName": "Dennison",
       "nationality": "GB",
       "dateOfBirth": "1995-06-16",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2022,6 +2118,7 @@
       "lastName": "Drugovic",
       "nationality": "BR",
       "dateOfBirth": "1999-05-12",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2043,6 +2140,7 @@
       "lastName": "Verne",
       "nationality": "FR",
       "dateOfBirth": "1990-04-25",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2064,6 +2162,7 @@
       "lastName": "Cassini",
       "nationality": "NZ",
       "dateOfBirth": "1994-08-19",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2085,6 +2184,7 @@
       "lastName": "Tickner",
       "nationality": "GB",
       "dateOfBirth": "1999-06-08",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2106,6 +2206,7 @@
       "lastName": "Martinez",
       "nationality": "ES",
       "dateOfBirth": "2004-05-13",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2127,6 +2228,7 @@
       "lastName": "Guenther",
       "nationality": "DE",
       "dateOfBirth": "1997-07-02",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2148,6 +2250,7 @@
       "lastName": "Barnett",
       "nationality": "GB",
       "dateOfBirth": "2005-04-19",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2169,6 +2272,7 @@
       "lastName": "Buehler",
       "nationality": "CH",
       "dateOfBirth": "1988-10-31",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2190,6 +2294,7 @@
       "lastName": "Eriksen",
       "nationality": "SE",
       "dateOfBirth": "1998-04-10",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2211,6 +2316,7 @@
       "lastName": "Everton",
       "nationality": "NZ",
       "dateOfBirth": "1994-06-24",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2232,6 +2338,7 @@
       "lastName": "Felix",
       "nationality": "PT",
       "dateOfBirth": "1991-08-31",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2253,6 +2360,7 @@
       "lastName": "di Greco",
       "nationality": "BR",
       "dateOfBirth": "1984-08-11",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2274,6 +2382,7 @@
       "lastName": "Malone",
       "nationality": "BB",
       "dateOfBirth": "2004-03-22",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2295,6 +2404,7 @@
       "lastName": "Mortari",
       "nationality": "CH",
       "dateOfBirth": "1987-01-12",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2316,6 +2426,7 @@
       "lastName": "Rowlands",
       "nationality": "GB",
       "dateOfBirth": "1992-08-10",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2337,6 +2448,7 @@
       "lastName": "Neto",
       "nationality": "FR",
       "dateOfBirth": "1992-04-09",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2358,6 +2470,7 @@
       "lastName": "Mueller",
       "nationality": "CH",
       "dateOfBirth": "1992-02-25",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
@@ -2379,6 +2492,7 @@
       "lastName": "Coletti",
       "nationality": "AR",
       "dateOfBirth": "2003-05-27",
+      "photoUrl": null,
       "teamId": null,
       "role": "first",
       "attributes": {
