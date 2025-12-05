@@ -9,7 +9,7 @@
       "headquarters": "United Kingdom",
       "budget": 220000000,
       "factoryLevel": 95,
-      "engineManufacturerId": "mercedes-hpe",
+      "initialEngineManufacturerId": "mercedes-hpe",
       "initialSponsorIds": ["vodafone", "aws", "rolex"]
     },
     {
@@ -21,7 +21,7 @@
       "headquarters": "Germany",
       "budget": 200000000,
       "factoryLevel": 90,
-      "engineManufacturerId": "mercedes-hpe",
+      "initialEngineManufacturerId": "mercedes-hpe",
       "initialSponsorIds": ["petronas", "monster-energy", "iwc"]
     },
     {
@@ -33,7 +33,7 @@
       "headquarters": "Austria",
       "budget": 195000000,
       "factoryLevel": 88,
-      "engineManufacturerId": "honda-rbpt",
+      "initialEngineManufacturerId": "honda-rbpt",
       "initialSponsorIds": ["oracle", "red-bull", "tag-heuer"]
     },
     {
@@ -45,7 +45,7 @@
       "headquarters": "Italy",
       "budget": 190000000,
       "factoryLevel": 86,
-      "engineManufacturerId": "ferrari-pu",
+      "initialEngineManufacturerId": "ferrari-pu",
       "initialSponsorIds": ["shell", "richard-mille", "ups"]
     },
     {
@@ -57,7 +57,7 @@
       "headquarters": "United Kingdom",
       "budget": 120000000,
       "factoryLevel": 65,
-      "engineManufacturerId": "mercedes-hpe",
+      "initialEngineManufacturerId": "mercedes-hpe",
       "initialSponsorIds": ["hp", "dhl"]
     },
     {
@@ -69,7 +69,7 @@
       "headquarters": "Italy",
       "budget": 100000000,
       "factoryLevel": 55,
-      "engineManufacturerId": "honda-rbpt",
+      "initialEngineManufacturerId": "honda-rbpt",
       "initialSponsorIds": ["dell", "cisco"]
     },
     {
@@ -81,7 +81,7 @@
       "headquarters": "United Kingdom",
       "budget": 95000000,
       "factoryLevel": 52,
-      "engineManufacturerId": "mercedes-hpe",
+      "initialEngineManufacturerId": "mercedes-hpe",
       "initialSponsorIds": ["amd", "castrol"]
     },
     {
@@ -93,7 +93,7 @@
       "headquarters": "United States",
       "budget": 90000000,
       "factoryLevel": 48,
-      "engineManufacturerId": "ferrari-pu",
+      "initialEngineManufacturerId": "ferrari-pu",
       "initialSponsorIds": ["fedex", "visa"]
     },
     {
@@ -105,7 +105,7 @@
       "headquarters": "Switzerland",
       "budget": 75000000,
       "factoryLevel": 40,
-      "engineManufacturerId": "ferrari-pu",
+      "initialEngineManufacturerId": "ferrari-pu",
       "initialSponsorIds": ["coca-cola", "allianz"]
     },
     {
@@ -117,7 +117,7 @@
       "headquarters": "France",
       "budget": 60000000,
       "factoryLevel": 32,
-      "engineManufacturerId": "renault-sport",
+      "initialEngineManufacturerId": "renault-sport",
       "initialSponsorIds": ["axa", "pirelli"]
     }
   ]
