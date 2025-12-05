@@ -87,8 +87,9 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IpcChannels.GAME_LOAD, async (_event, filename: string) => {
     const result = await SaveManager.load(filename);
     if (result.success && result.state) {
-      // Update GameStateManager with loaded state
+      // Update GameStateManager with loaded state and start auto-save
       GameStateManager.currentState = result.state;
+      GameStateManager.startAutoSave();
     }
     return result;
   });
