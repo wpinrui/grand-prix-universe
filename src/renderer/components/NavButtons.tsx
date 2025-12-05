@@ -1,10 +1,7 @@
 import type { CSSProperties } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import type { Section, SubItem } from '../navigation';
-import { ACCENT_BORDERED_BUTTON_STYLE, GHOST_BORDERED_BUTTON_CLASSES } from '../utils/theme-styles';
-
-/** Shared base classes for bordered nav buttons */
-const BORDERED_BUTTON_BASE = 'btn rounded-lg transition-all duration-200 border';
+import { ACCENT_BORDERED_BUTTON_STYLE, BORDERED_BUTTON_BASE, GHOST_BORDERED_BUTTON_CLASSES } from '../utils/theme-styles';
 
 // ===========================================
 // SECTION NAV BUTTON (Sidebar)

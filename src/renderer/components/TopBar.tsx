@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import { Calendar, DollarSign } from 'lucide-react';
 import type { GameDate, Team } from '../../shared/domain';
-import { ACCENT_TEXT_STYLE, ACCENT_MUTED_BUTTON_STYLE } from '../utils/theme-styles';
+import { ACCENT_MUTED_BUTTON_CLASSES, ACCENT_MUTED_BUTTON_STYLE, ACCENT_TEXT_STYLE } from '../utils/theme-styles';
 
 interface TopBarProps {
   sectionLabel: string;
@@ -34,7 +34,7 @@ export function TopBar({ sectionLabel, subItemLabel, currentDate, playerTeam }: 
         {/* Calendar Button */}
         <button
           type="button"
-          className="btn flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium transition-all duration-200 hover:brightness-110"
+          className={`${ACCENT_MUTED_BUTTON_CLASSES} px-3 py-1.5`}
           style={ACCENT_MUTED_BUTTON_STYLE}
           title="View Calendar"
         >

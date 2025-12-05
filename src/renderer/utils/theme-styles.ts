@@ -62,11 +62,19 @@ export const ACCENT_CARD_STYLE: CSSProperties = {
 // BUTTON CLASS CONSTANTS
 // ===========================================
 
+/** Shared base classes for bordered buttons */
+export const BORDERED_BUTTON_BASE = 'btn rounded-lg transition-all duration-200 border';
+
 /**
  * Primary action button - emerald CTA (New Game, OK, Start, etc.)
  */
 export const PRIMARY_BUTTON_CLASSES =
   'btn px-6 py-2 font-semibold bg-emerald-600 text-white border border-emerald-500 rounded-lg hover:bg-emerald-500 disabled:bg-[var(--neutral-700)] disabled:border-[var(--neutral-600)] disabled:text-muted disabled:cursor-not-allowed transition-all duration-200';
+
+/**
+ * Muted accent button classes - for secondary accent actions (calendar, etc.)
+ */
+export const ACCENT_MUTED_BUTTON_CLASSES = `${BORDERED_BUTTON_BASE} text-sm font-medium hover:brightness-110`;
 
 /**
  * Ghost button - secondary actions (Back, Cancel, etc.)
