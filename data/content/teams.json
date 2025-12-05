@@ -10,7 +10,13 @@
       "budget": 220000000,
       "factoryLevel": 95,
       "initialEngineManufacturerId": "mercedes-hpe",
-      "initialSponsorIds": ["vodafone", "aws", "rolex"]
+      "initialSponsorIds": ["vodafone", "aws", "rolex"],
+      "initialStaffCounts": {
+        "commercial": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
+        "design": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
+        "engineering": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
+        "mechanics": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 }
+      }
     },
     {
       "id": "silver-arrow-motorsport",
@@ -22,7 +28,13 @@
       "budget": 200000000,
       "factoryLevel": 90,
       "initialEngineManufacturerId": "mercedes-hpe",
-      "initialSponsorIds": ["petronas", "monster-energy", "iwc"]
+      "initialSponsorIds": ["petronas", "monster-energy", "iwc"],
+      "initialStaffCounts": {
+        "commercial": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
+        "design": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
+        "engineering": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
+        "mechanics": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 }
+      }
     },
     {
       "id": "crimson-bull-racing",
@@ -34,7 +46,13 @@
       "budget": 195000000,
       "factoryLevel": 88,
       "initialEngineManufacturerId": "honda-rbpt",
-      "initialSponsorIds": ["oracle", "red-bull", "tag-heuer"]
+      "initialSponsorIds": ["oracle", "red-bull", "tag-heuer"],
+      "initialStaffCounts": {
+        "commercial": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
+        "design": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
+        "engineering": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
+        "mechanics": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 }
+      }
     },
     {
       "id": "scuderia-veloce",
@@ -46,7 +64,13 @@
       "budget": 190000000,
       "factoryLevel": 86,
       "initialEngineManufacturerId": "ferrari-pu",
-      "initialSponsorIds": ["shell", "richard-mille", "ups"]
+      "initialSponsorIds": ["shell", "richard-mille", "ups"],
+      "initialStaffCounts": {
+        "commercial": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
+        "design": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
+        "engineering": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
+        "mechanics": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 }
+      }
     },
     {
       "id": "willards-gp-team",
@@ -58,7 +82,13 @@
       "budget": 120000000,
       "factoryLevel": 65,
       "initialEngineManufacturerId": "mercedes-hpe",
-      "initialSponsorIds": ["hp", "dhl"]
+      "initialSponsorIds": ["hp", "dhl"],
+      "initialStaffCounts": {
+        "commercial": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 },
+        "design": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 },
+        "engineering": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 },
+        "mechanics": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 }
+      }
     },
     {
       "id": "toro-minore",
@@ -70,7 +100,13 @@
       "budget": 100000000,
       "factoryLevel": 55,
       "initialEngineManufacturerId": "honda-rbpt",
-      "initialSponsorIds": ["dell", "cisco"]
+      "initialSponsorIds": ["dell", "cisco"],
+      "initialStaffCounts": {
+        "commercial": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 },
+        "design": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 },
+        "engineering": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 },
+        "mechanics": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 }
+      }
     },
     {
       "id": "emerald-racing-team",
@@ -82,7 +118,13 @@
       "budget": 95000000,
       "factoryLevel": 52,
       "initialEngineManufacturerId": "mercedes-hpe",
-      "initialSponsorIds": ["amd", "castrol"]
+      "initialSponsorIds": ["amd", "castrol"],
+      "initialStaffCounts": {
+        "commercial": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 },
+        "design": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 },
+        "engineering": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 },
+        "mechanics": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 }
+      }
     },
     {
       "id": "automation-gp",
@@ -94,7 +136,13 @@
       "budget": 90000000,
       "factoryLevel": 48,
       "initialEngineManufacturerId": "ferrari-pu",
-      "initialSponsorIds": ["fedex", "visa"]
+      "initialSponsorIds": ["fedex", "visa"],
+      "initialStaffCounts": {
+        "commercial": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 },
+        "design": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 },
+        "engineering": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 },
+        "mechanics": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 }
+      }
     },
     {
       "id": "sabre-grand-prix",
@@ -106,7 +154,13 @@
       "budget": 75000000,
       "factoryLevel": 40,
       "initialEngineManufacturerId": "ferrari-pu",
-      "initialSponsorIds": ["coca-cola", "allianz"]
+      "initialSponsorIds": ["coca-cola", "allianz"],
+      "initialStaffCounts": {
+        "commercial": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 },
+        "design": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 },
+        "engineering": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 },
+        "mechanics": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 }
+      }
     },
     {
       "id": "team-alfie",
@@ -118,7 +172,13 @@
       "budget": 60000000,
       "factoryLevel": 32,
       "initialEngineManufacturerId": "renault-sport",
-      "initialSponsorIds": ["axa", "pirelli"]
+      "initialSponsorIds": ["axa", "pirelli"],
+      "initialStaffCounts": {
+        "commercial": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 },
+        "design": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 },
+        "engineering": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 },
+        "mechanics": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 }
+      }
     }
   ]
 }

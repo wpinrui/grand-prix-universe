@@ -67,6 +67,18 @@ export enum ManufacturerDealType {
 // =============================================================================
 
 /**
+ * StaffCounts - Anonymous staff pool tracked by quality level
+ * GPW-style: staff are not named individuals, just counts per quality tier
+ */
+export type StaffCounts = Record<StaffQuality, number>;
+
+/**
+ * DepartmentStaffCounts - Staff counts for all departments
+ * Keyed by Department enum value
+ */
+export type DepartmentStaffCounts = Record<Department, StaffCounts>;
+
+/**
  * Team - The central entity representing an F1 team
  */
 export interface Team {
@@ -80,6 +92,7 @@ export interface Team {
   factoryLevel: number; // 0-100, affects staff/facility limits
   initialEngineManufacturerId: string; // engine supplier at game start
   initialSponsorIds: string[]; // sponsor IDs for game start
+  initialStaffCounts: DepartmentStaffCounts; // staff counts at game start
 }
 
 /**
@@ -113,20 +126,6 @@ export interface Driver {
 }
 
 /**
- * Staff - General team personnel (non-chief, non-driver)
- */
-export interface Staff {
-  id: string;
-  firstName: string;
-  lastName: string;
-  department: Department;
-  quality: StaffQuality;
-  teamId: string | null;
-  salary: number;
-  contractEnd: number;
-}
-
-/**
  * Chief - Department head with significant impact on team performance
  */
 export interface Chief {
@@ -154,6 +153,8 @@ export interface Manufacturer {
   reputation: number; // 0-100, affects attractiveness to teams
   annualCost: number; // yearly contract cost in dollars
   quality: number; // 0-100, base quality of products
+  worksTeamId: string | null; // factory team (at most one)
+  partnerTeamIds: string[]; // priority customer teams
 }
 
 /**
@@ -576,6 +577,8 @@ export interface TeamRuntimeState {
   // Sponsor satisfaction: sponsorId -> 0-100
   // GPW uses 1-5 blocks (20/40/60/80/100 mapping)
   sponsorSatisfaction: Record<string, number>;
+  // Staff counts by department and quality (GPW-style anonymous pools)
+  staffCounts: DepartmentStaffCounts;
   // Testing progress
   setupPoints: number; // Accumulated from set-up testing
   developmentTesting: DevelopmentTestingState;
@@ -637,7 +640,6 @@ export interface GameState {
   // These start as copies of config data and evolve during play
   teams: Team[];
   drivers: Driver[];
-  staff: Staff[];
   chiefs: Chief[];
   sponsors: Sponsor[]; // Available sponsors (not all have deals)
   manufacturers: Manufacturer[];
