@@ -22,7 +22,7 @@ export function TopBar({ sectionLabel, subItemLabel, currentDate, playerTeam }: 
   };
 
   return (
-    <header className="top-bar flex items-center justify-between h-14 px-6 surface-primary border-b border-subtle">
+    <header className="top-bar flex items-center justify-between h-16 px-6 surface-primary border-b border-subtle">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2">
         <h1 className="text-lg font-bold tracking-tight text-primary">

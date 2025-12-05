@@ -20,7 +20,7 @@ export function BottomBar({
   nextRace,
 }: BottomBarProps) {
   return (
-    <footer className="bottom-bar flex items-center h-16 px-5 surface-primary border-t border-subtle">
+    <footer className="bottom-bar flex items-center h-20 px-6 surface-primary border-t border-subtle">
       {/* Team Badge */}
       <TeamBadge team={playerTeam} />
 

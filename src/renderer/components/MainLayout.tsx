@@ -35,11 +35,14 @@ export function MainLayout() {
     setSelectedSubItemId(subItemId);
   };
 
+  // Check if showing placeholder content (not implemented screens)
+  const isPlaceholder = !(selectedSectionId === 'team' && selectedSubItemId === 'profile');
+
   return (
     <div className="main-layout flex w-full h-screen surface-base text-primary">
-      {/* Left Sidebar */}
-      <aside className="sidebar flex flex-col w-44 surface-primary border-r border-subtle">
-        <div className="flex flex-col py-2">
+      {/* Left Sidebar - wider */}
+      <aside className="sidebar flex flex-col w-52 surface-primary border-r border-subtle">
+        <div className="flex flex-col py-3">
           {sections.map((section) => (
             <SectionButton
               key={section.id}
@@ -60,8 +63,13 @@ export function MainLayout() {
           playerTeam={playerTeam}
         />
 
-        {/* Content Area */}
-        <main className="content flex-1 p-8 overflow-auto surface-base">
+        {/* Content Area - with accent tint for placeholder */}
+        <main
+          className="content flex-1 p-8 overflow-auto"
+          style={isPlaceholder ? {
+            background: 'linear-gradient(180deg, color-mix(in srgb, var(--accent-900) 20%, var(--neutral-950)) 0%, var(--neutral-950) 100%)',
+          } : undefined}
+        >
           {selectedSectionId === 'team' && selectedSubItemId === 'profile' ? (
             <TeamProfile />
           ) : (
