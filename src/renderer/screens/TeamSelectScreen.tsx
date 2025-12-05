@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { RoutePaths } from '../routes';
 import { IpcChannels } from '../../shared/ipc';
 import type { Team, Driver } from '../../shared/domain';
+import { DriverRole } from '../../shared/domain';
 
 interface LocationState {
   playerName: string;
@@ -47,6 +48,22 @@ function formatBudget(budget: number): string {
     currency: 'USD',
     maximumFractionDigits: 0,
   }).format(budget);
+}
+
+/**
+ * Format driver role for display
+ */
+function formatDriverRole(role: DriverRole): string {
+  switch (role) {
+    case DriverRole.First:
+      return '#1 driver';
+    case DriverRole.Second:
+      return '#2 driver';
+    case DriverRole.Equal:
+      return 'Equal status';
+    case DriverRole.Test:
+      return 'Test driver';
+  }
 }
 
 export function TeamSelectScreen() {
@@ -217,9 +234,7 @@ export function TeamSelectScreen() {
                   <p className="text-white font-medium">
                     {driver.firstName} {driver.lastName}
                   </p>
-                  <p className="text-gray-400 text-sm">
-                    {driver.role === 'equal' ? 'Equal status' : `#${driver.role === 'first' ? '1' : '2'} driver`}
-                  </p>
+                  <p className="text-gray-400 text-sm">{formatDriverRole(driver.role)}</p>
                 </div>
               ))}
             </div>
