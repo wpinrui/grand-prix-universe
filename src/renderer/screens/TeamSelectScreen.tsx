@@ -69,6 +69,9 @@ interface DriverPhotoProps {
   teamColors: TeamColors;
 }
 
+// Vertical offset to center face in circular container (facesjs renders full body)
+const FACE_VERTICAL_OFFSET = -6;
+
 /**
  * Driver photo component - displays photo or falls back to faces.js procedural generation
  */
@@ -106,9 +109,6 @@ function DriverPhoto({ driver, teamColors }: DriverPhotoProps) {
       />
     );
   }
-
-  // Vertical offset to center face in circular container (facesjs renders full body)
-  const FACE_VERTICAL_OFFSET = -6;
 
   return (
     <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-600 flex justify-center">

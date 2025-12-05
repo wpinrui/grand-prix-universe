@@ -35,7 +35,8 @@ const PRNG_SCALE = 2147483646; // PRNG_MODULUS - 1
  * Produces deterministic sequence for consistent face generation.
  */
 function seededRandom(seed: number): () => number {
-  let s = seed;
+  // Ensure seed is non-zero to avoid PRNG returning negative values
+  let s = seed || 1;
   return function () {
     s = (s * PRNG_MULTIPLIER) % PRNG_MODULUS;
     return (s - 1) / PRNG_SCALE;
