@@ -1,5 +1,8 @@
 import type { Team } from '../../shared/domain';
 
+const FALLBACK_PRIMARY_COLOR = '#666';
+const FALLBACK_SECONDARY_COLOR = '#444';
+
 interface TeamBadgeProps {
   team: Team | null;
   className?: string;
@@ -24,11 +27,11 @@ export function TeamBadge({ team, className = 'w-14 h-12' }: TeamBadgeProps) {
     <div className={`flex rounded overflow-hidden ${className}`}>
       <div
         className="w-1/2 h-full"
-        style={{ backgroundColor: team?.primaryColor ?? '#666' }}
+        style={{ backgroundColor: team?.primaryColor ?? FALLBACK_PRIMARY_COLOR }}
       />
       <div
         className="w-1/2 h-full"
-        style={{ backgroundColor: team?.secondaryColor ?? '#444' }}
+        style={{ backgroundColor: team?.secondaryColor ?? FALLBACK_SECONDARY_COLOR }}
       />
     </div>
   );

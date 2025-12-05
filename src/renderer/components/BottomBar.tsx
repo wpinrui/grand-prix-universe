@@ -52,6 +52,7 @@ export function BottomBar({
         type="button"
         className="flex items-center justify-center w-12 h-12 bg-green-600 hover:bg-green-500 rounded cursor-pointer transition-colors"
         title="Advance"
+        aria-label="Advance"
       >
         <Check size={28} />
       </button>

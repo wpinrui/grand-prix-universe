@@ -10,7 +10,7 @@ import { useGameState } from './useIpc';
 import type { Team, CalendarEntry, GameState } from '../../shared/domain';
 
 interface DerivedGameState {
-  gameState: GameState | null | undefined;
+  gameState: GameState | undefined;
   isLoading: boolean;
   playerTeam: Team | null;
   nextRace: CalendarEntry | null;

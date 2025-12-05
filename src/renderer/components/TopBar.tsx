@@ -20,6 +20,7 @@ export function TopBar({ sectionLabel, subItemLabel, currentDate, playerTeam }: 
           type="button"
           className="flex items-center gap-2 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded cursor-pointer transition-colors"
           title="Calendar"
+          aria-label="Calendar"
         >
           <Calendar size={18} />
           <span className="text-sm">
