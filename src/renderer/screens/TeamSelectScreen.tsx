@@ -88,116 +88,98 @@ interface AppearanceProfile {
   hairColors: string[];
 }
 
+// Module-level constants for appearance profiles (avoids recreating on every call)
+const APPEARANCE_PROFILES: Record<string, AppearanceProfile> = {
+  eastAsian: {
+    skinColors: ['#f5e1d0', '#ecd4c0', '#e8c9a8', '#dfc19d'],
+    hairColors: ['#090806', '#1c1c1c', '#2a2a2a', '#0f0f0f'],
+  },
+  southAsian: {
+    skinColors: ['#c9a16a', '#b8935a', '#a67c52', '#c4a574'],
+    hairColors: ['#090806', '#1c1c1c', '#2a2a2a'],
+  },
+  northernEuropean: {
+    skinColors: ['#ffe0c0', '#ffd5b5', '#ffccaa', '#f5d0b0'],
+    hairColors: ['#b89778', '#a67b5b', '#8b7355', '#3b3024', '#1c1c1c', '#d4a76a'],
+  },
+  mediterranean: {
+    skinColors: ['#e8c9a8', '#d4a574', '#c9a16a', '#deb887'],
+    hairColors: ['#2a2a2a', '#3b3024', '#1c1c1c', '#4a3728'],
+  },
+  latinAmerican: {
+    skinColors: ['#d4a574', '#c9a16a', '#b8935a', '#deb887', '#e8c9a8'],
+    hairColors: ['#1c1c1c', '#2a2a2a', '#3b3024', '#090806'],
+  },
+  african: {
+    skinColors: ['#8d5524', '#6b4226', '#5a3825', '#704020'],
+    hairColors: ['#090806', '#0f0f0f', '#1c1c1c'],
+  },
+  middleEastern: {
+    skinColors: ['#c9a16a', '#b8935a', '#d4a574', '#c4a574'],
+    hairColors: ['#090806', '#1c1c1c', '#2a2a2a'],
+  },
+};
+
+// Map nationality codes to appearance profiles
+const NATIONALITY_PROFILE_MAP: Record<string, AppearanceProfile> = {
+  // East Asian
+  JP: APPEARANCE_PROFILES.eastAsian,
+  CN: APPEARANCE_PROFILES.eastAsian,
+  KR: APPEARANCE_PROFILES.eastAsian,
+  SG: APPEARANCE_PROFILES.eastAsian,
+  // South/Southeast Asian
+  TH: APPEARANCE_PROFILES.southAsian,
+  IN: APPEARANCE_PROFILES.southAsian,
+  ID: APPEARANCE_PROFILES.southAsian,
+  // Northern European
+  GB: APPEARANCE_PROFILES.northernEuropean,
+  DE: APPEARANCE_PROFILES.northernEuropean,
+  NL: APPEARANCE_PROFILES.northernEuropean,
+  BE: APPEARANCE_PROFILES.northernEuropean,
+  DK: APPEARANCE_PROFILES.northernEuropean,
+  SE: APPEARANCE_PROFILES.northernEuropean,
+  NO: APPEARANCE_PROFILES.northernEuropean,
+  FI: APPEARANCE_PROFILES.northernEuropean,
+  IE: APPEARANCE_PROFILES.northernEuropean,
+  AT: APPEARANCE_PROFILES.northernEuropean,
+  CH: APPEARANCE_PROFILES.northernEuropean,
+  PL: APPEARANCE_PROFILES.northernEuropean,
+  CZ: APPEARANCE_PROFILES.northernEuropean,
+  RU: APPEARANCE_PROFILES.northernEuropean,
+  // Mediterranean
+  IT: APPEARANCE_PROFILES.mediterranean,
+  ES: APPEARANCE_PROFILES.mediterranean,
+  PT: APPEARANCE_PROFILES.mediterranean,
+  FR: APPEARANCE_PROFILES.mediterranean,
+  MC: APPEARANCE_PROFILES.mediterranean,
+  GR: APPEARANCE_PROFILES.mediterranean,
+  BG: APPEARANCE_PROFILES.northernEuropean,
+  // Latin American
+  BR: APPEARANCE_PROFILES.latinAmerican,
+  MX: APPEARANCE_PROFILES.latinAmerican,
+  AR: APPEARANCE_PROFILES.latinAmerican,
+  CO: APPEARANCE_PROFILES.latinAmerican,
+  VE: APPEARANCE_PROFILES.latinAmerican,
+  PE: APPEARANCE_PROFILES.latinAmerican,
+  PY: APPEARANCE_PROFILES.latinAmerican,
+  // Oceania
+  AU: APPEARANCE_PROFILES.northernEuropean,
+  NZ: APPEARANCE_PROFILES.northernEuropean,
+  // North American
+  US: APPEARANCE_PROFILES.northernEuropean,
+  CA: APPEARANCE_PROFILES.northernEuropean,
+  // African/Caribbean
+  BB: APPEARANCE_PROFILES.african,
+  // Middle Eastern
+  AE: APPEARANCE_PROFILES.middleEastern,
+  SA: APPEARANCE_PROFILES.middleEastern,
+};
+
 /**
  * Get appearance profile based on nationality code
  */
 function getAppearanceProfile(nationality: string): AppearanceProfile {
-  // East Asian
-  const eastAsian: AppearanceProfile = {
-    skinColors: ['#f5e1d0', '#ecd4c0', '#e8c9a8', '#dfc19d'],
-    hairColors: ['#090806', '#1c1c1c', '#2a2a2a', '#0f0f0f'],
-  };
-
-  // South/Southeast Asian
-  const southAsian: AppearanceProfile = {
-    skinColors: ['#c9a16a', '#b8935a', '#a67c52', '#c4a574'],
-    hairColors: ['#090806', '#1c1c1c', '#2a2a2a'],
-  };
-
-  // Northern European (pale, varied hair)
-  const northernEuropean: AppearanceProfile = {
-    skinColors: ['#ffe0c0', '#ffd5b5', '#ffccaa', '#f5d0b0'],
-    hairColors: ['#b89778', '#a67b5b', '#8b7355', '#3b3024', '#1c1c1c', '#d4a76a'],
-  };
-
-  // Southern/Mediterranean European
-  const mediterranean: AppearanceProfile = {
-    skinColors: ['#e8c9a8', '#d4a574', '#c9a16a', '#deb887'],
-    hairColors: ['#2a2a2a', '#3b3024', '#1c1c1c', '#4a3728'],
-  };
-
-  // Latin American (diverse, Mediterranean to mixed)
-  const latinAmerican: AppearanceProfile = {
-    skinColors: ['#d4a574', '#c9a16a', '#b8935a', '#deb887', '#e8c9a8'],
-    hairColors: ['#1c1c1c', '#2a2a2a', '#3b3024', '#090806'],
-  };
-
-  // African/Caribbean
-  const african: AppearanceProfile = {
-    skinColors: ['#8d5524', '#6b4226', '#5a3825', '#704020'],
-    hairColors: ['#090806', '#0f0f0f', '#1c1c1c'],
-  };
-
-  // Middle Eastern/North African
-  const middleEastern: AppearanceProfile = {
-    skinColors: ['#c9a16a', '#b8935a', '#d4a574', '#c4a574'],
-    hairColors: ['#090806', '#1c1c1c', '#2a2a2a'],
-  };
-
-  // Map nationality codes to profiles
-  const profileMap: Record<string, AppearanceProfile> = {
-    // East Asian
-    JP: eastAsian,
-    CN: eastAsian,
-    KR: eastAsian,
-    SG: eastAsian,
-
-    // South/Southeast Asian
-    TH: southAsian,
-    IN: southAsian,
-    ID: southAsian,
-
-    // Northern European
-    GB: northernEuropean,
-    DE: northernEuropean,
-    NL: northernEuropean,
-    BE: northernEuropean,
-    DK: northernEuropean,
-    SE: northernEuropean,
-    NO: northernEuropean,
-    FI: northernEuropean,
-    IE: northernEuropean,
-    AT: northernEuropean,
-    CH: northernEuropean,
-    PL: northernEuropean,
-    CZ: northernEuropean,
-    RU: northernEuropean,
-
-    // Mediterranean
-    IT: mediterranean,
-    ES: mediterranean,
-    PT: mediterranean,
-    FR: mediterranean,
-    MC: mediterranean,
-    GR: mediterranean,
-    BG: northernEuropean,
-
-    // Latin American
-    BR: latinAmerican,
-    MX: latinAmerican,
-    AR: latinAmerican,
-    CO: latinAmerican,
-    VE: latinAmerican,
-    PE: latinAmerican,
-    PY: latinAmerican,
-
-    // Oceania (mostly European descent)
-    AU: northernEuropean,
-    NZ: northernEuropean,
-
-    // North American (diverse, default to Northern European)
-    US: northernEuropean,
-    CA: northernEuropean,
-
-    // African/Caribbean
-    BB: african,
-
-    // Middle Eastern
-    AE: middleEastern,
-    SA: middleEastern,
-  };
-
-  return profileMap[nationality] || northernEuropean;
+  return NATIONALITY_PROFILE_MAP[nationality] || APPEARANCE_PROFILES.northernEuropean;
 }
 
 /**
@@ -206,6 +188,9 @@ function getAppearanceProfile(nationality: string): AppearanceProfile {
 function pickFromArray<T>(arr: T[], rand: () => number): T {
   return arr[Math.floor(rand() * arr.length)];
 }
+
+// Seed offset to ensure facesjs internal randomization uses different sequence than appearance selection
+const FACEJS_SEED_OFFSET = 1000;
 
 /**
  * Driver photo component - displays photo or falls back to faces.js procedural generation
@@ -216,7 +201,8 @@ function DriverPhoto({ driver }: { driver: Driver }) {
 
   useEffect(() => {
     if (!driver.photoUrl && containerRef.current) {
-      containerRef.current.innerHTML = '';
+      const container = containerRef.current;
+      container.innerHTML = '';
 
       // Use seeded random for consistent face per driver ID
       const seed = hashString(driver.id);
@@ -228,8 +214,9 @@ function DriverPhoto({ driver }: { driver: Driver }) {
       const hairColor = pickFromArray(profile.hairColors, rand);
 
       // Generate face with nationality-appropriate overrides
+      // Temporarily override Math.random for facesjs internal randomization
       const originalRandom = Math.random;
-      Math.random = seededRandom(seed + 1000); // Different seed for other random features
+      Math.random = seededRandom(seed + FACEJS_SEED_OFFSET);
 
       try {
         const face = generate({
@@ -237,10 +224,15 @@ function DriverPhoto({ driver }: { driver: Driver }) {
           hair: { color: hairColor },
           head: { shave: `rgba(0,0,0,${0.05 + rand() * 0.15})` },
         });
-        display(containerRef.current, face, { width: 64, height: 64 });
+        display(container, face, { width: 64, height: 64 });
       } finally {
         Math.random = originalRandom;
       }
+
+      // Cleanup on unmount
+      return () => {
+        container.innerHTML = '';
+      };
     }
   }, [driver.id, driver.nationality, driver.photoUrl]);
 
