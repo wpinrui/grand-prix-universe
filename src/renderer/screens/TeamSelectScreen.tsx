@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { display, generate } from 'facesjs';
 import { RoutePaths } from '../routes';
 import { IpcChannels } from '../../shared/ipc';
 import type { Team, Driver } from '../../shared/domain';
 import { DriverRole } from '../../shared/domain';
+import { generateFace } from '../utils/face-generator';
 
 interface LocationState {
   playerName: string;
@@ -57,183 +57,26 @@ function TeamLogo({ team }: { team: Team }) {
 }
 
 /**
- * Simple string hash function for deterministic seeding
- */
-function hashString(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash;
-  }
-  return Math.abs(hash);
-}
-
-/**
- * Creates a seeded random number generator for consistent face generation
- */
-function seededRandom(seed: number): () => number {
-  let s = seed;
-  return function () {
-    s = (s * 16807) % 2147483647;
-    return (s - 1) / 2147483646;
-  };
-}
-
-/**
- * Appearance profile for nationality-based face generation
- */
-interface AppearanceProfile {
-  skinColors: string[];
-  hairColors: string[];
-}
-
-// Module-level constants for appearance profiles (avoids recreating on every call)
-const APPEARANCE_PROFILES: Record<string, AppearanceProfile> = {
-  eastAsian: {
-    skinColors: ['#f5e1d0', '#ecd4c0', '#e8c9a8', '#dfc19d'],
-    hairColors: ['#090806', '#1c1c1c', '#2a2a2a', '#0f0f0f'],
-  },
-  southAsian: {
-    skinColors: ['#c9a16a', '#b8935a', '#a67c52', '#c4a574'],
-    hairColors: ['#090806', '#1c1c1c', '#2a2a2a'],
-  },
-  northernEuropean: {
-    skinColors: ['#ffe0c0', '#ffd5b5', '#ffccaa', '#f5d0b0'],
-    hairColors: ['#b89778', '#a67b5b', '#8b7355', '#3b3024', '#1c1c1c', '#d4a76a'],
-  },
-  mediterranean: {
-    skinColors: ['#e8c9a8', '#d4a574', '#c9a16a', '#deb887'],
-    hairColors: ['#2a2a2a', '#3b3024', '#1c1c1c', '#4a3728'],
-  },
-  latinAmerican: {
-    skinColors: ['#d4a574', '#c9a16a', '#b8935a', '#deb887', '#e8c9a8'],
-    hairColors: ['#1c1c1c', '#2a2a2a', '#3b3024', '#090806'],
-  },
-  african: {
-    skinColors: ['#8d5524', '#6b4226', '#5a3825', '#704020'],
-    hairColors: ['#090806', '#0f0f0f', '#1c1c1c'],
-  },
-  middleEastern: {
-    skinColors: ['#c9a16a', '#b8935a', '#d4a574', '#c4a574'],
-    hairColors: ['#090806', '#1c1c1c', '#2a2a2a'],
-  },
-};
-
-// Map nationality codes to appearance profiles
-const NATIONALITY_PROFILE_MAP: Record<string, AppearanceProfile> = {
-  // East Asian
-  JP: APPEARANCE_PROFILES.eastAsian,
-  CN: APPEARANCE_PROFILES.eastAsian,
-  KR: APPEARANCE_PROFILES.eastAsian,
-  SG: APPEARANCE_PROFILES.eastAsian,
-  // South/Southeast Asian
-  TH: APPEARANCE_PROFILES.southAsian,
-  IN: APPEARANCE_PROFILES.southAsian,
-  ID: APPEARANCE_PROFILES.southAsian,
-  // Northern European
-  GB: APPEARANCE_PROFILES.northernEuropean,
-  DE: APPEARANCE_PROFILES.northernEuropean,
-  NL: APPEARANCE_PROFILES.northernEuropean,
-  BE: APPEARANCE_PROFILES.northernEuropean,
-  DK: APPEARANCE_PROFILES.northernEuropean,
-  SE: APPEARANCE_PROFILES.northernEuropean,
-  NO: APPEARANCE_PROFILES.northernEuropean,
-  FI: APPEARANCE_PROFILES.northernEuropean,
-  IE: APPEARANCE_PROFILES.northernEuropean,
-  AT: APPEARANCE_PROFILES.northernEuropean,
-  CH: APPEARANCE_PROFILES.northernEuropean,
-  PL: APPEARANCE_PROFILES.northernEuropean,
-  CZ: APPEARANCE_PROFILES.northernEuropean,
-  RU: APPEARANCE_PROFILES.northernEuropean,
-  // Mediterranean
-  IT: APPEARANCE_PROFILES.mediterranean,
-  ES: APPEARANCE_PROFILES.mediterranean,
-  PT: APPEARANCE_PROFILES.mediterranean,
-  FR: APPEARANCE_PROFILES.mediterranean,
-  MC: APPEARANCE_PROFILES.mediterranean,
-  GR: APPEARANCE_PROFILES.mediterranean,
-  BG: APPEARANCE_PROFILES.northernEuropean,
-  // Latin American
-  BR: APPEARANCE_PROFILES.latinAmerican,
-  MX: APPEARANCE_PROFILES.latinAmerican,
-  AR: APPEARANCE_PROFILES.latinAmerican,
-  CO: APPEARANCE_PROFILES.latinAmerican,
-  VE: APPEARANCE_PROFILES.latinAmerican,
-  PE: APPEARANCE_PROFILES.latinAmerican,
-  PY: APPEARANCE_PROFILES.latinAmerican,
-  // Oceania
-  AU: APPEARANCE_PROFILES.northernEuropean,
-  NZ: APPEARANCE_PROFILES.northernEuropean,
-  // North American
-  US: APPEARANCE_PROFILES.northernEuropean,
-  CA: APPEARANCE_PROFILES.northernEuropean,
-  // African/Caribbean
-  BB: APPEARANCE_PROFILES.african,
-  // Middle Eastern
-  AE: APPEARANCE_PROFILES.middleEastern,
-  SA: APPEARANCE_PROFILES.middleEastern,
-};
-
-/**
- * Get appearance profile based on nationality code
- */
-function getAppearanceProfile(nationality: string): AppearanceProfile {
-  return NATIONALITY_PROFILE_MAP[nationality] || APPEARANCE_PROFILES.northernEuropean;
-}
-
-/**
- * Pick item from array using seeded random
- */
-function pickFromArray<T>(arr: T[], rand: () => number): T {
-  return arr[Math.floor(rand() * arr.length)];
-}
-
-// Seed offset to ensure facesjs internal randomization uses different sequence than appearance selection
-const FACEJS_SEED_OFFSET = 1000;
-
-/**
  * Driver photo component - displays photo or falls back to faces.js procedural generation
- * Uses nationality-appropriate appearance traits for believable faces
  */
 function DriverPhoto({ driver }: { driver: Driver }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!driver.photoUrl && containerRef.current) {
-      const container = containerRef.current;
+    const container = containerRef.current;
+
+    // Only generate face if no photo URL and container exists
+    if (!driver.photoUrl && container) {
       container.innerHTML = '';
-
-      // Use seeded random for consistent face per driver ID
-      const seed = hashString(driver.id);
-      const rand = seededRandom(seed);
-
-      // Get nationality-appropriate appearance
-      const profile = getAppearanceProfile(driver.nationality);
-      const skinColor = pickFromArray(profile.skinColors, rand);
-      const hairColor = pickFromArray(profile.hairColors, rand);
-
-      // Generate face with nationality-appropriate overrides
-      // Temporarily override Math.random for facesjs internal randomization
-      const originalRandom = Math.random;
-      Math.random = seededRandom(seed + FACEJS_SEED_OFFSET);
-
-      try {
-        const face = generate({
-          body: { color: skinColor },
-          hair: { color: hairColor },
-          head: { shave: `rgba(0,0,0,${0.05 + rand() * 0.15})` },
-        });
-        display(container, face, { width: 64, height: 64 });
-      } finally {
-        Math.random = originalRandom;
-      }
-
-      // Cleanup on unmount
-      return () => {
-        container.innerHTML = '';
-      };
+      generateFace(container, driver.id, driver.nationality);
     }
+
+    // Cleanup on unmount or before re-running effect
+    return () => {
+      if (container) {
+        container.innerHTML = '';
+      }
+    };
   }, [driver.id, driver.nationality, driver.photoUrl]);
 
   if (driver.photoUrl) {
