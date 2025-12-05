@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { RoutePaths } from '../routes';
 import { IpcChannels } from '../../shared/ipc';
@@ -45,6 +45,11 @@ function ColorSwatch({ primary, secondary }: { primary: string; secondary: strin
  */
 function TeamLogo({ team }: { team: Team }) {
   const [imageError, setImageError] = useState(false);
+
+  // Reset error state when team changes
+  useEffect(() => {
+    setImageError(false);
+  }, [team.id]);
 
   if (team.logoUrl && !imageError) {
     return (
@@ -209,6 +214,16 @@ export function TeamSelectScreen() {
         .sort((a, b) => getDriverRolePriority(a.role) - getDriverRolePriority(b.role))
     : [];
 
+  // Memoize team colors to prevent unnecessary re-renders in DriverPhoto
+  // Default values are never used (guard above returns early when no selectedTeam)
+  const teamColors = useMemo(
+    () => ({
+      primary: selectedTeam?.primaryColor ?? '',
+      secondary: selectedTeam?.secondaryColor ?? '',
+    }),
+    [selectedTeam?.primaryColor, selectedTeam?.secondaryColor]
+  );
+
   // Handle starting the game
   const handleStartGame = async () => {
     if (!selectedTeam || !playerName) return;
@@ -324,13 +339,7 @@ export function TeamSelectScreen() {
                   key={driver.id}
                   className="bg-gray-700 rounded p-3 border border-gray-600 flex items-center gap-3"
                 >
-                  <DriverPhoto
-                    driver={driver}
-                    teamColors={{
-                      primary: selectedTeam.primaryColor,
-                      secondary: selectedTeam.secondaryColor,
-                    }}
-                  />
+                  <DriverPhoto driver={driver} teamColors={teamColors} />
                   <div>
                     <p className="text-white font-medium">
                       {driver.firstName} {driver.lastName}
