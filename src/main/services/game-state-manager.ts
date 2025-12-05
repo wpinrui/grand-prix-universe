@@ -19,6 +19,7 @@ import type {
   DriverRuntimeState,
   TeamRuntimeState,
   DepartmentMorale,
+  DepartmentStaffCounts,
   ActiveSponsorDeal,
   ActiveManufacturerContract,
   Driver,
@@ -79,7 +80,10 @@ function createInitialDepartmentMorale(): DepartmentMorale {
 /**
  * Creates initial runtime state for a team
  */
-function createInitialTeamState(sponsorIds: string[]): TeamRuntimeState {
+function createInitialTeamState(
+  sponsorIds: string[],
+  initialStaffCounts: DepartmentStaffCounts
+): TeamRuntimeState {
   // Initialize sponsor satisfaction at 60 (neutral-good)
   const sponsorSatisfaction: Record<string, number> = {};
   for (const sponsorId of sponsorIds) {
@@ -89,6 +93,7 @@ function createInitialTeamState(sponsorIds: string[]): TeamRuntimeState {
   return {
     morale: createInitialDepartmentMorale(),
     sponsorSatisfaction,
+    staffCounts: initialStaffCounts,
     setupPoints: 0,
     developmentTesting: {
       handlingPercentage: 0,
@@ -245,7 +250,6 @@ export const GameStateManager = {
     // Load all entities from config
     const teams = ConfigLoader.getTeams();
     const drivers = ConfigLoader.getDrivers();
-    const staff: never[] = []; // Staff are unnamed/generic workers, not loaded from JSON
     const chiefs = ConfigLoader.getChiefs();
     const sponsors = ConfigLoader.getSponsors();
     const manufacturers = ConfigLoader.getManufacturers();
@@ -268,7 +272,10 @@ export const GameStateManager = {
 
     const teamStates: Record<string, TeamRuntimeState> = {};
     for (const t of teams) {
-      teamStates[t.id] = createInitialTeamState(t.initialSponsorIds);
+      teamStates[t.id] = createInitialTeamState(
+        t.initialSponsorIds,
+        t.initialStaffCounts
+      );
     }
 
     // Create calendar from circuits
@@ -322,7 +329,6 @@ export const GameStateManager = {
 
       teams,
       drivers,
-      staff,
       chiefs,
       sponsors,
       manufacturers,
