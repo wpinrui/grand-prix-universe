@@ -1,9 +1,19 @@
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { TitleScreen } from './screens/TitleScreen';
+import { TeamSelectScreen } from './screens/TeamSelectScreen';
+import { GameScreen } from './screens/GameScreen';
+
 function App() {
   return (
-    <div className="app">
-      <h1>Grand Prix Universe</h1>
-      <p>F1 Team Management Simulation</p>
-    </div>
+    <MemoryRouter>
+      <div className="app">
+        <Routes>
+          <Route path="/" element={<TitleScreen />} />
+          <Route path="/team-select" element={<TeamSelectScreen />} />
+          <Route path="/game" element={<GameScreen />} />
+        </Routes>
+      </div>
+    </MemoryRouter>
   );
 }
 
