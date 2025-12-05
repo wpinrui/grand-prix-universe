@@ -123,18 +123,6 @@ export const ACCENT_PROGRESS_STYLE: CSSProperties = {
 };
 
 // ===========================================
-// NAV INDICATOR STYLES
-// ===========================================
-
-/**
- * Active nav indicator bar
- */
-export const ACCENT_NAV_INDICATOR_STYLE: CSSProperties = {
-  backgroundColor: 'var(--accent-500)',
-  boxShadow: '0 0 10px var(--accent-500)',
-};
-
-// ===========================================
 // BUTTON CLASS CONSTANTS
 // ===========================================
 
@@ -149,6 +137,12 @@ export const PRIMARY_BUTTON_CLASSES =
  */
 export const GHOST_BUTTON_CLASSES =
   'btn px-4 py-2 text-secondary hover:text-primary transition-colors';
+
+/**
+ * Ghost button with border - nav buttons, icon buttons in unselected state
+ */
+export const GHOST_BORDERED_BUTTON_CLASSES =
+  'bg-[var(--neutral-800)] border-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-750)] hover:text-primary hover:border-[var(--neutral-600)]';
 
 // ===========================================
 // UTILITY FUNCTIONS

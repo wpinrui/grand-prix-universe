@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import type { Section, SubItem } from '../navigation';
-import { ACCENT_BORDERED_BUTTON_STYLE, ACCENT_NAV_INDICATOR_STYLE } from '../utils/theme-styles';
+import { ACCENT_BORDERED_BUTTON_STYLE, GHOST_BORDERED_BUTTON_CLASSES } from '../utils/theme-styles';
 
 // ===========================================
 // SECTION NAV BUTTON (Sidebar)
@@ -16,10 +16,7 @@ interface SectionButtonProps {
 export function SectionButton({ section, isSelected, onClick }: SectionButtonProps) {
   const Icon = section.icon;
 
-  const indicatorStyle: CSSProperties = isSelected
-    ? ACCENT_NAV_INDICATOR_STYLE
-    : {};
-
+  // Active state styling - CSS handles the indicator via .nav-item.active::before
   const buttonStyle: CSSProperties = isSelected
     ? {
         backgroundColor: 'color-mix(in srgb, var(--accent-600) 15%, transparent)',
@@ -38,15 +35,6 @@ export function SectionButton({ section, isSelected, onClick }: SectionButtonPro
       `}
       style={buttonStyle}
     >
-      {/* Active indicator bar */}
-      <div
-        className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] rounded-r transition-all duration-200"
-        style={{
-          height: isSelected ? '100%' : '0%',
-          ...indicatorStyle,
-        }}
-      />
-
       <Icon size={24} className="shrink-0" />
       <span className="text-base font-semibold tracking-wide">{section.label}</span>
     </button>
@@ -72,9 +60,7 @@ export function SubNavButton({ subItem, isSelected, onClick }: SubNavButtonProps
     border
   `;
 
-  const stateClasses = isSelected
-    ? ''
-    : 'bg-[var(--neutral-800)] border-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-750)] hover:text-primary hover:border-[var(--neutral-600)]';
+  const stateClasses = isSelected ? '' : GHOST_BORDERED_BUTTON_CLASSES;
 
   return (
     <button
@@ -122,9 +108,7 @@ export function IconButton({
     border
   `;
 
-  const variantClasses = variant === 'ghost'
-    ? 'bg-[var(--neutral-800)] border-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-750)] hover:text-primary'
-    : '';
+  const variantClasses = variant === 'ghost' ? GHOST_BORDERED_BUTTON_CLASSES : '';
 
   return (
     <button

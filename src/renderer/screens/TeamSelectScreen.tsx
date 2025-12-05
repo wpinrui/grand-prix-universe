@@ -30,6 +30,25 @@ function isValidLocationState(state: unknown): state is LocationState {
 // HELPER COMPONENTS
 // ===========================================
 
+interface LabeledFieldProps {
+  label: string;
+  children: React.ReactNode;
+  variant?: 'default' | 'description';
+}
+
+function LabeledField({ label, children, variant = 'default' }: LabeledFieldProps) {
+  const valueClasses = variant === 'description'
+    ? 'text-secondary text-sm leading-relaxed mt-1'
+    : 'text-primary font-medium';
+
+  return (
+    <div>
+      <span className="text-xs font-medium text-muted uppercase tracking-wider">{label}</span>
+      <p className={valueClasses}>{children}</p>
+    </div>
+  );
+}
+
 interface DriverPhotoProps {
   driver: Driver;
   teamColors: TeamColors;
@@ -240,6 +259,7 @@ export function TeamSelectScreen() {
   }
 
   // Subtle accent-tinted card styling
+  const sectionBorderColor = `color-mix(in srgb, ${selectedTeam.primaryColor} 15%, var(--neutral-750))`;
   const cardStyle: CSSProperties = {
     background: `linear-gradient(145deg,
       color-mix(in srgb, ${selectedTeam.primaryColor} 8%, var(--neutral-800)) 0%,
@@ -256,7 +276,7 @@ export function TeamSelectScreen() {
         style={cardStyle}
       >
         {/* Header */}
-        <div className="p-6 border-b" style={{ borderColor: `color-mix(in srgb, ${selectedTeam.primaryColor} 15%, var(--neutral-750))` }}>
+        <div className="p-6 border-b" style={{ borderColor: sectionBorderColor }}>
           <h1 className="text-2xl font-bold text-primary">Select Team</h1>
           <p className="text-secondary mt-1">
             Choose the team you want to manage, {playerName}
@@ -264,7 +284,7 @@ export function TeamSelectScreen() {
         </div>
 
         {/* Team selector with arrows */}
-        <div className="p-6 border-b" style={{ borderColor: `color-mix(in srgb, ${selectedTeam.primaryColor} 15%, var(--neutral-750))` }}>
+        <div className="p-6 border-b" style={{ borderColor: sectionBorderColor }}>
           <div className="flex items-center justify-between gap-4">
             {/* Prev button */}
             <IconButton
@@ -309,20 +329,9 @@ export function TeamSelectScreen() {
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Left: Team info */}
           <div className="space-y-4">
-            <div>
-              <span className="text-xs font-medium text-muted uppercase tracking-wider">Principal</span>
-              <p className="text-primary font-medium">{selectedTeam.principal}</p>
-            </div>
-            <div>
-              <span className="text-xs font-medium text-muted uppercase tracking-wider">Factory Level</span>
-              <p className="text-primary font-medium">{selectedTeam.factoryLevel}/100</p>
-            </div>
-            <div>
-              <span className="text-xs font-medium text-muted uppercase tracking-wider">About</span>
-              <p className="text-secondary text-sm leading-relaxed mt-1">
-                {selectedTeam.description}
-              </p>
-            </div>
+            <LabeledField label="Principal">{selectedTeam.principal}</LabeledField>
+            <LabeledField label="Factory Level">{selectedTeam.factoryLevel}/100</LabeledField>
+            <LabeledField label="About" variant="description">{selectedTeam.description}</LabeledField>
           </div>
 
           {/* Right: Drivers */}
@@ -352,7 +361,7 @@ export function TeamSelectScreen() {
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t flex items-center justify-between" style={{ borderColor: `color-mix(in srgb, ${selectedTeam.primaryColor} 15%, var(--neutral-750))` }}>
+        <div className="p-6 border-t flex items-center justify-between" style={{ borderColor: sectionBorderColor }}>
           <button
             type="button"
             onClick={() => navigate(-1)}
