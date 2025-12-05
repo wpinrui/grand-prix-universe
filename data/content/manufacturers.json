@@ -6,7 +6,9 @@
       "type": "engine",
       "reputation": 95,
       "annualCost": 28000000,
-      "quality": 90
+      "quality": 90,
+      "worksTeamId": "silver-arrow-motorsport",
+      "partnerTeamIds": []
     },
     {
       "id": "honda-rbpt",
@@ -14,7 +16,9 @@
       "type": "engine",
       "reputation": 93,
       "annualCost": 26000000,
-      "quality": 90
+      "quality": 90,
+      "worksTeamId": "crimson-bull-racing",
+      "partnerTeamIds": ["toro-minore"]
     },
     {
       "id": "ferrari-pu",
@@ -22,7 +26,9 @@
       "type": "engine",
       "reputation": 85,
       "annualCost": 20000000,
-      "quality": 77
+      "quality": 77,
+      "worksTeamId": "scuderia-veloce",
+      "partnerTeamIds": []
     },
     {
       "id": "renault-sport",
@@ -30,7 +36,9 @@
       "type": "engine",
       "reputation": 75,
       "annualCost": 16000000,
-      "quality": 74
+      "quality": 74,
+      "worksTeamId": "team-alfie",
+      "partnerTeamIds": []
     },
     {
       "id": "cosworth",
@@ -38,7 +46,9 @@
       "type": "engine",
       "reputation": 55,
       "annualCost": 8000000,
-      "quality": 53
+      "quality": 53,
+      "worksTeamId": null,
+      "partnerTeamIds": []
     }
   ]
 }

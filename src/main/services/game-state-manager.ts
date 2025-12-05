@@ -234,13 +234,19 @@ function createInitialManufacturerContracts(
       );
     }
 
-    // All teams start as customer deals for simplicity
-    // Works team detection could be added later (e.g., matching HQ country)
+    // Derive deal type from manufacturer relationship
+    const dealType =
+      manufacturer.worksTeamId === team.id
+        ? ManufacturerDealType.Works
+        : manufacturer.partnerTeamIds.includes(team.id)
+          ? ManufacturerDealType.Partner
+          : ManufacturerDealType.Customer;
+
     contracts.push({
       manufacturerId: manufacturer.id,
       teamId: team.id,
       type: ManufacturerType.Engine,
-      dealType: ManufacturerDealType.Customer,
+      dealType,
       annualCost: manufacturer.annualCost,
       bonusLevel: INITIAL_BONUS_LEVEL,
       startSeason: seasonNumber,

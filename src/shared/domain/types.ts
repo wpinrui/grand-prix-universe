@@ -153,6 +153,8 @@ export interface Manufacturer {
   reputation: number; // 0-100, affects attractiveness to teams
   annualCost: number; // yearly contract cost in dollars
   quality: number; // 0-100, base quality of products
+  worksTeamId: string | null; // factory team (at most one)
+  partnerTeamIds: string[]; // priority customer teams
 }
 
 /**
