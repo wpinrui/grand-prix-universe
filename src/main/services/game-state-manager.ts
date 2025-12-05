@@ -114,7 +114,7 @@ function createInitialTeamState(
   return {
     morale: createInitialDepartmentMorale(),
     sponsorSatisfaction,
-    staffCounts: initialStaffCounts,
+    staffCounts: cloneDeep(initialStaffCounts),
     setupPoints: 0,
     developmentTesting: {
       handlingPercentage: 0,
@@ -156,11 +156,11 @@ function createAllTeamStates(teams: Team[]): Record<string, TeamRuntimeState> {
 }
 
 /**
- * Deep clones an array of entities to prevent cache corruption.
+ * Deep clones a value to prevent cache corruption.
  * Entities in GameState will evolve during play - we must not mutate ConfigLoader's cache.
  */
-function cloneEntities<T>(entities: T[]): T[] {
-  return JSON.parse(JSON.stringify(entities)) as T[];
+function cloneDeep<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
 }
 
 /**
@@ -248,6 +248,19 @@ function createInitialSponsorDeals(
 }
 
 /**
+ * Determines the deal type based on manufacturer-team relationship
+ */
+function getDealType(manufacturer: Manufacturer, teamId: string): ManufacturerDealType {
+  if (manufacturer.worksTeamId === teamId) {
+    return ManufacturerDealType.Works;
+  }
+  if (manufacturer.partnerTeamIds.includes(teamId)) {
+    return ManufacturerDealType.Partner;
+  }
+  return ManufacturerDealType.Customer;
+}
+
+/**
  * Creates initial manufacturer contracts from team's initialEngineManufacturerId
  */
 function createInitialManufacturerContracts(
@@ -267,13 +280,7 @@ function createInitialManufacturerContracts(
       );
     }
 
-    // Derive deal type from manufacturer relationship
-    const dealType =
-      manufacturer.worksTeamId === team.id
-        ? ManufacturerDealType.Works
-        : manufacturer.partnerTeamIds.includes(team.id)
-          ? ManufacturerDealType.Partner
-          : ManufacturerDealType.Customer;
+    const dealType = getDealType(manufacturer, team.id);
 
     contracts.push({
       manufacturerId: manufacturer.id,
@@ -348,12 +355,12 @@ export const GameStateManager = {
     }
 
     // Clone entities to prevent cache corruption (they evolve during play)
-    const clonedTeams = cloneEntities(teams);
-    const clonedDrivers = cloneEntities(drivers);
-    const clonedChiefs = cloneEntities(chiefs);
-    const clonedSponsors = cloneEntities(sponsors);
-    const clonedManufacturers = cloneEntities(manufacturers);
-    const clonedCircuits = cloneEntities(circuits);
+    const clonedTeams = cloneDeep(teams);
+    const clonedDrivers = cloneDeep(drivers);
+    const clonedChiefs = cloneDeep(chiefs);
+    const clonedSponsors = cloneDeep(sponsors);
+    const clonedManufacturers = cloneDeep(manufacturers);
+    const clonedCircuits = cloneDeep(circuits);
 
     // Create runtime states
     const driverStates = createAllDriverStates(drivers);
