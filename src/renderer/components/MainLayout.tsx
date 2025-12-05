@@ -35,22 +35,27 @@ export function MainLayout() {
     setSelectedSubItemId(subItemId);
   };
 
+  // Check if showing placeholder content (not implemented screens)
+  const isPlaceholder = !(selectedSectionId === 'team' && selectedSubItemId === 'profile');
+
   return (
-    <div className="main-layout flex w-full h-screen bg-gray-900 text-white">
-      {/* Left Sidebar */}
-      <aside className="sidebar flex flex-col w-40 bg-gray-800 border-r border-gray-700">
-        {sections.map((section) => (
-          <SectionButton
-            key={section.id}
-            section={section}
-            isSelected={section.id === selectedSectionId}
-            onClick={() => handleSectionClick(section)}
-          />
-        ))}
+    <div className="main-layout flex w-full h-screen surface-base text-primary">
+      {/* Left Sidebar - wider */}
+      <aside className="sidebar flex flex-col w-52 surface-primary border-r border-subtle">
+        <div className="flex flex-col py-3">
+          {sections.map((section) => (
+            <SectionButton
+              key={section.id}
+              section={section}
+              isSelected={section.id === selectedSectionId}
+              onClick={() => handleSectionClick(section)}
+            />
+          ))}
+        </div>
       </aside>
 
       {/* Main Area */}
-      <div className="flex flex-col flex-1">
+      <div className="flex flex-col flex-1 min-w-0">
         <TopBar
           sectionLabel={selectedSection.label}
           subItemLabel={selectedSubItem.label}
@@ -58,15 +63,23 @@ export function MainLayout() {
           playerTeam={playerTeam}
         />
 
-        {/* Content Area */}
-        <main className="content flex-1 p-8 overflow-auto">
+        {/* Content Area - with accent tint for placeholder */}
+        <main
+          className="content flex-1 p-8 overflow-auto"
+          style={isPlaceholder ? {
+            background: 'linear-gradient(180deg, color-mix(in srgb, var(--accent-900) 20%, var(--neutral-950)) 0%, var(--neutral-950) 100%)',
+          } : undefined}
+        >
           {selectedSectionId === 'team' && selectedSubItemId === 'profile' ? (
             <TeamProfile />
           ) : (
-            <div className="flex items-center justify-center h-full text-gray-500">
-              <p className="text-2xl">
-                {selectedSection.label}: {selectedSubItem.label}
-              </p>
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <p className="text-2xl font-semibold text-secondary">
+                  {selectedSection.label}: {selectedSubItem.label}
+                </p>
+                <p className="text-muted mt-2 text-sm">Coming soon</p>
+              </div>
             </div>
           )}
         </main>

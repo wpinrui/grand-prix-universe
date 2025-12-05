@@ -33,12 +33,14 @@ Grand Prix Universe recreates the depth and feel of GPW with:
 
 ## Project Status
 
-**Current Phase:** Phase 3 - Game Loop & State (in progress)
+**Current Phase:** Phase 5 - Section UIs (in progress)
 
 - ✅ Phase 0: Project Setup
 - ✅ Phase 1: Core Data & Types
 - ✅ Phase 2: Engine Abstractions
-- 🔄 Phase 3: Game Loop & State
+- ✅ Phase 3: Game Loop & State
+- ✅ Phase 4: UI Shell (navigation, layout, theming)
+- 🔄 Phase 5: Section UIs (1/28 screens done)
 
 See [agents/proposal.md](agents/proposal.md) for full design document.
 

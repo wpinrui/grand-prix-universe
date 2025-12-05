@@ -1,10 +1,16 @@
+import type { CSSProperties } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { RoutePaths } from '../routes';
 import { IpcChannels } from '../../shared/ipc';
 import type { Team, Driver } from '../../shared/domain';
 import { DriverRole } from '../../shared/domain';
 import { generateFace, type TeamColors } from '../utils/face-generator';
+import { TeamBadge } from '../components/TeamBadge';
+import { IconButton } from '../components/NavButtons';
+import { PRIMARY_BUTTON_CLASSES, GHOST_BUTTON_CLASSES } from '../utils/theme-styles';
+import { formatCurrency, DRIVER_ROLE_LABELS } from '../utils/format';
 
 interface LocationState {
   playerName: string;
@@ -20,48 +26,27 @@ function isValidLocationState(state: unknown): state is LocationState {
   );
 }
 
-/**
- * Color swatch component - displays team colors as fallback for logo
- */
-function ColorSwatch({ primary, secondary }: { primary: string; secondary: string }) {
-  return (
-    <div className="flex gap-1">
-      <div
-        className="w-8 h-8 rounded border border-gray-600"
-        style={{ backgroundColor: primary }}
-        title={`Primary: ${primary}`}
-      />
-      <div
-        className="w-8 h-8 rounded border border-gray-600"
-        style={{ backgroundColor: secondary }}
-        title={`Secondary: ${secondary}`}
-      />
-    </div>
-  );
+// ===========================================
+// HELPER COMPONENTS
+// ===========================================
+
+interface LabeledFieldProps {
+  label: string;
+  children: React.ReactNode;
+  variant?: 'default' | 'description';
 }
 
-/**
- * Team logo component - displays logo image or falls back to color swatches
- */
-function TeamLogo({ team }: { team: Team }) {
-  const [imageError, setImageError] = useState(false);
+function LabeledField({ label, children, variant = 'default' }: LabeledFieldProps) {
+  const valueClasses = variant === 'description'
+    ? 'text-secondary text-sm leading-relaxed mt-1'
+    : 'text-primary font-medium';
 
-  // Reset error state when team changes
-  useEffect(() => {
-    setImageError(false);
-  }, [team.id]);
-
-  if (team.logoUrl && !imageError) {
-    return (
-      <img
-        src={team.logoUrl}
-        alt={`${team.name} logo`}
-        className="w-16 h-16 object-contain"
-        onError={() => setImageError(true)}
-      />
-    );
-  }
-  return <ColorSwatch primary={team.primaryColor} secondary={team.secondaryColor} />;
+  return (
+    <div>
+      <span className="text-xs font-medium text-muted uppercase tracking-wider">{label}</span>
+      <p className={valueClasses}>{children}</p>
+    </div>
+  );
 }
 
 interface DriverPhotoProps {
@@ -69,17 +54,12 @@ interface DriverPhotoProps {
   teamColors: TeamColors;
 }
 
-// Vertical offset to center face in circular container (facesjs renders full body)
 const FACE_VERTICAL_OFFSET = -6;
 
-/**
- * Driver photo component - displays photo or falls back to faces.js procedural generation
- */
 function DriverPhoto({ driver, teamColors }: DriverPhotoProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [imageError, setImageError] = useState(false);
 
-  // Reset error state when driver changes (consistent with TeamLogo pattern)
   useEffect(() => {
     setImageError(false);
   }, [driver.id]);
@@ -88,15 +68,10 @@ function DriverPhoto({ driver, teamColors }: DriverPhotoProps) {
 
   useEffect(() => {
     const container = containerRef.current;
-
-    // Generate face if no photo URL or photo failed to load
-    // Render slightly smaller (50px) to fit more of face in 64px circle
     if (shouldGenerateFace && container) {
       container.innerHTML = '';
-      generateFace(container, driver.id, driver.nationality, teamColors, 50);
+      generateFace(container, driver.id, driver.nationality, teamColors, 44);
     }
-
-    // Cleanup on unmount or before re-running effect
     return () => {
       if (container) {
         container.innerHTML = '';
@@ -109,36 +84,19 @@ function DriverPhoto({ driver, teamColors }: DriverPhotoProps) {
       <img
         src={driver.photoUrl}
         alt={`${driver.firstName} ${driver.lastName}`}
-        className="w-16 h-16 rounded-full object-cover"
+        className="w-12 h-12 rounded-full object-cover"
         onError={() => setImageError(true)}
       />
     );
   }
 
   return (
-    <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-600 flex justify-center">
-      <div
-        ref={containerRef}
-        style={{ marginTop: FACE_VERTICAL_OFFSET }}
-      />
+    <div className="w-12 h-12 rounded-full overflow-hidden bg-[var(--neutral-700)] flex justify-center">
+      <div ref={containerRef} style={{ marginTop: FACE_VERTICAL_OFFSET }} />
     </div>
   );
 }
 
-/**
- * Format budget as currency string
- */
-function formatBudget(budget: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(budget);
-}
-
-/**
- * Get sort priority for driver role (lower = higher priority)
- */
 function getDriverRolePriority(role: DriverRole): number {
   switch (role) {
     case DriverRole.First:
@@ -152,21 +110,9 @@ function getDriverRolePriority(role: DriverRole): number {
   }
 }
 
-/**
- * Format driver role for display
- */
-function formatDriverRole(role: DriverRole): string {
-  switch (role) {
-    case DriverRole.First:
-      return '#1 driver';
-    case DriverRole.Second:
-      return '#2 driver';
-    case DriverRole.Equal:
-      return 'Equal status';
-    case DriverRole.Test:
-      return 'Test driver';
-  }
-}
+// ===========================================
+// MAIN COMPONENT
+// ===========================================
 
 export function TeamSelectScreen() {
   const navigate = useNavigate();
@@ -175,20 +121,20 @@ export function TeamSelectScreen() {
 
   const [teams, setTeams] = useState<Team[]>([]);
   const [drivers, setDrivers] = useState<Driver[]>([]);
-  const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isStarting, setIsStarting] = useState(false);
   const [startError, setStartError] = useState<string | null>(null);
 
-  // Redirect to player name screen if accessed without valid state
+  // Redirect if no player name
   useEffect(() => {
     if (playerName === null) {
       navigate(RoutePaths.PLAYER_NAME, { replace: true });
     }
   }, [playerName, navigate]);
 
-  // Fetch teams and drivers on mount
+  // Fetch data
   useEffect(() => {
     async function loadData() {
       try {
@@ -198,9 +144,6 @@ export function TeamSelectScreen() {
         ]);
         setTeams(loadedTeams);
         setDrivers(loadedDrivers);
-        if (loadedTeams.length > 0) {
-          setSelectedTeam(loadedTeams[0]);
-        }
       } catch (error) {
         console.error('Failed to load data:', error);
         setLoadError('Failed to load game data. Please try again.');
@@ -213,15 +156,14 @@ export function TeamSelectScreen() {
     }
   }, [playerName]);
 
-  // Get drivers for selected team, sorted by role (#1 first, then #2, etc.)
+  const selectedTeam = teams[selectedIndex] ?? null;
+
   const teamDrivers = selectedTeam
     ? drivers
         .filter((d) => d.teamId === selectedTeam.id)
         .sort((a, b) => getDriverRolePriority(a.role) - getDriverRolePriority(b.role))
     : [];
 
-  // Memoize team colors to prevent unnecessary re-renders in DriverPhoto
-  // Default values are never used (guard above returns early when no selectedTeam)
   const teamColors = useMemo(
     () => ({
       primary: selectedTeam?.primaryColor ?? '',
@@ -230,7 +172,16 @@ export function TeamSelectScreen() {
     [selectedTeam?.primaryColor, selectedTeam?.secondaryColor]
   );
 
-  // Handle starting the game
+  const handlePrevTeam = () => {
+    setSelectedIndex((i) => (i > 0 ? i - 1 : teams.length - 1));
+    setStartError(null);
+  };
+
+  const handleNextTeam = () => {
+    setSelectedIndex((i) => (i < teams.length - 1 ? i + 1 : 0));
+    setStartError(null);
+  };
+
   const handleStartGame = async () => {
     if (!selectedTeam || !playerName) return;
 
@@ -249,190 +200,183 @@ export function TeamSelectScreen() {
     }
   };
 
-  // Show nothing while redirecting
+  // Loading / Error states
   if (playerName === null) {
     return null;
   }
 
   if (isLoading) {
     return (
-      <div className="team-select-screen flex items-center justify-center w-full min-h-screen bg-gray-800">
-        <p className="text-white">Loading...</p>
+      <div className="flex items-center justify-center w-full min-h-screen surface-base">
+        <p className="text-secondary">Loading...</p>
       </div>
     );
   }
 
   if (loadError) {
     return (
-      <div className="team-select-screen flex flex-col items-center justify-center w-full min-h-screen bg-gray-800 gap-4">
+      <div className="flex flex-col items-center justify-center w-full min-h-screen surface-base gap-4">
         <p className="text-red-400">{loadError}</p>
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="px-4 py-2 text-gray-300 hover:text-white transition-colors cursor-pointer"
+          className={GHOST_BUTTON_CLASSES}
         >
-          Go Back
+          <ArrowLeft size={18} />
+          <span>Go Back</span>
         </button>
       </div>
     );
   }
 
-  if (teams.length === 0) {
+  if (teams.length === 0 || !selectedTeam) {
     return (
-      <div className="team-select-screen flex flex-col items-center justify-center w-full min-h-screen bg-gray-800 gap-4">
-        <p className="text-gray-400">No teams available.</p>
+      <div className="flex flex-col items-center justify-center w-full min-h-screen surface-base gap-4">
+        <p className="text-muted">No teams available.</p>
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="px-4 py-2 text-gray-300 hover:text-white transition-colors cursor-pointer"
+          className={GHOST_BUTTON_CLASSES}
         >
-          Go Back
+          <ArrowLeft size={18} />
+          <span>Go Back</span>
         </button>
       </div>
     );
   }
 
-  // TypeScript guard: selectedTeam is always set when teams exist (auto-selected on load)
-  if (!selectedTeam) {
-    return null;
-  }
+  // Subtle accent-tinted card styling
+  const sectionBorderColor = `color-mix(in srgb, ${selectedTeam.primaryColor} 15%, var(--neutral-750))`;
+  const cardStyle: CSSProperties = {
+    background: `linear-gradient(145deg,
+      color-mix(in srgb, ${selectedTeam.primaryColor} 8%, var(--neutral-800)) 0%,
+      color-mix(in srgb, ${selectedTeam.primaryColor} 3%, var(--neutral-850)) 100%)`,
+    borderColor: `color-mix(in srgb, ${selectedTeam.primaryColor} 20%, var(--neutral-700))`,
+    boxShadow: `0 4px 20px rgba(0,0,0,0.4), 0 0 40px color-mix(in srgb, ${selectedTeam.primaryColor} 10%, transparent)`,
+  };
 
   return (
-    <div className="team-select-screen flex flex-col w-full min-h-screen bg-gray-800">
-      {/* Header */}
-      <header className="bg-gray-900 p-4 border-b border-gray-700">
-        <h1 className="text-2xl font-bold text-white">Select Team</h1>
-      </header>
-
-      {/* Main content - 3 columns: Team list | Drivers | Team details */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left column: Team list */}
-        <div className="w-64 bg-gray-700 border-r border-gray-600 overflow-y-auto">
-          {teams.map((team) => (
-            <button
-              type="button"
-              key={team.id}
-              onClick={() => {
-                setSelectedTeam(team);
-                setStartError(null);
-              }}
-              className={`w-full text-left px-4 py-3 border-b border-gray-600 transition-colors cursor-pointer ${
-                selectedTeam.id === team.id
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-200 hover:bg-gray-600'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: team.primaryColor }}
-                />
-                <span className="font-medium">{team.name}</span>
-              </div>
-            </button>
-          ))}
+    <div className="team-select-screen flex items-center justify-center w-full min-h-screen surface-base p-8">
+      {/* Central card with subtle team accent */}
+      <div
+        className="w-full max-w-4xl rounded-xl border transition-all duration-300"
+        style={cardStyle}
+      >
+        {/* Header */}
+        <div className="p-6 border-b" style={{ borderColor: sectionBorderColor }}>
+          <h1 className="text-2xl font-bold text-primary">Select Team</h1>
+          <p className="text-secondary mt-1">
+            Choose the team you want to manage, {playerName}
+          </p>
         </div>
 
-        {/* Middle column: Drivers */}
-        <div className="w-72 bg-gray-800 border-r border-gray-600 overflow-y-auto">
-          <div className="p-3 border-b border-gray-600">
-            <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Drivers</h3>
-          </div>
-          {teamDrivers.length > 0 ? (
-            <div className="p-2 space-y-2">
-              {teamDrivers.map((driver) => (
-                <div
-                  key={driver.id}
-                  className="bg-gray-700 rounded p-3 border border-gray-600 flex items-center gap-3"
-                >
-                  <DriverPhoto driver={driver} teamColors={teamColors} />
-                  <div>
-                    <p className="text-white font-medium">
-                      {driver.firstName} {driver.lastName}
-                    </p>
-                    <p className="text-gray-400 text-sm">{formatDriverRole(driver.role)}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="p-4 text-gray-500 text-sm">No drivers assigned</div>
-          )}
-        </div>
-
-        {/* Right column: Team details */}
-        <div className="flex-1 p-6 overflow-y-auto">
-          <div className="max-w-2xl">
-            {/* Team header with logo or color swatches */}
-            <div className="flex items-start gap-6 mb-6">
-              <TeamLogo team={selectedTeam} />
-              <div>
-                <h2 className="text-3xl font-bold text-white">{selectedTeam.name}</h2>
-                <p className="text-gray-400">{selectedTeam.shortName}</p>
-              </div>
-            </div>
+        {/* Team selector with arrows */}
+        <div className="p-6 border-b" style={{ borderColor: sectionBorderColor }}>
+          <div className="flex items-center justify-between gap-4">
+            {/* Prev button */}
+            <IconButton
+              icon={ChevronLeft}
+              onClick={handlePrevTeam}
+              variant="ghost"
+              size="sm"
+            />
 
             {/* Team info */}
-            <div className="space-y-4 mb-6">
-              <div>
-                <span className="text-gray-400 text-sm uppercase tracking-wide">Principal</span>
-                <p className="text-white text-lg">{selectedTeam.principal}</p>
+            <div className="flex-1 flex items-center gap-5">
+              {/* Team logo */}
+              <TeamBadge team={selectedTeam} className="w-16 h-14" />
+
+              {/* Team name & info */}
+              <div className="flex-1 min-w-0">
+                <h2 className="text-xl font-bold text-primary truncate">
+                  {selectedTeam.name}
+                </h2>
+                <p className="text-secondary text-sm">
+                  {selectedTeam.headquarters} · {formatCurrency(selectedTeam.budget)}
+                </p>
               </div>
 
-              <div>
-                <span className="text-gray-400 text-sm uppercase tracking-wide">Headquarters</span>
-                <p className="text-white text-lg">{selectedTeam.headquarters}</p>
-              </div>
-
-              <div>
-                <span className="text-gray-400 text-sm uppercase tracking-wide">Budget</span>
-                <p className="text-white text-lg">{formatBudget(selectedTeam.budget)}</p>
-              </div>
-
-              <div>
-                <span className="text-gray-400 text-sm uppercase tracking-wide">Factory Level</span>
-                <p className="text-white text-lg">{selectedTeam.factoryLevel}/100</p>
+              {/* Team counter */}
+              <div className="text-muted text-sm tabular-nums">
+                {selectedIndex + 1} / {teams.length}
               </div>
             </div>
 
-            {/* Team description */}
-            <div>
-              <span className="text-gray-400 text-sm uppercase tracking-wide">About</span>
-              <p className="text-gray-200 mt-1 leading-relaxed">{selectedTeam.description}</p>
+            {/* Next button */}
+            <IconButton
+              icon={ChevronRight}
+              onClick={handleNextTeam}
+              variant="ghost"
+              size="sm"
+            />
+          </div>
+        </div>
+
+        {/* Team details grid */}
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Left: Team info */}
+          <div className="space-y-4">
+            <LabeledField label="Principal">{selectedTeam.principal}</LabeledField>
+            <LabeledField label="Factory Level">{selectedTeam.factoryLevel}/100</LabeledField>
+            <LabeledField label="About" variant="description">{selectedTeam.description}</LabeledField>
+          </div>
+
+          {/* Right: Drivers */}
+          <div>
+            <span className="text-xs font-medium text-muted uppercase tracking-wider">Drivers</span>
+            <div className="mt-2 space-y-2">
+              {teamDrivers.length > 0 ? (
+                teamDrivers.map((driver) => (
+                  <div
+                    key={driver.id}
+                    className="flex items-center gap-3 p-3 rounded-lg bg-[var(--neutral-850)] border border-[var(--neutral-800)]"
+                  >
+                    <DriverPhoto driver={driver} teamColors={teamColors} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-primary font-medium truncate">
+                        {driver.firstName} {driver.lastName}
+                      </p>
+                      <p className="text-muted text-sm">{DRIVER_ROLE_LABELS[driver.role]}</p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-muted text-sm">No drivers assigned</p>
+              )}
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Bottom bar */}
-      <footer className="bg-gray-900 p-4 border-t border-gray-700">
-        <div className="flex items-center justify-between">
+        {/* Footer */}
+        <div className="p-6 border-t flex items-center justify-between" style={{ borderColor: sectionBorderColor }}>
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="px-4 py-2 text-gray-300 hover:text-white transition-colors cursor-pointer"
+            className={GHOST_BUTTON_CLASSES}
           >
-            Back
+            <ArrowLeft size={18} />
+            <span>Back</span>
           </button>
 
           <div className="flex items-center gap-4">
-            {startError && <span className="text-red-400">{startError}</span>}
+            {startError && <span className="text-red-400 text-sm">{startError}</span>}
             {!startError && (
-              <span className="text-gray-300">
-                Do you want to manage <span className="text-white font-medium">{selectedTeam.name}</span>?
+              <span className="text-secondary text-sm hidden sm:inline">
+                Manage <span className="text-primary font-medium">{selectedTeam.name}</span>?
               </span>
             )}
             <button
               type="button"
               onClick={handleStartGame}
               disabled={isStarting}
-              className="px-6 py-2 bg-green-600 text-white rounded cursor-pointer disabled:bg-gray-600 disabled:cursor-not-allowed hover:bg-green-700 transition-colors"
+              className={PRIMARY_BUTTON_CLASSES}
             >
-              {isStarting ? 'Starting...' : 'OK'}
+              <span>{isStarting ? 'Starting...' : 'OK'}</span>
+              <ArrowRight size={18} />
             </button>
           </div>
         </div>
-      </footer>
+      </div>
     </div>
   );
 }

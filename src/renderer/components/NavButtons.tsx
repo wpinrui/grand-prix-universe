@@ -1,47 +1,11 @@
+import type { CSSProperties } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import type { Section, SubItem } from '../navigation';
-import { ACCENT_BUTTON_STYLE } from '../utils/theme-styles';
+import { ACCENT_BORDERED_BUTTON_STYLE, BORDERED_BUTTON_BASE, GHOST_BORDERED_BUTTON_CLASSES } from '../utils/theme-styles';
 
-// Variant-specific styling
-const VARIANT_STYLES = {
-  section: {
-    base: 'flex items-center gap-3 px-4 py-4 cursor-pointer transition-colors',
-    unselected: 'text-gray-400 hover:bg-gray-700 hover:text-white',
-    iconSize: 24,
-  },
-  subnav: {
-    base: 'flex items-center gap-2 px-3 py-2 rounded cursor-pointer transition-colors',
-    unselected: 'bg-gray-700 text-gray-400 hover:bg-gray-600 hover:text-white',
-    iconSize: 20,
-  },
-} as const;
-
-type NavButtonVariant = keyof typeof VARIANT_STYLES;
-
-interface NavButtonBaseProps {
-  icon: LucideIcon;
-  label: string;
-  isSelected: boolean;
-  onClick: () => void;
-  variant: NavButtonVariant;
-}
-
-function NavButtonBase({ icon: Icon, label, isSelected, onClick, variant }: NavButtonBaseProps) {
-  const styles = VARIANT_STYLES[variant];
-  const className = isSelected ? styles.base : `${styles.base} ${styles.unselected}`;
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={className}
-      style={isSelected ? ACCENT_BUTTON_STYLE : undefined}
-    >
-      <Icon size={styles.iconSize} />
-      <span className="text-sm font-medium">{label}</span>
-    </button>
-  );
-}
+// ===========================================
+// SECTION NAV BUTTON (Sidebar)
+// ===========================================
 
 interface SectionButtonProps {
   section: Section;
@@ -50,16 +14,36 @@ interface SectionButtonProps {
 }
 
 export function SectionButton({ section, isSelected, onClick }: SectionButtonProps) {
+  const Icon = section.icon;
+
+  // Active state styling - CSS handles the indicator via .nav-item.active::before
+  const buttonStyle: CSSProperties = isSelected
+    ? {
+        backgroundColor: 'color-mix(in srgb, var(--accent-600) 15%, transparent)',
+        color: 'var(--accent-300)',
+      }
+    : {};
+
   return (
-    <NavButtonBase
-      icon={section.icon}
-      label={section.label}
-      isSelected={isSelected}
+    <button
+      type="button"
       onClick={onClick}
-      variant="section"
-    />
+      className={`
+        nav-item relative flex items-center gap-3 w-full px-4 py-3.5
+        text-left cursor-pointer transition-all duration-200
+        ${isSelected ? 'active' : 'text-secondary hover:text-primary'}
+      `}
+      style={buttonStyle}
+    >
+      <Icon size={24} className="shrink-0" />
+      <span className="text-base font-semibold tracking-wide">{section.label}</span>
+    </button>
   );
 }
+
+// ===========================================
+// SUBNAV BUTTON (Bottom bar)
+// ===========================================
 
 interface SubNavButtonProps {
   subItem: SubItem;
@@ -68,13 +52,61 @@ interface SubNavButtonProps {
 }
 
 export function SubNavButton({ subItem, isSelected, onClick }: SubNavButtonProps) {
+  const Icon = subItem.icon;
+  const baseClasses = `${BORDERED_BUTTON_BASE} flex items-center gap-2 px-4 py-2.5 text-base font-medium`;
+  const stateClasses = isSelected ? '' : GHOST_BORDERED_BUTTON_CLASSES;
+
   return (
-    <NavButtonBase
-      icon={subItem.icon}
-      label={subItem.label}
-      isSelected={isSelected}
+    <button
+      type="button"
       onClick={onClick}
-      variant="subnav"
-    />
+      className={`${baseClasses} ${stateClasses}`}
+      style={isSelected ? ACCENT_BORDERED_BUTTON_STYLE : undefined}
+    >
+      <Icon size={20} />
+      <span>{subItem.label}</span>
+    </button>
+  );
+}
+
+// ===========================================
+// ICON BUTTON (Standalone actions)
+// ===========================================
+
+interface IconButtonProps {
+  icon: LucideIcon;
+  onClick: () => void;
+  title?: string;
+  variant?: 'accent' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+}
+
+const ICON_BUTTON_SIZES = {
+  sm: { button: 'w-10 h-10', icon: 18 },
+  md: { button: 'w-12 h-12', icon: 22 },
+  lg: { button: 'w-14 h-14', icon: 28 },
+} as const;
+
+export function IconButton({
+  icon: Icon,
+  onClick,
+  title,
+  variant = 'accent',
+  size = 'md',
+}: IconButtonProps) {
+  const sizeConfig = ICON_BUTTON_SIZES[size];
+  const baseClasses = `${BORDERED_BUTTON_BASE} ${sizeConfig.button}`;
+  const variantClasses = variant === 'ghost' ? GHOST_BORDERED_BUTTON_CLASSES : '';
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`${baseClasses} ${variantClasses}`}
+      style={variant === 'accent' ? ACCENT_BORDERED_BUTTON_STYLE : undefined}
+      title={title}
+    >
+      <Icon size={sizeConfig.icon} />
+    </button>
   );
 }

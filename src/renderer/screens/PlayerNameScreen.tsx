@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { RoutePaths } from '../routes';
+import { PRIMARY_BUTTON_CLASSES, GHOST_BUTTON_CLASSES } from '../utils/theme-styles';
 
 /**
  * Player Name Screen - Collects the player's name before team selection.
@@ -26,27 +28,39 @@ export function PlayerNameScreen() {
   };
 
   return (
-    <div className="player-name-screen flex items-center justify-center w-full min-h-screen bg-gray-800">
-      <form onSubmit={handleSubmit} className="bg-gray-600 p-8 rounded shadow-lg w-full max-w-md">
-        <h1 className="text-xl font-bold text-white mb-4">New Game</h1>
-        <p className="text-gray-200 mb-6">
+    <div className="player-name-screen flex items-center justify-center w-full min-h-screen surface-base">
+      {/* Central card */}
+      <form onSubmit={handleSubmit} className="card p-8 w-full max-w-md">
+        <h1 className="text-2xl font-bold text-primary mb-2">New Game</h1>
+        <p className="text-secondary mb-6">
           Please enter your name in the box below and click OK to continue.
         </p>
+
         <input
           ref={inputRef}
           type="text"
           value={playerName}
           onChange={(e) => setPlayerName(e.target.value)}
           placeholder="Enter your name"
-          className="w-full p-3 rounded border border-gray-400 bg-gray-100 text-gray-900 mb-6"
+          className="w-full px-4 py-3 rounded-lg surface-inset border border-[var(--neutral-700)] text-primary placeholder:text-muted focus:outline-none focus:border-[var(--neutral-500)] transition-colors mb-6"
         />
-        <div className="flex justify-end">
+
+        <div className="flex justify-between">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className={GHOST_BUTTON_CLASSES}
+          >
+            <ArrowLeft size={18} />
+            <span>Back</span>
+          </button>
           <button
             type="submit"
             disabled={!isValid}
-            className="px-6 py-2 bg-green-600 text-white rounded cursor-pointer disabled:bg-gray-500 disabled:cursor-not-allowed hover:bg-green-700 transition-colors"
+            className={PRIMARY_BUTTON_CLASSES}
           >
-            OK
+            <span>OK</span>
+            <ArrowRight size={18} />
           </button>
         </div>
       </form>
