@@ -245,7 +245,7 @@ export const GameStateManager = {
     // Load all entities from config
     const teams = ConfigLoader.getTeams();
     const drivers = ConfigLoader.getDrivers();
-    const staff: never[] = []; // Staff not yet implemented in config loader
+    const staff: never[] = []; // Staff are unnamed/generic workers, not loaded from JSON
     const chiefs = ConfigLoader.getChiefs();
     const sponsors = ConfigLoader.getSponsors();
     const manufacturers = ConfigLoader.getManufacturers();
