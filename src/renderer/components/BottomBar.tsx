@@ -1,5 +1,5 @@
 import { Check } from 'lucide-react';
-import type { Section, SubItem } from '../navigation';
+import type { Section } from '../navigation';
 import type { Team, CalendarEntry } from '../../shared/domain';
 import { TeamBadge } from './TeamBadge';
 import { SubNavButton } from './NavButtons';
@@ -25,7 +25,7 @@ export function BottomBar({
 
       {/* Sub-navigation */}
       <nav className="sub-nav flex items-center ml-5 gap-2">
-        {selectedSection.subItems.map((subItem: SubItem) => (
+        {selectedSection.subItems.map((subItem) => (
           <SubNavButton
             key={subItem.id}
             subItem={subItem}
