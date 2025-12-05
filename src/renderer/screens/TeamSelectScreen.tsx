@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { RoutePaths } from '../routes';
 import { IpcChannels } from '../../shared/ipc';
-import type { Team } from '../../shared/domain';
+import type { Team, Driver } from '../../shared/domain';
 
 interface LocationState {
   playerName: string;
@@ -55,6 +55,7 @@ export function TeamSelectScreen() {
   const playerName = isValidLocationState(location.state) ? location.state.playerName : null;
 
   const [teams, setTeams] = useState<Team[]>([]);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -68,26 +69,35 @@ export function TeamSelectScreen() {
     }
   }, [playerName, navigate]);
 
-  // Fetch teams on mount
+  // Fetch teams and drivers on mount
   useEffect(() => {
-    async function loadTeams() {
+    async function loadData() {
       try {
-        const loadedTeams = await window.electronAPI.invoke(IpcChannels.CONFIG_GET_TEAMS);
+        const [loadedTeams, loadedDrivers] = await Promise.all([
+          window.electronAPI.invoke(IpcChannels.CONFIG_GET_TEAMS),
+          window.electronAPI.invoke(IpcChannels.CONFIG_GET_DRIVERS),
+        ]);
         setTeams(loadedTeams);
+        setDrivers(loadedDrivers);
         if (loadedTeams.length > 0) {
           setSelectedTeam(loadedTeams[0]);
         }
       } catch (error) {
-        console.error('Failed to load teams:', error);
+        console.error('Failed to load data:', error);
         setLoadError('Failed to load teams. Please try again.');
       } finally {
         setIsLoading(false);
       }
     }
     if (playerName !== null) {
-      loadTeams();
+      loadData();
     }
   }, [playerName]);
+
+  // Get drivers for selected team
+  const teamDrivers = selectedTeam
+    ? drivers.filter((d) => d.teamId === selectedTeam.id)
+    : [];
 
   // Handle starting the game
   const handleStartGame = async () => {
@@ -163,7 +173,7 @@ export function TeamSelectScreen() {
         <h1 className="text-2xl font-bold text-white">Select Team</h1>
       </header>
 
-      {/* Main content - 2 columns for now (drivers column in PR D) */}
+      {/* Main content - 3 columns: Team list | Drivers | Team details */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left column: Team list */}
         <div className="w-64 bg-gray-700 border-r border-gray-600 overflow-y-auto">
@@ -190,6 +200,30 @@ export function TeamSelectScreen() {
               </div>
             </button>
           ))}
+        </div>
+
+        {/* Middle column: Drivers */}
+        <div className="w-56 bg-gray-750 border-r border-gray-600 overflow-y-auto">
+          <div className="p-3 border-b border-gray-600">
+            <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Drivers</h3>
+          </div>
+          {teamDrivers.length > 0 ? (
+            <div className="p-2 space-y-2">
+              {teamDrivers.map((driver) => (
+                <div
+                  key={driver.id}
+                  className="bg-gray-700 rounded p-3 border border-gray-600"
+                >
+                  <p className="text-white font-medium">
+                    {driver.firstName} {driver.lastName}
+                  </p>
+                  <p className="text-gray-400 text-sm capitalize">{driver.role} driver</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-4 text-gray-500 text-sm">No drivers assigned</div>
+          )}
         </div>
 
         {/* Right column: Team details */}
