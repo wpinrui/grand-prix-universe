@@ -10,6 +10,7 @@ import { useGameState } from './useIpc';
 import type { Team, CalendarEntry, GameState } from '../../shared/domain';
 
 interface DerivedGameState {
+  // @agent: null = no game exists, undefined = React Query loading state. Do not "simplify".
   gameState: GameState | null | undefined;
   isLoading: boolean;
   playerTeam: Team | null;
