@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { RoutePaths } from '../routes';
 import { IpcChannels } from '../../shared/ipc';
 import type { Team, Driver } from '../../shared/domain';
 import { DriverRole } from '../../shared/domain';
+import { generateFace, type TeamColors } from '../utils/face-generator';
 
 interface LocationState {
   playerName: string;
@@ -34,6 +35,91 @@ function ColorSwatch({ primary, secondary }: { primary: string; secondary: strin
         className="w-8 h-8 rounded border border-gray-600"
         style={{ backgroundColor: secondary }}
         title={`Secondary: ${secondary}`}
+      />
+    </div>
+  );
+}
+
+/**
+ * Team logo component - displays logo image or falls back to color swatches
+ */
+function TeamLogo({ team }: { team: Team }) {
+  const [imageError, setImageError] = useState(false);
+
+  // Reset error state when team changes
+  useEffect(() => {
+    setImageError(false);
+  }, [team.id]);
+
+  if (team.logoUrl && !imageError) {
+    return (
+      <img
+        src={team.logoUrl}
+        alt={`${team.name} logo`}
+        className="w-16 h-16 object-contain"
+        onError={() => setImageError(true)}
+      />
+    );
+  }
+  return <ColorSwatch primary={team.primaryColor} secondary={team.secondaryColor} />;
+}
+
+interface DriverPhotoProps {
+  driver: Driver;
+  teamColors: TeamColors;
+}
+
+// Vertical offset to center face in circular container (facesjs renders full body)
+const FACE_VERTICAL_OFFSET = -6;
+
+/**
+ * Driver photo component - displays photo or falls back to faces.js procedural generation
+ */
+function DriverPhoto({ driver, teamColors }: DriverPhotoProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [imageError, setImageError] = useState(false);
+
+  // Reset error state when driver changes (consistent with TeamLogo pattern)
+  useEffect(() => {
+    setImageError(false);
+  }, [driver.id]);
+
+  const shouldGenerateFace = !driver.photoUrl || imageError;
+
+  useEffect(() => {
+    const container = containerRef.current;
+
+    // Generate face if no photo URL or photo failed to load
+    // Render slightly smaller (50px) to fit more of face in 64px circle
+    if (shouldGenerateFace && container) {
+      container.innerHTML = '';
+      generateFace(container, driver.id, driver.nationality, teamColors, 50);
+    }
+
+    // Cleanup on unmount or before re-running effect
+    return () => {
+      if (container) {
+        container.innerHTML = '';
+      }
+    };
+  }, [driver.id, driver.nationality, teamColors, shouldGenerateFace]);
+
+  if (driver.photoUrl && !imageError) {
+    return (
+      <img
+        src={driver.photoUrl}
+        alt={`${driver.firstName} ${driver.lastName}`}
+        className="w-16 h-16 rounded-full object-cover"
+        onError={() => setImageError(true)}
+      />
+    );
+  }
+
+  return (
+    <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-600 flex justify-center">
+      <div
+        ref={containerRef}
+        style={{ marginTop: FACE_VERTICAL_OFFSET }}
       />
     </div>
   );
@@ -133,6 +219,16 @@ export function TeamSelectScreen() {
         .filter((d) => d.teamId === selectedTeam.id)
         .sort((a, b) => getDriverRolePriority(a.role) - getDriverRolePriority(b.role))
     : [];
+
+  // Memoize team colors to prevent unnecessary re-renders in DriverPhoto
+  // Default values are never used (guard above returns early when no selectedTeam)
+  const teamColors = useMemo(
+    () => ({
+      primary: selectedTeam?.primaryColor ?? '',
+      secondary: selectedTeam?.secondaryColor ?? '',
+    }),
+    [selectedTeam?.primaryColor, selectedTeam?.secondaryColor]
+  );
 
   // Handle starting the game
   const handleStartGame = async () => {
@@ -238,7 +334,7 @@ export function TeamSelectScreen() {
         </div>
 
         {/* Middle column: Drivers */}
-        <div className="w-56 bg-gray-800 border-r border-gray-600 overflow-y-auto">
+        <div className="w-72 bg-gray-800 border-r border-gray-600 overflow-y-auto">
           <div className="p-3 border-b border-gray-600">
             <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Drivers</h3>
           </div>
@@ -247,12 +343,15 @@ export function TeamSelectScreen() {
               {teamDrivers.map((driver) => (
                 <div
                   key={driver.id}
-                  className="bg-gray-700 rounded p-3 border border-gray-600"
+                  className="bg-gray-700 rounded p-3 border border-gray-600 flex items-center gap-3"
                 >
-                  <p className="text-white font-medium">
-                    {driver.firstName} {driver.lastName}
-                  </p>
-                  <p className="text-gray-400 text-sm">{formatDriverRole(driver.role)}</p>
+                  <DriverPhoto driver={driver} teamColors={teamColors} />
+                  <div>
+                    <p className="text-white font-medium">
+                      {driver.firstName} {driver.lastName}
+                    </p>
+                    <p className="text-gray-400 text-sm">{formatDriverRole(driver.role)}</p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -264,12 +363,9 @@ export function TeamSelectScreen() {
         {/* Right column: Team details */}
         <div className="flex-1 p-6 overflow-y-auto">
           <div className="max-w-2xl">
-            {/* Team header with color swatches */}
+            {/* Team header with logo or color swatches */}
             <div className="flex items-start gap-6 mb-6">
-              <ColorSwatch
-                primary={selectedTeam.primaryColor}
-                secondary={selectedTeam.secondaryColor}
-              />
+              <TeamLogo team={selectedTeam} />
               <div>
                 <h2 className="text-3xl font-bold text-white">{selectedTeam.name}</h2>
                 <p className="text-gray-400">{selectedTeam.shortName}</p>

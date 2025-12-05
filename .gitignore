@@ -45,3 +45,6 @@ npm-debug.log*
 # Electron / Vite
 release/
 .vite/
+
+# Temp cloned repos for reference
+other-repos/
