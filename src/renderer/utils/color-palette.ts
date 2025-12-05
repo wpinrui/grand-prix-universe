@@ -132,17 +132,12 @@ const PALETTE_TO_CSS_VAR: Record<keyof ColorPalette, string> = {
 };
 
 /**
- * CSS variable record type for theme colors
- */
-export type ThemeCssVars = Record<(typeof PALETTE_TO_CSS_VAR)[keyof ColorPalette], string>;
-
-/**
  * Convert palette to CSS custom properties
  */
-export function paletteToCssVars(palette: ColorPalette): ThemeCssVars {
+export function paletteToCssVars(palette: ColorPalette): Record<string, string> {
   const result: Record<string, string> = {};
   for (const [key, cssVar] of Object.entries(PALETTE_TO_CSS_VAR)) {
     result[cssVar] = palette[key as keyof ColorPalette];
   }
-  return result as ThemeCssVars;
+  return result;
 }
