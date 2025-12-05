@@ -44,6 +44,9 @@ const PRE_SEASON_START_WEEK = 1;
 /** Default contract duration in seasons */
 const DEFAULT_CONTRACT_DURATION = 3;
 
+/** Default starting season for new games */
+const DEFAULT_STARTING_SEASON = 1;
+
 /** Initial morale for drivers and departments (0-100 scale) */
 const INITIAL_MORALE = 70;
 
@@ -78,7 +81,7 @@ function assertNonEmpty<T>(array: T[], entityName: string): void {
 export interface NewGameParams {
   playerName: string;
   teamId: string;
-  seasonNumber?: number; // Defaults to 1
+  seasonNumber?: number; // Defaults to DEFAULT_STARTING_SEASON
 }
 
 /**
@@ -319,9 +322,14 @@ export const GameStateManager = {
    * Creates a new game with the given parameters
    */
   createNewGame(params: NewGameParams): GameState {
-    const { playerName, teamId, seasonNumber = 1 } = params;
+    const { playerName, teamId, seasonNumber = DEFAULT_STARTING_SEASON } = params;
 
-    // Validate critical dependencies first (fail-fast)
+    // Validate input parameters (fail-fast)
+    if (!playerName.trim()) {
+      throw new Error('Player name cannot be empty');
+    }
+
+    // Validate critical dependencies
     const team = ConfigLoader.getTeamById(teamId);
     if (!team) {
       throw new Error(`Team not found: ${teamId}`);
@@ -434,7 +442,7 @@ export const GameStateManager = {
     };
 
     // Store as current state
-    this.currentState = gameState;
+    GameStateManager.currentState = gameState;
 
     return gameState;
   },
@@ -443,13 +451,13 @@ export const GameStateManager = {
    * Returns the current game state, or null if no game is loaded
    */
   getCurrentState(): GameState | null {
-    return this.currentState;
+    return GameStateManager.currentState;
   },
 
   /**
    * Clears the current game state
    */
   clearState(): void {
-    this.currentState = null;
+    GameStateManager.currentState = null;
   },
 };
