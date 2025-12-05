@@ -137,7 +137,7 @@ const RACING_SUIT_JERSEY_ID = 'jersey2';
 /**
  * Team colors for racing suit
  */
-interface TeamColors {
+export interface TeamColors {
   primary: string;
   secondary: string;
 }

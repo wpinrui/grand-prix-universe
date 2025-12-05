@@ -4,7 +4,7 @@ import { RoutePaths } from '../routes';
 import { IpcChannels } from '../../shared/ipc';
 import type { Team, Driver } from '../../shared/domain';
 import { DriverRole } from '../../shared/domain';
-import { generateFace } from '../utils/face-generator';
+import { generateFace, type TeamColors } from '../utils/face-generator';
 
 interface LocationState {
   playerName: string;
@@ -66,7 +66,7 @@ function TeamLogo({ team }: { team: Team }) {
 
 interface DriverPhotoProps {
   driver: Driver;
-  teamColors: { primary: string; secondary: string };
+  teamColors: TeamColors;
 }
 
 /**
@@ -107,13 +107,14 @@ function DriverPhoto({ driver, teamColors }: DriverPhotoProps) {
     );
   }
 
-  // SVG viewBox is 400x600 (portrait), so at 56px wide it renders 56x84
-  // Center horizontally and shift up to show face
+  // Vertical offset to center face in circular container (facesjs renders full body)
+  const FACE_VERTICAL_OFFSET = -6;
+
   return (
     <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-600 flex justify-center">
       <div
         ref={containerRef}
-        style={{ marginTop: '-6px' }}
+        style={{ marginTop: FACE_VERTICAL_OFFSET }}
       />
     </div>
   );
