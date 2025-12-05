@@ -12,10 +12,10 @@
       "initialEngineManufacturerId": "mercedes-hpe",
       "initialSponsorIds": ["vodafone", "aws", "rolex"],
       "initialStaffCounts": {
-        "commercial": { "trainee": 0, "average": 2, "good": 4, "very-good": 3, "excellent": 1 },
-        "design": { "trainee": 0, "average": 2, "good": 4, "very-good": 3, "excellent": 1 },
-        "engineering": { "trainee": 0, "average": 2, "good": 4, "very-good": 3, "excellent": 1 },
-        "mechanics": { "trainee": 0, "average": 2, "good": 4, "very-good": 3, "excellent": 1 }
+        "commercial": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
+        "design": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
+        "engineering": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
+        "mechanics": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 }
       }
     },
     {
@@ -30,10 +30,10 @@
       "initialEngineManufacturerId": "mercedes-hpe",
       "initialSponsorIds": ["petronas", "monster-energy", "iwc"],
       "initialStaffCounts": {
-        "commercial": { "trainee": 0, "average": 2, "good": 4, "very-good": 3, "excellent": 1 },
-        "design": { "trainee": 0, "average": 2, "good": 4, "very-good": 3, "excellent": 1 },
-        "engineering": { "trainee": 0, "average": 2, "good": 4, "very-good": 3, "excellent": 1 },
-        "mechanics": { "trainee": 0, "average": 2, "good": 4, "very-good": 3, "excellent": 1 }
+        "commercial": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
+        "design": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
+        "engineering": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
+        "mechanics": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 }
       }
     },
     {
@@ -48,10 +48,10 @@
       "initialEngineManufacturerId": "honda-rbpt",
       "initialSponsorIds": ["oracle", "red-bull", "tag-heuer"],
       "initialStaffCounts": {
-        "commercial": { "trainee": 0, "average": 2, "good": 4, "very-good": 3, "excellent": 1 },
-        "design": { "trainee": 0, "average": 2, "good": 4, "very-good": 3, "excellent": 1 },
-        "engineering": { "trainee": 0, "average": 2, "good": 4, "very-good": 3, "excellent": 1 },
-        "mechanics": { "trainee": 0, "average": 2, "good": 4, "very-good": 3, "excellent": 1 }
+        "commercial": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
+        "design": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
+        "engineering": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
+        "mechanics": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 }
       }
     },
     {
@@ -66,10 +66,10 @@
       "initialEngineManufacturerId": "ferrari-pu",
       "initialSponsorIds": ["shell", "richard-mille", "ups"],
       "initialStaffCounts": {
-        "commercial": { "trainee": 0, "average": 2, "good": 4, "very-good": 3, "excellent": 1 },
-        "design": { "trainee": 0, "average": 2, "good": 4, "very-good": 3, "excellent": 1 },
-        "engineering": { "trainee": 0, "average": 2, "good": 4, "very-good": 3, "excellent": 1 },
-        "mechanics": { "trainee": 0, "average": 2, "good": 4, "very-good": 3, "excellent": 1 }
+        "commercial": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
+        "design": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
+        "engineering": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
+        "mechanics": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 }
       }
     },
     {
@@ -84,10 +84,10 @@
       "initialEngineManufacturerId": "mercedes-hpe",
       "initialSponsorIds": ["hp", "dhl"],
       "initialStaffCounts": {
-        "commercial": { "trainee": 1, "average": 3, "good": 2, "very-good": 1, "excellent": 0 },
-        "design": { "trainee": 1, "average": 3, "good": 2, "very-good": 1, "excellent": 0 },
-        "engineering": { "trainee": 1, "average": 3, "good": 2, "very-good": 1, "excellent": 0 },
-        "mechanics": { "trainee": 1, "average": 3, "good": 2, "very-good": 1, "excellent": 0 }
+        "commercial": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 },
+        "design": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 },
+        "engineering": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 },
+        "mechanics": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 }
       }
     },
     {
@@ -102,10 +102,10 @@
       "initialEngineManufacturerId": "honda-rbpt",
       "initialSponsorIds": ["dell", "cisco"],
       "initialStaffCounts": {
-        "commercial": { "trainee": 1, "average": 3, "good": 2, "very-good": 1, "excellent": 0 },
-        "design": { "trainee": 1, "average": 3, "good": 2, "very-good": 1, "excellent": 0 },
-        "engineering": { "trainee": 1, "average": 3, "good": 2, "very-good": 1, "excellent": 0 },
-        "mechanics": { "trainee": 1, "average": 3, "good": 2, "very-good": 1, "excellent": 0 }
+        "commercial": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 },
+        "design": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 },
+        "engineering": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 },
+        "mechanics": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 }
       }
     },
     {
@@ -120,10 +120,10 @@
       "initialEngineManufacturerId": "mercedes-hpe",
       "initialSponsorIds": ["amd", "castrol"],
       "initialStaffCounts": {
-        "commercial": { "trainee": 1, "average": 3, "good": 2, "very-good": 1, "excellent": 0 },
-        "design": { "trainee": 1, "average": 3, "good": 2, "very-good": 1, "excellent": 0 },
-        "engineering": { "trainee": 1, "average": 3, "good": 2, "very-good": 1, "excellent": 0 },
-        "mechanics": { "trainee": 1, "average": 3, "good": 2, "very-good": 1, "excellent": 0 }
+        "commercial": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 },
+        "design": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 },
+        "engineering": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 },
+        "mechanics": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 }
       }
     },
     {
@@ -138,10 +138,10 @@
       "initialEngineManufacturerId": "ferrari-pu",
       "initialSponsorIds": ["fedex", "visa"],
       "initialStaffCounts": {
-        "commercial": { "trainee": 2, "average": 2, "good": 1, "very-good": 0, "excellent": 0 },
-        "design": { "trainee": 2, "average": 2, "good": 1, "very-good": 0, "excellent": 0 },
-        "engineering": { "trainee": 2, "average": 2, "good": 1, "very-good": 0, "excellent": 0 },
-        "mechanics": { "trainee": 2, "average": 2, "good": 1, "very-good": 0, "excellent": 0 }
+        "commercial": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 },
+        "design": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 },
+        "engineering": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 },
+        "mechanics": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 }
       }
     },
     {
@@ -156,10 +156,10 @@
       "initialEngineManufacturerId": "ferrari-pu",
       "initialSponsorIds": ["coca-cola", "allianz"],
       "initialStaffCounts": {
-        "commercial": { "trainee": 2, "average": 2, "good": 1, "very-good": 0, "excellent": 0 },
-        "design": { "trainee": 2, "average": 2, "good": 1, "very-good": 0, "excellent": 0 },
-        "engineering": { "trainee": 2, "average": 2, "good": 1, "very-good": 0, "excellent": 0 },
-        "mechanics": { "trainee": 2, "average": 2, "good": 1, "very-good": 0, "excellent": 0 }
+        "commercial": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 },
+        "design": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 },
+        "engineering": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 },
+        "mechanics": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 }
       }
     },
     {
@@ -174,10 +174,10 @@
       "initialEngineManufacturerId": "renault-sport",
       "initialSponsorIds": ["axa", "pirelli"],
       "initialStaffCounts": {
-        "commercial": { "trainee": 2, "average": 2, "good": 1, "very-good": 0, "excellent": 0 },
-        "design": { "trainee": 2, "average": 2, "good": 1, "very-good": 0, "excellent": 0 },
-        "engineering": { "trainee": 2, "average": 2, "good": 1, "very-good": 0, "excellent": 0 },
-        "mechanics": { "trainee": 2, "average": 2, "good": 1, "very-good": 0, "excellent": 0 }
+        "commercial": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 },
+        "design": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 },
+        "engineering": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 },
+        "mechanics": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 }
       }
     }
   ]
