@@ -125,3 +125,11 @@ export function paletteToCssVars(palette: ColorPalette): Record<string, string> 
     '--surface-muted': palette.surfaceMuted,
   };
 }
+
+/**
+ * Shared style for accent-colored buttons (selected states, primary actions)
+ */
+export const ACCENT_BUTTON_STYLE = {
+  backgroundColor: 'var(--accent-600)',
+  color: 'var(--accent-contrast)',
+} as const;

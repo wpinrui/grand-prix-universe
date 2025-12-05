@@ -1,6 +1,7 @@
 import { Check } from 'lucide-react';
 import type { Section } from '../navigation';
 import type { Team, CalendarEntry } from '../../shared/domain';
+import { ACCENT_BUTTON_STYLE } from '../utils/color-palette';
 import { TeamBadge } from './TeamBadge';
 import { SubNavButton } from './NavButtons';
 
@@ -51,7 +52,7 @@ export function BottomBar({
       <button
         type="button"
         className="flex items-center justify-center w-12 h-12 rounded cursor-pointer transition-opacity hover:opacity-80"
-        style={{ backgroundColor: 'var(--accent-600)', color: 'var(--accent-contrast)' }}
+        style={ACCENT_BUTTON_STYLE}
         title="Advance"
       >
         <Check size={28} />
