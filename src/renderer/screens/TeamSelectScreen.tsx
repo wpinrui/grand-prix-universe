@@ -51,6 +51,22 @@ function formatBudget(budget: number): string {
 }
 
 /**
+ * Get sort priority for driver role (lower = higher priority)
+ */
+function getDriverRolePriority(role: DriverRole): number {
+  switch (role) {
+    case DriverRole.First:
+      return 0;
+    case DriverRole.Second:
+      return 1;
+    case DriverRole.Equal:
+      return 2;
+    case DriverRole.Test:
+      return 3;
+  }
+}
+
+/**
  * Format driver role for display
  */
 function formatDriverRole(role: DriverRole): string {
@@ -111,9 +127,11 @@ export function TeamSelectScreen() {
     }
   }, [playerName]);
 
-  // Get drivers for selected team
+  // Get drivers for selected team, sorted by role (#1 first, then #2, etc.)
   const teamDrivers = selectedTeam
-    ? drivers.filter((d) => d.teamId === selectedTeam.id)
+    ? drivers
+        .filter((d) => d.teamId === selectedTeam.id)
+        .sort((a, b) => getDriverRolePriority(a.role) - getDriverRolePriority(b.role))
     : [];
 
   // Handle starting the game
@@ -143,7 +161,7 @@ export function TeamSelectScreen() {
   if (isLoading) {
     return (
       <div className="team-select-screen flex items-center justify-center min-h-screen bg-gray-800">
-        <p className="text-white">Loading teams...</p>
+        <p className="text-white">Loading...</p>
       </div>
     );
   }
