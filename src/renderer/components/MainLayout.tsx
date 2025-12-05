@@ -31,7 +31,8 @@ export function MainLayout() {
 
   // Safe: selectedSectionId always matches a valid section (defaults to 'team')
   const selectedSection = sections.find((s) => s.id === selectedSectionId) ?? sections[0];
-  const selectedSubItem = selectedSection.subItems.find((sub) => sub.id === selectedSubItemId);
+  const selectedSubItem =
+    selectedSection.subItems.find((sub) => sub.id === selectedSubItemId) ?? selectedSection.subItems[0];
 
   const handleSectionClick = (section: Section) => {
     setSelectedSectionId(section.id);
@@ -60,7 +61,7 @@ export function MainLayout() {
       <div className="flex flex-col flex-1">
         <TopBar
           sectionLabel={selectedSection.label}
-          subItemLabel={selectedSubItem?.label}
+          subItemLabel={selectedSubItem.label}
           currentDate={gameState?.currentDate ?? null}
           playerTeam={playerTeam}
         />
@@ -69,7 +70,7 @@ export function MainLayout() {
         <main className="content flex-1 p-8 overflow-auto">
           <div className="flex items-center justify-center h-full text-gray-500">
             <p className="text-2xl">
-              {selectedSection.label} &gt; {selectedSubItem?.label}
+              {selectedSection.label}: {selectedSubItem.label}
             </p>
           </div>
         </main>
