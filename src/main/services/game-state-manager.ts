@@ -55,6 +55,12 @@ const INITIAL_FATIGUE = 0;
 /** Initial sponsor satisfaction (0-100 scale, 60 = neutral-good) */
 const INITIAL_SPONSOR_SATISFACTION = 60;
 
+/** First race typically in March (week 10) */
+const FIRST_RACE_WEEK = 10;
+
+/** Last race typically in late November (week 48) */
+const LAST_RACE_WEEK = 48;
+
 /** Parameters for creating a new game */
 export interface NewGameParams {
   playerName: string;
@@ -158,16 +164,13 @@ function createInitialConstructorStandings(teams: Team[]): ConstructorStanding[]
  */
 function createCalendar(circuitIds: string[]): CalendarEntry[] {
   const raceCount = circuitIds.length;
-  // Spread races from week 10 to week 48 (typical F1 season span)
-  const firstRaceWeek = 10;
-  const lastRaceWeek = 48;
-  const weekSpan = lastRaceWeek - firstRaceWeek;
+  const weekSpan = LAST_RACE_WEEK - FIRST_RACE_WEEK;
   const weeksBetweenRaces = Math.floor(weekSpan / Math.max(raceCount - 1, 1));
 
   return circuitIds.map((circuitId, index) => ({
     raceNumber: index + 1,
     circuitId,
-    weekNumber: firstRaceWeek + index * weeksBetweenRaces,
+    weekNumber: FIRST_RACE_WEEK + index * weeksBetweenRaces,
     completed: false,
     cancelled: false,
   }));
