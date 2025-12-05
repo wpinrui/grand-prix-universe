@@ -104,15 +104,16 @@ export const SaveManager = {
       const filePath = path.join(savesDir, filename);
 
       // Update lastSavedAt timestamp
+      const savedAt = new Date().toISOString();
       const stateToSave: GameState = {
         ...state,
-        lastSavedAt: new Date().toISOString(),
+        lastSavedAt: savedAt,
       };
 
       const jsonData = JSON.stringify(stateToSave, null, 2);
       await fs.writeFile(filePath, jsonData, 'utf-8');
 
-      return { success: true, filename };
+      return { success: true, filename, savedAt };
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       return { success: false, error: `Failed to save game: ${message}` };
@@ -169,7 +170,6 @@ export const SaveManager = {
         } catch (error) {
           // Skip invalid/corrupted save files, but log for debugging
           console.warn(`[SaveManager] Skipping invalid save file: ${filename}`, error);
-          continue;
         }
       }
 

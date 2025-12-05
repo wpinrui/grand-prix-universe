@@ -81,7 +81,12 @@ export function registerIpcHandlers(): void {
     if (!state) {
       return { success: false, error: 'No active game to save' };
     }
-    return SaveManager.save(state);
+    const result = await SaveManager.save(state);
+    // Sync in-memory state's lastSavedAt with what was written to disk
+    if (result.success && result.savedAt) {
+      state.lastSavedAt = result.savedAt;
+    }
+    return result;
   });
 
   ipcMain.handle(IpcChannels.GAME_LOAD, async (_event, filename: string) => {

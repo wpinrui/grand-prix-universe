@@ -44,6 +44,7 @@ export interface SaveSlotInfo {
 export interface SaveResult {
   success: boolean;
   filename?: string; // Generated filename on success
+  savedAt?: string; // ISO timestamp of when the save was written
   error?: string; // Error message on failure
 }
 

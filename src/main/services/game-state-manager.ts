@@ -479,7 +479,9 @@ function startAutoSave(): void {
     const state = GameStateManager.currentState;
     if (state) {
       const result = await SaveManager.save(state);
-      if (result.success) {
+      if (result.success && result.savedAt) {
+        // Sync in-memory state's lastSavedAt with what was written to disk
+        state.lastSavedAt = result.savedAt;
         console.log(`[AutoSave] Saved to ${result.filename}`);
       } else {
         console.error(`[AutoSave] Failed: ${result.error}`);
