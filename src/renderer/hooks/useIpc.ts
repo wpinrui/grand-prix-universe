@@ -193,6 +193,12 @@ export function useDeleteSave() {
   });
 }
 
+export function useOpenSavesFolder() {
+  return useCallback(() => {
+    window.electronAPI.invoke(IpcChannels.GAME_OPEN_SAVES_FOLDER);
+  }, []);
+}
+
 // =============================================================================
 // UTILITY HOOKS
 // =============================================================================

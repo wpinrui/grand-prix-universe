@@ -4,7 +4,8 @@
  * Register all main process handlers for IPC communication.
  */
 
-import { app, ipcMain } from 'electron';
+import { app, ipcMain, shell } from 'electron';
+import * as path from 'path';
 import { IpcChannels } from '../../shared/ipc';
 import type { NewGameParams } from '../../shared/domain';
 import { ConfigLoader, GameStateManager, SaveManager } from '../services';
@@ -88,5 +89,10 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IpcChannels.GAME_DELETE_SAVE, async (_event, filename: string) => {
     return SaveManager.deleteSave(filename);
+  });
+
+  ipcMain.handle(IpcChannels.GAME_OPEN_SAVES_FOLDER, async () => {
+    const savesDir = path.join(app.getPath('userData'), 'saves');
+    await shell.openPath(savesDir);
   });
 }

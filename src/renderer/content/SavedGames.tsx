@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Save, Trash2, Download, Loader2 } from 'lucide-react';
-import { useSavesList, useSaveGame, useLoadGame, useDeleteSave, useTeams } from '../hooks/useIpc';
+import { Save, Trash2, Download, Loader2, FolderOpen } from 'lucide-react';
+import { useSavesList, useSaveGame, useLoadGame, useDeleteSave, useTeams, useOpenSavesFolder } from '../hooks/useIpc';
 import { TeamBadge } from '../components/TeamBadge';
 import { PRIMARY_BUTTON_CLASSES, GHOST_BUTTON_CLASSES } from '../utils/theme-styles';
 import { formatDateTime } from '../utils/format';
@@ -126,6 +126,7 @@ export function SavedGames({ onNavigateToProfile }: SavedGamesProps) {
   const saveGame = useSaveGame();
   const loadGame = useLoadGame();
   const deleteSave = useDeleteSave();
+  const openSavesFolder = useOpenSavesFolder();
 
   const teamsById = teams?.reduce<Record<string, Team>>((acc, team) => {
     acc[team.id] = team;
@@ -157,24 +158,35 @@ export function SavedGames({ onNavigateToProfile }: SavedGamesProps) {
       {/* Header with Save button */}
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-primary">Saved Games</h1>
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={saveGame.isPending}
-          className={PRIMARY_BUTTON_CLASSES}
-        >
-          {saveGame.isPending ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin inline mr-2" />
-              Saving...
-            </>
-          ) : (
-            <>
-              <Save className="w-4 h-4 inline mr-2" />
-              Save Current Game
-            </>
-          )}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={openSavesFolder}
+            className={GHOST_BUTTON_CLASSES}
+            title="Open saves folder"
+          >
+            <FolderOpen className="w-4 h-4 inline mr-2" />
+            Open Folder
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saveGame.isPending}
+            className={PRIMARY_BUTTON_CLASSES}
+          >
+            {saveGame.isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin inline mr-2" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4 inline mr-2" />
+                Save Current Game
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Save success feedback */}
