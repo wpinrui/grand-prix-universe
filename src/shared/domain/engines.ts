@@ -90,6 +90,29 @@ export type RegulationResult = Placeholder;
 // =============================================================================
 
 /**
+ * TurnBlockedReason - Why turn processing was blocked
+ * Extensible for future blocking conditions
+ */
+export type TurnBlockedReason = 'post-season';
+
+/**
+ * TurnBlocked - Indicates turn was blocked and why
+ */
+export interface TurnBlocked {
+  reason: TurnBlockedReason;
+  message: string;
+}
+
+/**
+ * ChampionshipStandings - Driver and constructor standings together
+ * Used whenever both standings are needed as a pair
+ */
+export interface ChampionshipStandings {
+  drivers: DriverStanding[];
+  constructors: ConstructorStanding[];
+}
+
+/**
  * TurnProcessingInput - All data needed to process a weekly turn
  */
 export interface TurnProcessingInput {
@@ -108,6 +131,9 @@ export interface TurnProcessingInput {
 /**
  * DriverStateChange - Changes to a driver's runtime state
  * All fields optional - only include fields that changed
+ *
+ * Fields with "*Change" suffix are DELTAS to apply.
+ * Fields with "set*" prefix are ABSOLUTE values to set directly.
  */
 export interface DriverStateChange {
   driverId: string;
@@ -115,8 +141,8 @@ export interface DriverStateChange {
   fitnessChange?: number;
   moraleChange?: number;
   reputationChange?: number;
-  injuryWeeksRemaining?: number; // Absolute value, not delta
-  banRacesRemaining?: number; // Absolute value, not delta
+  setInjuryWeeks?: number; // Absolute: set injury weeks remaining
+  setBanRaces?: number; // Absolute: set ban races remaining
   engineUnitsUsedChange?: number;
   gearboxRaceCountChange?: number;
 }
@@ -163,10 +189,7 @@ export interface TurnProcessingResult {
   teamStateChanges: TeamStateChange[];
   isRaceWeek: boolean;
   raceCircuitId?: string; // Set if isRaceWeek is true
-  blocked?: {
-    reason: 'post-season';
-    message: string;
-  };
+  blocked?: TurnBlocked;
 }
 
 /**
@@ -178,10 +201,7 @@ export interface RaceProcessingInput {
   teams: Team[];
   driverStates: Record<string, DriverRuntimeState>;
   teamStates: Record<string, TeamRuntimeState>;
-  currentStandings: {
-    driver: DriverStanding[];
-    constructor: ConstructorStanding[];
-  };
+  currentStandings: ChampionshipStandings;
 }
 
 /**
@@ -190,8 +210,7 @@ export interface RaceProcessingInput {
 export interface RaceProcessingResult {
   driverStateChanges: DriverStateChange[];
   teamStateChanges: TeamStateChange[];
-  updatedDriverStandings: DriverStanding[];
-  updatedConstructorStandings: ConstructorStanding[];
+  updatedStandings: ChampionshipStandings;
 }
 
 /**
