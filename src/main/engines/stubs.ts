@@ -162,6 +162,18 @@ const WEEKLY_FLUCTUATION_MIN = -1;
 const WEEKLY_FLUCTUATION_MAX = 1;
 
 /**
+ * Helper: Generate random fluctuations for a set of keys
+ * Used for department morale and sponsor satisfaction changes
+ */
+function generateFluctuations<K extends string>(keys: K[]): Record<K, number> {
+  const result = {} as Record<K, number>;
+  for (const key of keys) {
+    result[key] = randomInt(WEEKLY_FLUCTUATION_MIN, WEEKLY_FLUCTUATION_MAX);
+  }
+  return result;
+}
+
+/**
  * Determine the game phase for a given week
  */
 function determinePhaseForWeek(
@@ -247,23 +259,11 @@ function generateTeamStateChanges(
     // Weekly salary costs
     const budgetChange = -Math.round(team.budget * WEEKLY_SALARY_RATE);
 
-    // Department morale fluctuations
-    const moraleChanges: Partial<Record<Department, number>> = {};
-    for (const dept of Object.values(Department)) {
-      moraleChanges[dept] = randomInt(WEEKLY_FLUCTUATION_MIN, WEEKLY_FLUCTUATION_MAX);
-    }
-
-    // Sponsor satisfaction fluctuations
-    const sponsorSatisfactionChanges: Record<string, number> = {};
-    for (const sponsorId of Object.keys(state.sponsorSatisfaction)) {
-      sponsorSatisfactionChanges[sponsorId] = randomInt(WEEKLY_FLUCTUATION_MIN, WEEKLY_FLUCTUATION_MAX);
-    }
-
     changes.push({
       teamId: team.id,
       budgetChange,
-      moraleChanges,
-      sponsorSatisfactionChanges,
+      moraleChanges: generateFluctuations(Object.values(Department)),
+      sponsorSatisfactionChanges: generateFluctuations(Object.keys(state.sponsorSatisfaction)),
     });
   }
 
