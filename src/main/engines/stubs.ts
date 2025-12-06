@@ -51,9 +51,17 @@ import type {
   SeasonEndResult,
   DriverStateChange,
   TeamStateChange,
+  ChampionshipStandings,
 } from '../../shared/domain/engines';
 
-import { Department, GamePhase } from '../../shared/domain/types';
+import {
+  Department,
+  GamePhase,
+  RaceFinishStatus,
+  DriverStanding,
+  ConstructorStanding,
+  DriverRaceResult,
+} from '../../shared/domain/types';
 
 export class StubRaceEngine implements IRaceEngine {
   simulateQualifying(_input: QualifyingInput): QualifyingResult {
@@ -148,6 +156,18 @@ const POSTSEASON_START_WEEK = 49;
 const FATIGUE_THRESHOLD = 80; // Fatigue level above which fitness drops
 const FITNESS_DROP_PER_WEEK = 1; // Fitness decrease when fatigued
 const WEEKLY_SALARY_RATE = 0.001; // Weekly salary as percentage of budget (0.1%)
+
+/**
+ * Race result constants
+ */
+const POINTS_BONUS_PER_POINT = 10000; // Budget bonus per championship point earned
+const WIN_MORALE_BONUS = 10; // Morale boost for winning
+const PODIUM_MORALE_BONUS = 5; // Morale boost for podium (non-win)
+const POINTS_MORALE_BONUS = 2; // Morale boost for scoring points (non-podium)
+const DNF_MORALE_PENALTY = -5; // Morale penalty for DNF
+const WIN_REPUTATION_BONUS = 3; // Reputation boost for winning
+const PODIUM_REPUTATION_BONUS = 1; // Reputation boost for podium (non-win)
+const DNF_REPUTATION_PENALTY = -1; // Reputation penalty for DNF
 
 /**
  * Weekly change ranges for stub randomization
@@ -270,6 +290,265 @@ function generateTeamStateChanges(
   return changes;
 }
 
+// =============================================================================
+// RACE PROCESSING HELPERS
+// =============================================================================
+
+/**
+ * Check if a race result counts as a DNF (did not finish normally)
+ */
+function isDNF(status: RaceFinishStatus): boolean {
+  return status !== RaceFinishStatus.Finished && status !== RaceFinishStatus.Lapped;
+}
+
+/**
+ * Update driver standings with race results
+ * Returns new sorted standings array (does not mutate input)
+ */
+function updateDriverStandings(
+  currentStandings: DriverStanding[],
+  raceResults: DriverRaceResult[]
+): DriverStanding[] {
+  // Create a map of current standings by driverId
+  const standingsMap = new Map<string, DriverStanding>();
+  for (const standing of currentStandings) {
+    standingsMap.set(standing.driverId, { ...standing });
+  }
+
+  // Update standings with race results
+  for (const result of raceResults) {
+    let standing = standingsMap.get(result.driverId);
+
+    // If driver not in standings yet, create entry
+    if (!standing) {
+      standing = {
+        driverId: result.driverId,
+        teamId: result.teamId,
+        points: 0,
+        position: 0, // Will be set after sorting
+        wins: 0,
+        podiums: 0,
+        polePositions: 0,
+        fastestLaps: 0,
+        dnfs: 0,
+      };
+      standingsMap.set(result.driverId, standing);
+    }
+
+    // Add points
+    standing.points += result.points;
+
+    // Update stats
+    if (result.finishPosition === 1) {
+      standing.wins += 1;
+    }
+    if (result.finishPosition !== null && result.finishPosition <= 3) {
+      standing.podiums += 1;
+    }
+    if (result.gridPosition === 1) {
+      standing.polePositions += 1;
+    }
+    if (result.fastestLap) {
+      standing.fastestLaps += 1;
+    }
+    if (isDNF(result.status)) {
+      standing.dnfs += 1;
+    }
+  }
+
+  // Sort by points (descending), then by wins as tiebreaker
+  const sorted = Array.from(standingsMap.values()).sort((a, b) => {
+    if (b.points !== a.points) return b.points - a.points;
+    return b.wins - a.wins;
+  });
+
+  // Update positions
+  sorted.forEach((standing, index) => {
+    standing.position = index + 1;
+  });
+
+  return sorted;
+}
+
+/**
+ * Update constructor standings with race results
+ * Returns new sorted standings array (does not mutate input)
+ */
+function updateConstructorStandings(
+  currentStandings: ConstructorStanding[],
+  raceResults: DriverRaceResult[]
+): ConstructorStanding[] {
+  // Create a map of current standings by teamId
+  const standingsMap = new Map<string, ConstructorStanding>();
+  for (const standing of currentStandings) {
+    standingsMap.set(standing.teamId, { ...standing });
+  }
+
+  // Aggregate race results by team
+  for (const result of raceResults) {
+    let standing = standingsMap.get(result.teamId);
+
+    // If team not in standings yet, create entry
+    if (!standing) {
+      standing = {
+        teamId: result.teamId,
+        points: 0,
+        position: 0, // Will be set after sorting
+        wins: 0,
+        podiums: 0,
+        polePositions: 0,
+      };
+      standingsMap.set(result.teamId, standing);
+    }
+
+    // Add points
+    standing.points += result.points;
+
+    // Update stats (any driver achieving these counts for team)
+    if (result.finishPosition === 1) {
+      standing.wins += 1;
+    }
+    if (result.finishPosition !== null && result.finishPosition <= 3) {
+      standing.podiums += 1;
+    }
+    if (result.gridPosition === 1) {
+      standing.polePositions += 1;
+    }
+  }
+
+  // Sort by points (descending), then by wins as tiebreaker
+  const sorted = Array.from(standingsMap.values()).sort((a, b) => {
+    if (b.points !== a.points) return b.points - a.points;
+    return b.wins - a.wins;
+  });
+
+  // Update positions
+  sorted.forEach((standing, index) => {
+    standing.position = index + 1;
+  });
+
+  return sorted;
+}
+
+/**
+ * Calculate morale change for a driver based on race result
+ */
+function calculateDriverMoraleChange(result: DriverRaceResult): number {
+  if (isDNF(result.status)) {
+    return DNF_MORALE_PENALTY;
+  }
+  if (result.finishPosition === 1) {
+    return WIN_MORALE_BONUS;
+  }
+  if (result.finishPosition !== null && result.finishPosition <= 3) {
+    return PODIUM_MORALE_BONUS;
+  }
+  if (result.points > 0) {
+    return POINTS_MORALE_BONUS;
+  }
+  return 0;
+}
+
+/**
+ * Calculate reputation change for a driver based on race result
+ */
+function calculateDriverReputationChange(result: DriverRaceResult): number {
+  if (isDNF(result.status)) {
+    return DNF_REPUTATION_PENALTY;
+  }
+  if (result.finishPosition === 1) {
+    return WIN_REPUTATION_BONUS;
+  }
+  if (result.finishPosition !== null && result.finishPosition <= 3) {
+    return PODIUM_REPUTATION_BONUS;
+  }
+  return 0;
+}
+
+/**
+ * Generate driver state changes from race results
+ */
+function generateRaceDriverStateChanges(
+  raceResults: DriverRaceResult[]
+): DriverStateChange[] {
+  return raceResults.map((result) => ({
+    driverId: result.driverId,
+    moraleChange: calculateDriverMoraleChange(result),
+    reputationChange: calculateDriverReputationChange(result),
+  }));
+}
+
+/**
+ * Generate team state changes from race results
+ * Budget bonus based on points scored, morale boost from good results
+ */
+function generateRaceTeamStateChanges(
+  raceResults: DriverRaceResult[],
+  teamStates: RaceProcessingInput['teamStates']
+): TeamStateChange[] {
+  // Aggregate points by team
+  const teamPoints = new Map<string, number>();
+  const teamBestFinish = new Map<string, number>();
+
+  for (const result of raceResults) {
+    const currentPoints = teamPoints.get(result.teamId) ?? 0;
+    teamPoints.set(result.teamId, currentPoints + result.points);
+
+    // Track best finish for morale calculation
+    if (result.finishPosition !== null) {
+      const currentBest = teamBestFinish.get(result.teamId) ?? 999;
+      teamBestFinish.set(result.teamId, Math.min(currentBest, result.finishPosition));
+    }
+  }
+
+  const changes: TeamStateChange[] = [];
+
+  for (const [teamId, points] of teamPoints) {
+    const state = teamStates[teamId];
+    if (!state) continue;
+
+    const bestFinish = teamBestFinish.get(teamId) ?? 999;
+
+    // Budget bonus for points
+    const budgetChange = points * POINTS_BONUS_PER_POINT;
+
+    // Morale boost for engineering/mechanics based on results
+    let moraleBoost = 0;
+    if (bestFinish === 1) {
+      moraleBoost = WIN_MORALE_BONUS;
+    } else if (bestFinish <= 3) {
+      moraleBoost = PODIUM_MORALE_BONUS;
+    } else if (points > 0) {
+      moraleBoost = POINTS_MORALE_BONUS;
+    }
+
+    changes.push({
+      teamId,
+      budgetChange,
+      moraleChanges: {
+        [Department.Engineering]: moraleBoost,
+        [Department.Mechanics]: moraleBoost,
+      },
+      sponsorSatisfactionChanges: generateFluctuations(Object.keys(state.sponsorSatisfaction)),
+    });
+  }
+
+  return changes;
+}
+
+/**
+ * Update championship standings with race results
+ */
+function updateStandings(
+  currentStandings: ChampionshipStandings,
+  raceResults: DriverRaceResult[]
+): ChampionshipStandings {
+  return {
+    drivers: updateDriverStandings(currentStandings.drivers, raceResults),
+    constructors: updateConstructorStandings(currentStandings.constructors, raceResults),
+  };
+}
+
 /**
  * StubTurnEngine - Stub implementation of time progression
  *
@@ -319,14 +598,16 @@ export class StubTurnEngine implements ITurnEngine {
   }
 
   /**
-   * Process race results - stub for PR 3
+   * Process race results - update standings and apply state changes
+   * Called after a race weekend completes
    */
-  processRace(_input: RaceProcessingInput): RaceProcessingResult {
-    // Stub: Returns empty changes, will be implemented in PR 3
+  processRace(input: RaceProcessingInput): RaceProcessingResult {
+    const { raceResult, currentStandings, teamStates } = input;
+
     return {
-      driverStateChanges: [],
-      teamStateChanges: [],
-      updatedStandings: _input.currentStandings,
+      driverStateChanges: generateRaceDriverStateChanges(raceResult.race),
+      teamStateChanges: generateRaceTeamStateChanges(raceResult.race, teamStates),
+      updatedStandings: updateStandings(currentStandings, raceResult.race),
     };
   }
 
