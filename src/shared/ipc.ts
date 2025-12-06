@@ -19,6 +19,7 @@ import type {
   GameState,
   NewGameParams,
 } from './domain';
+import type { TurnBlocked } from './domain/engines';
 
 // =============================================================================
 // SAVE/LOAD TYPES
@@ -57,6 +58,21 @@ export interface LoadResult {
   error?: string; // Error message on failure
 }
 
+// =============================================================================
+// ADVANCE WEEK TYPES
+// =============================================================================
+
+/**
+ * Result of an advance week operation
+ * Either succeeds with updated state, or is blocked (e.g., post-season)
+ */
+export interface AdvanceWeekResult {
+  success: boolean;
+  state?: GameState; // Updated state on success
+  blocked?: TurnBlocked; // Blocking info if advancement was blocked
+  error?: string; // Error message on failure
+}
+
 /** Channel names for IPC invoke calls (renderer -> main) */
 export const IpcChannels = {
   // App lifecycle
@@ -78,6 +94,7 @@ export const IpcChannels = {
   // Game state
   GAME_NEW: 'game:new',
   GAME_GET_STATE: 'game:getState',
+  GAME_ADVANCE_WEEK: 'game:advanceWeek',
 
   // Save/load
   GAME_SAVE: 'game:save',
@@ -158,6 +175,10 @@ export interface IpcInvokeMap {
   [IpcChannels.GAME_GET_STATE]: {
     args: [];
     result: GameState | null;
+  };
+  [IpcChannels.GAME_ADVANCE_WEEK]: {
+    args: [];
+    result: AdvanceWeekResult;
   };
 
   // Save/load

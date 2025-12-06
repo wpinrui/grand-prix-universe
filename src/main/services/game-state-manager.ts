@@ -10,7 +10,22 @@
 import { BrowserWindow } from 'electron';
 import { ConfigLoader } from './config-loader';
 import { SaveManager } from './save-manager';
-import { IpcEvents, type IpcEventPayloads, type SaveResult, type LoadResult } from '../../shared/ipc';
+import { EngineManager } from '../engines/engine-manager';
+import {
+  IpcEvents,
+  type IpcEventPayloads,
+  type SaveResult,
+  type LoadResult,
+  type AdvanceWeekResult,
+} from '../../shared/ipc';
+import type {
+  TurnProcessingInput,
+  TurnProcessingResult,
+  RaceProcessingInput,
+  DriverStateChange,
+  TeamStateChange,
+  ChampionshipStandings,
+} from '../../shared/domain/engines';
 import type {
   GameState,
   GameDate,
@@ -34,6 +49,9 @@ import type {
   GameRules,
   SeasonRegulations,
   NewGameParams,
+  RaceWeekendResult,
+  DriverRaceResult,
+  DriverQualifyingResult,
 } from '../../shared/domain';
 import {
   GamePhase,
@@ -41,6 +59,8 @@ import {
   ManufacturerType,
   ManufacturerDealType,
   DriverRole,
+  RaceFinishStatus,
+  WeatherCondition,
 } from '../../shared/domain';
 
 /** Current save format version */
@@ -94,6 +114,17 @@ function assertNonEmpty<T>(array: T[], entityName: string): void {
  */
 function cloneDeep<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
+}
+
+/** Maximum value for percentage-based stats (morale, fitness, etc.) */
+const MAX_PERCENTAGE = 100;
+
+/**
+ * Clamps a value between 0 and MAX_PERCENTAGE (100).
+ * Used for all percentage-based stats like morale, fitness, fatigue, etc.
+ */
+function clampPercentage(value: number): number {
+  return Math.max(0, Math.min(MAX_PERCENTAGE, value));
 }
 
 /**
@@ -472,6 +503,9 @@ function buildGameState(params: BuildGameStateParams): GameState {
 /** Auto-save timer handle */
 let autoSaveTimer: ReturnType<typeof setInterval> | null = null;
 
+/** Shared engine manager instance */
+const engineManager = new EngineManager();
+
 /**
  * Sends a typed event to all renderer windows
  */
@@ -511,6 +545,291 @@ function stopAutoSave(): void {
     clearInterval(autoSaveTimer);
     autoSaveTimer = null;
   }
+}
+
+// =============================================================================
+// STATE CHANGE APPLICATION HELPERS
+// =============================================================================
+
+/**
+ * Apply driver state changes to game state (mutates state)
+ */
+function applyDriverStateChanges(
+  state: GameState,
+  changes: DriverStateChange[]
+): void {
+  for (const change of changes) {
+    const driverState = state.driverStates[change.driverId];
+    if (!driverState) continue;
+
+    if (change.fatigueChange !== undefined) {
+      driverState.fatigue = clampPercentage(driverState.fatigue + change.fatigueChange);
+    }
+    if (change.fitnessChange !== undefined) {
+      driverState.fitness = clampPercentage(driverState.fitness + change.fitnessChange);
+    }
+    if (change.moraleChange !== undefined) {
+      driverState.morale = clampPercentage(driverState.morale + change.moraleChange);
+    }
+    if (change.setInjuryWeeks !== undefined) {
+      driverState.injuryWeeksRemaining = change.setInjuryWeeks;
+    }
+    if (change.setBanRaces !== undefined) {
+      driverState.banRacesRemaining = change.setBanRaces;
+    }
+    if (change.engineUnitsUsedChange !== undefined) {
+      driverState.engineUnitsUsed += change.engineUnitsUsedChange;
+    }
+    if (change.gearboxRaceCountChange !== undefined) {
+      driverState.gearboxRaceCount += change.gearboxRaceCountChange;
+    }
+
+    // Reputation changes apply to the driver entity, not runtime state
+    if (change.reputationChange !== undefined) {
+      const driver = state.drivers.find((d) => d.id === change.driverId);
+      if (driver) {
+        driver.reputation = clampPercentage(driver.reputation + change.reputationChange);
+      }
+    }
+  }
+}
+
+/**
+ * Apply team state changes to game state (mutates state)
+ */
+function applyTeamStateChanges(
+  state: GameState,
+  changes: TeamStateChange[]
+): void {
+  for (const change of changes) {
+    const teamState = state.teamStates[change.teamId];
+    const team = state.teams.find((t) => t.id === change.teamId);
+    if (!teamState || !team) continue;
+
+    if (change.budgetChange !== undefined) {
+      team.budget += change.budgetChange;
+    }
+
+    if (change.moraleChanges) {
+      for (const [dept, delta] of Object.entries(change.moraleChanges)) {
+        const department = dept as Department;
+        if (teamState.morale[department] !== undefined && delta !== undefined) {
+          teamState.morale[department] = clampPercentage(teamState.morale[department] + delta);
+        }
+      }
+    }
+
+    if (change.sponsorSatisfactionChanges) {
+      for (const [sponsorId, delta] of Object.entries(change.sponsorSatisfactionChanges)) {
+        if (teamState.sponsorSatisfaction[sponsorId] !== undefined) {
+          teamState.sponsorSatisfaction[sponsorId] = clampPercentage(
+            teamState.sponsorSatisfaction[sponsorId] + delta
+          );
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Update championship standings in game state (mutates state)
+ */
+function updateChampionshipStandings(
+  state: GameState,
+  standings: ChampionshipStandings
+): void {
+  state.currentSeason.driverStandings = standings.drivers;
+  state.currentSeason.constructorStandings = standings.constructors;
+}
+
+// =============================================================================
+// STUB RACE RESULT GENERATOR
+// =============================================================================
+
+/** Points awarded per finishing position (1st through 10th) */
+const POINTS_BY_POSITION = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
+
+/** DNF probability per driver */
+const DNF_PROBABILITY = 0.1;
+
+/** Base lap time for stub results (in ms) */
+const BASE_LAP_TIME_MS = 90000;
+
+/** Lap time variation range (in ms) */
+const LAP_TIME_VARIATION_MS = 5000;
+
+/** Number of laps for stub race */
+const STUB_RACE_LAPS = 50;
+
+/** Maximum gap to pole position in qualifying (in ms) */
+const MAX_GAP_TO_POLE_MS = 2000;
+
+/** Maximum gap to winner / total time variation in race (in ms) */
+const MAX_GAP_TO_WINNER_MS = 60000;
+
+/**
+ * Shuffle array using Fisher-Yates algorithm (returns new array)
+ */
+function shuffleArray<T>(array: T[]): T[] {
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+/**
+ * Generate a stub race weekend result
+ * Uses simple random logic - will be replaced with full simulation later
+ */
+function generateStubRaceResult(
+  state: GameState,
+  circuitId: string,
+  raceNumber: number
+): RaceWeekendResult {
+  // Get all drivers with race seats
+  const raceDrivers = state.drivers.filter(hasRaceSeat);
+
+  // Shuffle for random grid order
+  const gridOrder = shuffleArray(raceDrivers);
+
+  // Generate qualifying results
+  const qualifying: DriverQualifyingResult[] = gridOrder.map((driver, index) => {
+    const lapTime = BASE_LAP_TIME_MS + Math.random() * LAP_TIME_VARIATION_MS;
+    return {
+      driverId: driver.id,
+      teamId: driver.teamId!,
+      gridPosition: index + 1,
+      bestLapTime: lapTime,
+      gapToPole: index === 0 ? 0 : Math.random() * MAX_GAP_TO_POLE_MS,
+    };
+  });
+
+  // Shuffle again for race finish order (different from grid)
+  const finishOrder = shuffleArray(raceDrivers);
+
+  // Track fastest lap
+  let fastestLapTime = Infinity;
+  let fastestLapDriverId = finishOrder[0]?.id ?? '';
+
+  // Generate race results
+  const race: DriverRaceResult[] = finishOrder.map((driver, index) => {
+    const gridPosition = gridOrder.findIndex((d) => d.id === driver.id) + 1;
+    const isDNF = Math.random() < DNF_PROBABILITY;
+    const finishPosition = isDNF ? null : index + 1;
+    const points =
+      finishPosition !== null && finishPosition <= POINTS_BY_POSITION.length
+        ? POINTS_BY_POSITION[finishPosition - 1]
+        : 0;
+
+    const lapTime = BASE_LAP_TIME_MS + Math.random() * LAP_TIME_VARIATION_MS;
+    const isFastestLap = lapTime < fastestLapTime && !isDNF;
+    if (isFastestLap) {
+      fastestLapTime = lapTime;
+      fastestLapDriverId = driver.id;
+    }
+
+    return {
+      driverId: driver.id,
+      teamId: driver.teamId!,
+      finishPosition,
+      gridPosition,
+      lapsCompleted: isDNF ? Math.floor(Math.random() * STUB_RACE_LAPS) : STUB_RACE_LAPS,
+      totalTime: isDNF ? undefined : BASE_LAP_TIME_MS * STUB_RACE_LAPS + Math.random() * MAX_GAP_TO_WINNER_MS,
+      gapToWinner: finishPosition === 1 ? 0 : Math.random() * MAX_GAP_TO_WINNER_MS,
+      points,
+      fastestLap: isFastestLap,
+      fastestLapTime: lapTime,
+      status: isDNF ? RaceFinishStatus.Retired : RaceFinishStatus.Finished,
+      pitStops: Math.floor(Math.random() * 3) + 1,
+    };
+  });
+
+  return {
+    raceNumber,
+    circuitId,
+    seasonNumber: state.currentDate.season,
+    qualifying,
+    race,
+    weather: WeatherCondition.Dry,
+    fastestLapDriverId,
+    fastestLapTime,
+  };
+}
+
+// =============================================================================
+// TURN PROCESSING HELPERS
+// =============================================================================
+
+/**
+ * Build TurnProcessingInput from current game state
+ */
+function buildTurnInput(state: GameState): TurnProcessingInput {
+  return {
+    currentDate: state.currentDate,
+    phase: state.phase,
+    calendar: state.currentSeason.calendar,
+    drivers: state.drivers,
+    teams: state.teams,
+    chiefs: state.chiefs,
+    driverStates: state.driverStates,
+    teamStates: state.teamStates,
+    sponsorDeals: state.sponsorDeals,
+    manufacturerContracts: state.manufacturerContracts,
+  };
+}
+
+/**
+ * Build RaceProcessingInput from current game state and race result
+ */
+function buildRaceInput(state: GameState, raceResult: RaceWeekendResult): RaceProcessingInput {
+  return {
+    drivers: state.drivers,
+    teams: state.teams,
+    driverStates: state.driverStates,
+    teamStates: state.teamStates,
+    raceResult,
+    currentStandings: {
+      drivers: state.currentSeason.driverStandings,
+      constructors: state.currentSeason.constructorStandings,
+    },
+  };
+}
+
+/**
+ * Apply turn processing result to game state (mutates state)
+ */
+function applyTurnResult(state: GameState, result: TurnProcessingResult): void {
+  state.currentDate = result.newDate;
+  state.phase = result.newPhase;
+  applyDriverStateChanges(state, result.driverStateChanges);
+  applyTeamStateChanges(state, result.teamStateChanges);
+}
+
+/**
+ * Mark calendar entry as completed with race result
+ */
+function markRaceComplete(state: GameState, circuitId: string, result: RaceWeekendResult): void {
+  const entry = state.currentSeason.calendar.find((e) => e.circuitId === circuitId);
+  if (entry) {
+    entry.completed = true;
+    entry.result = result;
+  }
+}
+
+/**
+ * Apply blocked turn result to state and return blocked AdvanceWeekResult.
+ * Used when advancement is blocked (e.g., post-season reached).
+ */
+function applyBlockedResult(state: GameState, turnResult: TurnProcessingResult): AdvanceWeekResult {
+  state.currentDate = turnResult.newDate;
+  state.phase = turnResult.newPhase;
+  return {
+    success: true,
+    state,
+    blocked: turnResult.blocked,
+  };
 }
 
 /**
@@ -577,6 +896,81 @@ export const GameStateManager = {
   clearState(): void {
     stopAutoSave();
     GameStateManager.currentState = null;
+  },
+
+  /**
+   * Advances the game by one week.
+   *
+   * Logic flow:
+   * 1. If PostSeason → return blocked (player must end season first)
+   * 2. If RaceWeekend → run race, process results, then advance
+   * 3. Otherwise → process weekly changes, check for upcoming race
+   */
+  advanceWeek(): AdvanceWeekResult {
+    const state = GameStateManager.currentState;
+    if (!state) {
+      return { success: false, error: 'No active game' };
+    }
+
+    // Handle RaceWeekend phase - run the race
+    if (state.phase === GamePhase.RaceWeekend) {
+      // Find the current race
+      const currentRace = state.currentSeason.calendar.find(
+        (entry) => entry.weekNumber === state.currentDate.week && !entry.completed
+      );
+
+      if (!currentRace) {
+        return { success: false, error: 'No race found for current week' };
+      }
+
+      // Generate stub race result
+      const raceResult = generateStubRaceResult(
+        state,
+        currentRace.circuitId,
+        currentRace.raceNumber
+      );
+
+      // Process race through engine
+      const raceInput = buildRaceInput(state, raceResult);
+      const raceProcessingResult = engineManager.turn.processRace(raceInput);
+
+      // Apply race results to state
+      applyDriverStateChanges(state, raceProcessingResult.driverStateChanges);
+      applyTeamStateChanges(state, raceProcessingResult.teamStateChanges);
+      updateChampionshipStandings(state, raceProcessingResult.updatedStandings);
+
+      // Mark race as complete
+      markRaceComplete(state, currentRace.circuitId, raceResult);
+
+      // Now advance to next week and determine new phase
+      const turnInput = buildTurnInput(state);
+      const turnResult = engineManager.turn.processWeek(turnInput);
+
+      // Check if blocked (post-season)
+      if (turnResult.blocked) {
+        return applyBlockedResult(state, turnResult);
+      }
+
+      // Apply turn result
+      applyTurnResult(state, turnResult);
+
+      return { success: true, state };
+    }
+
+    // Handle PreSeason or BetweenRaces - advance week
+    const turnInput = buildTurnInput(state);
+    const turnResult = engineManager.turn.processWeek(turnInput);
+
+    // Check if blocked (post-season)
+    if (turnResult.blocked) {
+      return applyBlockedResult(state, turnResult);
+    }
+
+    // Apply turn result (handles both race week entry and normal weeks)
+    // When raceWeek is set, newPhase is already GamePhase.RaceWeekend
+    applyTurnResult(state, turnResult);
+
+    return { success: true, state };
   },
 
   /**
