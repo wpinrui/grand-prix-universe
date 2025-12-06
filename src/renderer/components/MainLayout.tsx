@@ -12,87 +12,21 @@ import { SectionButton } from './NavButtons';
 import { TopBar } from './TopBar';
 import { BottomBar } from './BottomBar';
 import { ConfirmDialog } from './ConfirmDialog';
-import { TeamProfile, SavedGames, GameOptions } from '../content';
+import {
+  TeamProfile,
+  SavedGames,
+  GameOptions,
+  ActionScreen,
+  ACTION_CONFIGS,
+  isActionType,
+  type ActionType,
+} from '../content';
 import { RoutePaths } from '../routes';
-import { WARNING_BUTTON_CLASSES, DANGER_BUTTON_CLASSES } from '../utils/theme-styles';
 
-type ActionType = 'restart' | 'quit';
 type ActiveDialog = ActionType | null;
-
-// ===========================================
-// ACTION SCREEN (Restart/Quit)
-// ===========================================
-
-interface ActionScreenProps {
-  title: string;
-  message: string;
-  buttonLabel: string;
-  buttonClassName: string;
-  onShowDialog: () => void;
-}
-
-function ActionScreen({ title, message, buttonLabel, buttonClassName, onShowDialog }: ActionScreenProps) {
-  return (
-    <div className="space-y-6 max-w-2xl">
-      <h1 className="text-xl font-bold text-primary">{title}</h1>
-      <p className="text-secondary">{message}</p>
-      <button type="button" onClick={onShowDialog} className={buttonClassName}>
-        {buttonLabel}
-      </button>
-    </div>
-  );
-}
-
-// Unified config for action screens and their confirmation dialogs
-interface ActionConfig {
-  screen: {
-    title: string;
-    message: string;
-    buttonLabel: string;
-    buttonClassName: string;
-  };
-  dialog: {
-    title: string;
-    message: string;
-    confirmLabel: string;
-  };
-}
-
-const ACTION_CONFIGS: Record<ActionType, ActionConfig> = {
-  restart: {
-    screen: {
-      title: 'Restart Game',
-      message: 'Start over from the title screen. Your current game progress will be lost unless you have saved.',
-      buttonLabel: 'Restart Game',
-      buttonClassName: WARNING_BUTTON_CLASSES,
-    },
-    dialog: {
-      title: 'Restart Game?',
-      message: 'Are you sure you want to restart? Any unsaved progress will be lost.',
-      confirmLabel: 'Restart',
-    },
-  },
-  quit: {
-    screen: {
-      title: 'Quit Game',
-      message: 'Exit the application. Your current game progress will be lost unless you have saved.',
-      buttonLabel: 'Quit Game',
-      buttonClassName: DANGER_BUTTON_CLASSES,
-    },
-    dialog: {
-      title: 'Quit Game?',
-      message: 'Are you sure you want to quit? Any unsaved progress will be lost.',
-      confirmLabel: 'Quit',
-    },
-  },
-};
 
 // Sub-items that have been implemented in the options section
 const IMPLEMENTED_OPTIONS_SUBITEMS = new Set(['saved-games', 'game-options', 'restart', 'quit']);
-
-// ===========================================
-// MAIN LAYOUT
-// ===========================================
 
 export function MainLayout() {
   const [selectedSectionId, setSelectedSectionId] = useState<SectionId>(defaultSection);
@@ -184,10 +118,10 @@ export function MainLayout() {
             <SavedGames onNavigateToProfile={navigateToProfile} />
           ) : isOptionsScreen && selectedSubItemId === 'game-options' ? (
             <GameOptions />
-          ) : isOptionsScreen && (selectedSubItemId === 'restart' || selectedSubItemId === 'quit') ? (
+          ) : isOptionsScreen && isActionType(selectedSubItemId) ? (
             <ActionScreen
-              {...ACTION_CONFIGS[selectedSubItemId as ActionType].screen}
-              onShowDialog={() => setActiveDialog(selectedSubItemId as ActionType)}
+              {...ACTION_CONFIGS[selectedSubItemId].screen}
+              onShowDialog={() => setActiveDialog(selectedSubItemId)}
             />
           ) : (
             <div className="flex items-center justify-center h-full">
