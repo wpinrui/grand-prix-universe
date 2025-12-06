@@ -330,8 +330,8 @@ const DRIVER_RETIREMENT_MIN_AGE = 35; // Minimum age for retirement consideratio
 const DRIVER_RETIREMENT_MAX_AGE = 42; // Very likely to retire at this age
 const CHIEF_RETIREMENT_MIN_AGE = 55; // Minimum age for chief retirement
 const CHIEF_RETIREMENT_MAX_AGE = 70; // Very likely to retire at this age
-const YOUNG_DRIVER_IMPROVEMENT_MAX = 2; // Max attribute improvement for young drivers
-const OLD_DRIVER_DECLINE_MAX = 3; // Max attribute decline for aging drivers
+const ATTRIBUTE_IMPROVEMENT_AMOUNT = 2; // Max improvement value per attribute for young drivers
+const ATTRIBUTE_DECLINE_AMOUNT = 3; // Max decline value per attribute for aging drivers
 const CHIEF_ABILITY_CHANGE_RANGE = 2; // +/- ability change per season
 const BASE_YEAR = 1998; // Year that season 1 corresponds to
 const ATTRIBUTE_IMPROVEMENT_CHANCE = 0.3; // 30% chance per attribute to improve
@@ -660,7 +660,7 @@ const DRIVER_ATTRIBUTES: (keyof DriverAttributes)[] = [
 /**
  * Maximum number of attributes a young driver can improve per season
  */
-const MAX_YOUNG_DRIVER_IMPROVEMENTS = 2;
+const MAX_IMPROVING_ATTRIBUTES = 2;
 
 /**
  * Select random attributes for improvement (young drivers)
@@ -670,7 +670,7 @@ function selectAttributesForImprovement(): (keyof DriverAttributes)[] {
   const candidates = DRIVER_ATTRIBUTES.filter(
     () => Math.random() < ATTRIBUTE_IMPROVEMENT_CHANCE
   );
-  return shuffleInPlace([...candidates]).slice(0, MAX_YOUNG_DRIVER_IMPROVEMENTS);
+  return shuffleInPlace([...candidates]).slice(0, MAX_IMPROVING_ATTRIBUTES);
 }
 
 /**
@@ -700,7 +700,7 @@ function generateYoungDriverChanges(driverId: string): DriverAttributeChange[] {
   return selectAttributesForImprovement().map((attribute) => ({
     driverId,
     attribute,
-    change: randomInt(1, YOUNG_DRIVER_IMPROVEMENT_MAX),
+    change: randomInt(1, ATTRIBUTE_IMPROVEMENT_AMOUNT),
   }));
 }
 
@@ -714,7 +714,7 @@ function generateAgingDriverChanges(
   return selectAttributesForDecline(yearsOverDeclineAge).map((attribute) => ({
     driverId,
     attribute,
-    change: -randomInt(1, OLD_DRIVER_DECLINE_MAX),
+    change: -randomInt(1, ATTRIBUTE_DECLINE_AMOUNT),
   }));
 }
 
