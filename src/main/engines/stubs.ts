@@ -793,6 +793,17 @@ function determineChiefRetirements(chiefs: Chief[]): string[] {
 }
 
 /**
+ * Calculate week number for a race to achieve even distribution
+ * Ensures first race at FIRST_RACE_WEEK and last race at LAST_RACE_WEEK
+ */
+function calculateRaceWeek(index: number, raceCount: number, availableWeeks: number): number {
+  if (raceCount === 1) return FIRST_RACE_WEEK;
+  // Spread races so first is at week 10, last is at week 48
+  const spacing = (availableWeeks - 1) / (raceCount - 1);
+  return FIRST_RACE_WEEK + Math.round(index * spacing);
+}
+
+/**
  * Generate a new season calendar from circuits
  * Distributes races evenly across the race weeks (10-48)
  * Limits races to available weeks if too many circuits provided
@@ -807,13 +818,10 @@ function generateNewCalendar(circuits: Circuit[]): CalendarEntry[] {
   const shuffledCircuits = shuffleInPlace([...circuits]).slice(0, availableWeeks);
   const raceCount = shuffledCircuits.length;
 
-  // Calculate gap to distribute races evenly
-  const weekGap = Math.max(1, Math.floor(availableWeeks / raceCount));
-
   return shuffledCircuits.map((circuit, index) => ({
     raceNumber: index + 1,
     circuitId: circuit.id,
-    weekNumber: FIRST_RACE_WEEK + index * weekGap,
+    weekNumber: calculateRaceWeek(index, raceCount, availableWeeks),
     completed: false,
     cancelled: false,
   }));
