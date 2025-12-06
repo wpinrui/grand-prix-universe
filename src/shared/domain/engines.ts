@@ -197,6 +197,15 @@ interface StateChanges {
 }
 
 /**
+ * ProgressionChanges - Long-term changes to drivers and chiefs
+ * Groups attribute/ability changes that affect permanent stats
+ */
+interface ProgressionChanges {
+  driverAttributeChanges: DriverAttributeChange[];
+  chiefChanges: ChiefChange[];
+}
+
+/**
  * TurnProcessingResult - Result of processing a weekly turn
  *
  * If `blocked` is set, the turn could not progress and the caller should:
@@ -204,11 +213,9 @@ interface StateChanges {
  * - Display the blocked message to the player
  * - `newDate` and `newPhase` will match the input (no time progression)
  */
-export interface TurnProcessingResult extends StateChanges {
+export interface TurnProcessingResult extends StateChanges, ProgressionChanges {
   newDate: GameDate;
   newPhase: GamePhase;
-  driverAttributeChanges: DriverAttributeChange[];
-  chiefChanges: ChiefChange[];
   isRaceWeek: boolean;
   raceCircuitId?: string; // Set if isRaceWeek is true
   blocked?: TurnBlocked;
@@ -241,9 +248,7 @@ export interface SeasonEndInput extends BaseGameStateSnapshot {
 /**
  * SeasonEndResult - Result of processing season end
  */
-export interface SeasonEndResult {
-  driverAttributeChanges: DriverAttributeChange[];
-  chiefChanges: ChiefChange[];
+export interface SeasonEndResult extends ProgressionChanges {
   retiredDriverIds: string[];
   retiredChiefIds: string[];
   newCalendar: CalendarEntry[];
