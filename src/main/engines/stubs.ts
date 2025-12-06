@@ -146,6 +146,7 @@ const POSTSEASON_START_WEEK = 49;
  * Gameplay constants
  */
 const FATIGUE_THRESHOLD = 80; // Fatigue level above which fitness drops
+const FITNESS_DROP_PER_WEEK = 1; // Fitness decrease when fatigued
 const WEEKLY_SALARY_RATE = 0.001; // Weekly salary as percentage of budget (0.1%)
 
 /**
@@ -211,7 +212,7 @@ function generateDriverStateChanges(
 
     // Fitness drops if fatigued
     if (state.fatigue > FATIGUE_THRESHOLD) {
-      change.fitnessChange = -1;
+      change.fitnessChange = -FITNESS_DROP_PER_WEEK;
     }
 
     // Injury recovery
