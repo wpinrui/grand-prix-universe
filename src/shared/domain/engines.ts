@@ -206,6 +206,14 @@ interface ProgressionChanges {
 }
 
 /**
+ * RaceWeekInfo - Details about an upcoming race week
+ * Present when the next week is a race week, null otherwise
+ */
+export interface RaceWeekInfo {
+  circuitId: string;
+}
+
+/**
  * TurnProcessingResult - Result of processing a weekly turn
  *
  * If `blocked` is set, the turn could not progress and the caller should:
@@ -216,8 +224,7 @@ interface ProgressionChanges {
 export interface TurnProcessingResult extends StateChanges, ProgressionChanges {
   newDate: GameDate;
   newPhase: GamePhase;
-  isRaceWeek: boolean;
-  raceCircuitId?: string; // Set if isRaceWeek is true
+  raceWeek: RaceWeekInfo | null;
   blocked?: TurnBlocked;
 }
 
