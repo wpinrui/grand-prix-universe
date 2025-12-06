@@ -7,8 +7,10 @@
  * - Auto-save functionality
  */
 
+import { BrowserWindow } from 'electron';
 import { ConfigLoader } from './config-loader';
 import { SaveManager } from './save-manager';
+import { IpcEvents } from '../../shared/ipc';
 import type { SaveResult, LoadResult } from '../../shared/ipc';
 import type {
   GameState,
@@ -472,6 +474,16 @@ function buildGameState(params: BuildGameStateParams): GameState {
 let autoSaveTimer: ReturnType<typeof setInterval> | null = null;
 
 /**
+ * Sends an event to all renderer windows
+ */
+function sendToRenderer(channel: string, payload: unknown): void {
+  const windows = BrowserWindow.getAllWindows();
+  for (const win of windows) {
+    win.webContents.send(channel, payload);
+  }
+}
+
+/**
  * Starts the auto-save timer
  */
 function startAutoSave(): void {
@@ -479,8 +491,9 @@ function startAutoSave(): void {
   autoSaveTimer = setInterval(async () => {
     if (GameStateManager.currentState) {
       const result = await GameStateManager.saveGame();
-      if (result.success) {
+      if (result.success && result.filename) {
         console.log(`[AutoSave] Saved to ${result.filename}`);
+        sendToRenderer(IpcEvents.AUTO_SAVE_COMPLETE, { filename: result.filename });
       } else {
         console.error(`[AutoSave] Failed: ${result.error}`);
       }
