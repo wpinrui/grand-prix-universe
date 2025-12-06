@@ -745,58 +745,50 @@ function generateDriverAttributeChanges(
 
 /**
  * Generate chief ability changes for end of season
- * Small random fluctuations in ability
+ * Small random fluctuations in ability (excludes zero changes)
  */
 function generateChiefChanges(chiefs: Chief[]): ChiefChange[] {
-  const changes: ChiefChange[] = [];
-
-  for (const chief of chiefs) {
-    if (Math.random() < CHIEF_ABILITY_CHANGE_CHANCE) {
-      changes.push({
-        chiefId: chief.id,
-        abilityChange: randomInt(-CHIEF_ABILITY_CHANGE_RANGE, CHIEF_ABILITY_CHANGE_RANGE),
-      });
-    }
-  }
-
-  return changes;
+  return chiefs
+    .filter(() => Math.random() < CHIEF_ABILITY_CHANGE_CHANCE)
+    .map((chief) => ({
+      chiefId: chief.id,
+      abilityChange: randomInt(-CHIEF_ABILITY_CHANGE_RANGE, CHIEF_ABILITY_CHANGE_RANGE),
+    }))
+    .filter((change) => change.abilityChange !== 0);
 }
 
 /**
  * Determine which drivers should retire at end of season
  */
 function determineDriverRetirements(drivers: Driver[], currentSeason: number): string[] {
-  const retiredIds: string[] = [];
+  return drivers
+    .filter((driver) => {
+      const age = calculateAge(driver.dateOfBirth, currentSeason);
+      return shouldRetire(age, DRIVER_RETIREMENT_MIN_AGE, DRIVER_RETIREMENT_MAX_AGE);
+    })
+    .map((driver) => driver.id);
+}
 
-  for (const driver of drivers) {
-    const age = calculateAge(driver.dateOfBirth, currentSeason);
-    if (shouldRetire(age, DRIVER_RETIREMENT_MIN_AGE, DRIVER_RETIREMENT_MAX_AGE)) {
-      retiredIds.push(driver.id);
-    }
-  }
-
-  return retiredIds;
+/**
+ * Estimate a chief's age based on ability
+ * Higher ability suggests more experience/age
+ * Ability 50 -> ~52 years old, Ability 90 -> ~62 years old
+ */
+function estimateChiefAge(ability: number): number {
+  return CHIEF_BASE_AGE + Math.floor(ability / CHIEF_AGE_ABILITY_DIVISOR);
 }
 
 /**
  * Determine which chiefs should retire at end of season
- * Note: Chiefs don't have dateOfBirth, so we use a random age estimate
- * based on their ability (higher ability = more experienced = older)
+ * Note: Chiefs don't have dateOfBirth, so we estimate age from ability
  */
 function determineChiefRetirements(chiefs: Chief[]): string[] {
-  const retiredIds: string[] = [];
-
-  for (const chief of chiefs) {
-    // Estimate age based on ability: higher ability suggests more experience/age
-    // Ability 50 -> ~52 years old, Ability 90 -> ~62 years old
-    const estimatedAge = CHIEF_BASE_AGE + Math.floor(chief.ability / CHIEF_AGE_ABILITY_DIVISOR);
-
-    if (shouldRetire(estimatedAge, CHIEF_RETIREMENT_MIN_AGE, CHIEF_RETIREMENT_MAX_AGE)) {
-      retiredIds.push(chief.id);
-    }
-  }
-
-  return retiredIds;
+  return chiefs
+    .filter((chief) => {
+      const estimatedAge = estimateChiefAge(chief.ability);
+      return shouldRetire(estimatedAge, CHIEF_RETIREMENT_MIN_AGE, CHIEF_RETIREMENT_MAX_AGE);
+    })
+    .map((chief) => chief.id);
 }
 
 /**
