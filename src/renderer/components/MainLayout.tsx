@@ -7,7 +7,7 @@ import {
   type SectionId,
   type Section,
 } from '../navigation';
-import { useDerivedGameState, useTeamTheme, useClearGameState, useQuitApp, useAutoSaveListener } from '../hooks';
+import { useDerivedGameState, useTeamTheme, useTeamBackground, useClearGameState, useQuitApp, useAutoSaveListener } from '../hooks';
 import { SectionButton } from './NavButtons';
 import { TopBar } from './TopBar';
 import { BottomBar } from './BottomBar';
@@ -25,9 +25,6 @@ import {
 import { RoutePaths } from '../routes';
 
 type ActiveDialog = ActionType | null;
-
-// Sub-items that have been implemented in the options section
-const IMPLEMENTED_OPTIONS_SUBITEMS = new Set(['saved-games', 'game-options', 'restart', 'quit']);
 
 export function MainLayout() {
   const [selectedSectionId, setSelectedSectionId] = useState<SectionId>(defaultSection);
@@ -48,6 +45,9 @@ export function MainLayout() {
 
   // Apply team-based theming (CSS variables on :root)
   useTeamTheme(playerTeam?.primaryColor ?? null);
+
+  // Get random team background image
+  const backgroundImage = useTeamBackground(playerTeam?.id ?? null);
 
   // Safe: selectedSectionId always matches a valid section (defaults to 'team')
   const selectedSection = sections.find((s) => s.id === selectedSectionId) ?? sections[0];
@@ -80,12 +80,7 @@ export function MainLayout() {
 
   const closeDialog = () => setActiveDialog(null);
 
-  // Check if showing placeholder content (not implemented screens)
   const isOptionsScreen = selectedSectionId === 'options';
-  const isImplemented =
-    (selectedSectionId === 'team' && selectedSubItemId === 'profile') ||
-    (isOptionsScreen && IMPLEMENTED_OPTIONS_SUBITEMS.has(selectedSubItemId));
-  const isPlaceholder = !isImplemented;
 
   const renderContent = () => {
     if (selectedSectionId === 'team' && selectedSubItemId === 'profile') {
@@ -147,14 +142,30 @@ export function MainLayout() {
           playerTeam={playerTeam}
         />
 
-        {/* Content Area - with accent tint for placeholder */}
-        <main
-          className="content flex-1 p-8 overflow-auto"
-          style={isPlaceholder ? {
-            background: 'linear-gradient(180deg, color-mix(in srgb, var(--accent-900) 20%, var(--neutral-950)) 0%, var(--neutral-950) 100%)',
-          } : undefined}
-        >
-          {renderContent()}
+        {/* Content Area - with background image, blur, and team tint */}
+        <main className="content relative flex-1 overflow-hidden">
+          {/* Background image layer */}
+          {backgroundImage && (
+            <div
+              className="absolute inset-0 bg-cover bg-center"
+              style={{ backgroundImage: `url(${backgroundImage})` }}
+            />
+          )}
+
+          {/* Blur + tint overlay */}
+          <div
+            className="absolute inset-0 backdrop-blur-xl"
+            style={{
+              background: `linear-gradient(180deg,
+                color-mix(in srgb, var(--accent-900) 60%, transparent) 0%,
+                color-mix(in srgb, var(--neutral-950) 85%, transparent) 100%)`,
+            }}
+          />
+
+          {/* Content layer */}
+          <div className="relative z-10 h-full p-8 overflow-auto">
+            {renderContent()}
+          </div>
         </main>
 
         <BottomBar
