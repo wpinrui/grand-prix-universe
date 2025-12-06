@@ -1,36 +1,23 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Play, Plus, FolderOpen, Loader2 } from 'lucide-react';
 import { RoutePaths } from '../routes';
 import { PRIMARY_BUTTON_CLASSES, GHOST_BUTTON_CLASSES, ERROR_ALERT_CLASSES } from '../utils/theme-styles';
-import { useSavesList, useLoadGame } from '../hooks';
+import { useSavesList, useLoadGameHandler } from '../hooks';
 
 export function TitleScreen() {
   const navigate = useNavigate();
-  const [isLoadingContinue, setIsLoadingContinue] = useState(false);
-  const [loadError, setLoadError] = useState<string | null>(null);
-
   const { data: saves } = useSavesList();
-  const loadGame = useLoadGame();
+  const { loadingFilename, loadError, handleLoad } = useLoadGameHandler();
 
   const hasSaves = saves && saves.length > 0;
   const mostRecentSave = hasSaves ? saves[0] : null;
+  const isLoadingContinue = loadingFilename === mostRecentSave?.filename;
 
   const handleContinue = async () => {
     if (!mostRecentSave) return;
-    setIsLoadingContinue(true);
-    setLoadError(null);
-    try {
-      const result = await loadGame.mutateAsync(mostRecentSave.filename);
-      if (result.success) {
-        navigate(RoutePaths.GAME);
-      } else {
-        setLoadError('Failed to load save. Try Load Game to select another.');
-      }
-    } catch {
-      setLoadError('Failed to load save. Please try again.');
-    } finally {
-      setIsLoadingContinue(false);
+    const success = await handleLoad(mostRecentSave.filename);
+    if (success) {
+      navigate(RoutePaths.GAME);
     }
   };
 
