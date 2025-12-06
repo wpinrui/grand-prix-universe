@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   sections,
   defaultSection,
@@ -6,15 +7,72 @@ import {
   type SectionId,
   type Section,
 } from '../navigation';
-import { useDerivedGameState, useTeamTheme } from '../hooks';
+import { useDerivedGameState, useTeamTheme, useClearGameState, useQuitApp } from '../hooks';
 import { SectionButton } from './NavButtons';
 import { TopBar } from './TopBar';
 import { BottomBar } from './BottomBar';
-import { TeamProfile, SavedGames } from '../content';
+import { ConfirmDialog } from './ConfirmDialog';
+import { TeamProfile, SavedGames, GameOptions } from '../content';
+import { RoutePaths } from '../routes';
+
+type ActiveDialog = 'restart' | 'quit' | null;
+
+// ===========================================
+// SIMPLE OPTION SCREENS
+// ===========================================
+
+interface ActionScreenProps {
+  onShowDialog: () => void;
+}
+
+function RestartScreen({ onShowDialog }: ActionScreenProps) {
+  return (
+    <div className="space-y-6 max-w-2xl">
+      <h1 className="text-xl font-bold text-primary">Restart Game</h1>
+      <p className="text-secondary">
+        Start over from the title screen. Your current game progress will be lost unless you have saved.
+      </p>
+      <button
+        type="button"
+        onClick={onShowDialog}
+        className="btn px-6 py-2 font-semibold bg-amber-600 text-white border border-amber-500 rounded-lg hover:bg-amber-500 transition-all duration-200"
+      >
+        Restart Game
+      </button>
+    </div>
+  );
+}
+
+function QuitScreen({ onShowDialog }: ActionScreenProps) {
+  return (
+    <div className="space-y-6 max-w-2xl">
+      <h1 className="text-xl font-bold text-primary">Quit Game</h1>
+      <p className="text-secondary">
+        Exit the application. Your current game progress will be lost unless you have saved.
+      </p>
+      <button
+        type="button"
+        onClick={onShowDialog}
+        className="btn px-6 py-2 font-semibold bg-red-600 text-white border border-red-500 rounded-lg hover:bg-red-500 transition-all duration-200"
+      >
+        Quit Game
+      </button>
+    </div>
+  );
+}
+
+// ===========================================
+// MAIN LAYOUT
+// ===========================================
 
 export function MainLayout() {
   const [selectedSectionId, setSelectedSectionId] = useState<SectionId>(defaultSection);
   const [selectedSubItemId, setSelectedSubItemId] = useState<string>(defaultSubItem);
+  const [activeDialog, setActiveDialog] = useState<ActiveDialog>(null);
+
+  const navigate = useNavigate();
+  const clearGameState = useClearGameState();
+  const quitApp = useQuitApp();
 
   const { gameState, playerTeam, nextRace } = useDerivedGameState();
 
@@ -41,10 +99,23 @@ export function MainLayout() {
     setSelectedSubItemId('profile');
   };
 
+  // Dialog handlers
+  const handleRestartConfirm = () => {
+    clearGameState();
+    navigate(RoutePaths.TITLE);
+  };
+
+  const handleQuitConfirm = () => {
+    quitApp();
+  };
+
+  const closeDialog = () => setActiveDialog(null);
+
   // Check if showing placeholder content (not implemented screens)
+  const isOptionsScreen = selectedSectionId === 'options';
   const isImplemented =
     (selectedSectionId === 'team' && selectedSubItemId === 'profile') ||
-    (selectedSectionId === 'options' && selectedSubItemId === 'saved-games');
+    (isOptionsScreen && ['saved-games', 'game-options', 'restart', 'quit'].includes(selectedSubItemId));
   const isPlaceholder = !isImplemented;
 
   return (
@@ -81,8 +152,14 @@ export function MainLayout() {
         >
           {selectedSectionId === 'team' && selectedSubItemId === 'profile' ? (
             <TeamProfile />
-          ) : selectedSectionId === 'options' && selectedSubItemId === 'saved-games' ? (
+          ) : isOptionsScreen && selectedSubItemId === 'saved-games' ? (
             <SavedGames onNavigateToProfile={navigateToProfile} />
+          ) : isOptionsScreen && selectedSubItemId === 'game-options' ? (
+            <GameOptions />
+          ) : isOptionsScreen && selectedSubItemId === 'restart' ? (
+            <RestartScreen onShowDialog={() => setActiveDialog('restart')} />
+          ) : isOptionsScreen && selectedSubItemId === 'quit' ? (
+            <QuitScreen onShowDialog={() => setActiveDialog('quit')} />
           ) : (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
@@ -103,6 +180,26 @@ export function MainLayout() {
           nextRace={nextRace}
         />
       </div>
+
+      {/* Confirmation Dialogs */}
+      {activeDialog === 'restart' && (
+        <ConfirmDialog
+          title="Restart Game?"
+          message="Are you sure you want to restart? Any unsaved progress will be lost."
+          confirmLabel="Restart"
+          onConfirm={handleRestartConfirm}
+          onCancel={closeDialog}
+        />
+      )}
+      {activeDialog === 'quit' && (
+        <ConfirmDialog
+          title="Quit Game?"
+          message="Are you sure you want to quit? Any unsaved progress will be lost."
+          confirmLabel="Quit"
+          onConfirm={handleQuitConfirm}
+          onCancel={closeDialog}
+        />
+      )}
     </div>
   );
 }
