@@ -42,7 +42,7 @@ export function MainLayout() {
   const { gameState, playerTeam, nextRace } = useDerivedGameState();
 
   // Auto-save toast handlers
-  const handleAutoSave = useCallback(() => setShowAutoSaveToast(true), []);
+  const handleAutoSave = useCallback((_filename: string) => setShowAutoSaveToast(true), []);
   const handleDismissToast = useCallback(() => setShowAutoSaveToast(false), []);
   useAutoSaveListener(handleAutoSave);
 

@@ -257,9 +257,11 @@ export function useQuitApp() {
 /**
  * Subscribe to auto-save completion events
  */
-export function useAutoSaveListener(onAutoSave: () => void) {
+export function useAutoSaveListener(onAutoSave: (filename: string) => void) {
   useEffect(() => {
-    const unsubscribe = window.electronAPI.on(IpcEvents.AUTO_SAVE_COMPLETE, onAutoSave);
+    const unsubscribe = window.electronAPI.on(IpcEvents.AUTO_SAVE_COMPLETE, ({ filename }) => {
+      onAutoSave(filename);
+    });
     return unsubscribe;
   }, [onAutoSave]);
 }
