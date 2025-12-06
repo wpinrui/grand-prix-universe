@@ -345,6 +345,20 @@ const SEASON_START_MORALE = 70; // Neutral-positive morale at season start
 const SEASON_START_FITNESS = 100; // Full fitness at season start
 
 /**
+ * Initial driver runtime state for start of new season
+ */
+const INITIAL_DRIVER_RUNTIME_STATE: Partial<DriverRuntimeState> = {
+  fatigue: 0,
+  fitness: SEASON_START_FITNESS,
+  morale: SEASON_START_MORALE,
+  engineUnitsUsed: 0,
+  gearboxRaceCount: 0,
+  injuryWeeksRemaining: 0,
+  banRacesRemaining: 0,
+  isAngry: false,
+};
+
+/**
  * Check if a race result counts as a DNF (did not finish normally)
  */
 function isDNF(status: RaceFinishStatus): boolean {
@@ -844,22 +858,9 @@ function generateNewCalendar(circuits: Circuit[]): CalendarEntry[] {
 function generateResetDriverStates(
   drivers: Driver[]
 ): Record<string, Partial<DriverRuntimeState>> {
-  const resets: Record<string, Partial<DriverRuntimeState>> = {};
-
-  for (const driver of drivers) {
-    resets[driver.id] = {
-      fatigue: 0,
-      fitness: SEASON_START_FITNESS,
-      morale: SEASON_START_MORALE,
-      engineUnitsUsed: 0,
-      gearboxRaceCount: 0,
-      injuryWeeksRemaining: 0,
-      banRacesRemaining: 0,
-      isAngry: false,
-    };
-  }
-
-  return resets;
+  return Object.fromEntries(
+    drivers.map((driver) => [driver.id, { ...INITIAL_DRIVER_RUNTIME_STATE }])
+  );
 }
 
 /**
