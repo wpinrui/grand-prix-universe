@@ -11,6 +11,25 @@
  * 4. Swappable at runtime (MVP uses stubs, later replaced with full sims)
  */
 
+import type {
+  GameDate,
+  GamePhase,
+  CalendarEntry,
+  Driver,
+  Chief,
+  Team,
+  Circuit,
+  DriverRuntimeState,
+  TeamRuntimeState,
+  ActiveSponsorDeal,
+  ActiveManufacturerContract,
+  DriverStanding,
+  ConstructorStanding,
+  RaceWeekendResult,
+  DriverAttributes,
+  DepartmentMorale,
+} from './types';
+
 // =============================================================================
 // PLACEHOLDER TYPES (to be expanded when implementing each engine)
 // Using type aliases to avoid empty interface lint errors
@@ -67,8 +86,169 @@ export type RegulationInput = Placeholder;
 export type RegulationResult = Placeholder;
 
 // =============================================================================
+// TURN ENGINE TYPES (Concrete types for time progression)
+// =============================================================================
+
+/**
+ * TurnProcessingInput - All data needed to process a weekly turn
+ */
+export interface TurnProcessingInput {
+  currentDate: GameDate;
+  phase: GamePhase;
+  calendar: CalendarEntry[];
+  drivers: Driver[];
+  chiefs: Chief[];
+  teams: Team[];
+  driverStates: Record<string, DriverRuntimeState>;
+  teamStates: Record<string, TeamRuntimeState>;
+  sponsorDeals: ActiveSponsorDeal[];
+  manufacturerContracts: ActiveManufacturerContract[];
+}
+
+/**
+ * DriverStateChange - Changes to a driver's runtime state
+ * All fields optional - only include fields that changed
+ */
+export interface DriverStateChange {
+  driverId: string;
+  fatigueChange?: number;
+  fitnessChange?: number;
+  moraleChange?: number;
+  reputationChange?: number;
+  injuryWeeksRemaining?: number; // Absolute value, not delta
+  banRacesRemaining?: number; // Absolute value, not delta
+  engineUnitsUsedChange?: number;
+  gearboxRaceCountChange?: number;
+}
+
+/**
+ * DriverAttributeChange - Changes to a driver's permanent attributes
+ * Used for aging effects and development
+ */
+export interface DriverAttributeChange {
+  driverId: string;
+  attribute: keyof DriverAttributes;
+  change: number; // Delta to apply (can be negative)
+}
+
+/**
+ * ChiefChange - Changes to a chief's state
+ */
+export interface ChiefChange {
+  chiefId: string;
+  abilityChange?: number; // Delta to apply
+  retired?: boolean; // If true, chief should be removed from active roster
+}
+
+/**
+ * TeamStateChange - Changes to a team's runtime state
+ * All fields optional - only include fields that changed
+ */
+export interface TeamStateChange {
+  teamId: string;
+  budgetChange?: number; // Delta to apply
+  moraleChanges?: Partial<DepartmentMorale>; // Deltas per department
+  sponsorSatisfactionChanges?: Record<string, number>; // Deltas per sponsor
+}
+
+/**
+ * TurnProcessingResult - Result of processing a weekly turn
+ */
+export interface TurnProcessingResult {
+  newDate: GameDate;
+  newPhase: GamePhase;
+  driverStateChanges: DriverStateChange[];
+  driverAttributeChanges: DriverAttributeChange[];
+  chiefChanges: ChiefChange[];
+  teamStateChanges: TeamStateChange[];
+  isRaceWeek: boolean;
+  raceCircuitId?: string; // Set if isRaceWeek is true
+  blocked?: {
+    reason: 'post-season';
+    message: string;
+  };
+}
+
+/**
+ * RaceProcessingInput - Data needed to process race results
+ */
+export interface RaceProcessingInput {
+  raceResult: RaceWeekendResult;
+  drivers: Driver[];
+  teams: Team[];
+  driverStates: Record<string, DriverRuntimeState>;
+  teamStates: Record<string, TeamRuntimeState>;
+  currentStandings: {
+    driver: DriverStanding[];
+    constructor: ConstructorStanding[];
+  };
+}
+
+/**
+ * RaceProcessingResult - Result of processing a race
+ */
+export interface RaceProcessingResult {
+  driverStateChanges: DriverStateChange[];
+  teamStateChanges: TeamStateChange[];
+  updatedDriverStandings: DriverStanding[];
+  updatedConstructorStandings: ConstructorStanding[];
+}
+
+/**
+ * SeasonEndInput - Data needed to process end of season
+ */
+export interface SeasonEndInput {
+  drivers: Driver[];
+  chiefs: Chief[];
+  teams: Team[];
+  driverStates: Record<string, DriverRuntimeState>;
+  teamStates: Record<string, TeamRuntimeState>;
+  currentSeason: number;
+  circuits: Circuit[];
+}
+
+/**
+ * SeasonEndResult - Result of processing season end
+ */
+export interface SeasonEndResult {
+  driverAttributeChanges: DriverAttributeChange[];
+  chiefChanges: ChiefChange[];
+  retiredDriverIds: string[];
+  retiredChiefIds: string[];
+  newCalendar: CalendarEntry[];
+  resetDriverStates: Record<string, Partial<DriverRuntimeState>>;
+}
+
+// =============================================================================
 // ENGINE INTERFACES
 // =============================================================================
+
+/**
+ * ITurnEngine - Core game loop engine for time progression
+ * Responsible for processing weekly turns, race results, and season transitions
+ *
+ * This is the heart of the simulation - it determines what changes each week,
+ * how race results affect state, and how seasons transition.
+ */
+export interface ITurnEngine {
+  /**
+   * Process a weekly turn (advance time by one week)
+   * Handles fatigue, fitness, morale, budget, injuries, etc.
+   */
+  processWeek(input: TurnProcessingInput): TurnProcessingResult;
+
+  /**
+   * Process race results and update standings/state
+   * Called after a race weekend completes
+   */
+  processRace(input: RaceProcessingInput): RaceProcessingResult;
+
+  /**
+   * Process end of season (aging, retirements, resets)
+   * Called when transitioning from PostSeason to new PreSeason
+   */
+  processSeasonEnd(input: SeasonEndInput): SeasonEndResult;
+}
 
 /**
  * IRaceEngine - Simulates qualifying sessions and races
