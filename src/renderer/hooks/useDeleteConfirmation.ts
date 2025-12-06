@@ -2,11 +2,18 @@ import { useState, useCallback } from 'react';
 import { useDeleteSave } from './useIpc';
 import type { SaveSlotInfo } from '../../shared/ipc';
 
+interface DeleteConfirmationResult {
+  deleteTarget: SaveSlotInfo | null;
+  requestDelete: (save: SaveSlotInfo) => void;
+  cancelDelete: () => void;
+  confirmDelete: () => void;
+}
+
 /**
  * Hook for managing delete confirmation state and logic.
  * Extracts common pattern from SavedGames and LoadGameScreen.
  */
-export function useDeleteConfirmation() {
+export function useDeleteConfirmation(): DeleteConfirmationResult {
   const [deleteTarget, setDeleteTarget] = useState<SaveSlotInfo | null>(null);
   const deleteSave = useDeleteSave();
 
