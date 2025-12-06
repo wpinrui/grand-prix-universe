@@ -311,6 +311,26 @@ function isPodium(finishPosition: number | null | undefined): boolean {
 }
 
 /**
+ * Calculate morale change based on finish position and points earned
+ * Used by both driver and team morale calculations
+ */
+function calculateFinishMorale(
+  finishPosition: number | null | undefined,
+  scoredPoints: boolean
+): number {
+  if (finishPosition === 1) {
+    return WIN_MORALE_BONUS;
+  }
+  if (isPodium(finishPosition)) {
+    return PODIUM_MORALE_BONUS;
+  }
+  if (scoredPoints) {
+    return POINTS_MORALE_BONUS;
+  }
+  return 0;
+}
+
+/**
  * Sort standings by points (descending), then wins as tiebreaker
  * Also assigns position numbers based on sorted order
  * Returns a new array with new objects (pure function, no mutation)
@@ -443,16 +463,7 @@ function calculateDriverMoraleChange(result: DriverRaceResult): number {
   if (isDNF(result.status)) {
     return DNF_MORALE_PENALTY;
   }
-  if (result.finishPosition === 1) {
-    return WIN_MORALE_BONUS;
-  }
-  if (isPodium(result.finishPosition)) {
-    return PODIUM_MORALE_BONUS;
-  }
-  if (result.points > 0) {
-    return POINTS_MORALE_BONUS;
-  }
-  return 0;
+  return calculateFinishMorale(result.finishPosition, result.points > 0);
 }
 
 /**
@@ -519,14 +530,7 @@ function generateRaceTeamStateChanges(
     const budgetChange = points * POINTS_BONUS_PER_POINT;
 
     // Morale boost for engineering/mechanics based on results
-    let moraleBoost = 0;
-    if (bestFinish === 1) {
-      moraleBoost = WIN_MORALE_BONUS;
-    } else if (isPodium(bestFinish)) {
-      moraleBoost = PODIUM_MORALE_BONUS;
-    } else if (points > 0) {
-      moraleBoost = POINTS_MORALE_BONUS;
-    }
+    const moraleBoost = calculateFinishMorale(bestFinish, points > 0);
 
     changes.push({
       teamId,
