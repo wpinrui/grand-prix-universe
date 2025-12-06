@@ -143,6 +143,123 @@ const PRESEASON_END_WEEK = 9;
 const POSTSEASON_START_WEEK = 49;
 
 /**
+ * Gameplay constants
+ */
+const FATIGUE_THRESHOLD = 80; // Fatigue level above which fitness drops
+const WEEKLY_SALARY_RATE = 0.001; // Weekly salary as percentage of budget (0.1%)
+
+/**
+ * Determine the game phase for a given week
+ */
+function determinePhaseForWeek(
+  week: number,
+  calendar: TurnProcessingInput['calendar']
+): { phase: GamePhase; raceWeek: TurnProcessingResult['raceWeek'] } {
+  if (week <= PRESEASON_END_WEEK) {
+    return { phase: GamePhase.PreSeason, raceWeek: null };
+  }
+
+  if (week >= POSTSEASON_START_WEEK) {
+    return { phase: GamePhase.PostSeason, raceWeek: null };
+  }
+
+  // Check if this week has a race
+  const raceEntry = calendar.find(
+    (entry) => entry.weekNumber === week && !entry.completed && !entry.cancelled
+  );
+
+  if (raceEntry) {
+    return { phase: GamePhase.RaceWeekend, raceWeek: { circuitId: raceEntry.circuitId } };
+  }
+
+  return { phase: GamePhase.BetweenRaces, raceWeek: null };
+}
+
+/**
+ * Generate driver state changes for a weekly turn
+ */
+function generateDriverStateChanges(
+  drivers: TurnProcessingInput['drivers'],
+  driverStates: TurnProcessingInput['driverStates'],
+  currentPhase: GamePhase
+): DriverStateChange[] {
+  const changes: DriverStateChange[] = [];
+
+  for (const driver of drivers) {
+    if (!driver.teamId) continue; // Skip free agents
+
+    const state = driverStates[driver.id];
+    if (!state) continue;
+
+    const change: DriverStateChange = {
+      driverId: driver.id,
+      fatigueChange: randomInt(1, 3),
+      moraleChange: randomInt(-2, 2),
+    };
+
+    // Fitness drops if fatigued
+    if (state.fatigue > FATIGUE_THRESHOLD) {
+      change.fitnessChange = -1;
+    }
+
+    // Injury recovery
+    if (state.injuryWeeksRemaining > 0) {
+      change.setInjuryWeeks = Math.max(0, state.injuryWeeksRemaining - 1);
+    }
+
+    // Ban countdown (only if this was a race week that we're leaving)
+    if (currentPhase === GamePhase.RaceWeekend && state.banRacesRemaining > 0) {
+      change.setBanRaces = Math.max(0, state.banRacesRemaining - 1);
+    }
+
+    changes.push(change);
+  }
+
+  return changes;
+}
+
+/**
+ * Generate team state changes for a weekly turn
+ */
+function generateTeamStateChanges(
+  teams: TurnProcessingInput['teams'],
+  teamStates: TurnProcessingInput['teamStates']
+): TeamStateChange[] {
+  const changes: TeamStateChange[] = [];
+
+  for (const team of teams) {
+    const state = teamStates[team.id];
+    if (!state) continue;
+
+    // Weekly salary costs
+    const budgetChange = -Math.round(team.budget * WEEKLY_SALARY_RATE);
+
+    // Department morale fluctuations
+    const moraleChanges: Partial<Record<Department, number>> = {
+      [Department.Commercial]: randomInt(-1, 1),
+      [Department.Design]: randomInt(-1, 1),
+      [Department.Engineering]: randomInt(-1, 1),
+      [Department.Mechanics]: randomInt(-1, 1),
+    };
+
+    // Sponsor satisfaction fluctuations
+    const sponsorSatisfactionChanges: Record<string, number> = {};
+    for (const sponsorId of Object.keys(state.sponsorSatisfaction)) {
+      sponsorSatisfactionChanges[sponsorId] = randomInt(-1, 1);
+    }
+
+    changes.push({
+      teamId: team.id,
+      budgetChange,
+      moraleChanges,
+      sponsorSatisfactionChanges,
+    });
+  }
+
+  return changes;
+}
+
+/**
  * StubTurnEngine - Stub implementation of time progression
  *
  * Uses simple random values for all changes. Will be replaced with
@@ -177,96 +294,15 @@ export class StubTurnEngine implements ITurnEngine {
     const newDate = { season: currentDate.season, week: nextWeek };
 
     // Determine new phase
-    let newPhase: GamePhase;
-    let raceWeek: TurnProcessingResult['raceWeek'] = null;
-
-    if (nextWeek <= PRESEASON_END_WEEK) {
-      newPhase = GamePhase.PreSeason;
-    } else if (nextWeek >= POSTSEASON_START_WEEK) {
-      newPhase = GamePhase.PostSeason;
-    } else {
-      // Check if next week has a race
-      const raceEntry = calendar.find(
-        (entry) => entry.weekNumber === nextWeek && !entry.completed && !entry.cancelled
-      );
-      if (raceEntry) {
-        newPhase = GamePhase.RaceWeekend;
-        raceWeek = { circuitId: raceEntry.circuitId };
-      } else {
-        newPhase = GamePhase.BetweenRaces;
-      }
-    }
-
-    // Process driver state changes
-    const driverStateChanges: DriverStateChange[] = [];
-    for (const driver of drivers) {
-      if (!driver.teamId) continue; // Skip free agents
-
-      const state = driverStates[driver.id];
-      if (!state) continue;
-
-      const change: DriverStateChange = {
-        driverId: driver.id,
-        fatigueChange: randomInt(1, 3),
-        moraleChange: randomInt(-2, 2),
-      };
-
-      // Fitness drops if fatigued
-      if (state.fatigue > 80) {
-        change.fitnessChange = -1;
-      }
-
-      // Injury recovery
-      if (state.injuryWeeksRemaining > 0) {
-        change.setInjuryWeeks = Math.max(0, state.injuryWeeksRemaining - 1);
-      }
-
-      // Ban countdown (only if this was a race week that we're leaving)
-      if (phase === GamePhase.RaceWeekend && state.banRacesRemaining > 0) {
-        change.setBanRaces = Math.max(0, state.banRacesRemaining - 1);
-      }
-
-      driverStateChanges.push(change);
-    }
-
-    // Process team state changes
-    const teamStateChanges: TeamStateChange[] = [];
-    for (const team of teams) {
-      const state = teamStates[team.id];
-      if (!state) continue;
-
-      // Weekly salary costs (0.1% of budget)
-      const budgetChange = -Math.round(team.budget * 0.001);
-
-      // Department morale fluctuations
-      const moraleChanges: Partial<Record<Department, number>> = {
-        [Department.Commercial]: randomInt(-1, 1),
-        [Department.Design]: randomInt(-1, 1),
-        [Department.Engineering]: randomInt(-1, 1),
-        [Department.Mechanics]: randomInt(-1, 1),
-      };
-
-      // Sponsor satisfaction fluctuations
-      const sponsorSatisfactionChanges: Record<string, number> = {};
-      for (const sponsorId of Object.keys(state.sponsorSatisfaction)) {
-        sponsorSatisfactionChanges[sponsorId] = randomInt(-1, 1);
-      }
-
-      teamStateChanges.push({
-        teamId: team.id,
-        budgetChange,
-        moraleChanges,
-        sponsorSatisfactionChanges,
-      });
-    }
+    const { phase: newPhase, raceWeek } = determinePhaseForWeek(nextWeek, calendar);
 
     return {
       newDate,
       newPhase,
-      driverStateChanges,
+      driverStateChanges: generateDriverStateChanges(drivers, driverStates, phase),
       driverAttributeChanges: [], // No attribute changes during weekly processing
       chiefChanges: [], // No chief changes during weekly processing
-      teamStateChanges,
+      teamStateChanges: generateTeamStateChanges(teams, teamStates),
       raceWeek,
     };
   }
