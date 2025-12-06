@@ -68,13 +68,9 @@ export const ACTION_CONFIGS: Record<ActionType, ActionConfig> = {
 // COMPONENT
 // ===========================================
 
-interface ActionScreenProps {
-  title: string;
-  message: string;
-  buttonLabel: string;
-  buttonClassName: string;
+type ActionScreenProps = ActionScreenConfig & {
   onShowDialog: () => void;
-}
+};
 
 export function ActionScreen({ title, message, buttonLabel, buttonClassName, onShowDialog }: ActionScreenProps) {
   return (
