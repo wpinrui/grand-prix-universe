@@ -19,6 +19,7 @@ import type {
   Chief,
   Team,
   Circuit,
+  Department,
   DriverRuntimeState,
   TeamRuntimeState,
   ActiveSponsorDeal,
@@ -27,7 +28,6 @@ import type {
   ConstructorStanding,
   RaceWeekendResult,
   DriverAttributes,
-  DepartmentMorale,
 } from './types';
 
 // =============================================================================
@@ -180,12 +180,17 @@ export interface ChiefChange {
 export interface TeamStateChange {
   teamId: string;
   budgetChange?: number; // Delta to apply
-  moraleChanges?: Partial<DepartmentMorale>; // Deltas per department
-  sponsorSatisfactionChanges?: Record<string, number>; // Deltas per sponsor
+  moraleChanges?: Partial<Record<Department, number>>; // Deltas per department
+  sponsorSatisfactionChanges?: Record<string, number>; // sponsorId -> delta
 }
 
 /**
  * TurnProcessingResult - Result of processing a weekly turn
+ *
+ * If `blocked` is set, the turn could not progress and the caller should:
+ * - NOT apply any state changes (all change arrays will be empty)
+ * - Display the blocked message to the player
+ * - `newDate` and `newPhase` will match the input (no time progression)
  */
 export interface TurnProcessingResult {
   newDate: GameDate;
