@@ -90,6 +90,17 @@ export type RegulationResult = Placeholder;
 // =============================================================================
 
 /**
+ * BaseGameStateSnapshot - Common fields needed by most engine inputs
+ * Contains the core runtime state that engines need to read
+ */
+interface BaseGameStateSnapshot {
+  drivers: Driver[];
+  teams: Team[];
+  driverStates: Record<string, DriverRuntimeState>;
+  teamStates: Record<string, TeamRuntimeState>;
+}
+
+/**
  * TurnBlockedReason - Why turn processing was blocked
  * Extensible for future blocking conditions
  */
@@ -115,15 +126,11 @@ export interface ChampionshipStandings {
 /**
  * TurnProcessingInput - All data needed to process a weekly turn
  */
-export interface TurnProcessingInput {
+export interface TurnProcessingInput extends BaseGameStateSnapshot {
   currentDate: GameDate;
   phase: GamePhase;
   calendar: CalendarEntry[];
-  drivers: Driver[];
   chiefs: Chief[];
-  teams: Team[];
-  driverStates: Record<string, DriverRuntimeState>;
-  teamStates: Record<string, TeamRuntimeState>;
   sponsorDeals: ActiveSponsorDeal[];
   manufacturerContracts: ActiveManufacturerContract[];
 }
@@ -195,12 +202,8 @@ export interface TurnProcessingResult {
 /**
  * RaceProcessingInput - Data needed to process race results
  */
-export interface RaceProcessingInput {
+export interface RaceProcessingInput extends BaseGameStateSnapshot {
   raceResult: RaceWeekendResult;
-  drivers: Driver[];
-  teams: Team[];
-  driverStates: Record<string, DriverRuntimeState>;
-  teamStates: Record<string, TeamRuntimeState>;
   currentStandings: ChampionshipStandings;
 }
 
@@ -216,12 +219,8 @@ export interface RaceProcessingResult {
 /**
  * SeasonEndInput - Data needed to process end of season
  */
-export interface SeasonEndInput {
-  drivers: Driver[];
+export interface SeasonEndInput extends BaseGameStateSnapshot {
   chiefs: Chief[];
-  teams: Team[];
-  driverStates: Record<string, DriverRuntimeState>;
-  teamStates: Record<string, TeamRuntimeState>;
   currentSeason: number;
   circuits: Circuit[];
 }
