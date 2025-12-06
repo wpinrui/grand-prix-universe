@@ -166,11 +166,14 @@ export interface DriverAttributeChange {
 
 /**
  * ChiefChange - Changes to a chief's state
+ *
+ * Fields with "*Change" suffix are DELTAS to apply.
+ * Fields with "set*" prefix are ABSOLUTE values to set directly.
  */
 export interface ChiefChange {
   chiefId: string;
   abilityChange?: number; // Delta to apply
-  retired?: boolean; // If true, chief should be removed from active roster
+  setRetired?: boolean; // Absolute: if true, chief should be removed from active roster
 }
 
 /**
@@ -185,6 +188,15 @@ export interface TeamStateChange {
 }
 
 /**
+ * StateChanges - Common state change arrays shared across engine results
+ * Groups driver and team state changes that multiple results need
+ */
+interface StateChanges {
+  driverStateChanges: DriverStateChange[];
+  teamStateChanges: TeamStateChange[];
+}
+
+/**
  * TurnProcessingResult - Result of processing a weekly turn
  *
  * If `blocked` is set, the turn could not progress and the caller should:
@@ -192,13 +204,11 @@ export interface TeamStateChange {
  * - Display the blocked message to the player
  * - `newDate` and `newPhase` will match the input (no time progression)
  */
-export interface TurnProcessingResult {
+export interface TurnProcessingResult extends StateChanges {
   newDate: GameDate;
   newPhase: GamePhase;
-  driverStateChanges: DriverStateChange[];
   driverAttributeChanges: DriverAttributeChange[];
   chiefChanges: ChiefChange[];
-  teamStateChanges: TeamStateChange[];
   isRaceWeek: boolean;
   raceCircuitId?: string; // Set if isRaceWeek is true
   blocked?: TurnBlocked;
@@ -215,9 +225,7 @@ export interface RaceProcessingInput extends BaseGameStateSnapshot {
 /**
  * RaceProcessingResult - Result of processing a race
  */
-export interface RaceProcessingResult {
-  driverStateChanges: DriverStateChange[];
-  teamStateChanges: TeamStateChange[];
+export interface RaceProcessingResult extends StateChanges {
   updatedStandings: ChampionshipStandings;
 }
 
