@@ -12,7 +12,7 @@ import { SectionButton } from './NavButtons';
 import { TopBar } from './TopBar';
 import { BottomBar } from './BottomBar';
 import { ConfirmDialog } from './ConfirmDialog';
-import { Toast } from './Toast';
+import { AutoSaveToast } from './AutoSaveToast';
 import {
   TeamProfile,
   SavedGames,
@@ -177,7 +177,7 @@ export function MainLayout() {
 
       {/* Auto-save Toast */}
       {showAutoSaveToast && (
-        <Toast
+        <AutoSaveToast
           message="Game auto-saved"
           onDismiss={handleDismissToast}
         />

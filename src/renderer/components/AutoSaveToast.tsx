@@ -4,13 +4,13 @@ import { Save } from 'lucide-react';
 /** Animation duration in ms - must match Tailwind's duration-300 */
 const FADE_DURATION_MS = 300;
 
-interface ToastProps {
+interface AutoSaveToastProps {
   message: string;
   duration?: number;
   onDismiss: () => void;
 }
 
-export function Toast({ message, duration = 3000, onDismiss }: ToastProps) {
+export function AutoSaveToast({ message, duration = 3000, onDismiss }: AutoSaveToastProps) {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
