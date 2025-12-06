@@ -87,3 +87,37 @@ export const GHOST_BUTTON_CLASSES =
  */
 export const GHOST_BORDERED_BUTTON_CLASSES =
   'bg-[var(--neutral-800)] border-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-750)] hover:text-primary hover:border-[var(--neutral-600)]';
+
+/**
+ * Danger button - destructive actions (Delete confirmation, etc.)
+ */
+export const DANGER_BUTTON_CLASSES =
+  'btn px-4 py-2 font-semibold bg-red-600 text-white border border-red-500 rounded-lg hover:bg-red-500 transition-all duration-200';
+
+/**
+ * Icon button - success variant (Load, Download, etc.)
+ */
+export const ICON_BUTTON_SUCCESS_CLASSES =
+  'btn p-2 rounded-lg bg-emerald-600/20 text-emerald-400 border border-emerald-600/30 hover:bg-emerald-600/30 disabled:opacity-50 transition-all';
+
+/**
+ * Icon button - danger variant (Delete, Remove, etc.)
+ */
+export const ICON_BUTTON_DANGER_CLASSES =
+  'btn p-2 rounded-lg bg-red-600/20 text-red-400 border border-red-600/30 hover:bg-red-600/30 transition-all';
+
+// ===========================================
+// ALERT CLASS CONSTANTS
+// ===========================================
+
+/**
+ * Error alert - for error messages and failure feedback
+ */
+export const ERROR_ALERT_CLASSES =
+  'card p-3 bg-red-600/20 border-red-600/30 text-red-300 text-sm';
+
+/**
+ * Success alert - for success messages and confirmation feedback
+ */
+export const SUCCESS_ALERT_CLASSES =
+  'card p-3 bg-emerald-600/20 border-emerald-600/30 text-emerald-300 text-sm';

@@ -3,6 +3,7 @@
  */
 
 import type { DriverRole } from '../../shared/domain';
+import type { SaveSlotInfo } from '../../shared/ipc';
 
 // ===========================================
 // DRIVER ROLE LABELS
@@ -45,4 +46,33 @@ export function formatCompact(amount: number): string {
  */
 export function formatAnnualSalary(amount: number): string {
   return `$${formatCompact(amount)}/yr`;
+}
+
+// ===========================================
+// DATE/TIME FORMATTERS
+// ===========================================
+
+/**
+ * Format an ISO date string as a readable date/time (e.g., "Dec 6, 2025 at 3:45 PM")
+ */
+export function formatDateTime(isoString: string): string {
+  const date = new Date(isoString);
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
+// ===========================================
+// SAVE FILE FORMATTERS
+// ===========================================
+
+/**
+ * Format a save's display name (e.g., "Ferrari - John Smith")
+ */
+export function getSaveDisplayName(save: SaveSlotInfo): string {
+  return `${save.teamName} - ${save.playerName}`;
 }

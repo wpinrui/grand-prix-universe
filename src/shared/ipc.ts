@@ -84,6 +84,7 @@ export const IpcChannels = {
   GAME_LOAD: 'game:load',
   GAME_LIST_SAVES: 'game:listSaves',
   GAME_DELETE_SAVE: 'game:deleteSave',
+  GAME_OPEN_SAVES_FOLDER: 'game:openSavesFolder',
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];
@@ -163,6 +164,10 @@ export interface IpcInvokeMap {
   [IpcChannels.GAME_DELETE_SAVE]: {
     args: [filename: string];
     result: boolean;
+  };
+  [IpcChannels.GAME_OPEN_SAVES_FOLDER]: {
+    args: [];
+    result: void;
   };
 }
 
