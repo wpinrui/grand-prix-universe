@@ -80,6 +80,41 @@ export function MainLayout() {
     (isOptionsScreen && IMPLEMENTED_OPTIONS_SUBITEMS.has(selectedSubItemId));
   const isPlaceholder = !isImplemented;
 
+  const renderContent = () => {
+    if (selectedSectionId === 'team' && selectedSubItemId === 'profile') {
+      return <TeamProfile />;
+    }
+
+    if (isOptionsScreen) {
+      switch (selectedSubItemId) {
+        case 'saved-games':
+          return <SavedGames onNavigateToProfile={navigateToProfile} />;
+        case 'game-options':
+          return <GameOptions />;
+        default:
+          if (isActionType(selectedSubItemId)) {
+            return (
+              <ActionScreen
+                {...ACTION_CONFIGS[selectedSubItemId].screen}
+                onShowDialog={() => setActiveDialog(selectedSubItemId)}
+              />
+            );
+          }
+      }
+    }
+
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <p className="text-2xl font-semibold text-secondary">
+            {selectedSection.label}: {selectedSubItem.label}
+          </p>
+          <p className="text-muted mt-2 text-sm">Coming soon</p>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="main-layout flex w-full h-screen surface-base text-primary">
       {/* Left Sidebar - wider */}
@@ -112,27 +147,7 @@ export function MainLayout() {
             background: 'linear-gradient(180deg, color-mix(in srgb, var(--accent-900) 20%, var(--neutral-950)) 0%, var(--neutral-950) 100%)',
           } : undefined}
         >
-          {selectedSectionId === 'team' && selectedSubItemId === 'profile' ? (
-            <TeamProfile />
-          ) : isOptionsScreen && selectedSubItemId === 'saved-games' ? (
-            <SavedGames onNavigateToProfile={navigateToProfile} />
-          ) : isOptionsScreen && selectedSubItemId === 'game-options' ? (
-            <GameOptions />
-          ) : isOptionsScreen && isActionType(selectedSubItemId) ? (
-            <ActionScreen
-              {...ACTION_CONFIGS[selectedSubItemId].screen}
-              onShowDialog={() => setActiveDialog(selectedSubItemId)}
-            />
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center">
-                <p className="text-2xl font-semibold text-secondary">
-                  {selectedSection.label}: {selectedSubItem.label}
-                </p>
-                <p className="text-muted mt-2 text-sm">Coming soon</p>
-              </div>
-            </div>
-          )}
+          {renderContent()}
         </main>
 
         <BottomBar
