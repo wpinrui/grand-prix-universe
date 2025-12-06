@@ -50,9 +50,20 @@ import type {
   SeasonEndInput,
   SeasonEndResult,
   DriverStateChange,
+  DriverAttributeChange,
+  ChiefChange,
   TeamStateChange,
   ChampionshipStandings,
 } from '../../shared/domain/engines';
+
+import type {
+  CalendarEntry,
+  Driver,
+  Chief,
+  Circuit,
+  DriverRuntimeState,
+  DriverAttributes,
+} from '../../shared/domain/types';
 
 import {
   Department,
@@ -145,10 +156,24 @@ function randomInt(min: number, max: number): number {
 }
 
 /**
+ * Helper: Shuffle an array in place using Fisher-Yates algorithm
+ * Returns the same array (mutated) for convenience
+ */
+function shuffleInPlace<T>(array: T[]): T[] {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+/**
  * Phase boundaries for the season
  */
 const PRESEASON_END_WEEK = 9;
 const POSTSEASON_START_WEEK = 49;
+const FIRST_RACE_WEEK = 10;
+const LAST_RACE_WEEK = 48;
 
 /**
  * Gameplay constants
@@ -295,6 +320,43 @@ function generateTeamStateChanges(
 // =============================================================================
 
 const PODIUM_THRESHOLD = 3; // Positions 1-3 count as podium
+
+/**
+ * Season end constants
+ */
+const DRIVER_PEAK_AGE = 28; // Age at which drivers are at their peak
+const DRIVER_DECLINE_START_AGE = 32; // Age at which decline begins
+const DRIVER_RETIREMENT_MIN_AGE = 35; // Minimum age for retirement consideration
+const DRIVER_RETIREMENT_MAX_AGE = 42; // Very likely to retire at this age
+const CHIEF_RETIREMENT_MIN_AGE = 55; // Minimum age for chief retirement
+const CHIEF_RETIREMENT_MAX_AGE = 70; // Very likely to retire at this age
+const ATTRIBUTE_IMPROVEMENT_AMOUNT = 2; // Max improvement value per attribute for young drivers
+const ATTRIBUTE_DECLINE_AMOUNT = 3; // Max decline value per attribute for aging drivers
+const CHIEF_ABILITY_CHANGE_RANGE = 2; // +/- ability change per season
+const BASE_YEAR = 1998; // Year that season 1 corresponds to
+const ATTRIBUTE_IMPROVEMENT_CHANCE = 0.3; // 30% chance per attribute to improve
+const DECLINE_BASE_CHANCE = 0.2; // Base chance for attribute decline
+const DECLINE_CHANCE_PER_YEAR = 0.1; // Additional decline chance per year over decline age
+const DECLINE_MAX_CHANCE = 0.6; // Maximum decline chance cap
+const CHIEF_ABILITY_CHANGE_CHANCE = 0.5; // 50% chance of ability change per season
+const CHIEF_BASE_AGE = 40; // Base age for chief age estimation
+const CHIEF_AGE_ABILITY_DIVISOR = 4; // Divisor for ability-to-age conversion
+const SEASON_START_MORALE = 70; // Neutral-positive morale at season start
+const SEASON_START_FITNESS = 100; // Full fitness at season start
+
+/**
+ * Initial driver runtime state for start of new season
+ */
+const INITIAL_DRIVER_RUNTIME_STATE: Partial<DriverRuntimeState> = {
+  fatigue: 0,
+  fitness: SEASON_START_FITNESS,
+  morale: SEASON_START_MORALE,
+  engineUnitsUsed: 0,
+  gearboxRaceCount: 0,
+  injuryWeeksRemaining: 0,
+  banRacesRemaining: 0,
+  isAngry: false,
+};
 
 /**
  * Check if a race result counts as a DNF (did not finish normally)
@@ -570,6 +632,237 @@ function updateStandings(
   };
 }
 
+// =============================================================================
+// SEASON END PROCESSING HELPERS
+// =============================================================================
+
+/**
+ * Calculate a person's age given their date of birth and current season
+ * Assumes season number roughly maps to a year (e.g., season 1 = 1998)
+ */
+function calculateAge(dateOfBirth: string, currentSeason: number): number {
+  const birthYear = new Date(dateOfBirth).getFullYear();
+  const currentYear = BASE_YEAR + currentSeason - 1;
+  return currentYear - birthYear;
+}
+
+/**
+ * Determine if someone should retire based on age and probability
+ * Uses linear probability scaling between min and max retirement ages
+ */
+function shouldRetire(age: number, minAge: number, maxAge: number): boolean {
+  if (age < minAge) return false;
+  if (age >= maxAge) return true;
+
+  // Linear probability: 0% at minAge, 100% at maxAge
+  const probability = (age - minAge) / (maxAge - minAge);
+  return Math.random() < probability;
+}
+
+/**
+ * All driver attributes that can change over time
+ */
+const DRIVER_ATTRIBUTES: (keyof DriverAttributes)[] = [
+  'pace',
+  'consistency',
+  'focus',
+  'overtaking',
+  'wetWeather',
+  'smoothness',
+  'defending',
+];
+
+/**
+ * Maximum number of attributes a young driver can improve per season
+ */
+const MAX_IMPROVING_ATTRIBUTES = 2;
+
+/**
+ * Select random attributes for improvement (young drivers)
+ * Shuffles to avoid bias toward attributes earlier in the list
+ */
+function selectAttributesForImprovement(): (keyof DriverAttributes)[] {
+  const candidates = DRIVER_ATTRIBUTES.filter(
+    () => Math.random() < ATTRIBUTE_IMPROVEMENT_CHANCE
+  );
+  shuffleInPlace(candidates); // filter() already returns new array, no copy needed
+  return candidates.slice(0, MAX_IMPROVING_ATTRIBUTES);
+}
+
+/**
+ * Calculate decline chance based on years over decline age
+ */
+function calculateDeclineChance(yearsOverDeclineAge: number): number {
+  return Math.min(
+    DECLINE_MAX_CHANCE,
+    DECLINE_BASE_CHANCE + yearsOverDeclineAge * DECLINE_CHANCE_PER_YEAR
+  );
+}
+
+/**
+ * Select random attributes for decline (aging drivers)
+ */
+function selectAttributesForDecline(
+  yearsOverDeclineAge: number
+): (keyof DriverAttributes)[] {
+  const declineChance = calculateDeclineChance(yearsOverDeclineAge);
+  return DRIVER_ATTRIBUTES.filter(() => Math.random() < declineChance);
+}
+
+/**
+ * Generate improvement changes for a young driver
+ */
+function generateYoungDriverChanges(driverId: string): DriverAttributeChange[] {
+  return selectAttributesForImprovement().map((attribute) => ({
+    driverId,
+    attribute,
+    change: randomInt(1, ATTRIBUTE_IMPROVEMENT_AMOUNT),
+  }));
+}
+
+/**
+ * Generate decline changes for an aging driver
+ */
+function generateAgingDriverChanges(
+  driverId: string,
+  yearsOverDeclineAge: number
+): DriverAttributeChange[] {
+  return selectAttributesForDecline(yearsOverDeclineAge).map((attribute) => ({
+    driverId,
+    attribute,
+    change: -randomInt(1, ATTRIBUTE_DECLINE_AMOUNT),
+  }));
+}
+
+/**
+ * Generate attribute changes for a single driver based on age
+ * Young drivers improve, older drivers decline, peak age drivers unchanged
+ */
+function generateSingleDriverAttributeChanges(
+  driver: Driver,
+  currentSeason: number
+): DriverAttributeChange[] {
+  const age = calculateAge(driver.dateOfBirth, currentSeason);
+
+  if (age < DRIVER_PEAK_AGE) {
+    return generateYoungDriverChanges(driver.id);
+  }
+  if (age >= DRIVER_DECLINE_START_AGE) {
+    const yearsOverDeclineAge = age - DRIVER_DECLINE_START_AGE;
+    return generateAgingDriverChanges(driver.id, yearsOverDeclineAge);
+  }
+  // Peak age drivers (28-31): no changes
+  return [];
+}
+
+/**
+ * Generate attribute changes for all drivers based on age
+ * Young drivers improve, older drivers decline
+ */
+function generateDriverAttributeChanges(
+  drivers: Driver[],
+  currentSeason: number
+): DriverAttributeChange[] {
+  return drivers.flatMap((driver) =>
+    generateSingleDriverAttributeChanges(driver, currentSeason)
+  );
+}
+
+/**
+ * Generate chief ability changes for end of season
+ * Small random fluctuations in ability (excludes zero changes)
+ */
+function generateChiefChanges(chiefs: Chief[]): ChiefChange[] {
+  return chiefs
+    .filter(() => Math.random() < CHIEF_ABILITY_CHANGE_CHANCE)
+    .map((chief) => ({
+      chiefId: chief.id,
+      abilityChange: randomInt(-CHIEF_ABILITY_CHANGE_RANGE, CHIEF_ABILITY_CHANGE_RANGE),
+    }))
+    .filter((change) => change.abilityChange !== 0);
+}
+
+/**
+ * Determine which drivers should retire at end of season
+ */
+function determineDriverRetirements(drivers: Driver[], currentSeason: number): string[] {
+  return drivers
+    .filter((driver) => {
+      const age = calculateAge(driver.dateOfBirth, currentSeason);
+      return shouldRetire(age, DRIVER_RETIREMENT_MIN_AGE, DRIVER_RETIREMENT_MAX_AGE);
+    })
+    .map((driver) => driver.id);
+}
+
+/**
+ * Estimate a chief's age based on ability
+ * Higher ability suggests more experience/age
+ * Ability 50 -> ~52 years old, Ability 90 -> ~62 years old
+ */
+function estimateChiefAge(ability: number): number {
+  return CHIEF_BASE_AGE + Math.floor(ability / CHIEF_AGE_ABILITY_DIVISOR);
+}
+
+/**
+ * Determine which chiefs should retire at end of season
+ * Note: Chiefs don't have dateOfBirth, so we estimate age from ability
+ */
+function determineChiefRetirements(chiefs: Chief[]): string[] {
+  return chiefs
+    .filter((chief) => {
+      const estimatedAge = estimateChiefAge(chief.ability);
+      return shouldRetire(estimatedAge, CHIEF_RETIREMENT_MIN_AGE, CHIEF_RETIREMENT_MAX_AGE);
+    })
+    .map((chief) => chief.id);
+}
+
+/**
+ * Calculate week number for a race to achieve even distribution
+ * Ensures first race at FIRST_RACE_WEEK and last race at LAST_RACE_WEEK
+ */
+function calculateRaceWeek(index: number, raceCount: number, availableWeeks: number): number {
+  if (raceCount === 1) return FIRST_RACE_WEEK;
+  // Spread races so first is at week 10, last is at week 48
+  const spacing = (availableWeeks - 1) / (raceCount - 1);
+  return FIRST_RACE_WEEK + Math.round(index * spacing);
+}
+
+/**
+ * Generate a new season calendar from circuits
+ * Distributes races evenly across the race weeks (10-48)
+ * Limits races to available weeks if too many circuits provided
+ */
+function generateNewCalendar(circuits: Circuit[]): CalendarEntry[] {
+  if (circuits.length === 0) return [];
+
+  // Available weeks for races (weeks 10-48 inclusive)
+  const availableWeeks = LAST_RACE_WEEK - FIRST_RACE_WEEK + 1;
+
+  // Shuffle circuits first, then take only as many as fit in available weeks
+  const shuffledCircuits = shuffleInPlace([...circuits]).slice(0, availableWeeks);
+  const raceCount = shuffledCircuits.length;
+
+  return shuffledCircuits.map((circuit, index) => ({
+    raceNumber: index + 1,
+    circuitId: circuit.id,
+    weekNumber: calculateRaceWeek(index, raceCount, availableWeeks),
+    completed: false,
+    cancelled: false,
+  }));
+}
+
+/**
+ * Generate reset state for all drivers at season start
+ * Resets fatigue, restores fitness, resets component usage
+ */
+function generateResetDriverStates(
+  drivers: Driver[]
+): Record<string, Partial<DriverRuntimeState>> {
+  return Object.fromEntries(
+    drivers.map((driver) => [driver.id, { ...INITIAL_DRIVER_RUNTIME_STATE }])
+  );
+}
+
 /**
  * StubTurnEngine - Stub implementation of time progression
  *
@@ -633,17 +926,18 @@ export class StubTurnEngine implements ITurnEngine {
   }
 
   /**
-   * Process end of season - stub for PR 4
+   * Process end of season - apply aging, retirements, and reset for new season
    */
-  processSeasonEnd(_input: SeasonEndInput): SeasonEndResult {
-    // Stub: Returns empty changes, will be implemented in PR 4
+  processSeasonEnd(input: SeasonEndInput): SeasonEndResult {
+    const { drivers, chiefs, currentSeason, circuits } = input;
+
     return {
-      driverAttributeChanges: [],
-      chiefChanges: [],
-      retiredDriverIds: [],
-      retiredChiefIds: [],
-      newCalendar: [],
-      resetDriverStates: {},
+      driverAttributeChanges: generateDriverAttributeChanges(drivers, currentSeason),
+      chiefChanges: generateChiefChanges(chiefs),
+      retiredDriverIds: determineDriverRetirements(drivers, currentSeason),
+      retiredChiefIds: determineChiefRetirements(chiefs),
+      newCalendar: generateNewCalendar(circuits),
+      resetDriverStates: generateResetDriverStates(drivers),
     };
   }
 }
