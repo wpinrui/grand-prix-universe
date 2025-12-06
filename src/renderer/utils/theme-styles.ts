@@ -95,6 +95,12 @@ export const DANGER_BUTTON_CLASSES =
   'btn px-4 py-2 font-semibold bg-red-600 text-white border border-red-500 rounded-lg hover:bg-red-500 transition-all duration-200';
 
 /**
+ * Warning button - caution actions (Restart, etc.)
+ */
+export const WARNING_BUTTON_CLASSES =
+  'btn px-4 py-2 font-semibold bg-amber-600 text-white border border-amber-500 rounded-lg hover:bg-amber-500 transition-all duration-200';
+
+/**
  * Icon button - success variant (Load, Download, etc.)
  */
 export const ICON_BUTTON_SUCCESS_CLASSES =

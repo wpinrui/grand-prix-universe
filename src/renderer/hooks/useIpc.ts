@@ -229,3 +229,23 @@ export function useInvalidateGameState() {
     [queryClient]
   );
 }
+
+/**
+ * Clear game state from cache - used when restarting/exiting
+ */
+export function useClearGameState() {
+  const queryClient = useQueryClient();
+  return useCallback(
+    () => queryClient.setQueryData(queryKeys.gameState, null),
+    [queryClient]
+  );
+}
+
+/**
+ * Quit the application
+ */
+export function useQuitApp() {
+  return useCallback(() => {
+    window.electronAPI.invoke(IpcChannels.APP_QUIT);
+  }, []);
+}

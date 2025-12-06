@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   sections,
   defaultSection,
@@ -6,15 +7,35 @@ import {
   type SectionId,
   type Section,
 } from '../navigation';
-import { useDerivedGameState, useTeamTheme } from '../hooks';
+import { useDerivedGameState, useTeamTheme, useClearGameState, useQuitApp } from '../hooks';
 import { SectionButton } from './NavButtons';
 import { TopBar } from './TopBar';
 import { BottomBar } from './BottomBar';
-import { TeamProfile, SavedGames } from '../content';
+import { ConfirmDialog } from './ConfirmDialog';
+import {
+  TeamProfile,
+  SavedGames,
+  GameOptions,
+  ActionScreen,
+  ACTION_CONFIGS,
+  isActionType,
+  type ActionType,
+} from '../content';
+import { RoutePaths } from '../routes';
+
+type ActiveDialog = ActionType | null;
+
+// Sub-items that have been implemented in the options section
+const IMPLEMENTED_OPTIONS_SUBITEMS = new Set(['saved-games', 'game-options', 'restart', 'quit']);
 
 export function MainLayout() {
   const [selectedSectionId, setSelectedSectionId] = useState<SectionId>(defaultSection);
   const [selectedSubItemId, setSelectedSubItemId] = useState<string>(defaultSubItem);
+  const [activeDialog, setActiveDialog] = useState<ActiveDialog>(null);
+
+  const navigate = useNavigate();
+  const clearGameState = useClearGameState();
+  const quitApp = useQuitApp();
 
   const { gameState, playerTeam, nextRace } = useDerivedGameState();
 
@@ -41,11 +62,58 @@ export function MainLayout() {
     setSelectedSubItemId('profile');
   };
 
+  // Dialog handlers
+  const actionHandlers: Record<ActionType, () => void> = {
+    restart: () => {
+      clearGameState();
+      navigate(RoutePaths.TITLE);
+    },
+    quit: () => quitApp(),
+  };
+
+  const closeDialog = () => setActiveDialog(null);
+
   // Check if showing placeholder content (not implemented screens)
+  const isOptionsScreen = selectedSectionId === 'options';
   const isImplemented =
     (selectedSectionId === 'team' && selectedSubItemId === 'profile') ||
-    (selectedSectionId === 'options' && selectedSubItemId === 'saved-games');
+    (isOptionsScreen && IMPLEMENTED_OPTIONS_SUBITEMS.has(selectedSubItemId));
   const isPlaceholder = !isImplemented;
+
+  const renderContent = () => {
+    if (selectedSectionId === 'team' && selectedSubItemId === 'profile') {
+      return <TeamProfile />;
+    }
+
+    if (isOptionsScreen) {
+      switch (selectedSubItemId) {
+        case 'saved-games':
+          return <SavedGames onNavigateToProfile={navigateToProfile} />;
+        case 'game-options':
+          return <GameOptions />;
+        default:
+          if (isActionType(selectedSubItemId)) {
+            return (
+              <ActionScreen
+                {...ACTION_CONFIGS[selectedSubItemId].screen}
+                onShowDialog={() => setActiveDialog(selectedSubItemId)}
+              />
+            );
+          }
+      }
+    }
+
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <p className="text-2xl font-semibold text-secondary">
+            {selectedSection.label}: {selectedSubItem.label}
+          </p>
+          <p className="text-muted mt-2 text-sm">Coming soon</p>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="main-layout flex w-full h-screen surface-base text-primary">
@@ -79,20 +147,7 @@ export function MainLayout() {
             background: 'linear-gradient(180deg, color-mix(in srgb, var(--accent-900) 20%, var(--neutral-950)) 0%, var(--neutral-950) 100%)',
           } : undefined}
         >
-          {selectedSectionId === 'team' && selectedSubItemId === 'profile' ? (
-            <TeamProfile />
-          ) : selectedSectionId === 'options' && selectedSubItemId === 'saved-games' ? (
-            <SavedGames onNavigateToProfile={navigateToProfile} />
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center">
-                <p className="text-2xl font-semibold text-secondary">
-                  {selectedSection.label}: {selectedSubItem.label}
-                </p>
-                <p className="text-muted mt-2 text-sm">Coming soon</p>
-              </div>
-            </div>
-          )}
+          {renderContent()}
         </main>
 
         <BottomBar
@@ -103,6 +158,15 @@ export function MainLayout() {
           nextRace={nextRace}
         />
       </div>
+
+      {/* Confirmation Dialog */}
+      {activeDialog && (
+        <ConfirmDialog
+          {...ACTION_CONFIGS[activeDialog].dialog}
+          onConfirm={actionHandlers[activeDialog]}
+          onCancel={closeDialog}
+        />
+      )}
     </div>
   );
 }
