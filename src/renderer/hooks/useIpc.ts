@@ -6,9 +6,9 @@
  * Game state has shorter cache time and can be manually invalidated.
  */
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { IpcChannels, type SaveResult, type LoadResult, type SaveSlotInfo } from '../../shared/ipc';
+import { IpcChannels, IpcEvents, type SaveResult, type LoadResult, type SaveSlotInfo } from '../../shared/ipc';
 import type {
   Team,
   Driver,
@@ -248,4 +248,20 @@ export function useQuitApp() {
   return useCallback(() => {
     window.electronAPI.invoke(IpcChannels.APP_QUIT);
   }, []);
+}
+
+// =============================================================================
+// EVENT LISTENER HOOKS
+// =============================================================================
+
+/**
+ * Subscribe to auto-save completion events
+ */
+export function useAutoSaveListener(onAutoSave: (filename: string) => void) {
+  useEffect(() => {
+    const unsubscribe = window.electronAPI.on(IpcEvents.AUTO_SAVE_COMPLETE, ({ filename }) => {
+      onAutoSave(filename);
+    });
+    return unsubscribe;
+  }, [onAutoSave]);
 }

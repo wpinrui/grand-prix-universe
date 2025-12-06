@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   sections,
@@ -7,11 +7,12 @@ import {
   type SectionId,
   type Section,
 } from '../navigation';
-import { useDerivedGameState, useTeamTheme, useClearGameState, useQuitApp } from '../hooks';
+import { useDerivedGameState, useTeamTheme, useClearGameState, useQuitApp, useAutoSaveListener } from '../hooks';
 import { SectionButton } from './NavButtons';
 import { TopBar } from './TopBar';
 import { BottomBar } from './BottomBar';
 import { ConfirmDialog } from './ConfirmDialog';
+import { AutoSaveToast } from './AutoSaveToast';
 import {
   TeamProfile,
   SavedGames,
@@ -32,12 +33,18 @@ export function MainLayout() {
   const [selectedSectionId, setSelectedSectionId] = useState<SectionId>(defaultSection);
   const [selectedSubItemId, setSelectedSubItemId] = useState<string>(defaultSubItem);
   const [activeDialog, setActiveDialog] = useState<ActiveDialog>(null);
+  const [showAutoSaveToast, setShowAutoSaveToast] = useState(false);
 
   const navigate = useNavigate();
   const clearGameState = useClearGameState();
   const quitApp = useQuitApp();
 
   const { gameState, playerTeam, nextRace } = useDerivedGameState();
+
+  // Auto-save toast handlers
+  const handleAutoSave = useCallback((_filename: string) => setShowAutoSaveToast(true), []);
+  const handleDismissToast = useCallback(() => setShowAutoSaveToast(false), []);
+  useAutoSaveListener(handleAutoSave);
 
   // Apply team-based theming (CSS variables on :root)
   useTeamTheme(playerTeam?.primaryColor ?? null);
@@ -165,6 +172,14 @@ export function MainLayout() {
           {...ACTION_CONFIGS[activeDialog].dialog}
           onConfirm={actionHandlers[activeDialog]}
           onCancel={closeDialog}
+        />
+      )}
+
+      {/* Auto-save Toast */}
+      {showAutoSaveToast && (
+        <AutoSaveToast
+          message="Game auto-saved"
+          onDismiss={handleDismissToast}
         />
       )}
     </div>

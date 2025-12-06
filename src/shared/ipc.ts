@@ -57,7 +57,7 @@ export interface LoadResult {
   error?: string; // Error message on failure
 }
 
-/** Channel names for IPC communication */
+/** Channel names for IPC invoke calls (renderer -> main) */
 export const IpcChannels = {
   // App lifecycle
   APP_GET_VERSION: 'app:getVersion',
@@ -88,6 +88,18 @@ export const IpcChannels = {
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];
+
+/** Channel names for IPC events (main -> renderer) */
+export const IpcEvents = {
+  AUTO_SAVE_COMPLETE: 'event:autoSaveComplete',
+} as const;
+
+export type IpcEvent = (typeof IpcEvents)[keyof typeof IpcEvents];
+
+/** Payload types for IPC events */
+export interface IpcEventPayloads {
+  [IpcEvents.AUTO_SAVE_COMPLETE]: { filename: string };
+}
 
 /** Type definitions for IPC invoke calls (renderer -> main) */
 export interface IpcInvokeMap {
@@ -177,6 +189,10 @@ export interface ElectronAPI {
     channel: K,
     ...args: IpcInvokeMap[K]['args']
   ): Promise<IpcInvokeMap[K]['result']>;
+  on<K extends keyof IpcEventPayloads>(
+    channel: K,
+    callback: (payload: IpcEventPayloads[K]) => void
+  ): () => void;
 }
 
 declare global {
