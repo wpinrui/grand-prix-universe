@@ -30,7 +30,13 @@ export function BackgroundLayer({
 
   // Default to neutral tint if no color provided
   const tint = tintColor ?? 'var(--neutral-900)';
-  const positionClass = `${position} inset-0`;
+
+  // Use full class strings so Tailwind's scanner detects them
+  const positionClasses = {
+    fixed: 'fixed inset-0',
+    absolute: 'absolute inset-0',
+  } as const;
+  const positionClass = positionClasses[position];
 
   return (
     <>
