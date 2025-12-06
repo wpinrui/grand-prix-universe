@@ -14,52 +14,47 @@ import { BottomBar } from './BottomBar';
 import { ConfirmDialog } from './ConfirmDialog';
 import { TeamProfile, SavedGames, GameOptions } from '../content';
 import { RoutePaths } from '../routes';
+import { WARNING_BUTTON_CLASSES, DANGER_BUTTON_CLASSES } from '../utils/theme-styles';
 
 type ActiveDialog = 'restart' | 'quit' | null;
 
 // ===========================================
-// SIMPLE OPTION SCREENS
+// ACTION SCREEN (Restart/Quit)
 // ===========================================
 
 interface ActionScreenProps {
+  title: string;
+  message: string;
+  buttonLabel: string;
+  buttonClassName: string;
   onShowDialog: () => void;
 }
 
-function RestartScreen({ onShowDialog }: ActionScreenProps) {
+function ActionScreen({ title, message, buttonLabel, buttonClassName, onShowDialog }: ActionScreenProps) {
   return (
     <div className="space-y-6 max-w-2xl">
-      <h1 className="text-xl font-bold text-primary">Restart Game</h1>
-      <p className="text-secondary">
-        Start over from the title screen. Your current game progress will be lost unless you have saved.
-      </p>
-      <button
-        type="button"
-        onClick={onShowDialog}
-        className="btn px-6 py-2 font-semibold bg-amber-600 text-white border border-amber-500 rounded-lg hover:bg-amber-500 transition-all duration-200"
-      >
-        Restart Game
+      <h1 className="text-xl font-bold text-primary">{title}</h1>
+      <p className="text-secondary">{message}</p>
+      <button type="button" onClick={onShowDialog} className={buttonClassName}>
+        {buttonLabel}
       </button>
     </div>
   );
 }
 
-function QuitScreen({ onShowDialog }: ActionScreenProps) {
-  return (
-    <div className="space-y-6 max-w-2xl">
-      <h1 className="text-xl font-bold text-primary">Quit Game</h1>
-      <p className="text-secondary">
-        Exit the application. Your current game progress will be lost unless you have saved.
-      </p>
-      <button
-        type="button"
-        onClick={onShowDialog}
-        className="btn px-6 py-2 font-semibold bg-red-600 text-white border border-red-500 rounded-lg hover:bg-red-500 transition-all duration-200"
-      >
-        Quit Game
-      </button>
-    </div>
-  );
-}
+const RESTART_SCREEN_CONFIG = {
+  title: 'Restart Game',
+  message: 'Start over from the title screen. Your current game progress will be lost unless you have saved.',
+  buttonLabel: 'Restart Game',
+  buttonClassName: WARNING_BUTTON_CLASSES,
+} as const;
+
+const QUIT_SCREEN_CONFIG = {
+  title: 'Quit Game',
+  message: 'Exit the application. Your current game progress will be lost unless you have saved.',
+  buttonLabel: 'Quit Game',
+  buttonClassName: DANGER_BUTTON_CLASSES,
+} as const;
 
 // ===========================================
 // MAIN LAYOUT
@@ -157,9 +152,9 @@ export function MainLayout() {
           ) : isOptionsScreen && selectedSubItemId === 'game-options' ? (
             <GameOptions />
           ) : isOptionsScreen && selectedSubItemId === 'restart' ? (
-            <RestartScreen onShowDialog={() => setActiveDialog('restart')} />
+            <ActionScreen {...RESTART_SCREEN_CONFIG} onShowDialog={() => setActiveDialog('restart')} />
           ) : isOptionsScreen && selectedSubItemId === 'quit' ? (
-            <QuitScreen onShowDialog={() => setActiveDialog('quit')} />
+            <ActionScreen {...QUIT_SCREEN_CONFIG} onShowDialog={() => setActiveDialog('quit')} />
           ) : (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
