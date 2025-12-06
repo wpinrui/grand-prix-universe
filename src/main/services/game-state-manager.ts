@@ -116,6 +116,17 @@ function cloneDeep<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
+/** Maximum value for percentage-based stats (morale, fitness, etc.) */
+const MAX_PERCENTAGE = 100;
+
+/**
+ * Clamps a value between 0 and MAX_PERCENTAGE (100).
+ * Used for all percentage-based stats like morale, fitness, fatigue, etc.
+ */
+function clampPercentage(value: number): number {
+  return Math.max(0, Math.min(MAX_PERCENTAGE, value));
+}
+
 /**
  * Creates initial runtime state for a driver
  */
@@ -552,13 +563,13 @@ function applyDriverStateChanges(
     if (!driverState) continue;
 
     if (change.fatigueChange !== undefined) {
-      driverState.fatigue = Math.max(0, Math.min(100, driverState.fatigue + change.fatigueChange));
+      driverState.fatigue = clampPercentage(driverState.fatigue + change.fatigueChange);
     }
     if (change.fitnessChange !== undefined) {
-      driverState.fitness = Math.max(0, Math.min(100, driverState.fitness + change.fitnessChange));
+      driverState.fitness = clampPercentage(driverState.fitness + change.fitnessChange);
     }
     if (change.moraleChange !== undefined) {
-      driverState.morale = Math.max(0, Math.min(100, driverState.morale + change.moraleChange));
+      driverState.morale = clampPercentage(driverState.morale + change.moraleChange);
     }
     if (change.setInjuryWeeks !== undefined) {
       driverState.injuryWeeksRemaining = change.setInjuryWeeks;
@@ -577,7 +588,7 @@ function applyDriverStateChanges(
     if (change.reputationChange !== undefined) {
       const driver = state.drivers.find((d) => d.id === change.driverId);
       if (driver) {
-        driver.reputation = Math.max(0, Math.min(100, driver.reputation + change.reputationChange));
+        driver.reputation = clampPercentage(driver.reputation + change.reputationChange);
       }
     }
   }
@@ -603,10 +614,7 @@ function applyTeamStateChanges(
       for (const [dept, delta] of Object.entries(change.moraleChanges)) {
         const department = dept as Department;
         if (teamState.morale[department] !== undefined && delta !== undefined) {
-          teamState.morale[department] = Math.max(
-            0,
-            Math.min(100, teamState.morale[department] + delta)
-          );
+          teamState.morale[department] = clampPercentage(teamState.morale[department] + delta);
         }
       }
     }
@@ -614,9 +622,8 @@ function applyTeamStateChanges(
     if (change.sponsorSatisfactionChanges) {
       for (const [sponsorId, delta] of Object.entries(change.sponsorSatisfactionChanges)) {
         if (teamState.sponsorSatisfaction[sponsorId] !== undefined) {
-          teamState.sponsorSatisfaction[sponsorId] = Math.max(
-            0,
-            Math.min(100, teamState.sponsorSatisfaction[sponsorId] + delta)
+          teamState.sponsorSatisfaction[sponsorId] = clampPercentage(
+            teamState.sponsorSatisfaction[sponsorId] + delta
           );
         }
       }
@@ -808,6 +815,20 @@ function markRaceComplete(state: GameState, circuitId: string, result: RaceWeeke
 }
 
 /**
+ * Apply blocked turn result to state and return blocked AdvanceWeekResult.
+ * Used when advancement is blocked (e.g., post-season reached).
+ */
+function applyBlockedResult(state: GameState, turnResult: TurnProcessingResult): AdvanceWeekResult {
+  state.currentDate = turnResult.newDate;
+  state.phase = turnResult.newPhase;
+  return {
+    success: true,
+    state,
+    blocked: turnResult.blocked,
+  };
+}
+
+/**
  * GameStateManager - Singleton service for managing game state
  */
 export const GameStateManager = {
@@ -923,14 +944,7 @@ export const GameStateManager = {
 
       // Check if blocked (post-season)
       if (turnResult.blocked) {
-        // Still apply the date change to reach post-season
-        state.currentDate = turnResult.newDate;
-        state.phase = turnResult.newPhase;
-        return {
-          success: true,
-          state,
-          blocked: turnResult.blocked,
-        };
+        return applyBlockedResult(state, turnResult);
       }
 
       // Apply turn result
@@ -945,13 +959,7 @@ export const GameStateManager = {
 
     // Check if blocked (post-season)
     if (turnResult.blocked) {
-      state.currentDate = turnResult.newDate;
-      state.phase = turnResult.newPhase;
-      return {
-        success: true,
-        state,
-        blocked: turnResult.blocked,
-      };
+      return applyBlockedResult(state, turnResult);
     }
 
     // Check if we're entering a race week
