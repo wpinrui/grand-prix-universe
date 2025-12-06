@@ -156,6 +156,18 @@ function randomInt(min: number, max: number): number {
 }
 
 /**
+ * Helper: Shuffle an array in place using Fisher-Yates algorithm
+ * Returns the same array (mutated) for convenience
+ */
+function shuffleInPlace<T>(array: T[]): T[] {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+/**
  * Phase boundaries for the season
  */
 const PRESEASON_END_WEEK = 9;
@@ -321,6 +333,15 @@ const CHIEF_RETIREMENT_MAX_AGE = 70; // Very likely to retire at this age
 const YOUNG_DRIVER_IMPROVEMENT_MAX = 2; // Max attribute improvement for young drivers
 const OLD_DRIVER_DECLINE_MAX = 3; // Max attribute decline for aging drivers
 const CHIEF_ABILITY_CHANGE_RANGE = 2; // +/- ability change per season
+const BASE_YEAR = 1998; // Year that season 1 corresponds to
+const ATTRIBUTE_IMPROVEMENT_CHANCE = 0.3; // 30% chance per attribute to improve
+const DECLINE_BASE_CHANCE = 0.2; // Base chance for attribute decline
+const DECLINE_CHANCE_PER_YEAR = 0.1; // Additional decline chance per year over decline age
+const DECLINE_MAX_CHANCE = 0.6; // Maximum decline chance cap
+const CHIEF_ABILITY_CHANGE_CHANCE = 0.5; // 50% chance of ability change per season
+const CHIEF_BASE_AGE = 40; // Base age for chief age estimation
+const CHIEF_AGE_ABILITY_DIVISOR = 4; // Divisor for ability-to-age conversion
+const SEASON_START_MORALE = 70; // Neutral-positive morale at season start
 
 /**
  * Check if a race result counts as a DNF (did not finish normally)
@@ -606,9 +627,7 @@ function updateStandings(
  */
 function calculateAge(dateOfBirth: string, currentSeason: number): number {
   const birthYear = new Date(dateOfBirth).getFullYear();
-  // Base year for season 1 - can be adjusted via config later
-  const baseYear = 1998;
-  const currentYear = baseYear + currentSeason - 1;
+  const currentYear = BASE_YEAR + currentSeason - 1;
   return currentYear - birthYear;
 }
 
@@ -651,7 +670,7 @@ function generateDriverAttributeChanges(
     if (age < DRIVER_PEAK_AGE) {
       // Young drivers: chance to improve (1-2 attributes)
       const improvingAttributes = attributes
-        .filter(() => Math.random() < 0.3) // 30% chance per attribute
+        .filter(() => Math.random() < ATTRIBUTE_IMPROVEMENT_CHANCE)
         .slice(0, 2); // Max 2 improvements
 
       for (const attr of improvingAttributes) {
@@ -663,7 +682,11 @@ function generateDriverAttributeChanges(
       }
     } else if (age >= DRIVER_DECLINE_START_AGE) {
       // Older drivers: decline (1-3 attributes based on age)
-      const declineChance = Math.min(0.6, 0.2 + (age - DRIVER_DECLINE_START_AGE) * 0.1);
+      const yearsOverDeclineAge = age - DRIVER_DECLINE_START_AGE;
+      const declineChance = Math.min(
+        DECLINE_MAX_CHANCE,
+        DECLINE_BASE_CHANCE + yearsOverDeclineAge * DECLINE_CHANCE_PER_YEAR
+      );
       const decliningAttributes = attributes.filter(() => Math.random() < declineChance);
 
       for (const attr of decliningAttributes) {
@@ -688,8 +711,7 @@ function generateChiefChanges(chiefs: Chief[]): ChiefChange[] {
   const changes: ChiefChange[] = [];
 
   for (const chief of chiefs) {
-    // 50% chance of ability change per season
-    if (Math.random() < 0.5) {
+    if (Math.random() < CHIEF_ABILITY_CHANGE_CHANCE) {
       changes.push({
         chiefId: chief.id,
         abilityChange: randomInt(-CHIEF_ABILITY_CHANGE_RANGE, CHIEF_ABILITY_CHANGE_RANGE),
@@ -726,8 +748,8 @@ function determineChiefRetirements(chiefs: Chief[]): string[] {
 
   for (const chief of chiefs) {
     // Estimate age based on ability: higher ability suggests more experience/age
-    // Ability 50 -> ~45 years old, Ability 90 -> ~60 years old
-    const estimatedAge = 40 + Math.floor(chief.ability / 4);
+    // Ability 50 -> ~52 years old, Ability 90 -> ~62 years old
+    const estimatedAge = CHIEF_BASE_AGE + Math.floor(chief.ability / CHIEF_AGE_ABILITY_DIVISOR);
 
     if (shouldRetire(estimatedAge, CHIEF_RETIREMENT_MIN_AGE, CHIEF_RETIREMENT_MAX_AGE)) {
       retiredIds.push(chief.id);
@@ -747,14 +769,11 @@ function generateNewCalendar(circuits: Circuit[]): CalendarEntry[] {
 
   // Available weeks for races
   const availableWeeks = LAST_RACE_WEEK - FIRST_RACE_WEEK + 1;
-  const weekGap = Math.floor(availableWeeks / raceCount);
+  // Ensure minimum gap of 1 week between races
+  const weekGap = Math.max(1, Math.floor(availableWeeks / raceCount));
 
-  // Shuffle circuits for variety (Fisher-Yates)
-  const shuffledCircuits = [...circuits];
-  for (let i = shuffledCircuits.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffledCircuits[i], shuffledCircuits[j]] = [shuffledCircuits[j], shuffledCircuits[i]];
-  }
+  // Shuffle circuits for variety
+  const shuffledCircuits = shuffleInPlace([...circuits]);
 
   return shuffledCircuits.map((circuit, index) => ({
     raceNumber: index + 1,
@@ -778,12 +797,12 @@ function generateResetDriverStates(
     resets[driver.id] = {
       fatigue: 0,
       fitness: 100,
-      morale: 70, // Neutral-positive morale at season start
+      morale: SEASON_START_MORALE,
       engineUnitsUsed: 0,
       gearboxRaceCount: 0,
-      injuryWeeksRemaining: 0, // Injuries healed over off-season
-      banRacesRemaining: 0, // Bans cleared
-      isAngry: false, // Fresh start
+      injuryWeeksRemaining: 0,
+      banRacesRemaining: 0,
+      isAngry: false,
     };
   }
 
