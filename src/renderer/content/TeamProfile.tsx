@@ -117,7 +117,7 @@ function SectionHeading({ children }: SectionHeadingProps) {
   return (
     <h2 className="text-lg font-bold text-primary uppercase tracking-wide mb-4 flex items-center gap-3">
       <span>{children}</span>
-      <div className="flex-1 h-px bg-[var(--neutral-750)]" />
+      <div className="flex-1 h-px bg-[var(--neutral-600)]" />
     </h2>
   );
 }
@@ -245,7 +245,7 @@ function StaffSummary({ teamState }: StaffSummaryProps) {
           </div>
         );
       })}
-      <div className="text-sm text-muted pt-3 border-t border-[var(--neutral-800)]">
+      <div className="text-sm text-muted pt-3 border-t border-[var(--neutral-600)]">
         Quality breakdown: {STAFF_QUALITY_ORDER.map((q) => STAFF_QUALITY_LABELS[q]).join(' / ')}
       </div>
     </div>
