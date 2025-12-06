@@ -670,7 +670,8 @@ function selectAttributesForImprovement(): (keyof DriverAttributes)[] {
   const candidates = DRIVER_ATTRIBUTES.filter(
     () => Math.random() < ATTRIBUTE_IMPROVEMENT_CHANCE
   );
-  return shuffleInPlace([...candidates]).slice(0, MAX_IMPROVING_ATTRIBUTES);
+  shuffleInPlace(candidates); // filter() already returns new array, no copy needed
+  return candidates.slice(0, MAX_IMPROVING_ATTRIBUTES);
 }
 
 /**
@@ -794,18 +795,20 @@ function determineChiefRetirements(chiefs: Chief[]): string[] {
 /**
  * Generate a new season calendar from circuits
  * Distributes races evenly across the race weeks (10-48)
+ * Limits races to available weeks if too many circuits provided
  */
 function generateNewCalendar(circuits: Circuit[]): CalendarEntry[] {
-  const raceCount = circuits.length;
-  if (raceCount === 0) return [];
+  if (circuits.length === 0) return [];
 
-  // Available weeks for races
+  // Available weeks for races (weeks 10-48 inclusive)
   const availableWeeks = LAST_RACE_WEEK - FIRST_RACE_WEEK + 1;
-  // Ensure minimum gap of 1 week between races
-  const weekGap = Math.max(1, Math.floor(availableWeeks / raceCount));
 
-  // Shuffle circuits for variety
-  const shuffledCircuits = shuffleInPlace([...circuits]);
+  // Shuffle circuits first, then take only as many as fit in available weeks
+  const shuffledCircuits = shuffleInPlace([...circuits]).slice(0, availableWeeks);
+  const raceCount = shuffledCircuits.length;
+
+  // Calculate gap to distribute races evenly
+  const weekGap = Math.max(1, Math.floor(availableWeeks / raceCount));
 
   return shuffledCircuits.map((circuit, index) => ({
     raceNumber: index + 1,
