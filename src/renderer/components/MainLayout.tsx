@@ -41,8 +41,9 @@ export function MainLayout() {
 
   const { gameState, playerTeam, nextRace } = useDerivedGameState();
 
-  // Subscribe to auto-save events
+  // Auto-save toast handlers
   const handleAutoSave = useCallback(() => setShowAutoSaveToast(true), []);
+  const handleDismissToast = useCallback(() => setShowAutoSaveToast(false), []);
   useAutoSaveListener(handleAutoSave);
 
   // Apply team-based theming (CSS variables on :root)
@@ -178,7 +179,7 @@ export function MainLayout() {
       {showAutoSaveToast && (
         <Toast
           message="Game auto-saved"
-          onDismiss={() => setShowAutoSaveToast(false)}
+          onDismiss={handleDismissToast}
         />
       )}
     </div>

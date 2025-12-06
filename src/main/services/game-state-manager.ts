@@ -10,8 +10,7 @@
 import { BrowserWindow } from 'electron';
 import { ConfigLoader } from './config-loader';
 import { SaveManager } from './save-manager';
-import { IpcEvents } from '../../shared/ipc';
-import type { SaveResult, LoadResult } from '../../shared/ipc';
+import { IpcEvents, type IpcEventPayloads, type SaveResult, type LoadResult } from '../../shared/ipc';
 import type {
   GameState,
   GameDate,
@@ -474,9 +473,12 @@ function buildGameState(params: BuildGameStateParams): GameState {
 let autoSaveTimer: ReturnType<typeof setInterval> | null = null;
 
 /**
- * Sends an event to all renderer windows
+ * Sends a typed event to all renderer windows
  */
-function sendToRenderer(channel: string, payload: unknown): void {
+function sendToRenderer<K extends keyof IpcEventPayloads>(
+  channel: K,
+  payload: IpcEventPayloads[K]
+): void {
   const windows = BrowserWindow.getAllWindows();
   for (const win of windows) {
     win.webContents.send(channel, payload);

@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Save } from 'lucide-react';
 
+/** Animation duration in ms - must match Tailwind's duration-300 */
+const FADE_DURATION_MS = 300;
+
 interface ToastProps {
   message: string;
   duration?: number;
@@ -11,12 +14,17 @@ export function Toast({ message, duration = 3000, onDismiss }: ToastProps) {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    let dismissTimer: ReturnType<typeof setTimeout>;
+
+    const fadeTimer = setTimeout(() => {
       setIsVisible(false);
-      setTimeout(onDismiss, 300); // Wait for fade animation
+      dismissTimer = setTimeout(onDismiss, FADE_DURATION_MS);
     }, duration);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(dismissTimer);
+    };
   }, [duration, onDismiss]);
 
   return (
