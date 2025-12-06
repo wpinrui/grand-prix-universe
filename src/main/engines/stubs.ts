@@ -342,6 +342,7 @@ const CHIEF_ABILITY_CHANGE_CHANCE = 0.5; // 50% chance of ability change per sea
 const CHIEF_BASE_AGE = 40; // Base age for chief age estimation
 const CHIEF_AGE_ABILITY_DIVISOR = 4; // Divisor for ability-to-age conversion
 const SEASON_START_MORALE = 70; // Neutral-positive morale at season start
+const SEASON_START_FITNESS = 100; // Full fitness at season start
 
 /**
  * Check if a race result counts as a DNF (did not finish normally)
@@ -720,28 +721,37 @@ function generateAgingDriverChanges(
 }
 
 /**
- * Generate attribute changes for a driver based on age
+ * Generate attribute changes for a single driver based on age
+ * Young drivers improve, older drivers decline, peak age drivers unchanged
+ */
+function generateSingleDriverAttributeChanges(
+  driver: Driver,
+  currentSeason: number
+): DriverAttributeChange[] {
+  const age = calculateAge(driver.dateOfBirth, currentSeason);
+
+  if (age < DRIVER_PEAK_AGE) {
+    return generateYoungDriverChanges(driver.id);
+  }
+  if (age >= DRIVER_DECLINE_START_AGE) {
+    const yearsOverDeclineAge = age - DRIVER_DECLINE_START_AGE;
+    return generateAgingDriverChanges(driver.id, yearsOverDeclineAge);
+  }
+  // Peak age drivers (28-31): no changes
+  return [];
+}
+
+/**
+ * Generate attribute changes for all drivers based on age
  * Young drivers improve, older drivers decline
  */
 function generateDriverAttributeChanges(
   drivers: Driver[],
   currentSeason: number
 ): DriverAttributeChange[] {
-  const changes: DriverAttributeChange[] = [];
-
-  for (const driver of drivers) {
-    const age = calculateAge(driver.dateOfBirth, currentSeason);
-
-    if (age < DRIVER_PEAK_AGE) {
-      changes.push(...generateYoungDriverChanges(driver.id));
-    } else if (age >= DRIVER_DECLINE_START_AGE) {
-      const yearsOverDeclineAge = age - DRIVER_DECLINE_START_AGE;
-      changes.push(...generateAgingDriverChanges(driver.id, yearsOverDeclineAge));
-    }
-    // Peak age drivers (28-31): no changes
-  }
-
-  return changes;
+  return drivers.flatMap((driver) =>
+    generateSingleDriverAttributeChanges(driver, currentSeason)
+  );
 }
 
 /**
@@ -839,7 +849,7 @@ function generateResetDriverStates(
   for (const driver of drivers) {
     resets[driver.id] = {
       fatigue: 0,
-      fitness: 100,
+      fitness: SEASON_START_FITNESS,
       morale: SEASON_START_MORALE,
       engineUnitsUsed: 0,
       gearboxRaceCount: 0,
