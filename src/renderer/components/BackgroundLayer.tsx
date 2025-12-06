@@ -30,7 +30,7 @@ export function BackgroundLayer({
 
   // Default to neutral tint if no color provided
   const tint = tintColor ?? 'var(--neutral-900)';
-  const positionClass = position === 'fixed' ? 'fixed inset-0' : 'absolute inset-0';
+  const positionClass = `${position} inset-0`;
 
   return (
     <>

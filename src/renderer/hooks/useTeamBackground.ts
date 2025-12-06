@@ -1,5 +1,14 @@
 import { useMemo } from 'react';
 
+/**
+ * Special team ID that selects from ALL available backgrounds.
+ * Use this for screens that aren't team-specific (title, name entry, etc.)
+ */
+export const TEAM_ID_ALL = 'all';
+
+/** Folder name for generic (non-team-specific) backgrounds */
+const GENERIC_FOLDER = 'generic';
+
 // Import all background images using Vite's glob import
 // This creates a map of path -> module
 const backgroundModules = import.meta.glob<{ default: string }>(
@@ -83,13 +92,13 @@ export function useTeamBackground(teamId: string | null): string | null {
 
     let backgrounds: string[];
 
-    if (teamId === 'all') {
+    if (teamId === TEAM_ID_ALL) {
       // Use all available images
       backgrounds = ALL_BACKGROUNDS;
     } else {
       // Combine team-specific and generic backgrounds
       const teamBackgrounds = BACKGROUND_IMAGES[teamId] ?? [];
-      const genericBackgrounds = BACKGROUND_IMAGES['generic'] ?? [];
+      const genericBackgrounds = BACKGROUND_IMAGES[GENERIC_FOLDER] ?? [];
       backgrounds = [...teamBackgrounds, ...genericBackgrounds];
     }
 
