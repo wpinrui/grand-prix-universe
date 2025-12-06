@@ -7,7 +7,7 @@ import { WARNING_BUTTON_CLASSES, DANGER_BUTTON_CLASSES } from '../utils/theme-st
 export type ActionType = 'restart' | 'quit';
 
 export function isActionType(id: string): id is ActionType {
-  return id === 'restart' || id === 'quit';
+  return id in ACTION_CONFIGS;
 }
 
 interface ActionScreenConfig {
@@ -21,6 +21,7 @@ interface ActionDialogConfig {
   title: string;
   message: string;
   confirmLabel: string;
+  variant: 'danger' | 'warning';
 }
 
 export interface ActionConfig {
@@ -44,6 +45,7 @@ export const ACTION_CONFIGS: Record<ActionType, ActionConfig> = {
       title: 'Restart Game?',
       message: 'Are you sure you want to restart? Any unsaved progress will be lost.',
       confirmLabel: 'Restart',
+      variant: 'warning',
     },
   },
   quit: {
@@ -57,6 +59,7 @@ export const ACTION_CONFIGS: Record<ActionType, ActionConfig> = {
       title: 'Quit Game?',
       message: 'Are you sure you want to quit? Any unsaved progress will be lost.',
       confirmLabel: 'Quit',
+      variant: 'danger',
     },
   },
 };

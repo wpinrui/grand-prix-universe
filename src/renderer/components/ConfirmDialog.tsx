@@ -1,6 +1,17 @@
-import { GHOST_BUTTON_CLASSES, DANGER_BUTTON_CLASSES, PRIMARY_BUTTON_CLASSES } from '../utils/theme-styles';
+import {
+  GHOST_BUTTON_CLASSES,
+  DANGER_BUTTON_CLASSES,
+  PRIMARY_BUTTON_CLASSES,
+  WARNING_BUTTON_CLASSES,
+} from '../utils/theme-styles';
 
-type DialogVariant = 'danger' | 'primary';
+type DialogVariant = 'danger' | 'warning' | 'primary';
+
+const VARIANT_CLASSES: Record<DialogVariant, string> = {
+  danger: DANGER_BUTTON_CLASSES,
+  warning: WARNING_BUTTON_CLASSES,
+  primary: PRIMARY_BUTTON_CLASSES,
+};
 
 interface ConfirmDialogProps {
   title: string;
@@ -21,7 +32,7 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
-  const confirmClasses = variant === 'danger' ? DANGER_BUTTON_CLASSES : PRIMARY_BUTTON_CLASSES;
+  const confirmClasses = VARIANT_CLASSES[variant];
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
