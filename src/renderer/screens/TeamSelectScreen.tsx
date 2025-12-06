@@ -7,7 +7,7 @@ import { IpcChannels } from '../../shared/ipc';
 import type { Team, Driver } from '../../shared/domain';
 import { DriverRole } from '../../shared/domain';
 import { generateFace, type TeamColors } from '../utils/face-generator';
-import { TeamBadge } from '../components/TeamBadge';
+import { TeamBadge, BackgroundLayer } from '../components';
 import { IconButton } from '../components/NavButtons';
 import { PRIMARY_BUTTON_CLASSES, GHOST_BUTTON_CLASSES } from '../utils/theme-styles';
 import { formatCurrency, DRIVER_ROLE_LABELS } from '../utils/format';
@@ -256,10 +256,12 @@ export function TeamSelectScreen() {
   };
 
   return (
-    <div className="team-select-screen flex items-center justify-center w-full min-h-screen surface-base p-8">
+    <div className="team-select-screen relative flex items-center justify-center w-full min-h-screen surface-base p-8">
+      <BackgroundLayer teamId="all" />
+
       {/* Central card with subtle team accent */}
       <div
-        className="w-full max-w-4xl rounded-xl border transition-all duration-300"
+        className="relative z-10 w-full max-w-4xl rounded-xl border transition-all duration-300"
         style={cardStyle}
       >
         {/* Header */}

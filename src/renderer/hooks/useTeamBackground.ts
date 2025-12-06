@@ -61,26 +61,39 @@ function storeBackground(teamId: string, imageUrl: string): void {
   }
 }
 
+// Get all available background images (for screens without team context)
+function getAllBackgrounds(): string[] {
+  return Object.values(BACKGROUND_IMAGES).flat();
+}
+
 /**
  * Hook to get a random team background image.
- * - Selects randomly from team-specific backgrounds
- * - Falls back to generic backgrounds if team has none
+ * - Selects randomly from team-specific + generic backgrounds
  * - Persists selection in sessionStorage for consistency
+ *
+ * @param teamId - Team ID, or 'all' for any image, or null for no background
  */
 export function useTeamBackground(teamId: string | null): string | null {
   return useMemo(() => {
     if (!teamId) return null;
 
-    // Check if we have a stored background for this team
+    // Check if we have a stored background for this key
     const stored = getStoredBackground();
     if (stored && stored.teamId === teamId) {
       return stored.imageUrl;
     }
 
-    // Combine team-specific and generic backgrounds
-    const teamBackgrounds = BACKGROUND_IMAGES[teamId] ?? [];
-    const genericBackgrounds = BACKGROUND_IMAGES['generic'] ?? [];
-    const backgrounds = [...teamBackgrounds, ...genericBackgrounds];
+    let backgrounds: string[];
+
+    if (teamId === 'all') {
+      // Use all available images
+      backgrounds = getAllBackgrounds();
+    } else {
+      // Combine team-specific and generic backgrounds
+      const teamBackgrounds = BACKGROUND_IMAGES[teamId] ?? [];
+      const genericBackgrounds = BACKGROUND_IMAGES['generic'] ?? [];
+      backgrounds = [...teamBackgrounds, ...genericBackgrounds];
+    }
 
     if (backgrounds.length === 0) {
       return null;

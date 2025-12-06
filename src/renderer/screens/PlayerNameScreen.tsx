@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { RoutePaths } from '../routes';
 import { PRIMARY_BUTTON_CLASSES, GHOST_BUTTON_CLASSES } from '../utils/theme-styles';
+import { BackgroundLayer } from '../components';
 
 /**
  * Player Name Screen - Collects the player's name before team selection.
@@ -28,9 +29,11 @@ export function PlayerNameScreen() {
   };
 
   return (
-    <div className="player-name-screen flex items-center justify-center w-full min-h-screen surface-base">
+    <div className="player-name-screen relative flex items-center justify-center w-full min-h-screen surface-base">
+      <BackgroundLayer teamId="all" />
+
       {/* Central card */}
-      <form onSubmit={handleSubmit} className="card p-8 w-full max-w-md">
+      <form onSubmit={handleSubmit} className="relative z-10 card p-8 w-full max-w-md">
         <h1 className="text-2xl font-bold text-primary mb-2">New Game</h1>
         <p className="text-secondary mb-6">
           Please enter your name in the box below and click OK to continue.

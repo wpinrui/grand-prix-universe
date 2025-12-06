@@ -3,6 +3,7 @@ import { Play, Plus, FolderOpen, Loader2 } from 'lucide-react';
 import { RoutePaths } from '../routes';
 import { PRIMARY_BUTTON_CLASSES, GHOST_BUTTON_CLASSES, ERROR_ALERT_CLASSES } from '../utils/theme-styles';
 import { useSavesList, useLoadGameHandler } from '../hooks';
+import { BackgroundLayer } from '../components';
 
 export function TitleScreen() {
   const navigate = useNavigate();
@@ -22,9 +23,11 @@ export function TitleScreen() {
   };
 
   return (
-    <div className="title-screen flex items-center justify-center w-full min-h-screen surface-base">
+    <div className="title-screen relative flex items-center justify-center w-full min-h-screen surface-base">
+      <BackgroundLayer teamId="all" />
+
       {/* Central card */}
-      <div className="card p-12 text-center max-w-lg">
+      <div className="relative z-10 card p-12 text-center max-w-lg">
         {/* Title */}
         <h1 className="text-4xl font-bold text-primary tracking-tight mb-2">
           Grand Prix Universe

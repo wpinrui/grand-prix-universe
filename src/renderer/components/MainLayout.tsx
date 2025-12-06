@@ -157,8 +157,8 @@ export function MainLayout() {
             className="absolute inset-0 backdrop-blur-xl"
             style={{
               background: `linear-gradient(180deg,
-                color-mix(in srgb, var(--accent-900) 60%, transparent) 0%,
-                color-mix(in srgb, var(--neutral-950) 85%, transparent) 100%)`,
+                color-mix(in srgb, var(--accent-900) 75%, transparent) 0%,
+                color-mix(in srgb, var(--neutral-950) 92%, transparent) 100%)`,
             }}
           />
 
