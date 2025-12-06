@@ -5,35 +5,48 @@ interface BackgroundLayerProps {
   teamId: string;
   /** Optional custom tint color (defaults to neutral) */
   tintColor?: string;
+  /** CSS position: 'fixed' for full-screen, 'absolute' for container-relative */
+  position?: 'fixed' | 'absolute';
+  /** Top tint opacity (0-100), defaults to 85 */
+  tintOpacity?: number;
+  /** Bottom base opacity (0-100), defaults to 95 */
+  baseOpacity?: number;
 }
 
 /**
- * Full-screen background layer with blur and tint overlay.
- * Use this behind content on screens that need a background image.
+ * Background layer with blur and tint overlay.
+ * Use 'fixed' for full-screen backgrounds, 'absolute' for container backgrounds.
  */
-export function BackgroundLayer({ teamId, tintColor }: BackgroundLayerProps) {
+export function BackgroundLayer({
+  teamId,
+  tintColor,
+  position = 'fixed',
+  tintOpacity = 85,
+  baseOpacity = 95,
+}: BackgroundLayerProps) {
   const backgroundImage = useTeamBackground(teamId);
 
   if (!backgroundImage) return null;
 
   // Default to neutral tint if no color provided
   const tint = tintColor ?? 'var(--neutral-900)';
+  const positionClass = position === 'fixed' ? 'fixed inset-0' : 'absolute inset-0';
 
   return (
     <>
       {/* Background image layer */}
       <div
-        className="fixed inset-0 bg-cover bg-center"
+        className={`${positionClass} bg-cover bg-center`}
         style={{ backgroundImage: `url(${backgroundImage})` }}
       />
 
-      {/* Blur + tint overlay (darker for readability) */}
+      {/* Blur + tint overlay */}
       <div
-        className="fixed inset-0 backdrop-blur-xl"
+        className={`${positionClass} backdrop-blur-xl`}
         style={{
           background: `linear-gradient(180deg,
-            color-mix(in srgb, ${tint} 85%, transparent) 0%,
-            color-mix(in srgb, var(--neutral-950) 95%, transparent) 100%)`,
+            color-mix(in srgb, ${tint} ${tintOpacity}%, transparent) 0%,
+            color-mix(in srgb, var(--neutral-950) ${baseOpacity}%, transparent) 100%)`,
         }}
       />
     </>

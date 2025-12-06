@@ -7,12 +7,13 @@ import {
   type SectionId,
   type Section,
 } from '../navigation';
-import { useDerivedGameState, useTeamTheme, useTeamBackground, useClearGameState, useQuitApp, useAutoSaveListener } from '../hooks';
+import { useDerivedGameState, useTeamTheme, useClearGameState, useQuitApp, useAutoSaveListener } from '../hooks';
 import { SectionButton } from './NavButtons';
 import { TopBar } from './TopBar';
 import { BottomBar } from './BottomBar';
 import { ConfirmDialog } from './ConfirmDialog';
 import { AutoSaveToast } from './AutoSaveToast';
+import { BackgroundLayer } from './BackgroundLayer';
 import {
   TeamProfile,
   SavedGames,
@@ -45,9 +46,6 @@ export function MainLayout() {
 
   // Apply team-based theming (CSS variables on :root)
   useTeamTheme(playerTeam?.primaryColor ?? null);
-
-  // Get random team background image
-  const backgroundImage = useTeamBackground(playerTeam?.id ?? null);
 
   // Safe: selectedSectionId always matches a valid section (defaults to 'team')
   const selectedSection = sections.find((s) => s.id === selectedSectionId) ?? sections[0];
@@ -144,23 +142,15 @@ export function MainLayout() {
 
         {/* Content Area - with background image, blur, and team tint */}
         <main className="content relative flex-1 overflow-hidden">
-          {/* Background image layer */}
-          {backgroundImage && (
-            <div
-              className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: `url(${backgroundImage})` }}
+          {playerTeam && (
+            <BackgroundLayer
+              teamId={playerTeam.id}
+              tintColor="var(--accent-900)"
+              position="absolute"
+              tintOpacity={75}
+              baseOpacity={92}
             />
           )}
-
-          {/* Blur + tint overlay */}
-          <div
-            className="absolute inset-0 backdrop-blur-xl"
-            style={{
-              background: `linear-gradient(180deg,
-                color-mix(in srgb, var(--accent-900) 75%, transparent) 0%,
-                color-mix(in srgb, var(--neutral-950) 92%, transparent) 100%)`,
-            }}
-          />
 
           {/* Content layer */}
           <div className="relative z-10 h-full p-8 overflow-auto">

@@ -61,10 +61,8 @@ function storeBackground(teamId: string, imageUrl: string): void {
   }
 }
 
-// Get all available background images (for screens without team context)
-function getAllBackgrounds(): string[] {
-  return Object.values(BACKGROUND_IMAGES).flat();
-}
+// Cache all backgrounds flattened (for 'all' queries)
+const ALL_BACKGROUNDS = Object.values(BACKGROUND_IMAGES).flat();
 
 /**
  * Hook to get a random team background image.
@@ -87,7 +85,7 @@ export function useTeamBackground(teamId: string | null): string | null {
 
     if (teamId === 'all') {
       // Use all available images
-      backgrounds = getAllBackgrounds();
+      backgrounds = ALL_BACKGROUNDS;
     } else {
       // Combine team-specific and generic backgrounds
       const teamBackgrounds = BACKGROUND_IMAGES[teamId] ?? [];
