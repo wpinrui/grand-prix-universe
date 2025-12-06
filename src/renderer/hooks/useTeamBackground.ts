@@ -74,6 +74,20 @@ function storeBackground(teamId: string, imageUrl: string): void {
 const ALL_BACKGROUNDS = Object.values(BACKGROUND_IMAGES).flat();
 
 /**
+ * Get available backgrounds for a team.
+ * - 'all' returns all backgrounds
+ * - Specific team ID returns team + generic backgrounds
+ */
+function getBackgroundsForTeam(teamId: string): string[] {
+  if (teamId === TEAM_ID_ALL) {
+    return ALL_BACKGROUNDS;
+  }
+  const teamBackgrounds = BACKGROUND_IMAGES[teamId] ?? [];
+  const genericBackgrounds = BACKGROUND_IMAGES[GENERIC_FOLDER] ?? [];
+  return [...teamBackgrounds, ...genericBackgrounds];
+}
+
+/**
  * Hook to get a random team background image.
  * - Selects randomly from team-specific + generic backgrounds
  * - Persists selection in sessionStorage for consistency
@@ -90,17 +104,7 @@ export function useTeamBackground(teamId: string | null): string | null {
       return stored.imageUrl;
     }
 
-    let backgrounds: string[];
-
-    if (teamId === TEAM_ID_ALL) {
-      // Use all available images
-      backgrounds = ALL_BACKGROUNDS;
-    } else {
-      // Combine team-specific and generic backgrounds
-      const teamBackgrounds = BACKGROUND_IMAGES[teamId] ?? [];
-      const genericBackgrounds = BACKGROUND_IMAGES[GENERIC_FOLDER] ?? [];
-      backgrounds = [...teamBackgrounds, ...genericBackgrounds];
-    }
+    const backgrounds = getBackgroundsForTeam(teamId);
 
     if (backgrounds.length === 0) {
       return null;
