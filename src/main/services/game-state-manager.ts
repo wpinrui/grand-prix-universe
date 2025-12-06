@@ -661,8 +661,14 @@ const LAP_TIME_VARIATION_MS = 5000;
 /** Number of laps for stub race */
 const STUB_RACE_LAPS = 50;
 
+/** Maximum gap to pole position in qualifying (in ms) */
+const MAX_GAP_TO_POLE_MS = 2000;
+
+/** Maximum gap to winner / total time variation in race (in ms) */
+const MAX_GAP_TO_WINNER_MS = 60000;
+
 /**
- * Shuffle array using Fisher-Yates algorithm
+ * Shuffle array using Fisher-Yates algorithm (returns new array)
  */
 function shuffleArray<T>(array: T[]): T[] {
   const result = [...array];
@@ -683,9 +689,7 @@ function generateStubRaceResult(
   raceNumber: number
 ): RaceWeekendResult {
   // Get all drivers with race seats
-  const raceDrivers = state.drivers.filter(
-    (d) => d.teamId !== null && d.role !== DriverRole.Test
-  );
+  const raceDrivers = state.drivers.filter(hasRaceSeat);
 
   // Shuffle for random grid order
   const gridOrder = shuffleArray(raceDrivers);
@@ -698,7 +702,7 @@ function generateStubRaceResult(
       teamId: driver.teamId!,
       gridPosition: index + 1,
       bestLapTime: lapTime,
-      gapToPole: index === 0 ? 0 : Math.random() * 2000,
+      gapToPole: index === 0 ? 0 : Math.random() * MAX_GAP_TO_POLE_MS,
     };
   });
 
@@ -732,8 +736,8 @@ function generateStubRaceResult(
       finishPosition,
       gridPosition,
       lapsCompleted: isDNF ? Math.floor(Math.random() * STUB_RACE_LAPS) : STUB_RACE_LAPS,
-      totalTime: isDNF ? undefined : BASE_LAP_TIME_MS * STUB_RACE_LAPS + Math.random() * 60000,
-      gapToWinner: finishPosition === 1 ? 0 : Math.random() * 60000,
+      totalTime: isDNF ? undefined : BASE_LAP_TIME_MS * STUB_RACE_LAPS + Math.random() * MAX_GAP_TO_WINNER_MS,
+      gapToWinner: finishPosition === 1 ? 0 : Math.random() * MAX_GAP_TO_WINNER_MS,
       points,
       fastestLap: isFastestLap,
       fastestLapTime: lapTime,
