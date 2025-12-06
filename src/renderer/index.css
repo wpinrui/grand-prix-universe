@@ -110,11 +110,11 @@ body {
 }
 
 .text-secondary {
-  color: var(--neutral-300);
+  color: var(--neutral-200);
 }
 
 .text-muted {
-  color: var(--neutral-200);
+  color: var(--neutral-300);
 }
 
 .text-heading {
