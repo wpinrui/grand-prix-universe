@@ -331,6 +331,31 @@ function calculateFinishMorale(
 }
 
 /**
+ * Shared stats present in both driver and constructor standings
+ */
+interface CommonStandingStats {
+  wins: number;
+  podiums: number;
+  polePositions: number;
+}
+
+/**
+ * Update common standing stats (wins, podiums, pole positions) based on race result
+ * Used by both driver and constructor standings updates
+ */
+function updateCommonStats(standing: CommonStandingStats, result: DriverRaceResult): void {
+  if (result.finishPosition === 1) {
+    standing.wins += 1;
+  }
+  if (isPodium(result.finishPosition)) {
+    standing.podiums += 1;
+  }
+  if (result.gridPosition === 1) {
+    standing.polePositions += 1;
+  }
+}
+
+/**
  * Sort standings by points (descending), then wins as tiebreaker
  * Also assigns position numbers based on sorted order
  * Returns a new array with new objects (pure function, no mutation)
@@ -386,16 +411,10 @@ function updateDriverStandings(
     // Add points
     standing.points += result.points;
 
-    // Update stats
-    if (result.finishPosition === 1) {
-      standing.wins += 1;
-    }
-    if (isPodium(result.finishPosition)) {
-      standing.podiums += 1;
-    }
-    if (result.gridPosition === 1) {
-      standing.polePositions += 1;
-    }
+    // Update common stats (wins, podiums, poles)
+    updateCommonStats(standing, result);
+
+    // Update driver-specific stats
     if (result.fastestLap) {
       standing.fastestLaps += 1;
     }
@@ -442,15 +461,7 @@ function updateConstructorStandings(
     standing.points += result.points;
 
     // Update stats (any driver achieving these counts for team)
-    if (result.finishPosition === 1) {
-      standing.wins += 1;
-    }
-    if (isPodium(result.finishPosition)) {
-      standing.podiums += 1;
-    }
-    if (result.gridPosition === 1) {
-      standing.polePositions += 1;
-    }
+    updateCommonStats(standing, result);
   }
 
   return sortAndAssignPositions(Array.from(standingsMap.values()));
