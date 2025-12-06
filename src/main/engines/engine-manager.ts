@@ -18,6 +18,7 @@ import type {
   ICarPerformanceEngine,
   IDriverPerformanceEngine,
   IRegulationEngine,
+  ITurnEngine,
 } from '../../shared/domain/engines';
 
 import {
@@ -32,6 +33,7 @@ import {
   StubCarPerformanceEngine,
   StubDriverPerformanceEngine,
   StubRegulationEngine,
+  StubTurnEngine,
 } from './stubs';
 
 export class EngineManager {
@@ -46,4 +48,5 @@ export class EngineManager {
   carPerformance: ICarPerformanceEngine = new StubCarPerformanceEngine();
   driverPerformance: IDriverPerformanceEngine = new StubDriverPerformanceEngine();
   regulation: IRegulationEngine = new StubRegulationEngine();
+  turn: ITurnEngine = new StubTurnEngine();
 }
