@@ -294,11 +294,39 @@ function generateTeamStateChanges(
 // RACE PROCESSING HELPERS
 // =============================================================================
 
+const PODIUM_THRESHOLD = 3; // Positions 1-3 count as podium
+
 /**
  * Check if a race result counts as a DNF (did not finish normally)
  */
 function isDNF(status: RaceFinishStatus): boolean {
   return status !== RaceFinishStatus.Finished && status !== RaceFinishStatus.Lapped;
+}
+
+/**
+ * Check if a finish position counts as a podium
+ */
+function isPodium(finishPosition: number | null): boolean {
+  return finishPosition !== null && finishPosition <= PODIUM_THRESHOLD;
+}
+
+/**
+ * Sort standings by points (descending), then wins as tiebreaker
+ * Also assigns position numbers based on sorted order
+ */
+function sortAndAssignPositions<T extends { points: number; wins: number; position: number }>(
+  standings: T[]
+): T[] {
+  const sorted = standings.sort((a, b) => {
+    if (b.points !== a.points) return b.points - a.points;
+    return b.wins - a.wins;
+  });
+
+  sorted.forEach((standing, index) => {
+    standing.position = index + 1;
+  });
+
+  return sorted;
 }
 
 /**
@@ -342,7 +370,7 @@ function updateDriverStandings(
     if (result.finishPosition === 1) {
       standing.wins += 1;
     }
-    if (result.finishPosition !== null && result.finishPosition <= 3) {
+    if (isPodium(result.finishPosition)) {
       standing.podiums += 1;
     }
     if (result.gridPosition === 1) {
@@ -356,18 +384,7 @@ function updateDriverStandings(
     }
   }
 
-  // Sort by points (descending), then by wins as tiebreaker
-  const sorted = Array.from(standingsMap.values()).sort((a, b) => {
-    if (b.points !== a.points) return b.points - a.points;
-    return b.wins - a.wins;
-  });
-
-  // Update positions
-  sorted.forEach((standing, index) => {
-    standing.position = index + 1;
-  });
-
-  return sorted;
+  return sortAndAssignPositions(Array.from(standingsMap.values()));
 }
 
 /**
@@ -408,7 +425,7 @@ function updateConstructorStandings(
     if (result.finishPosition === 1) {
       standing.wins += 1;
     }
-    if (result.finishPosition !== null && result.finishPosition <= 3) {
+    if (isPodium(result.finishPosition)) {
       standing.podiums += 1;
     }
     if (result.gridPosition === 1) {
@@ -416,18 +433,7 @@ function updateConstructorStandings(
     }
   }
 
-  // Sort by points (descending), then by wins as tiebreaker
-  const sorted = Array.from(standingsMap.values()).sort((a, b) => {
-    if (b.points !== a.points) return b.points - a.points;
-    return b.wins - a.wins;
-  });
-
-  // Update positions
-  sorted.forEach((standing, index) => {
-    standing.position = index + 1;
-  });
-
-  return sorted;
+  return sortAndAssignPositions(Array.from(standingsMap.values()));
 }
 
 /**
@@ -440,7 +446,7 @@ function calculateDriverMoraleChange(result: DriverRaceResult): number {
   if (result.finishPosition === 1) {
     return WIN_MORALE_BONUS;
   }
-  if (result.finishPosition !== null && result.finishPosition <= 3) {
+  if (isPodium(result.finishPosition)) {
     return PODIUM_MORALE_BONUS;
   }
   if (result.points > 0) {
@@ -459,7 +465,7 @@ function calculateDriverReputationChange(result: DriverRaceResult): number {
   if (result.finishPosition === 1) {
     return WIN_REPUTATION_BONUS;
   }
-  if (result.finishPosition !== null && result.finishPosition <= 3) {
+  if (isPodium(result.finishPosition)) {
     return PODIUM_REPUTATION_BONUS;
   }
   return 0;
@@ -496,7 +502,7 @@ function generateRaceTeamStateChanges(
 
     // Track best finish for morale calculation
     if (result.finishPosition !== null) {
-      const currentBest = teamBestFinish.get(result.teamId) ?? 999;
+      const currentBest = teamBestFinish.get(result.teamId) ?? Infinity;
       teamBestFinish.set(result.teamId, Math.min(currentBest, result.finishPosition));
     }
   }
@@ -507,7 +513,7 @@ function generateRaceTeamStateChanges(
     const state = teamStates[teamId];
     if (!state) continue;
 
-    const bestFinish = teamBestFinish.get(teamId) ?? 999;
+    const bestFinish = teamBestFinish.get(teamId);
 
     // Budget bonus for points
     const budgetChange = points * POINTS_BONUS_PER_POINT;
@@ -516,7 +522,7 @@ function generateRaceTeamStateChanges(
     let moraleBoost = 0;
     if (bestFinish === 1) {
       moraleBoost = WIN_MORALE_BONUS;
-    } else if (bestFinish <= 3) {
+    } else if (isPodium(bestFinish ?? null)) {
       moraleBoost = PODIUM_MORALE_BONUS;
     } else if (points > 0) {
       moraleBoost = POINTS_MORALE_BONUS;
