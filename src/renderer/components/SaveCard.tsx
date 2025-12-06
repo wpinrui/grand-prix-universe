@@ -1,6 +1,7 @@
 import { Download, Trash2, Loader2 } from 'lucide-react';
 import { TeamBadge } from './TeamBadge';
 import { formatDateTime } from '../utils/format';
+import { ICON_BUTTON_SUCCESS_CLASSES, ICON_BUTTON_DANGER_CLASSES } from '../utils/theme-styles';
 import type { SaveSlotInfo } from '../../shared/ipc';
 import type { Team } from '../../shared/domain';
 
@@ -41,7 +42,7 @@ export function SaveCard({ save, team, onLoad, onDelete, isLoading }: SaveCardPr
           type="button"
           onClick={onLoad}
           disabled={isLoading}
-          className="btn p-2 rounded-lg bg-emerald-600/20 text-emerald-400 border border-emerald-600/30 hover:bg-emerald-600/30 disabled:opacity-50 transition-all"
+          className={ICON_BUTTON_SUCCESS_CLASSES}
           title="Load save"
         >
           {isLoading ? (
@@ -53,7 +54,7 @@ export function SaveCard({ save, team, onLoad, onDelete, isLoading }: SaveCardPr
         <button
           type="button"
           onClick={onDelete}
-          className="btn p-2 rounded-lg bg-red-600/20 text-red-400 border border-red-600/30 hover:bg-red-600/30 transition-all"
+          className={ICON_BUTTON_DANGER_CLASSES}
           title="Delete save"
         >
           <Trash2 className="w-4 h-4" />

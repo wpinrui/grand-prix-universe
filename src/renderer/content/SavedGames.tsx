@@ -1,6 +1,5 @@
-import { useState } from 'react';
 import { Save, Loader2, FolderOpen } from 'lucide-react';
-import { useSavesList, useSaveGame, useLoadGame, useTeamsById, useOpenSavesFolder, useDeleteConfirmation } from '../hooks';
+import { useSavesList, useSaveGame, useTeamsById, useOpenSavesFolder, useDeleteConfirmation, useLoadGameHandler } from '../hooks';
 import { DeleteConfirmDialog } from '../components/DeleteConfirmDialog';
 import { SaveCard } from '../components/SaveCard';
 import { PRIMARY_BUTTON_CLASSES, GHOST_BUTTON_CLASSES, ERROR_ALERT_CLASSES, SUCCESS_ALERT_CLASSES } from '../utils/theme-styles';
@@ -19,34 +18,21 @@ interface SavedGamesProps {
 // ===========================================
 
 export function SavedGames({ onNavigateToProfile }: SavedGamesProps) {
-  const [loadingFilename, setLoadingFilename] = useState<string | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
-
   const { data: saves, isLoading: savesLoading } = useSavesList();
   const teamsById = useTeamsById();
   const saveGame = useSaveGame();
-  const loadGame = useLoadGame();
   const openSavesFolder = useOpenSavesFolder();
   const { deleteTarget, requestDelete, cancelDelete, confirmDelete } = useDeleteConfirmation();
+  const { loadingFilename, loadError, handleLoad } = useLoadGameHandler();
 
   const handleSave = () => {
     saveGame.mutate();
   };
 
-  const handleLoad = async (filename: string) => {
-    setLoadingFilename(filename);
-    setLoadError(null);
-    try {
-      const result = await loadGame.mutateAsync(filename);
-      if (result.success) {
-        onNavigateToProfile();
-      } else {
-        setLoadError('Failed to load save. The file may be corrupted.');
-      }
-    } catch {
-      setLoadError('Failed to load save. Please try again.');
-    } finally {
-      setLoadingFilename(null);
+  const onLoad = async (filename: string) => {
+    const success = await handleLoad(filename);
+    if (success) {
+      onNavigateToProfile();
     }
   };
 
@@ -111,7 +97,7 @@ export function SavedGames({ onNavigateToProfile }: SavedGamesProps) {
               key={save.filename}
               save={save}
               team={teamsById[save.teamId]}
-              onLoad={() => handleLoad(save.filename)}
+              onLoad={() => onLoad(save.filename)}
               onDelete={() => requestDelete(save)}
               isLoading={loadingFilename === save.filename}
             />

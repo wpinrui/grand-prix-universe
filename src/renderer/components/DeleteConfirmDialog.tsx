@@ -1,4 +1,4 @@
-import { GHOST_BUTTON_CLASSES } from '../utils/theme-styles';
+import { GHOST_BUTTON_CLASSES, DANGER_BUTTON_CLASSES } from '../utils/theme-styles';
 
 interface DeleteConfirmDialogProps {
   saveName: string;
@@ -25,7 +25,7 @@ export function DeleteConfirmDialog({ saveName, onConfirm, onCancel }: DeleteCon
           <button
             type="button"
             onClick={onConfirm}
-            className="btn px-4 py-2 font-semibold bg-red-600 text-white border border-red-500 rounded-lg hover:bg-red-500 transition-all duration-200"
+            className={DANGER_BUTTON_CLASSES}
           >
             Delete
           </button>
