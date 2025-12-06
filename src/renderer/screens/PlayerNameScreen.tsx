@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { RoutePaths } from '../routes';
 import { PRIMARY_BUTTON_CLASSES, GHOST_BUTTON_CLASSES } from '../utils/theme-styles';
+import { TEAM_ID_ALL } from '../hooks';
 import { BackgroundLayer } from '../components';
 
 /**
@@ -30,7 +31,7 @@ export function PlayerNameScreen() {
 
   return (
     <div className="player-name-screen relative flex items-center justify-center w-full min-h-screen surface-base">
-      <BackgroundLayer teamId="all" />
+      <BackgroundLayer teamId={TEAM_ID_ALL} />
 
       {/* Central card */}
       <form onSubmit={handleSubmit} className="relative z-10 card p-8 w-full max-w-md">

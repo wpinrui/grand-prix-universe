@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Play, Plus, FolderOpen, Loader2 } from 'lucide-react';
 import { RoutePaths } from '../routes';
 import { PRIMARY_BUTTON_CLASSES, GHOST_BUTTON_CLASSES, ERROR_ALERT_CLASSES } from '../utils/theme-styles';
-import { useSavesList, useLoadGameHandler } from '../hooks';
+import { useSavesList, useLoadGameHandler, TEAM_ID_ALL } from '../hooks';
 import { BackgroundLayer } from '../components';
 
 export function TitleScreen() {
@@ -24,7 +24,7 @@ export function TitleScreen() {
 
   return (
     <div className="title-screen relative flex items-center justify-center w-full min-h-screen surface-base">
-      <BackgroundLayer teamId="all" />
+      <BackgroundLayer teamId={TEAM_ID_ALL} />
 
       {/* Central card */}
       <div className="relative z-10 card p-12 text-center max-w-lg">
