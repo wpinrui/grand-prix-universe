@@ -711,7 +711,7 @@ function generateStubRaceResult(
 
   // Generate race results
   const race: DriverRaceResult[] = finishOrder.map((driver, index) => {
-    const gridPos = gridOrder.findIndex((d) => d.id === driver.id) + 1;
+    const gridPosition = gridOrder.findIndex((d) => d.id === driver.id) + 1;
     const isDNF = Math.random() < DNF_PROBABILITY;
     const finishPosition = isDNF ? null : index + 1;
     const points =
@@ -730,7 +730,7 @@ function generateStubRaceResult(
       driverId: driver.id,
       teamId: driver.teamId!,
       finishPosition,
-      gridPosition: gridPos,
+      gridPosition,
       lapsCompleted: isDNF ? Math.floor(Math.random() * STUB_RACE_LAPS) : STUB_RACE_LAPS,
       totalTime: isDNF ? undefined : BASE_LAP_TIME_MS * STUB_RACE_LAPS + Math.random() * 60000,
       gapToWinner: finishPosition === 1 ? 0 : Math.random() * 60000,
@@ -962,20 +962,8 @@ export const GameStateManager = {
       return applyBlockedResult(state, turnResult);
     }
 
-    // Check if we're entering a race week
-    if (turnResult.raceWeek) {
-      // Entering race weekend - advance date but set RaceWeekend phase
-      state.currentDate = turnResult.newDate;
-      state.phase = GamePhase.RaceWeekend;
-
-      // Apply weekly state changes
-      applyDriverStateChanges(state, turnResult.driverStateChanges);
-      applyTeamStateChanges(state, turnResult.teamStateChanges);
-
-      return { success: true, state };
-    }
-
-    // Normal week - apply all changes
+    // Apply turn result (handles both race week entry and normal weeks)
+    // When raceWeek is set, newPhase is already GamePhase.RaceWeekend
     applyTurnResult(state, turnResult);
 
     return { success: true, state };
