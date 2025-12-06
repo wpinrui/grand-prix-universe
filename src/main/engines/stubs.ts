@@ -306,27 +306,27 @@ function isDNF(status: RaceFinishStatus): boolean {
 /**
  * Check if a finish position counts as a podium
  */
-function isPodium(finishPosition: number | null): boolean {
-  return finishPosition !== null && finishPosition <= PODIUM_THRESHOLD;
+function isPodium(finishPosition: number | null | undefined): boolean {
+  return finishPosition != null && finishPosition <= PODIUM_THRESHOLD;
 }
 
 /**
  * Sort standings by points (descending), then wins as tiebreaker
  * Also assigns position numbers based on sorted order
+ * Returns a new array with new objects (pure function, no mutation)
  */
 function sortAndAssignPositions<T extends { points: number; wins: number; position: number }>(
   standings: T[]
 ): T[] {
-  const sorted = standings.sort((a, b) => {
-    if (b.points !== a.points) return b.points - a.points;
-    return b.wins - a.wins;
-  });
-
-  sorted.forEach((standing, index) => {
-    standing.position = index + 1;
-  });
-
-  return sorted;
+  return [...standings]
+    .sort((a, b) => {
+      if (b.points !== a.points) return b.points - a.points;
+      return b.wins - a.wins;
+    })
+    .map((standing, index) => ({
+      ...standing,
+      position: index + 1,
+    }));
 }
 
 /**
@@ -522,7 +522,7 @@ function generateRaceTeamStateChanges(
     let moraleBoost = 0;
     if (bestFinish === 1) {
       moraleBoost = WIN_MORALE_BONUS;
-    } else if (isPodium(bestFinish ?? null)) {
+    } else if (isPodium(bestFinish)) {
       moraleBoost = PODIUM_MORALE_BONUS;
     } else if (points > 0) {
       moraleBoost = POINTS_MORALE_BONUS;
