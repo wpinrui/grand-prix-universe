@@ -149,6 +149,18 @@ const FATIGUE_THRESHOLD = 80; // Fatigue level above which fitness drops
 const WEEKLY_SALARY_RATE = 0.001; // Weekly salary as percentage of budget (0.1%)
 
 /**
+ * Weekly change ranges for stub randomization
+ * These are placeholder values - real implementation will use
+ * more sophisticated calculations based on events, results, etc.
+ */
+const WEEKLY_FATIGUE_MIN = 1;
+const WEEKLY_FATIGUE_MAX = 3;
+const WEEKLY_MORALE_MIN = -2;
+const WEEKLY_MORALE_MAX = 2;
+const WEEKLY_FLUCTUATION_MIN = -1;
+const WEEKLY_FLUCTUATION_MAX = 1;
+
+/**
  * Determine the game phase for a given week
  */
 function determinePhaseForWeek(
@@ -193,8 +205,8 @@ function generateDriverStateChanges(
 
     const change: DriverStateChange = {
       driverId: driver.id,
-      fatigueChange: randomInt(1, 3),
-      moraleChange: randomInt(-2, 2),
+      fatigueChange: randomInt(WEEKLY_FATIGUE_MIN, WEEKLY_FATIGUE_MAX),
+      moraleChange: randomInt(WEEKLY_MORALE_MIN, WEEKLY_MORALE_MAX),
     };
 
     // Fitness drops if fatigued
@@ -235,17 +247,15 @@ function generateTeamStateChanges(
     const budgetChange = -Math.round(team.budget * WEEKLY_SALARY_RATE);
 
     // Department morale fluctuations
-    const moraleChanges: Partial<Record<Department, number>> = {
-      [Department.Commercial]: randomInt(-1, 1),
-      [Department.Design]: randomInt(-1, 1),
-      [Department.Engineering]: randomInt(-1, 1),
-      [Department.Mechanics]: randomInt(-1, 1),
-    };
+    const moraleChanges: Partial<Record<Department, number>> = {};
+    for (const dept of Object.values(Department)) {
+      moraleChanges[dept] = randomInt(WEEKLY_FLUCTUATION_MIN, WEEKLY_FLUCTUATION_MAX);
+    }
 
     // Sponsor satisfaction fluctuations
     const sponsorSatisfactionChanges: Record<string, number> = {};
     for (const sponsorId of Object.keys(state.sponsorSatisfaction)) {
-      sponsorSatisfactionChanges[sponsorId] = randomInt(-1, 1);
+      sponsorSatisfactionChanges[sponsorId] = randomInt(WEEKLY_FLUCTUATION_MIN, WEEKLY_FLUCTUATION_MAX);
     }
 
     changes.push({
