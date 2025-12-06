@@ -645,6 +645,80 @@ function shouldRetire(age: number, minAge: number, maxAge: number): boolean {
 }
 
 /**
+ * All driver attributes that can change over time
+ */
+const DRIVER_ATTRIBUTES: (keyof DriverAttributes)[] = [
+  'pace',
+  'consistency',
+  'focus',
+  'overtaking',
+  'wetWeather',
+  'smoothness',
+  'defending',
+];
+
+/**
+ * Maximum number of attributes a young driver can improve per season
+ */
+const MAX_YOUNG_DRIVER_IMPROVEMENTS = 2;
+
+/**
+ * Select random attributes for improvement (young drivers)
+ * Shuffles to avoid bias toward attributes earlier in the list
+ */
+function selectAttributesForImprovement(): (keyof DriverAttributes)[] {
+  const candidates = DRIVER_ATTRIBUTES.filter(
+    () => Math.random() < ATTRIBUTE_IMPROVEMENT_CHANCE
+  );
+  return shuffleInPlace([...candidates]).slice(0, MAX_YOUNG_DRIVER_IMPROVEMENTS);
+}
+
+/**
+ * Calculate decline chance based on years over decline age
+ */
+function calculateDeclineChance(yearsOverDeclineAge: number): number {
+  return Math.min(
+    DECLINE_MAX_CHANCE,
+    DECLINE_BASE_CHANCE + yearsOverDeclineAge * DECLINE_CHANCE_PER_YEAR
+  );
+}
+
+/**
+ * Select random attributes for decline (aging drivers)
+ */
+function selectAttributesForDecline(
+  yearsOverDeclineAge: number
+): (keyof DriverAttributes)[] {
+  const declineChance = calculateDeclineChance(yearsOverDeclineAge);
+  return DRIVER_ATTRIBUTES.filter(() => Math.random() < declineChance);
+}
+
+/**
+ * Generate improvement changes for a young driver
+ */
+function generateYoungDriverChanges(driverId: string): DriverAttributeChange[] {
+  return selectAttributesForImprovement().map((attribute) => ({
+    driverId,
+    attribute,
+    change: randomInt(1, YOUNG_DRIVER_IMPROVEMENT_MAX),
+  }));
+}
+
+/**
+ * Generate decline changes for an aging driver
+ */
+function generateAgingDriverChanges(
+  driverId: string,
+  yearsOverDeclineAge: number
+): DriverAttributeChange[] {
+  return selectAttributesForDecline(yearsOverDeclineAge).map((attribute) => ({
+    driverId,
+    attribute,
+    change: -randomInt(1, OLD_DRIVER_DECLINE_MAX),
+  }));
+}
+
+/**
  * Generate attribute changes for a driver based on age
  * Young drivers improve, older drivers decline
  */
@@ -653,49 +727,15 @@ function generateDriverAttributeChanges(
   currentSeason: number
 ): DriverAttributeChange[] {
   const changes: DriverAttributeChange[] = [];
-  const attributes: (keyof DriverAttributes)[] = [
-    'pace',
-    'consistency',
-    'focus',
-    'overtaking',
-    'wetWeather',
-    'smoothness',
-    'defending',
-  ];
 
   for (const driver of drivers) {
     const age = calculateAge(driver.dateOfBirth, currentSeason);
 
-    // Determine change direction based on age
     if (age < DRIVER_PEAK_AGE) {
-      // Young drivers: chance to improve (1-2 attributes)
-      const improvingAttributes = attributes
-        .filter(() => Math.random() < ATTRIBUTE_IMPROVEMENT_CHANCE)
-        .slice(0, 2); // Max 2 improvements
-
-      for (const attr of improvingAttributes) {
-        changes.push({
-          driverId: driver.id,
-          attribute: attr,
-          change: randomInt(1, YOUNG_DRIVER_IMPROVEMENT_MAX),
-        });
-      }
+      changes.push(...generateYoungDriverChanges(driver.id));
     } else if (age >= DRIVER_DECLINE_START_AGE) {
-      // Older drivers: decline (1-3 attributes based on age)
       const yearsOverDeclineAge = age - DRIVER_DECLINE_START_AGE;
-      const declineChance = Math.min(
-        DECLINE_MAX_CHANCE,
-        DECLINE_BASE_CHANCE + yearsOverDeclineAge * DECLINE_CHANCE_PER_YEAR
-      );
-      const decliningAttributes = attributes.filter(() => Math.random() < declineChance);
-
-      for (const attr of decliningAttributes) {
-        changes.push({
-          driverId: driver.id,
-          attribute: attr,
-          change: -randomInt(1, OLD_DRIVER_DECLINE_MAX),
-        });
-      }
+      changes.push(...generateAgingDriverChanges(driver.id, yearsOverDeclineAge));
     }
     // Peak age drivers (28-31): no changes
   }
