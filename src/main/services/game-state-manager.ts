@@ -23,6 +23,7 @@ import type {
   TurnProcessingInput,
   TurnProcessingResult,
   RaceProcessingInput,
+  RaceProcessingResult,
   DriverStateChange,
   TeamStateChange,
   ChampionshipStandings,
@@ -692,6 +693,18 @@ function markRaceComplete(state: GameState, circuitId: string, result: RaceWeeke
 }
 
 /**
+ * Apply race processing result to game state (mutates state)
+ */
+function applyRaceResult(
+  state: GameState,
+  raceResult: RaceProcessingResult
+): void {
+  applyDriverStateChanges(state, raceResult.driverStateChanges);
+  applyTeamStateChanges(state, raceResult.teamStateChanges);
+  updateChampionshipStandings(state, raceResult.updatedStandings);
+}
+
+/**
  * Apply blocked turn result to state and return blocked AdvanceWeekResult.
  * Used when advancement is blocked (e.g., post-season reached).
  */
@@ -719,6 +732,47 @@ function processTurn(state: GameState): AdvanceWeekResult {
 
   applyTurnResult(state, turnResult);
   return { success: true, state };
+}
+
+/**
+ * Find the current race entry for a race weekend.
+ * Returns the calendar entry if found, or an error result if not.
+ */
+function findCurrentRace(
+  state: GameState
+): { race: CalendarEntry } | { error: AdvanceWeekResult } {
+  const race = state.currentSeason.calendar.find(
+    (entry) => entry.weekNumber === state.currentDate.week && !entry.completed
+  );
+
+  if (!race) {
+    return { error: { success: false, error: 'No race found for current week' } };
+  }
+
+  return { race };
+}
+
+/**
+ * Process a race weekend: generate result, apply changes, mark complete.
+ * Called when the game is in RaceWeekend phase.
+ */
+function processRaceWeekend(state: GameState, currentRace: CalendarEntry): void {
+  // Generate stub race result
+  const raceResult = generateStubRaceResult(
+    state,
+    currentRace.circuitId,
+    currentRace.raceNumber
+  );
+
+  // Process race through engine
+  const raceInput = buildRaceInput(state, raceResult);
+  const raceProcessingResult = engineManager.turn.processRace(raceInput);
+
+  // Apply race results to state
+  applyRaceResult(state, raceProcessingResult);
+
+  // Mark race as complete
+  markRaceComplete(state, currentRace.circuitId, raceResult);
 }
 
 /**
@@ -803,33 +857,11 @@ export const GameStateManager = {
 
     // Handle RaceWeekend phase - run the race
     if (state.phase === GamePhase.RaceWeekend) {
-      // Find the current race
-      const currentRace = state.currentSeason.calendar.find(
-        (entry) => entry.weekNumber === state.currentDate.week && !entry.completed
-      );
-
-      if (!currentRace) {
-        return { success: false, error: 'No race found for current week' };
+      const result = findCurrentRace(state);
+      if ('error' in result) {
+        return result.error;
       }
-
-      // Generate stub race result
-      const raceResult = generateStubRaceResult(
-        state,
-        currentRace.circuitId,
-        currentRace.raceNumber
-      );
-
-      // Process race through engine
-      const raceInput = buildRaceInput(state, raceResult);
-      const raceProcessingResult = engineManager.turn.processRace(raceInput);
-
-      // Apply race results to state
-      applyDriverStateChanges(state, raceProcessingResult.driverStateChanges);
-      applyTeamStateChanges(state, raceProcessingResult.teamStateChanges);
-      updateChampionshipStandings(state, raceProcessingResult.updatedStandings);
-
-      // Mark race as complete
-      markRaceComplete(state, currentRace.circuitId, raceResult);
+      processRaceWeekend(state, result.race);
     }
 
     // Advance to next week (handles blocked state and phase transitions)
