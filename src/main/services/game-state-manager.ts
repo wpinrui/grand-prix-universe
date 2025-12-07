@@ -739,6 +739,8 @@ function buildSeasonEndInput(state: GameState): SeasonEndInput {
 
 /**
  * Apply all season end results to game state (mutates state)
+ * Note: Does NOT update calendar - that's handled by transitionToNewSeason
+ * to avoid polluting the archive with the new calendar
  */
 function applySeasonEndResult(state: GameState, result: SeasonEndResult): void {
   applyDriverAttributeChanges(state, result.driverAttributeChanges);
@@ -746,9 +748,6 @@ function applySeasonEndResult(state: GameState, result: SeasonEndResult): void {
   applyDriverRetirements(state, result.retiredDriverIds);
   applyChiefRetirements(state, result.retiredChiefIds);
   applyResetDriverStates(state, result.resetDriverStates);
-
-  // Update calendar with new season's schedule
-  state.currentSeason.calendar = result.newCalendar;
 }
 
 /**
