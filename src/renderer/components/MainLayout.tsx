@@ -23,7 +23,9 @@ import {
   isActionType,
   type ActionType,
   Championship,
+  RaceWeekend,
 } from '../content';
+import { GamePhase } from '../../shared/domain';
 import { RoutePaths } from '../routes';
 
 type ActiveDialog = ActionType | null;
@@ -82,6 +84,11 @@ export function MainLayout() {
   const isOptionsScreen = selectedSectionId === 'options';
 
   const renderContent = () => {
+    // Race weekend takes over the entire screen
+    if (gameState?.phase === GamePhase.RaceWeekend) {
+      return <RaceWeekend />;
+    }
+
     if (selectedSectionId === 'team' && selectedSubItemId === 'profile') {
       return <TeamProfile />;
     }

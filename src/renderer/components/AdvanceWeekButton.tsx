@@ -1,9 +1,9 @@
-import { ChevronRight, Flag, Loader2, MapPin } from 'lucide-react';
+import { ChevronRight, Loader2, MapPin } from 'lucide-react';
 import { useDerivedGameState, useAdvanceWeek, useGoToCircuit } from '../hooks';
 import { GamePhase, CalendarEntry } from '../../shared/domain';
 import { ACCENT_BUTTON_CLASSES, ACCENT_BORDERED_BUTTON_STYLE } from '../utils/theme-styles';
 
-type ButtonAction = 'advanceWeek' | 'goToCircuit' | 'runRace' | 'disabled';
+type ButtonAction = 'advanceWeek' | 'goToCircuit' | 'disabled';
 
 /**
  * Determine the button action and text based on game state
@@ -18,8 +18,9 @@ function getButtonConfig(
     return { action: 'disabled', text: 'Season Complete' };
   }
 
+  // Hide button during race weekend - race screen handles progression
   if (phase === GamePhase.RaceWeekend) {
-    return { action: 'runRace', text: `Run ${raceName}` };
+    return { action: 'disabled', text: '' };
   }
 
   // Check if current week has a race (next uncompleted race is this week)
@@ -50,16 +51,21 @@ export function AdvanceWeekButton() {
     raceName
   );
 
+  // Hide during race weekend
+  if (phase === GamePhase.RaceWeekend) {
+    return null;
+  }
+
   const handleClick = () => {
     if (action === 'goToCircuit') {
       goToCircuit.mutate();
-    } else if (action === 'advanceWeek' || action === 'runRace') {
+    } else if (action === 'advanceWeek') {
       advanceWeek.mutate();
     }
   };
 
   const isDisabled = action === 'disabled' || isLoading;
-  const Icon = action === 'runRace' ? Flag : action === 'goToCircuit' ? MapPin : ChevronRight;
+  const Icon = action === 'goToCircuit' ? MapPin : ChevronRight;
 
   return (
     <button
