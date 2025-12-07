@@ -8,7 +8,7 @@
 
 import { useCallback, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { IpcChannels, IpcEvents, type SaveResult, type LoadResult, type SaveSlotInfo } from '../../shared/ipc';
+import { IpcChannels, IpcEvents, type SaveResult, type LoadResult, type SaveSlotInfo, type AdvanceWeekResult } from '../../shared/ipc';
 import type {
   Team,
   Driver,
@@ -142,6 +142,19 @@ export function useNewGame() {
     mutationFn: (params) => window.electronAPI.invoke(IpcChannels.GAME_NEW, params),
     onSuccess: (newState) => {
       queryClient.setQueryData(queryKeys.gameState, newState);
+    },
+  });
+}
+
+export function useAdvanceWeek() {
+  const queryClient = useQueryClient();
+
+  return useMutation<AdvanceWeekResult, Error, void>({
+    mutationFn: () => window.electronAPI.invoke(IpcChannels.GAME_ADVANCE_WEEK),
+    onSuccess: (result) => {
+      if (result.success && result.state) {
+        queryClient.setQueryData(queryKeys.gameState, result.state);
+      }
     },
   });
 }
