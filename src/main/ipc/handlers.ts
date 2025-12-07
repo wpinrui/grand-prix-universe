@@ -74,6 +74,10 @@ export function registerIpcHandlers(): void {
     return GameStateManager.getCurrentState();
   });
 
+  ipcMain.handle(IpcChannels.GAME_ADVANCE_WEEK, () => {
+    return GameStateManager.advanceWeek();
+  });
+
   // Save/Load handlers
   ipcMain.handle(IpcChannels.GAME_SAVE, async () => {
     return GameStateManager.saveGame();

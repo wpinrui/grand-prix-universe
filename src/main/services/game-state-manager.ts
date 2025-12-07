@@ -10,7 +10,24 @@
 import { BrowserWindow } from 'electron';
 import { ConfigLoader } from './config-loader';
 import { SaveManager } from './save-manager';
-import { IpcEvents, type IpcEventPayloads, type SaveResult, type LoadResult } from '../../shared/ipc';
+import { EngineManager } from '../engines/engine-manager';
+import { generateStubRaceResult } from '../engines/stubs';
+import {
+  IpcEvents,
+  type IpcEventPayloads,
+  type SaveResult,
+  type LoadResult,
+  type AdvanceWeekResult,
+} from '../../shared/ipc';
+import type {
+  TurnProcessingInput,
+  TurnProcessingResult,
+  RaceProcessingInput,
+  RaceProcessingResult,
+  DriverStateChange,
+  TeamStateChange,
+  ChampionshipStandings,
+} from '../../shared/domain/engines';
 import type {
   GameState,
   GameDate,
@@ -34,13 +51,14 @@ import type {
   GameRules,
   SeasonRegulations,
   NewGameParams,
+  RaceWeekendResult,
 } from '../../shared/domain';
 import {
   GamePhase,
   Department,
   ManufacturerType,
   ManufacturerDealType,
-  DriverRole,
+  hasRaceSeat,
 } from '../../shared/domain';
 
 /** Current save format version */
@@ -96,6 +114,17 @@ function cloneDeep<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
+/** Maximum value for percentage-based stats (morale, fitness, etc.) */
+const MAX_PERCENTAGE = 100;
+
+/**
+ * Clamps a value between 0 and MAX_PERCENTAGE (100).
+ * Used for all percentage-based stats like morale, fitness, fatigue, etc.
+ */
+function clampPercentage(value: number): number {
+  return Math.max(0, Math.min(MAX_PERCENTAGE, value));
+}
+
 /**
  * Creates initial runtime state for a driver
  */
@@ -146,14 +175,6 @@ function createInitialTeamState(
       handlingProblemsFound: [],
     },
   };
-}
-
-/**
- * Type guard: driver has a race seat (assigned to a team and not a test driver)
- * Used to filter drivers for championship standings
- */
-function hasRaceSeat(driver: Driver): driver is Driver & { teamId: string } {
-  return driver.teamId !== null && driver.role !== DriverRole.Test;
 }
 
 /** All entity arrays loaded from config */
@@ -472,6 +493,9 @@ function buildGameState(params: BuildGameStateParams): GameState {
 /** Auto-save timer handle */
 let autoSaveTimer: ReturnType<typeof setInterval> | null = null;
 
+/** Shared engine manager instance */
+const engineManager = new EngineManager();
+
 /**
  * Sends a typed event to all renderer windows
  */
@@ -511,6 +535,244 @@ function stopAutoSave(): void {
     clearInterval(autoSaveTimer);
     autoSaveTimer = null;
   }
+}
+
+// =============================================================================
+// STATE CHANGE APPLICATION HELPERS
+// =============================================================================
+
+/**
+ * Apply driver state changes to game state (mutates state)
+ */
+function applyDriverStateChanges(
+  state: GameState,
+  changes: DriverStateChange[]
+): void {
+  for (const change of changes) {
+    const driverState = state.driverStates[change.driverId];
+    if (!driverState) continue;
+
+    if (change.fatigueChange !== undefined) {
+      driverState.fatigue = clampPercentage(driverState.fatigue + change.fatigueChange);
+    }
+    if (change.fitnessChange !== undefined) {
+      driverState.fitness = clampPercentage(driverState.fitness + change.fitnessChange);
+    }
+    if (change.moraleChange !== undefined) {
+      driverState.morale = clampPercentage(driverState.morale + change.moraleChange);
+    }
+    if (change.setInjuryWeeks !== undefined) {
+      driverState.injuryWeeksRemaining = change.setInjuryWeeks;
+    }
+    if (change.setBanRaces !== undefined) {
+      driverState.banRacesRemaining = change.setBanRaces;
+    }
+    if (change.engineUnitsUsedChange !== undefined) {
+      driverState.engineUnitsUsed += change.engineUnitsUsedChange;
+    }
+    if (change.gearboxRaceCountChange !== undefined) {
+      driverState.gearboxRaceCount += change.gearboxRaceCountChange;
+    }
+
+    // Reputation changes apply to the driver entity, not runtime state
+    if (change.reputationChange !== undefined) {
+      const driver = state.drivers.find((d) => d.id === change.driverId);
+      if (driver) {
+        driver.reputation = clampPercentage(driver.reputation + change.reputationChange);
+      }
+    }
+  }
+}
+
+/**
+ * Apply team state changes to game state (mutates state)
+ */
+function applyTeamStateChanges(
+  state: GameState,
+  changes: TeamStateChange[]
+): void {
+  for (const change of changes) {
+    const teamState = state.teamStates[change.teamId];
+    const team = state.teams.find((t) => t.id === change.teamId);
+    if (!teamState || !team) continue;
+
+    if (change.budgetChange !== undefined) {
+      team.budget += change.budgetChange;
+    }
+
+    if (change.moraleChanges) {
+      for (const [dept, delta] of Object.entries(change.moraleChanges)) {
+        const department = dept as Department;
+        if (teamState.morale[department] !== undefined && delta !== undefined) {
+          teamState.morale[department] = clampPercentage(teamState.morale[department] + delta);
+        }
+      }
+    }
+
+    if (change.sponsorSatisfactionChanges) {
+      for (const [sponsorId, delta] of Object.entries(change.sponsorSatisfactionChanges)) {
+        if (teamState.sponsorSatisfaction[sponsorId] !== undefined) {
+          teamState.sponsorSatisfaction[sponsorId] = clampPercentage(
+            teamState.sponsorSatisfaction[sponsorId] + delta
+          );
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Update championship standings in game state (mutates state)
+ */
+function updateChampionshipStandings(
+  state: GameState,
+  standings: ChampionshipStandings
+): void {
+  state.currentSeason.driverStandings = standings.drivers;
+  state.currentSeason.constructorStandings = standings.constructors;
+}
+
+// =============================================================================
+// TURN PROCESSING HELPERS
+// =============================================================================
+
+/**
+ * Build TurnProcessingInput from current game state
+ */
+function buildTurnInput(state: GameState): TurnProcessingInput {
+  return {
+    currentDate: state.currentDate,
+    phase: state.phase,
+    calendar: state.currentSeason.calendar,
+    drivers: state.drivers,
+    teams: state.teams,
+    chiefs: state.chiefs,
+    driverStates: state.driverStates,
+    teamStates: state.teamStates,
+    sponsorDeals: state.sponsorDeals,
+    manufacturerContracts: state.manufacturerContracts,
+  };
+}
+
+/**
+ * Build RaceProcessingInput from current game state and race result
+ */
+function buildRaceInput(state: GameState, raceResult: RaceWeekendResult): RaceProcessingInput {
+  return {
+    drivers: state.drivers,
+    teams: state.teams,
+    driverStates: state.driverStates,
+    teamStates: state.teamStates,
+    raceResult,
+    currentStandings: {
+      drivers: state.currentSeason.driverStandings,
+      constructors: state.currentSeason.constructorStandings,
+    },
+  };
+}
+
+/**
+ * Apply turn processing result to game state (mutates state)
+ */
+function applyTurnResult(state: GameState, result: TurnProcessingResult): void {
+  state.currentDate = result.newDate;
+  state.phase = result.newPhase;
+  applyDriverStateChanges(state, result.driverStateChanges);
+  applyTeamStateChanges(state, result.teamStateChanges);
+}
+
+/**
+ * Mark calendar entry as completed with race result
+ */
+function markRaceComplete(state: GameState, circuitId: string, result: RaceWeekendResult): void {
+  const entry = state.currentSeason.calendar.find((e) => e.circuitId === circuitId);
+  if (entry) {
+    entry.completed = true;
+    entry.result = result;
+  }
+}
+
+/**
+ * Apply race processing result to game state (mutates state)
+ */
+function applyRaceResult(
+  state: GameState,
+  raceResult: RaceProcessingResult
+): void {
+  applyDriverStateChanges(state, raceResult.driverStateChanges);
+  applyTeamStateChanges(state, raceResult.teamStateChanges);
+  updateChampionshipStandings(state, raceResult.updatedStandings);
+}
+
+/**
+ * Apply blocked turn result to state and return blocked AdvanceWeekResult.
+ * Used when advancement is blocked (e.g., post-season reached).
+ */
+function applyBlockedResult(state: GameState, turnResult: TurnProcessingResult): AdvanceWeekResult {
+  state.currentDate = turnResult.newDate;
+  state.phase = turnResult.newPhase;
+  return {
+    success: true,
+    state,
+    blocked: turnResult.blocked,
+  };
+}
+
+/**
+ * Process a turn and apply results to state.
+ * Handles both blocked and normal turn outcomes.
+ */
+function processTurn(state: GameState): AdvanceWeekResult {
+  const turnInput = buildTurnInput(state);
+  const turnResult = engineManager.turn.processWeek(turnInput);
+
+  if (turnResult.blocked) {
+    return applyBlockedResult(state, turnResult);
+  }
+
+  applyTurnResult(state, turnResult);
+  return { success: true, state };
+}
+
+/**
+ * Find the current race entry for a race weekend.
+ * Returns the calendar entry if found, or an error result if not.
+ */
+function findCurrentRace(
+  state: GameState
+): { race: CalendarEntry } | { error: AdvanceWeekResult } {
+  const race = state.currentSeason.calendar.find(
+    (entry) => entry.weekNumber === state.currentDate.week && !entry.completed
+  );
+
+  if (!race) {
+    return { error: { success: false, error: 'No race found for current week' } };
+  }
+
+  return { race };
+}
+
+/**
+ * Process a race weekend: generate result, apply changes, mark complete.
+ * Called when the game is in RaceWeekend phase.
+ */
+function processRaceWeekend(state: GameState, currentRace: CalendarEntry): void {
+  // Generate stub race result
+  const raceResult = generateStubRaceResult(
+    state,
+    currentRace.circuitId,
+    currentRace.raceNumber
+  );
+
+  // Process race through engine
+  const raceInput = buildRaceInput(state, raceResult);
+  const raceProcessingResult = engineManager.turn.processRace(raceInput);
+
+  // Apply race results to state
+  applyRaceResult(state, raceProcessingResult);
+
+  // Mark race as complete
+  markRaceComplete(state, currentRace.circuitId, raceResult);
 }
 
 /**
@@ -577,6 +839,33 @@ export const GameStateManager = {
   clearState(): void {
     stopAutoSave();
     GameStateManager.currentState = null;
+  },
+
+  /**
+   * Advances the game by one week.
+   *
+   * Logic flow:
+   * 1. If PostSeason → return blocked (player must end season first)
+   * 2. If RaceWeekend → run race, process results, then advance
+   * 3. Otherwise → process weekly changes, check for upcoming race
+   */
+  advanceWeek(): AdvanceWeekResult {
+    const state = GameStateManager.currentState;
+    if (!state) {
+      return { success: false, error: 'No active game' };
+    }
+
+    // Handle RaceWeekend phase - run the race
+    if (state.phase === GamePhase.RaceWeekend) {
+      const result = findCurrentRace(state);
+      if ('error' in result) {
+        return result.error;
+      }
+      processRaceWeekend(state, result.race);
+    }
+
+    // Advance to next week (handles blocked state and phase transitions)
+    return processTurn(state);
   },
 
   /**

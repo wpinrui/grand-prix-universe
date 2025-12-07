@@ -63,16 +63,21 @@ import type {
   Circuit,
   DriverRuntimeState,
   DriverAttributes,
+  GameState,
+  RaceWeekendResult,
+  DriverQualifyingResult,
+  DriverRaceResult,
 } from '../../shared/domain/types';
 
 import {
   Department,
   GamePhase,
   RaceFinishStatus,
+  WeatherCondition,
   DriverStanding,
   ConstructorStanding,
-  DriverRaceResult,
-} from '../../shared/domain/types';
+  hasRaceSeat,
+} from '../../shared/domain';
 
 export class StubRaceEngine implements IRaceEngine {
   simulateQualifying(_input: QualifyingInput): QualifyingResult {
@@ -165,6 +170,13 @@ function shuffleInPlace<T>(array: T[]): T[] {
     [array[i], array[j]] = [array[j], array[i]];
   }
   return array;
+}
+
+/**
+ * Shuffle array using Fisher-Yates algorithm (returns new array, does not mutate)
+ */
+function shuffleArray<T>(array: T[]): T[] {
+  return shuffleInPlace([...array]);
 }
 
 /**
@@ -839,7 +851,7 @@ function generateNewCalendar(circuits: Circuit[]): CalendarEntry[] {
   const availableWeeks = LAST_RACE_WEEK - FIRST_RACE_WEEK + 1;
 
   // Shuffle circuits first, then take only as many as fit in available weeks
-  const shuffledCircuits = shuffleInPlace([...circuits]).slice(0, availableWeeks);
+  const shuffledCircuits = shuffleArray(circuits).slice(0, availableWeeks);
   const raceCount = shuffledCircuits.length;
 
   return shuffledCircuits.map((circuit, index) => ({
@@ -861,6 +873,171 @@ function generateResetDriverStates(
   return Object.fromEntries(
     drivers.map((driver) => [driver.id, { ...INITIAL_DRIVER_RUNTIME_STATE }])
   );
+}
+
+// =============================================================================
+// STUB RACE RESULT GENERATOR
+// =============================================================================
+
+/** Points awarded per finishing position (1st through 10th) */
+const POINTS_BY_POSITION = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
+
+/** DNF probability per driver */
+const DNF_PROBABILITY = 0.1;
+
+/** Base lap time for stub results (in ms) */
+const BASE_LAP_TIME_MS = 90000;
+
+/** Lap time variation range (in ms) */
+const LAP_TIME_VARIATION_MS = 5000;
+
+/** Number of laps for stub race */
+const STUB_RACE_LAPS = 50;
+
+/** Maximum gap to pole position in qualifying (in ms) */
+const MAX_GAP_TO_POLE_MS = 2000;
+
+/** Maximum gap to winner / total time variation in race (in ms) */
+const MAX_GAP_TO_WINNER_MS = 60000;
+
+/** Minimum and maximum pit stops for stub race */
+const STUB_PIT_STOPS_MIN = 1;
+const STUB_PIT_STOPS_MAX = 3;
+
+/**
+ * Generate a random lap time around the base time
+ */
+function generateRandomLapTime(): number {
+  return BASE_LAP_TIME_MS + Math.random() * LAP_TIME_VARIATION_MS;
+}
+
+/**
+ * Generate qualifying results for all drivers in grid order
+ */
+function generateQualifyingResults(
+  gridOrder: Array<Driver & { teamId: string }>
+): DriverQualifyingResult[] {
+  return gridOrder.map((driver, index) => ({
+    driverId: driver.id,
+    teamId: driver.teamId,
+    gridPosition: index + 1,
+    bestLapTime: generateRandomLapTime(),
+    gapToPole: index === 0 ? 0 : Math.random() * MAX_GAP_TO_POLE_MS,
+  }));
+}
+
+/** Mutable context for tracking fastest lap during race result generation */
+interface FastestLapTracker {
+  time: number;
+  driverId: string;
+}
+
+/**
+ * Generate a single driver's race result
+ */
+function generateSingleRaceResult(
+  driver: Driver & { teamId: string },
+  finishIndex: number,
+  gridPositionMap: Map<string, number>,
+  fastestLap: FastestLapTracker
+): DriverRaceResult {
+  const gridPosition = gridPositionMap.get(driver.id) ?? 0;
+  const didNotFinish = Math.random() < DNF_PROBABILITY;
+  const finishPosition = didNotFinish ? null : finishIndex + 1;
+  const points =
+    finishPosition !== null && finishPosition <= POINTS_BY_POSITION.length
+      ? POINTS_BY_POSITION[finishPosition - 1]
+      : 0;
+
+  const lapTime = generateRandomLapTime();
+  const isFastestLap = lapTime < fastestLap.time && !didNotFinish;
+  if (isFastestLap) {
+    fastestLap.time = lapTime;
+    fastestLap.driverId = driver.id;
+  }
+
+  return {
+    driverId: driver.id,
+    teamId: driver.teamId,
+    finishPosition,
+    gridPosition,
+    lapsCompleted: didNotFinish ? Math.floor(Math.random() * STUB_RACE_LAPS) : STUB_RACE_LAPS,
+    totalTime: didNotFinish ? undefined : BASE_LAP_TIME_MS * STUB_RACE_LAPS + Math.random() * MAX_GAP_TO_WINNER_MS,
+    gapToWinner: finishPosition === 1 ? 0 : Math.random() * MAX_GAP_TO_WINNER_MS,
+    points,
+    fastestLap: isFastestLap,
+    fastestLapTime: lapTime,
+    status: didNotFinish ? RaceFinishStatus.Retired : RaceFinishStatus.Finished,
+    pitStops: Math.floor(Math.random() * STUB_PIT_STOPS_MAX) + STUB_PIT_STOPS_MIN,
+  };
+}
+
+/**
+ * Build a map from driver ID to grid position for O(1) lookups
+ */
+function buildGridPositionMap(
+  gridOrder: Array<Driver & { teamId: string }>
+): Map<string, number> {
+  return new Map(gridOrder.map((driver, index) => [driver.id, index + 1]));
+}
+
+/**
+ * Generate race results for all drivers
+ * Returns both the results array and fastest lap info
+ */
+function generateRaceResults(
+  finishOrder: Array<Driver & { teamId: string }>,
+  gridOrder: Array<Driver & { teamId: string }>
+): { race: DriverRaceResult[]; fastestLapDriverId: string; fastestLapTime: number } {
+  const fastestLap: FastestLapTracker = {
+    time: Infinity,
+    driverId: finishOrder[0]?.id ?? '',
+  };
+
+  // Precompute grid positions for O(1) lookups instead of O(n) per driver
+  const gridPositionMap = buildGridPositionMap(gridOrder);
+
+  const race = finishOrder.map((driver, index) =>
+    generateSingleRaceResult(driver, index, gridPositionMap, fastestLap)
+  );
+
+  return {
+    race,
+    fastestLapDriverId: fastestLap.driverId,
+    fastestLapTime: fastestLap.time,
+  };
+}
+
+/**
+ * Generate a stub race weekend result
+ * Uses simple random logic - will be replaced with full simulation later
+ */
+export function generateStubRaceResult(
+  state: GameState,
+  circuitId: string,
+  raceNumber: number
+): RaceWeekendResult {
+  // Get all drivers with race seats
+  const raceDrivers = state.drivers.filter(hasRaceSeat);
+
+  // Generate grid order and qualifying
+  const gridOrder = shuffleArray(raceDrivers);
+  const qualifying = generateQualifyingResults(gridOrder);
+
+  // Generate race finish order and results
+  const finishOrder = shuffleArray(raceDrivers);
+  const { race, fastestLapDriverId, fastestLapTime } = generateRaceResults(finishOrder, gridOrder);
+
+  return {
+    raceNumber,
+    circuitId,
+    seasonNumber: state.currentDate.season,
+    qualifying,
+    race,
+    weather: WeatherCondition.Dry,
+    fastestLapDriverId,
+    fastestLapTime,
+  };
 }
 
 /**
