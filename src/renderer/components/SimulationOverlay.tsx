@@ -251,13 +251,12 @@ export function SimulationOverlay({
             <div className="relative h-full flex flex-col">
               {/* Days strip with sliding animation */}
               <div className="flex-1 overflow-hidden">
-                <AnimatePresence mode="popLayout" initial={false}>
+                <AnimatePresence mode="sync" initial={false}>
                   <motion.div
                     key={animationKey}
-                    initial={{ x: SLIDE_OFFSET_PERCENT, opacity: 0 }}
+                    initial={{ x: SLIDE_OFFSET_PERCENT, opacity: 0.5 }}
                     animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: `-${SLIDE_OFFSET_PERCENT}`, opacity: 0 }}
-                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    transition={{ duration: 0.15, ease: 'easeOut' }}
                     className="h-full flex"
                   >
                     {days.map((date, index) => (
