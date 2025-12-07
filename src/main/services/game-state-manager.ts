@@ -667,6 +667,10 @@ const MAX_GAP_TO_POLE_MS = 2000;
 /** Maximum gap to winner / total time variation in race (in ms) */
 const MAX_GAP_TO_WINNER_MS = 60000;
 
+/** Minimum and maximum pit stops for stub race */
+const STUB_PIT_STOPS_MIN = 1;
+const STUB_PIT_STOPS_MAX = 3;
+
 /**
  * Shuffle array using Fisher-Yates algorithm (returns new array)
  */
@@ -742,7 +746,7 @@ function generateStubRaceResult(
       fastestLap: isFastestLap,
       fastestLapTime: lapTime,
       status: isDNF ? RaceFinishStatus.Retired : RaceFinishStatus.Finished,
-      pitStops: Math.floor(Math.random() * 3) + 1,
+      pitStops: Math.floor(Math.random() * STUB_PIT_STOPS_MAX) + STUB_PIT_STOPS_MIN,
     };
   });
 
@@ -830,6 +834,22 @@ function applyBlockedResult(state: GameState, turnResult: TurnProcessingResult):
     state,
     blocked: turnResult.blocked,
   };
+}
+
+/**
+ * Process a turn and apply results to state.
+ * Handles both blocked and normal turn outcomes.
+ */
+function processTurn(state: GameState): AdvanceWeekResult {
+  const turnInput = buildTurnInput(state);
+  const turnResult = engineManager.turn.processWeek(turnInput);
+
+  if (turnResult.blocked) {
+    return applyBlockedResult(state, turnResult);
+  }
+
+  applyTurnResult(state, turnResult);
+  return { success: true, state };
 }
 
 /**
@@ -941,36 +961,10 @@ export const GameStateManager = {
 
       // Mark race as complete
       markRaceComplete(state, currentRace.circuitId, raceResult);
-
-      // Now advance to next week and determine new phase
-      const turnInput = buildTurnInput(state);
-      const turnResult = engineManager.turn.processWeek(turnInput);
-
-      // Check if blocked (post-season)
-      if (turnResult.blocked) {
-        return applyBlockedResult(state, turnResult);
-      }
-
-      // Apply turn result
-      applyTurnResult(state, turnResult);
-
-      return { success: true, state };
     }
 
-    // Handle PreSeason or BetweenRaces - advance week
-    const turnInput = buildTurnInput(state);
-    const turnResult = engineManager.turn.processWeek(turnInput);
-
-    // Check if blocked (post-season)
-    if (turnResult.blocked) {
-      return applyBlockedResult(state, turnResult);
-    }
-
-    // Apply turn result (handles both race week entry and normal weeks)
-    // When raceWeek is set, newPhase is already GamePhase.RaceWeekend
-    applyTurnResult(state, turnResult);
-
-    return { success: true, state };
+    // Advance to next week (handles blocked state and phase transitions)
+    return processTurn(state);
   },
 
   /**
