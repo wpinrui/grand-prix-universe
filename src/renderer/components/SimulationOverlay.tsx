@@ -138,8 +138,13 @@ export function SimulationOverlay({
   subItemLabel,
   playerTeam,
 }: SimulationOverlayProps) {
-  const days = getCalendarStripDays(currentDate);
   const animationKey = dateKey(currentDate);
+
+  // Memoize days to prevent unnecessary recalculations of dependent useMemo hooks
+  const days = useMemo(
+    () => getCalendarStripDays(currentDate),
+    [currentDate.year, currentDate.month, currentDate.day]
+  );
 
   // Build circuit lookup map
   const circuitsById = useMemo(() => {
@@ -259,16 +264,19 @@ export function SimulationOverlay({
                     transition={{ duration: 0.25, ease: 'easeOut' }}
                     className="h-full flex"
                   >
-                    {days.map((date, index) => (
-                      <DayCard
-                        key={dateKey(date)}
-                        date={date}
-                        isCurrent={index === CURRENT_DAY_INDEX}
-                        isPast={index === PAST_DAY_INDEX}
-                        events={eventsByDate.get(dateKey(date)) ?? []}
-                        raceWeekendInfo={raceWeekendByDate.get(dateKey(date)) ?? null}
-                      />
-                    ))}
+                    {days.map((date, index) => {
+                      const key = dateKey(date);
+                      return (
+                        <DayCard
+                          key={key}
+                          date={date}
+                          isCurrent={index === CURRENT_DAY_INDEX}
+                          isPast={index === PAST_DAY_INDEX}
+                          events={eventsByDate.get(key) ?? []}
+                          raceWeekendInfo={raceWeekendByDate.get(key) ?? null}
+                        />
+                      );
+                    })}
                   </motion.div>
                 </AnimatePresence>
               </div>
