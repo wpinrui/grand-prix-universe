@@ -1,7 +1,7 @@
 import { ChevronRight, Flag, Loader2 } from 'lucide-react';
 import { useDerivedGameState, useAdvanceWeek } from '../hooks';
 import { GamePhase } from '../../shared/domain';
-import { ACCENT_BUTTON_CLASSES, ACCENT_BUTTON_STYLE } from '../utils/theme-styles';
+import { ACCENT_BUTTON_CLASSES, ACCENT_BORDERED_BUTTON_STYLE } from '../utils/theme-styles';
 
 /**
  * Get the button text based on game phase and calendar
@@ -60,7 +60,7 @@ export function AdvanceWeekButton() {
       onClick={handleClick}
       disabled={isPostSeason || isLoading}
       className={`${ACCENT_BUTTON_CLASSES} px-4 py-1.5 disabled:opacity-50 disabled:cursor-not-allowed`}
-      style={ACCENT_BUTTON_STYLE}
+      style={ACCENT_BORDERED_BUTTON_STYLE}
       title={isPostSeason ? 'End season to continue' : buttonText}
     >
       {isLoading ? (
