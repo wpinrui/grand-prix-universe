@@ -1,7 +1,7 @@
 import { ChevronRight, Loader2, MapPin } from 'lucide-react';
 import { useDerivedGameState, useAdvanceWeek, useGoToCircuit } from '../hooks';
 import { GamePhase, CalendarEntry } from '../../shared/domain';
-import { ACCENT_BUTTON_CLASSES, ACCENT_BORDERED_BUTTON_STYLE } from '../utils/theme-styles';
+import { ACCENT_MUTED_BUTTON_CLASSES, ACCENT_BORDERED_BUTTON_STYLE } from '../utils/theme-styles';
 
 type ButtonAction = 'advanceWeek' | 'goToCircuit' | 'disabled';
 
@@ -72,7 +72,7 @@ export function AdvanceWeekButton() {
       type="button"
       onClick={handleClick}
       disabled={isDisabled}
-      className={`${ACCENT_BUTTON_CLASSES} px-3 py-1.5 disabled:opacity-50 disabled:cursor-not-allowed`}
+      className={`${ACCENT_MUTED_BUTTON_CLASSES} px-3 py-1.5 disabled:opacity-50 disabled:cursor-not-allowed`}
       style={ACCENT_BORDERED_BUTTON_STYLE}
       title={action === 'disabled' ? 'End season to continue' : text}
     >
