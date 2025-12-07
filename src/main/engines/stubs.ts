@@ -82,6 +82,7 @@ import {
   getWeekNumber,
   advanceDay,
   yearToSeason,
+  seasonToYear,
   isFriday,
 } from '../../shared/utils/date-utils';
 
@@ -354,7 +355,6 @@ const CHIEF_RETIREMENT_MAX_AGE = 70; // Very likely to retire at this age
 const ATTRIBUTE_IMPROVEMENT_AMOUNT = 2; // Max improvement value per attribute for young drivers
 const ATTRIBUTE_DECLINE_AMOUNT = 3; // Max decline value per attribute for aging drivers
 const CHIEF_ABILITY_CHANGE_RANGE = 2; // +/- ability change per season
-const BASE_YEAR = 1998; // Year that season 1 corresponds to
 const ATTRIBUTE_IMPROVEMENT_CHANCE = 0.3; // 30% chance per attribute to improve
 const DECLINE_BASE_CHANCE = 0.2; // Base chance for attribute decline
 const DECLINE_CHANCE_PER_YEAR = 0.1; // Additional decline chance per year over decline age
@@ -663,7 +663,7 @@ function updateStandings(
  */
 function calculateAge(dateOfBirth: string, currentSeason: number): number {
   const birthYear = new Date(dateOfBirth).getFullYear();
-  const currentYear = BASE_YEAR + currentSeason - 1;
+  const currentYear = seasonToYear(currentSeason);
   return currentYear - birthYear;
 }
 
