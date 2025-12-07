@@ -88,11 +88,11 @@ const INITIAL_SPONSOR_SATISFACTION = 60;
 /** Initial bonus level for new contracts (0 = no bonus) */
 const INITIAL_BONUS_LEVEL = 0;
 
-/** First race typically in March (week 10) */
-const FIRST_RACE_WEEK = 10;
+/** First race typically in March (week 11) */
+const FIRST_RACE_WEEK = 11;
 
-/** Last race typically in late November (week 48) */
-const LAST_RACE_WEEK = 48;
+/** Default gap between races when schedule data unavailable (bi-weekly) */
+const DEFAULT_WEEKS_BETWEEN_RACES = 2;
 
 /** Auto-save interval in milliseconds (5 minutes) */
 const AUTO_SAVE_INTERVAL_MS = 5 * 60 * 1000;
@@ -307,21 +307,28 @@ function createInitialConstructorStandings(teams: Team[]): ConstructorStanding[]
 }
 
 /**
- * Creates the season calendar from circuits
- * Circuits are used in JSON array order, spread across the season
+ * Creates the season calendar using the race schedule data.
+ * Falls back to even spacing if schedule data is unavailable.
  */
 function createCalendar(circuitIds: string[]): CalendarEntry[] {
-  const raceCount = circuitIds.length;
-  const weekSpan = LAST_RACE_WEEK - FIRST_RACE_WEEK;
-  const weeksBetweenRaces = Math.floor(weekSpan / Math.max(raceCount - 1, 1));
+  const schedule = ConfigLoader.getRaceSchedule();
+  const scheduleMap = new Map<string, number>(
+    schedule.map((entry) => [entry.circuitId, entry.weekNumber])
+  );
 
-  return circuitIds.map((circuitId, index) => ({
-    raceNumber: index + 1,
-    circuitId,
-    weekNumber: FIRST_RACE_WEEK + index * weeksBetweenRaces,
-    completed: false,
-    cancelled: false,
-  }));
+  return circuitIds.map((circuitId, index) => {
+    // Use schedule week if available, otherwise fall back to even spacing
+    const weekNumber =
+      scheduleMap.get(circuitId) ?? FIRST_RACE_WEEK + index * DEFAULT_WEEKS_BETWEEN_RACES;
+
+    return {
+      raceNumber: index + 1,
+      circuitId,
+      weekNumber,
+      completed: false,
+      cancelled: false,
+    };
+  });
 }
 
 /**
