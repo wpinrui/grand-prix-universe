@@ -569,34 +569,21 @@ function processSimulationTick(state: GameState): SimulationTickPayload {
   const turnInput = buildTurnInput(state);
   const turnResult = engineManager.turn.processDay(turnInput);
 
-  // Check if blocked (e.g., post-season)
-  if (turnResult.blocked) {
-    state.currentDate = turnResult.newDate;
-    state.phase = turnResult.newPhase;
-    state.simulation.isSimulating = false;
-    return {
-      state,
-      stopped: true,
-      stopReason: undefined, // Blocked is different from stop reasons
-    };
-  }
-
-  // Apply the turn result
+  // Apply turn result (works for both blocked and normal cases -
+  // blocked returns empty change arrays so this is safe)
   applyTurnResult(state, turnResult);
 
-  // Check if simulation should auto-stop
-  if (turnResult.shouldStopSimulation) {
+  // Determine if we should stop (blocked or explicit stop flag)
+  const shouldStop = turnResult.blocked !== undefined || turnResult.shouldStopSimulation;
+
+  if (shouldStop) {
     state.simulation.isSimulating = false;
-    return {
-      state,
-      stopped: true,
-      stopReason: turnResult.stopReason,
-    };
   }
 
   return {
     state,
-    stopped: false,
+    stopped: shouldStop,
+    stopReason: turnResult.stopReason,
   };
 }
 
@@ -636,11 +623,16 @@ function startSimulation(): SimulationResult {
       return;
     }
 
-    const tickPayload = processSimulationTick(currentState);
-    sendToRenderer(IpcEvents.SIMULATION_TICK, tickPayload);
+    try {
+      const tickPayload = processSimulationTick(currentState);
+      sendToRenderer(IpcEvents.SIMULATION_TICK, tickPayload);
 
-    // If simulation stopped, clear the interval
-    if (tickPayload.stopped) {
+      // If simulation stopped, clear the interval
+      if (tickPayload.stopped) {
+        stopSimulation();
+      }
+    } catch (error) {
+      console.error('[Simulation] Tick failed:', error);
       stopSimulation();
     }
   }, SIMULATION_TICK_INTERVAL_MS);
