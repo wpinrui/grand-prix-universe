@@ -94,6 +94,15 @@ export function registerIpcHandlers(): void {
     return GameStateManager.startNewSeason();
   });
 
+  // Simulation control handlers
+  ipcMain.handle(IpcChannels.GAME_SIMULATION_START, () => {
+    return GameStateManager.startSimulation();
+  });
+
+  ipcMain.handle(IpcChannels.GAME_SIMULATION_STOP, () => {
+    return GameStateManager.stopSimulation();
+  });
+
   // Save/Load handlers
   ipcMain.handle(IpcChannels.GAME_SAVE, async () => {
     return GameStateManager.saveGame();

@@ -19,6 +19,8 @@ import {
   type LoadResult,
   type AdvanceWeekResult,
   type NewSeasonResult,
+  type SimulationResult,
+  type SimulationTickPayload,
 } from '../../shared/ipc';
 import type {
   TurnProcessingInput,
@@ -104,6 +106,9 @@ const DEFAULT_WEEKS_BETWEEN_RACES = 2;
 
 /** Auto-save interval in milliseconds (5 minutes) */
 const AUTO_SAVE_INTERVAL_MS = 5 * 60 * 1000;
+
+/** Simulation tick interval in milliseconds (1 day per second) */
+const SIMULATION_TICK_INTERVAL_MS = 1000;
 
 /**
  * Asserts that an array is not empty, throwing a descriptive error if it is
@@ -508,6 +513,9 @@ function buildGameState(params: BuildGameStateParams): GameState {
 /** Auto-save timer handle */
 let autoSaveTimer: ReturnType<typeof setInterval> | null = null;
 
+/** Simulation timer handle */
+let simulationTimer: ReturnType<typeof setInterval> | null = null;
+
 /** Shared engine manager instance */
 const engineManager = new EngineManager();
 
@@ -550,6 +558,111 @@ function stopAutoSave(): void {
     clearInterval(autoSaveTimer);
     autoSaveTimer = null;
   }
+}
+
+/**
+ * Processes a single simulation tick (one day).
+ * Returns the tick payload to send to renderer.
+ * Updates the game state's simulation.isSimulating flag if stopped.
+ */
+function processSimulationTick(state: GameState): SimulationTickPayload {
+  const turnInput = buildTurnInput(state);
+  const turnResult = engineManager.turn.processDay(turnInput);
+
+  // Check if blocked (e.g., post-season)
+  if (turnResult.blocked) {
+    state.currentDate = turnResult.newDate;
+    state.phase = turnResult.newPhase;
+    state.simulation.isSimulating = false;
+    return {
+      state,
+      stopped: true,
+      stopReason: undefined, // Blocked is different from stop reasons
+    };
+  }
+
+  // Apply the turn result
+  applyTurnResult(state, turnResult);
+
+  // Check if simulation should auto-stop
+  if (turnResult.shouldStopSimulation) {
+    state.simulation.isSimulating = false;
+    return {
+      state,
+      stopped: true,
+      stopReason: turnResult.stopReason,
+    };
+  }
+
+  return {
+    state,
+    stopped: false,
+  };
+}
+
+/**
+ * Starts the simulation loop.
+ * Returns immediately - ticks are processed via interval.
+ */
+function startSimulation(): SimulationResult {
+  const state = GameStateManager.currentState;
+  if (!state) {
+    return { success: false, error: 'No active game' };
+  }
+
+  // Already simulating
+  if (simulationTimer !== null) {
+    return { success: false, error: 'Simulation already running' };
+  }
+
+  // Cannot simulate during race weekend
+  if (state.phase === GamePhase.RaceWeekend) {
+    return { success: false, error: 'Cannot simulate during race weekend' };
+  }
+
+  // Cannot simulate during post-season
+  if (state.phase === GamePhase.PostSeason) {
+    return { success: false, error: 'Cannot simulate during post-season' };
+  }
+
+  // Mark as simulating
+  state.simulation.isSimulating = true;
+
+  // Start the interval
+  simulationTimer = setInterval(() => {
+    const currentState = GameStateManager.currentState;
+    if (!currentState) {
+      stopSimulation();
+      return;
+    }
+
+    const tickPayload = processSimulationTick(currentState);
+    sendToRenderer(IpcEvents.SIMULATION_TICK, tickPayload);
+
+    // If simulation stopped, clear the interval
+    if (tickPayload.stopped) {
+      stopSimulation();
+    }
+  }, SIMULATION_TICK_INTERVAL_MS);
+
+  return { success: true };
+}
+
+/**
+ * Stops the simulation loop
+ */
+function stopSimulation(): SimulationResult {
+  if (simulationTimer) {
+    clearInterval(simulationTimer);
+    simulationTimer = null;
+  }
+
+  const state = GameStateManager.currentState;
+  if (state) {
+    state.simulation.isSimulating = false;
+  }
+
+  return { success: true };
 }
 
 // =============================================================================
@@ -941,6 +1054,12 @@ export const GameStateManager = {
   /** Stop auto-save (call when clearing state) */
   stopAutoSave,
 
+  /** Start simulation loop */
+  startSimulation,
+
+  /** Stop simulation loop */
+  stopSimulation,
+
   /**
    * Creates a new game with the given parameters
    */
@@ -987,10 +1106,11 @@ export const GameStateManager = {
   },
 
   /**
-   * Clears the current game state and stops auto-save
+   * Clears the current game state and stops auto-save/simulation
    */
   clearState(): void {
     stopAutoSave();
+    stopSimulation();
     GameStateManager.currentState = null;
   },
 
