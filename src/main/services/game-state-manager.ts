@@ -890,7 +890,10 @@ function findCurrentRace(
   state: GameState
 ): { race: CalendarEntry } | { error: AdvanceWeekResult } {
   const race = state.currentSeason.calendar.find(
-    (entry) => entry.weekNumber === state.currentDate.week && !entry.completed
+    (entry) =>
+      entry.weekNumber === state.currentDate.week &&
+      !entry.completed &&
+      !entry.cancelled
   );
 
   if (!race) {
