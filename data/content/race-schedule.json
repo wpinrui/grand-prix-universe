@@ -1,0 +1,29 @@
+{
+  "description": "Race schedule defining which week each race occurs. Based on 2025 F1 calendar with realistic gaps including summer break.",
+  "schedule": [
+    { "circuitId": "albert-park", "weekNumber": 11 },
+    { "circuitId": "shanghai", "weekNumber": 12 },
+    { "circuitId": "suzuka", "weekNumber": 14 },
+    { "circuitId": "bahrain", "weekNumber": 15 },
+    { "circuitId": "jeddah", "weekNumber": 16 },
+    { "circuitId": "miami", "weekNumber": 18 },
+    { "circuitId": "imola", "weekNumber": 20 },
+    { "circuitId": "monaco", "weekNumber": 21 },
+    { "circuitId": "barcelona", "weekNumber": 22 },
+    { "circuitId": "montreal", "weekNumber": 24 },
+    { "circuitId": "spielberg", "weekNumber": 26 },
+    { "circuitId": "silverstone", "weekNumber": 27 },
+    { "circuitId": "spa", "weekNumber": 30 },
+    { "circuitId": "budapest", "weekNumber": 31 },
+    { "circuitId": "zandvoort", "weekNumber": 35 },
+    { "circuitId": "monza", "weekNumber": 36 },
+    { "circuitId": "baku", "weekNumber": 38 },
+    { "circuitId": "marina-bay", "weekNumber": 40 },
+    { "circuitId": "austin", "weekNumber": 42 },
+    { "circuitId": "mexico-city", "weekNumber": 43 },
+    { "circuitId": "interlagos", "weekNumber": 45 },
+    { "circuitId": "las-vegas", "weekNumber": 47 },
+    { "circuitId": "lusail", "weekNumber": 48 },
+    { "circuitId": "yas-marina", "weekNumber": 49 }
+  ]
+}
