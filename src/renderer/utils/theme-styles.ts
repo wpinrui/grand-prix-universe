@@ -72,9 +72,24 @@ export const PRIMARY_BUTTON_CLASSES =
   'btn px-6 py-2 font-semibold bg-emerald-600 text-white border border-emerald-500 rounded-lg hover:bg-emerald-500 disabled:bg-[var(--neutral-700)] disabled:border-[var(--neutral-600)] disabled:text-muted disabled:cursor-not-allowed transition-all duration-200';
 
 /**
+ * Primary accent button style - for main accent actions (Advance Week, etc.)
+ */
+export const ACCENT_BUTTON_STYLE: CSSProperties = {
+  backgroundColor: 'var(--accent-600)',
+  color: 'var(--accent-contrast)',
+  borderColor: 'var(--accent-500)',
+  boxShadow: '0 0 15px color-mix(in srgb, var(--accent-500) 40%, transparent)',
+};
+
+/**
+ * Primary accent button classes - for main accent actions
+ */
+export const ACCENT_BUTTON_CLASSES = `${BORDERED_BUTTON_BASE} font-semibold hover:brightness-110 flex items-center gap-2`;
+
+/**
  * Muted accent button classes - for secondary accent actions (calendar, etc.)
  */
-export const ACCENT_MUTED_BUTTON_CLASSES = `${BORDERED_BUTTON_BASE} text-sm font-medium hover:brightness-110`;
+export const ACCENT_MUTED_BUTTON_CLASSES = `${BORDERED_BUTTON_BASE} text-sm font-medium hover:brightness-110 flex items-center gap-2`;
 
 /**
  * Ghost button - secondary actions (Back, Cancel, etc.)
