@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import { useDerivedGameState } from '../hooks';
+import { SectionHeading } from '../components';
 import { ACCENT_CARD_STYLE, ACCENT_TEXT_STYLE } from '../utils/theme-styles';
 import type {
   DriverStanding,
@@ -9,25 +10,43 @@ import type {
 } from '../../shared/domain';
 
 // ===========================================
-// SHARED COMPONENTS
+// CONSTANTS
 // ===========================================
 
-interface SectionHeadingProps {
-  children: React.ReactNode;
+const CELL_BASE = 'px-4 py-3';
+const CELL_STAT = `${CELL_BASE} text-center text-secondary tabular-nums`;
+
+// ===========================================
+// HELPERS
+// ===========================================
+
+interface RowStyles {
+  row: CSSProperties;
+  rowClass: string;
+  name: CSSProperties;
 }
 
-function SectionHeading({ children }: SectionHeadingProps) {
-  return (
-    <h2 className="text-lg font-bold text-primary uppercase tracking-wide mb-4 flex items-center gap-3">
-      <span>{children}</span>
-      <div className="flex-1 h-px bg-[var(--neutral-600)]" />
-    </h2>
-  );
+function getRowStyles(isPlayerTeam: boolean): RowStyles {
+  return {
+    row: isPlayerTeam ? ACCENT_CARD_STYLE : {},
+    rowClass: isPlayerTeam ? 'bg-[var(--accent-900)]/30' : '',
+    name: isPlayerTeam ? ACCENT_TEXT_STYLE : {},
+  };
 }
 
 // ===========================================
 // TABLE COMPONENTS
 // ===========================================
+
+interface StatCellProps {
+  value: number;
+  muted?: boolean;
+}
+
+function StatCell({ value, muted }: StatCellProps) {
+  const className = muted ? `${CELL_BASE} text-center text-muted tabular-nums` : CELL_STAT;
+  return <td className={className}>{value}</td>;
+}
 
 interface DriverRowProps {
   standing: DriverStanding;
@@ -37,32 +56,30 @@ interface DriverRowProps {
 }
 
 function DriverRow({ standing, driver, team, isPlayerTeam }: DriverRowProps) {
-  const rowStyle: CSSProperties = isPlayerTeam ? ACCENT_CARD_STYLE : {};
-  const nameStyle: CSSProperties = isPlayerTeam ? ACCENT_TEXT_STYLE : {};
-
+  const styles = getRowStyles(isPlayerTeam);
   const driverName = driver
     ? `${driver.firstName} ${driver.lastName}`
     : standing.driverId;
 
   return (
-    <tr className={isPlayerTeam ? 'bg-[var(--accent-900)]/30' : ''} style={rowStyle}>
-      <td className="px-4 py-3 text-center font-bold text-primary tabular-nums">
+    <tr className={styles.rowClass} style={styles.row}>
+      <td className={`${CELL_BASE} text-center font-bold text-primary tabular-nums`}>
         {standing.position}
       </td>
-      <td className="px-4 py-3">
-        <span className="font-semibold text-primary" style={nameStyle}>
+      <td className={CELL_BASE}>
+        <span className="font-semibold text-primary" style={styles.name}>
           {driverName}
         </span>
       </td>
-      <td className="px-4 py-3 text-secondary">{team?.name ?? standing.teamId}</td>
-      <td className="px-4 py-3 text-right font-bold text-primary tabular-nums">
+      <td className={`${CELL_BASE} text-secondary`}>{team?.name ?? standing.teamId}</td>
+      <td className={`${CELL_BASE} text-right font-bold text-primary tabular-nums`}>
         {standing.points}
       </td>
-      <td className="px-4 py-3 text-center text-secondary tabular-nums">{standing.wins}</td>
-      <td className="px-4 py-3 text-center text-secondary tabular-nums">{standing.podiums}</td>
-      <td className="px-4 py-3 text-center text-secondary tabular-nums">{standing.polePositions}</td>
-      <td className="px-4 py-3 text-center text-secondary tabular-nums">{standing.fastestLaps}</td>
-      <td className="px-4 py-3 text-center text-muted tabular-nums">{standing.dnfs}</td>
+      <StatCell value={standing.wins} />
+      <StatCell value={standing.podiums} />
+      <StatCell value={standing.polePositions} />
+      <StatCell value={standing.fastestLaps} />
+      <StatCell value={standing.dnfs} muted />
     </tr>
   );
 }
@@ -74,25 +91,24 @@ interface ConstructorRowProps {
 }
 
 function ConstructorRow({ standing, team, isPlayerTeam }: ConstructorRowProps) {
-  const rowStyle: CSSProperties = isPlayerTeam ? ACCENT_CARD_STYLE : {};
-  const nameStyle: CSSProperties = isPlayerTeam ? ACCENT_TEXT_STYLE : {};
+  const styles = getRowStyles(isPlayerTeam);
 
   return (
-    <tr className={isPlayerTeam ? 'bg-[var(--accent-900)]/30' : ''} style={rowStyle}>
-      <td className="px-4 py-3 text-center font-bold text-primary tabular-nums">
+    <tr className={styles.rowClass} style={styles.row}>
+      <td className={`${CELL_BASE} text-center font-bold text-primary tabular-nums`}>
         {standing.position}
       </td>
-      <td className="px-4 py-3">
-        <span className="font-semibold text-primary" style={nameStyle}>
+      <td className={CELL_BASE}>
+        <span className="font-semibold text-primary" style={styles.name}>
           {team?.name ?? standing.teamId}
         </span>
       </td>
-      <td className="px-4 py-3 text-right font-bold text-primary tabular-nums">
+      <td className={`${CELL_BASE} text-right font-bold text-primary tabular-nums`}>
         {standing.points}
       </td>
-      <td className="px-4 py-3 text-center text-secondary tabular-nums">{standing.wins}</td>
-      <td className="px-4 py-3 text-center text-secondary tabular-nums">{standing.podiums}</td>
-      <td className="px-4 py-3 text-center text-secondary tabular-nums">{standing.polePositions}</td>
+      <StatCell value={standing.wins} />
+      <StatCell value={standing.podiums} />
+      <StatCell value={standing.polePositions} />
     </tr>
   );
 }
@@ -127,15 +143,15 @@ export function Championship() {
           <table className="w-full">
             <thead className="surface-inset border-b border-[var(--neutral-600)]">
               <tr className="text-xs font-semibold text-muted uppercase tracking-wider">
-                <th className="px-4 py-3 text-center w-16">Pos</th>
-                <th className="px-4 py-3 text-left">Driver</th>
-                <th className="px-4 py-3 text-left">Team</th>
-                <th className="px-4 py-3 text-right">Points</th>
-                <th className="px-4 py-3 text-center">Wins</th>
-                <th className="px-4 py-3 text-center">Podiums</th>
-                <th className="px-4 py-3 text-center">Poles</th>
-                <th className="px-4 py-3 text-center">FL</th>
-                <th className="px-4 py-3 text-center">DNF</th>
+                <th className={`${CELL_BASE} text-center w-16`}>Pos</th>
+                <th className={`${CELL_BASE} text-left`}>Driver</th>
+                <th className={`${CELL_BASE} text-left`}>Team</th>
+                <th className={`${CELL_BASE} text-right`}>Points</th>
+                <th className={`${CELL_BASE} text-center`}>Wins</th>
+                <th className={`${CELL_BASE} text-center`}>Podiums</th>
+                <th className={`${CELL_BASE} text-center`}>Poles</th>
+                <th className={`${CELL_BASE} text-center`}>FL</th>
+                <th className={`${CELL_BASE} text-center`}>DNF</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--neutral-700)]">
@@ -160,12 +176,12 @@ export function Championship() {
           <table className="w-full">
             <thead className="surface-inset border-b border-[var(--neutral-600)]">
               <tr className="text-xs font-semibold text-muted uppercase tracking-wider">
-                <th className="px-4 py-3 text-center w-16">Pos</th>
-                <th className="px-4 py-3 text-left">Team</th>
-                <th className="px-4 py-3 text-right">Points</th>
-                <th className="px-4 py-3 text-center">Wins</th>
-                <th className="px-4 py-3 text-center">Podiums</th>
-                <th className="px-4 py-3 text-center">Poles</th>
+                <th className={`${CELL_BASE} text-center w-16`}>Pos</th>
+                <th className={`${CELL_BASE} text-left`}>Team</th>
+                <th className={`${CELL_BASE} text-right`}>Points</th>
+                <th className={`${CELL_BASE} text-center`}>Wins</th>
+                <th className={`${CELL_BASE} text-center`}>Podiums</th>
+                <th className={`${CELL_BASE} text-center`}>Poles</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--neutral-700)]">
