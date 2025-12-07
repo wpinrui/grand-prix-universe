@@ -11,7 +11,7 @@ import { useDerivedGameState, useTeamTheme, useClearGameState, useQuitApp, useAu
 import { SectionButton } from './NavButtons';
 import { TopBar } from './TopBar';
 import { BottomBar } from './BottomBar';
-import { CalendarStrip } from './CalendarStrip';
+import { SimulationOverlay } from './SimulationOverlay';
 import { ConfirmDialog } from './ConfirmDialog';
 import { AutoSaveToast } from './AutoSaveToast';
 import { BackgroundLayer } from './BackgroundLayer';
@@ -168,15 +168,6 @@ export function MainLayout() {
           playerTeam={playerTeam}
         />
 
-        {/* Calendar Strip - visible during simulation */}
-        {gameState?.currentDate && (
-          <CalendarStrip
-            currentDate={gameState.currentDate}
-            events={gameState.calendarEvents ?? []}
-            isVisible={gameState.simulation?.isSimulating ?? false}
-          />
-        )}
-
         {/* Content Area - with background image, blur, and team tint */}
         <main className="content relative flex-1 overflow-hidden">
           {playerTeam && (
@@ -218,6 +209,19 @@ export function MainLayout() {
         <AutoSaveToast
           message="Game auto-saved"
           onDismiss={handleDismissToast}
+        />
+      )}
+
+      {/* Simulation Overlay - full screen during simulation */}
+      {gameState?.currentDate && (
+        <SimulationOverlay
+          currentDate={gameState.currentDate}
+          events={gameState.calendarEvents ?? []}
+          calendar={gameState.currentSeason?.calendar ?? []}
+          circuits={gameState.circuits ?? []}
+          nextRace={nextRace}
+          isVisible={gameState.simulation?.isSimulating ?? false}
+          isPostSeason={gameState.phase === GamePhase.PostSeason}
         />
       )}
     </div>
