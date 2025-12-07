@@ -107,8 +107,13 @@ const DEFAULT_WEEKS_BETWEEN_RACES = 2;
 /** Auto-save interval in milliseconds (5 minutes) */
 const AUTO_SAVE_INTERVAL_MS = 5 * 60 * 1000;
 
-/** Simulation tick interval in milliseconds (1 day per second) */
-const SIMULATION_TICK_INTERVAL_MS = 1000;
+/** Base simulation tick interval in milliseconds (1 day per second) */
+const BASE_SIMULATION_TICK_MS = 1000;
+
+/** Simulation acceleration config */
+const SIM_WARMUP_DAYS = 7;      // Days at 1x speed before acceleration starts
+const SIM_ACCEL_DAYS = 15;      // Days over which we accelerate from 1x to 3x (day 8 to day 22)
+const SIM_MAX_SPEED = 3.0;      // Maximum speed multiplier (333ms per tick)
 
 /**
  * Asserts that an array is not empty, throwing a descriptive error if it is
@@ -513,8 +518,30 @@ function buildGameState(params: BuildGameStateParams): GameState {
 /** Auto-save timer handle */
 let autoSaveTimer: ReturnType<typeof setInterval> | null = null;
 
-/** Simulation timer handle */
-let simulationTimer: ReturnType<typeof setInterval> | null = null;
+/** Simulation timer handle (using setTimeout for dynamic intervals) */
+let simulationTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** Days simulated in current session (for acceleration calculation) */
+let simulationDaysCount = 0;
+
+/**
+ * Calculate the current simulation speed multiplier based on days simulated.
+ * - Days 1-7: 1x speed
+ * - Days 8-22: linear increase from 1x to 3x
+ * - Days 23+: 3x speed (capped)
+ */
+function getSimulationSpeed(daysSimulated: number): number {
+  const daysAccelerating = Math.max(0, daysSimulated - SIM_WARMUP_DAYS + 1);
+  return Math.min(SIM_MAX_SPEED, 1 + (daysAccelerating * (SIM_MAX_SPEED - 1)) / SIM_ACCEL_DAYS);
+}
+
+/**
+ * Get the tick interval in ms for the current simulation state
+ */
+function getSimulationTickInterval(daysSimulated: number): number {
+  const speed = getSimulationSpeed(daysSimulated);
+  return Math.round(BASE_SIMULATION_TICK_MS / speed);
+}
 
 /** Shared engine manager instance */
 const engineManager = new EngineManager();
@@ -588,8 +615,49 @@ function processSimulationTick(state: GameState): SimulationTickPayload {
 }
 
 /**
+ * Schedules the next simulation tick with dynamic interval based on acceleration
+ */
+function scheduleNextTick(): void {
+  const currentState = GameStateManager.currentState;
+  if (!currentState || !currentState.simulation.isSimulating) {
+    return;
+  }
+
+  const interval = getSimulationTickInterval(simulationDaysCount);
+
+  simulationTimer = setTimeout(() => {
+    const state = GameStateManager.currentState;
+    if (!state) {
+      stopSimulation();
+      return;
+    }
+
+    try {
+      // Update speed in state for UI display
+      state.simulation.speed = getSimulationSpeed(simulationDaysCount);
+
+      const tickPayload = processSimulationTick(state);
+      sendToRenderer(IpcEvents.SIMULATION_TICK, tickPayload);
+
+      // Increment days counter after successful tick
+      simulationDaysCount++;
+
+      // If simulation stopped, don't schedule next tick
+      if (tickPayload.stopped) {
+        stopSimulation();
+      } else {
+        scheduleNextTick();
+      }
+    } catch (error) {
+      console.error('[Simulation] Tick failed:', error);
+      stopSimulation();
+    }
+  }, interval);
+}
+
+/**
  * Starts the simulation loop.
- * Returns immediately - ticks are processed via interval.
+ * Returns immediately - ticks are processed via setTimeout with dynamic intervals.
  */
 function startSimulation(): SimulationResult {
   const state = GameStateManager.currentState;
@@ -612,30 +680,13 @@ function startSimulation(): SimulationResult {
     return { success: false, error: 'Cannot simulate during post-season' };
   }
 
-  // Mark as simulating
+  // Reset days counter and mark as simulating
+  simulationDaysCount = 0;
   state.simulation.isSimulating = true;
+  state.simulation.speed = 1; // Start at 1x
 
-  // Start the interval
-  simulationTimer = setInterval(() => {
-    const currentState = GameStateManager.currentState;
-    if (!currentState) {
-      stopSimulation();
-      return;
-    }
-
-    try {
-      const tickPayload = processSimulationTick(currentState);
-      sendToRenderer(IpcEvents.SIMULATION_TICK, tickPayload);
-
-      // If simulation stopped, clear the interval
-      if (tickPayload.stopped) {
-        stopSimulation();
-      }
-    } catch (error) {
-      console.error('[Simulation] Tick failed:', error);
-      stopSimulation();
-    }
-  }, SIMULATION_TICK_INTERVAL_MS);
+  // Start the simulation loop
+  scheduleNextTick();
 
   return { success: true };
 }
@@ -645,13 +696,17 @@ function startSimulation(): SimulationResult {
  */
 function stopSimulation(): SimulationResult {
   if (simulationTimer) {
-    clearInterval(simulationTimer);
+    clearTimeout(simulationTimer);
     simulationTimer = null;
   }
+
+  // Reset days counter
+  simulationDaysCount = 0;
 
   const state = GameStateManager.currentState;
   if (state) {
     state.simulation.isSimulating = false;
+    state.simulation.speed = 1; // Reset speed display
   }
 
   return { success: true };
