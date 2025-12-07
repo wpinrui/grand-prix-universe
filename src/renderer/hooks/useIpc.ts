@@ -244,14 +244,15 @@ export function useInvalidateGameState() {
 }
 
 /**
- * Clear game state from cache - used when restarting/exiting
+ * Clear game state from both main process and cache - used when restarting/exiting
+ * Stops the autosave timer and clears all game state
  */
 export function useClearGameState() {
   const queryClient = useQueryClient();
-  return useCallback(
-    () => queryClient.setQueryData(queryKeys.gameState, null),
-    [queryClient]
-  );
+  return useCallback(() => {
+    window.electronAPI.invoke(IpcChannels.GAME_CLEAR_STATE);
+    queryClient.setQueryData(queryKeys.gameState, null);
+  }, [queryClient]);
 }
 
 /**
