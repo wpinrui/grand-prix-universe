@@ -851,7 +851,7 @@ function generateNewCalendar(circuits: Circuit[]): CalendarEntry[] {
   const availableWeeks = LAST_RACE_WEEK - FIRST_RACE_WEEK + 1;
 
   // Shuffle circuits first, then take only as many as fit in available weeks
-  const shuffledCircuits = shuffleInPlace([...circuits]).slice(0, availableWeeks);
+  const shuffledCircuits = shuffleArray(circuits).slice(0, availableWeeks);
   const raceCount = shuffledCircuits.length;
 
   return shuffledCircuits.map((circuit, index) => ({
@@ -905,6 +905,98 @@ const STUB_PIT_STOPS_MIN = 1;
 const STUB_PIT_STOPS_MAX = 3;
 
 /**
+ * Generate a random lap time around the base time
+ */
+function generateRandomLapTime(): number {
+  return BASE_LAP_TIME_MS + Math.random() * LAP_TIME_VARIATION_MS;
+}
+
+/**
+ * Generate qualifying results for all drivers in grid order
+ */
+function generateQualifyingResults(
+  gridOrder: Array<Driver & { teamId: string }>
+): DriverQualifyingResult[] {
+  return gridOrder.map((driver, index) => ({
+    driverId: driver.id,
+    teamId: driver.teamId,
+    gridPosition: index + 1,
+    bestLapTime: generateRandomLapTime(),
+    gapToPole: index === 0 ? 0 : Math.random() * MAX_GAP_TO_POLE_MS,
+  }));
+}
+
+/** Mutable context for tracking fastest lap during race result generation */
+interface FastestLapTracker {
+  time: number;
+  driverId: string;
+}
+
+/**
+ * Generate a single driver's race result
+ */
+function generateSingleRaceResult(
+  driver: Driver & { teamId: string },
+  finishIndex: number,
+  gridOrder: Array<Driver & { teamId: string }>,
+  fastestLap: FastestLapTracker
+): DriverRaceResult {
+  const gridPosition = gridOrder.findIndex((d) => d.id === driver.id) + 1;
+  const didNotFinish = Math.random() < DNF_PROBABILITY;
+  const finishPosition = didNotFinish ? null : finishIndex + 1;
+  const points =
+    finishPosition !== null && finishPosition <= POINTS_BY_POSITION.length
+      ? POINTS_BY_POSITION[finishPosition - 1]
+      : 0;
+
+  const lapTime = generateRandomLapTime();
+  const isFastestLap = lapTime < fastestLap.time && !didNotFinish;
+  if (isFastestLap) {
+    fastestLap.time = lapTime;
+    fastestLap.driverId = driver.id;
+  }
+
+  return {
+    driverId: driver.id,
+    teamId: driver.teamId,
+    finishPosition,
+    gridPosition,
+    lapsCompleted: didNotFinish ? Math.floor(Math.random() * STUB_RACE_LAPS) : STUB_RACE_LAPS,
+    totalTime: didNotFinish ? undefined : BASE_LAP_TIME_MS * STUB_RACE_LAPS + Math.random() * MAX_GAP_TO_WINNER_MS,
+    gapToWinner: finishPosition === 1 ? 0 : Math.random() * MAX_GAP_TO_WINNER_MS,
+    points,
+    fastestLap: isFastestLap,
+    fastestLapTime: lapTime,
+    status: didNotFinish ? RaceFinishStatus.Retired : RaceFinishStatus.Finished,
+    pitStops: Math.floor(Math.random() * STUB_PIT_STOPS_MAX) + STUB_PIT_STOPS_MIN,
+  };
+}
+
+/**
+ * Generate race results for all drivers
+ * Returns both the results array and fastest lap info
+ */
+function generateRaceResults(
+  finishOrder: Array<Driver & { teamId: string }>,
+  gridOrder: Array<Driver & { teamId: string }>
+): { race: DriverRaceResult[]; fastestLapDriverId: string; fastestLapTime: number } {
+  const fastestLap: FastestLapTracker = {
+    time: Infinity,
+    driverId: finishOrder[0]?.id ?? '',
+  };
+
+  const race = finishOrder.map((driver, index) =>
+    generateSingleRaceResult(driver, index, gridOrder, fastestLap)
+  );
+
+  return {
+    race,
+    fastestLapDriverId: fastestLap.driverId,
+    fastestLapTime: fastestLap.time,
+  };
+}
+
+/**
  * Generate a stub race weekend result
  * Uses simple random logic - will be replaced with full simulation later
  */
@@ -916,60 +1008,13 @@ export function generateStubRaceResult(
   // Get all drivers with race seats
   const raceDrivers = state.drivers.filter(hasRaceSeat);
 
-  // Shuffle for random grid order
+  // Generate grid order and qualifying
   const gridOrder = shuffleArray(raceDrivers);
+  const qualifying = generateQualifyingResults(gridOrder);
 
-  // Generate qualifying results
-  const qualifying: DriverQualifyingResult[] = gridOrder.map((driver, index) => {
-    const lapTime = BASE_LAP_TIME_MS + Math.random() * LAP_TIME_VARIATION_MS;
-    return {
-      driverId: driver.id,
-      teamId: driver.teamId,
-      gridPosition: index + 1,
-      bestLapTime: lapTime,
-      gapToPole: index === 0 ? 0 : Math.random() * MAX_GAP_TO_POLE_MS,
-    };
-  });
-
-  // Shuffle again for race finish order (different from grid)
+  // Generate race finish order and results
   const finishOrder = shuffleArray(raceDrivers);
-
-  // Track fastest lap
-  let fastestLapTime = Infinity;
-  let fastestLapDriverId = finishOrder[0]?.id ?? '';
-
-  // Generate race results
-  const race: DriverRaceResult[] = finishOrder.map((driver, index) => {
-    const gridPosition = gridOrder.findIndex((d) => d.id === driver.id) + 1;
-    const didNotFinish = Math.random() < DNF_PROBABILITY;
-    const finishPosition = didNotFinish ? null : index + 1;
-    const points =
-      finishPosition !== null && finishPosition <= POINTS_BY_POSITION.length
-        ? POINTS_BY_POSITION[finishPosition - 1]
-        : 0;
-
-    const lapTime = BASE_LAP_TIME_MS + Math.random() * LAP_TIME_VARIATION_MS;
-    const isFastestLap = lapTime < fastestLapTime && !didNotFinish;
-    if (isFastestLap) {
-      fastestLapTime = lapTime;
-      fastestLapDriverId = driver.id;
-    }
-
-    return {
-      driverId: driver.id,
-      teamId: driver.teamId,
-      finishPosition,
-      gridPosition,
-      lapsCompleted: didNotFinish ? Math.floor(Math.random() * STUB_RACE_LAPS) : STUB_RACE_LAPS,
-      totalTime: didNotFinish ? undefined : BASE_LAP_TIME_MS * STUB_RACE_LAPS + Math.random() * MAX_GAP_TO_WINNER_MS,
-      gapToWinner: finishPosition === 1 ? 0 : Math.random() * MAX_GAP_TO_WINNER_MS,
-      points,
-      fastestLap: isFastestLap,
-      fastestLapTime: lapTime,
-      status: didNotFinish ? RaceFinishStatus.Retired : RaceFinishStatus.Finished,
-      pitStops: Math.floor(Math.random() * STUB_PIT_STOPS_MAX) + STUB_PIT_STOPS_MIN,
-    };
-  });
+  const { race, fastestLapDriverId, fastestLapTime } = generateRaceResults(finishOrder, gridOrder);
 
   return {
     raceNumber,
