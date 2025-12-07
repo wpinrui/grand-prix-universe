@@ -48,6 +48,30 @@ function StatCell({ value, muted }: StatCellProps) {
   return <td className={className}>{value}</td>;
 }
 
+interface PositionCellProps {
+  position: number;
+}
+
+function PositionCell({ position }: PositionCellProps) {
+  return (
+    <td className={`${CELL_BASE} text-center font-bold text-primary tabular-nums`}>
+      {position}
+    </td>
+  );
+}
+
+interface PointsCellProps {
+  points: number;
+}
+
+function PointsCell({ points }: PointsCellProps) {
+  return (
+    <td className={`${CELL_BASE} text-right font-bold text-primary tabular-nums`}>
+      {points}
+    </td>
+  );
+}
+
 interface DriverRowProps {
   standing: DriverStanding;
   driver: Driver | undefined;
@@ -63,18 +87,14 @@ function DriverRow({ standing, driver, team, isPlayerTeam }: DriverRowProps) {
 
   return (
     <tr className={styles.rowClass} style={styles.rowStyle}>
-      <td className={`${CELL_BASE} text-center font-bold text-primary tabular-nums`}>
-        {standing.position}
-      </td>
+      <PositionCell position={standing.position} />
       <td className={CELL_BASE}>
         <span className="font-semibold text-primary" style={styles.nameStyle}>
           {driverName}
         </span>
       </td>
       <td className={`${CELL_BASE} text-secondary`}>{team?.name ?? standing.teamId}</td>
-      <td className={`${CELL_BASE} text-right font-bold text-primary tabular-nums`}>
-        {standing.points}
-      </td>
+      <PointsCell points={standing.points} />
       <StatCell value={standing.wins} />
       <StatCell value={standing.podiums} />
       <StatCell value={standing.polePositions} />
@@ -95,17 +115,13 @@ function ConstructorRow({ standing, team, isPlayerTeam }: ConstructorRowProps) {
 
   return (
     <tr className={styles.rowClass} style={styles.rowStyle}>
-      <td className={`${CELL_BASE} text-center font-bold text-primary tabular-nums`}>
-        {standing.position}
-      </td>
+      <PositionCell position={standing.position} />
       <td className={CELL_BASE}>
         <span className="font-semibold text-primary" style={styles.nameStyle}>
           {team?.name ?? standing.teamId}
         </span>
       </td>
-      <td className={`${CELL_BASE} text-right font-bold text-primary tabular-nums`}>
-        {standing.points}
-      </td>
+      <PointsCell points={standing.points} />
       <StatCell value={standing.wins} />
       <StatCell value={standing.podiums} />
       <StatCell value={standing.polePositions} />
