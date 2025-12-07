@@ -18,11 +18,6 @@ function getButtonConfig(
     return { action: 'disabled', text: 'Season Complete' };
   }
 
-  // Hide button during race weekend - race screen handles progression
-  if (phase === GamePhase.RaceWeekend) {
-    return { action: 'disabled', text: '' };
-  }
-
   // Check if current week has a race (next uncompleted race is this week)
   if (nextRace && nextRace.weekNumber === currentWeek) {
     return { action: 'goToCircuit', text: `Go to ${raceName}` };
@@ -41,8 +36,13 @@ export function AdvanceWeekButton() {
   }
 
   const { phase, currentDate } = gameState;
-  const isLoading = advanceWeek.isPending || goToCircuit.isPending;
 
+  // Hide during race weekend - race screen handles progression
+  if (phase === GamePhase.RaceWeekend) {
+    return null;
+  }
+
+  const isLoading = advanceWeek.isPending || goToCircuit.isPending;
   const raceName = nextRaceCircuit?.name ?? 'Race';
   const { action, text } = getButtonConfig(
     phase,
@@ -50,11 +50,6 @@ export function AdvanceWeekButton() {
     nextRace,
     raceName
   );
-
-  // Hide during race weekend
-  if (phase === GamePhase.RaceWeekend) {
-    return null;
-  }
 
   const handleClick = () => {
     if (action === 'goToCircuit') {
