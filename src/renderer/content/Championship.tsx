@@ -14,12 +14,14 @@ import type {
 // ===========================================
 
 const CELL_BASE = 'px-4 py-3';
+const CELL_PRIMARY = 'font-bold text-primary tabular-nums';
 const CELL_STAT_BASE = `${CELL_BASE} text-center tabular-nums`;
 
 // Table structure styling
 const TABLE_HEADER_CLASS = 'surface-inset border-b border-[var(--neutral-600)]';
 const TABLE_HEADER_ROW_CLASS = 'text-xs font-semibold text-muted uppercase tracking-wider';
 const TABLE_BODY_CLASS = 'divide-y divide-[var(--neutral-700)]';
+const POSITION_COL_CLASS = 'w-16';
 
 // ===========================================
 // HELPERS
@@ -81,7 +83,7 @@ interface PositionCellProps {
 
 function PositionCell({ position }: PositionCellProps) {
   return (
-    <td className={`${CELL_BASE} text-center font-bold text-primary tabular-nums`}>
+    <td className={`${CELL_BASE} text-center ${CELL_PRIMARY}`}>
       {position}
     </td>
   );
@@ -93,7 +95,7 @@ interface PointsCellProps {
 
 function PointsCell({ points }: PointsCellProps) {
   return (
-    <td className={`${CELL_BASE} text-right font-bold text-primary tabular-nums`}>
+    <td className={`${CELL_BASE} text-right ${CELL_PRIMARY}`}>
       {points}
     </td>
   );
@@ -186,7 +188,7 @@ export function Championship() {
           <table className="w-full">
             <thead className={TABLE_HEADER_CLASS}>
               <tr className={TABLE_HEADER_ROW_CLASS}>
-                <HeaderCell className="w-16">Pos</HeaderCell>
+                <HeaderCell className={POSITION_COL_CLASS}>Pos</HeaderCell>
                 <HeaderCell align="left">Driver</HeaderCell>
                 <HeaderCell align="left">Team</HeaderCell>
                 <HeaderCell align="right">Points</HeaderCell>
@@ -219,7 +221,7 @@ export function Championship() {
           <table className="w-full">
             <thead className={TABLE_HEADER_CLASS}>
               <tr className={TABLE_HEADER_ROW_CLASS}>
-                <HeaderCell className="w-16">Pos</HeaderCell>
+                <HeaderCell className={POSITION_COL_CLASS}>Pos</HeaderCell>
                 <HeaderCell align="left">Team</HeaderCell>
                 <HeaderCell align="right">Points</HeaderCell>
                 <HeaderCell>Wins</HeaderCell>
