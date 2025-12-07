@@ -10,6 +10,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import type { GameState } from '../../shared/domain';
 import type { SaveSlotInfo, SaveResult, LoadResult } from '../../shared/ipc';
+import { yearToSeason, getWeekNumber } from '../../shared/utils/date-utils';
 
 /** Directory name for saves within userData */
 const SAVES_DIR = 'saves';
@@ -52,8 +53,8 @@ function extractSaveInfo(
     playerName: state.player.name,
     teamId: state.player.teamId,
     teamName: team?.name ?? 'Unknown Team',
-    seasonNumber: state.currentDate.season,
-    weekNumber: state.currentDate.week,
+    seasonNumber: yearToSeason(state.currentDate.year),
+    weekNumber: getWeekNumber(state.currentDate),
     savedAt: state.lastSavedAt,
     fileSize,
   };
