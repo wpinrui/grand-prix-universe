@@ -198,6 +198,14 @@ export interface IpcInvokeMap {
     args: [];
     result: AdvanceWeekResult;
   };
+  [IpcChannels.GAME_GO_TO_CIRCUIT]: {
+    args: [];
+    result: AdvanceWeekResult;
+  };
+  [IpcChannels.GAME_RUN_RACE]: {
+    args: [];
+    result: AdvanceWeekResult;
+  };
   [IpcChannels.GAME_NEW_SEASON]: {
     args: [];
     result: NewSeasonResult;
