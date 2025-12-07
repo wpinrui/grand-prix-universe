@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Play, Square, Loader2, MapPin } from 'lucide-react';
+import { Play, Square, Loader2, MapPin, type LucideIcon } from 'lucide-react';
 import { useDerivedGameState, useGoToCircuit, useStartSimulation, useStopSimulation, useSimulationTickListener } from '../hooks';
 import { GamePhase, CalendarEntry } from '../../shared/domain';
 import { ACCENT_MUTED_BUTTON_CLASSES, ACCENT_BORDERED_BUTTON_STYLE } from '../utils/theme-styles';
@@ -8,7 +8,7 @@ import { getWeekNumber } from '../../shared/utils/date-utils';
 type ButtonAction = 'startSimulation' | 'stopSimulation' | 'goToCircuit' | 'disabled';
 
 /** Icon for each button action */
-const ACTION_ICONS: Record<ButtonAction, typeof Play> = {
+const ACTION_ICONS: Record<ButtonAction, LucideIcon> = {
   startSimulation: Play,
   stopSimulation: Square,
   goToCircuit: MapPin,
