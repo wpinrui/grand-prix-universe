@@ -30,10 +30,18 @@ export function TopBar({ sectionLabel, subItemLabel, currentDate, playerTeam }: 
         </span>
       </div>
 
-      {/* Right side: Advance Week, Calendar & Budget */}
+      {/* Right side: Budget, Calendar, Advance Week */}
       <div className="flex items-center gap-4">
-        {/* Advance Week Button */}
-        <AdvanceWeekButton />
+        {/* Budget Display */}
+        <div
+          className="flex items-center gap-2 text-xl font-bold tabular-nums"
+          style={budgetStyle}
+        >
+          <DollarSign size={18} className="opacity-70" />
+          <span>
+            {playerTeam ? playerTeam.budget.toLocaleString() : '—'}
+          </span>
+        </div>
 
         {/* Calendar Button */}
         <button
@@ -45,21 +53,13 @@ export function TopBar({ sectionLabel, subItemLabel, currentDate, playerTeam }: 
           <Calendar size={16} />
           <span>
             {currentDate
-              ? `Week ${currentDate.week}, S${currentDate.season}`
+              ? `Week ${currentDate.week}, ${2024 + currentDate.season}`
               : '—'}
           </span>
         </button>
 
-        {/* Budget Display */}
-        <div
-          className="flex items-center gap-2 text-xl font-bold tabular-nums"
-          style={budgetStyle}
-        >
-          <DollarSign size={18} className="opacity-70" />
-          <span>
-            {playerTeam ? playerTeam.budget.toLocaleString() : '—'}
-          </span>
-        </div>
+        {/* Advance Week Button */}
+        <AdvanceWeekButton />
       </div>
     </header>
   );

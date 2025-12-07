@@ -1,8 +1,8 @@
-import { Check, Flag } from 'lucide-react';
+import { Flag } from 'lucide-react';
 import type { Section } from '../navigation';
 import type { Team, CalendarEntry } from '../../shared/domain';
 import { TeamBadge } from './TeamBadge';
-import { SubNavButton, IconButton } from './NavButtons';
+import { SubNavButton } from './NavButtons';
 
 interface BottomBarProps {
   playerTeam: Team | null;
@@ -40,7 +40,7 @@ export function BottomBar({
       <div className="flex-1" />
 
       {/* Next Race Info */}
-      <div className="flex items-center gap-3 mr-4">
+      <div className="flex items-center gap-3">
         <Flag size={16} className="text-secondary" />
         <div className="text-sm">
           {nextRace ? (
@@ -52,15 +52,6 @@ export function BottomBar({
           )}
         </div>
       </div>
-
-      {/* Advance Button */}
-      <IconButton
-        icon={Check}
-        onClick={() => {}}
-        title="Advance Week"
-        variant="accent"
-        size="lg"
-      />
     </footer>
   );
 }
