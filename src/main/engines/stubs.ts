@@ -183,9 +183,9 @@ function shuffleArray<T>(array: T[]): T[] {
  * Phase boundaries for the season
  */
 const PRESEASON_END_WEEK = 9;
-const POSTSEASON_START_WEEK = 49;
-const FIRST_RACE_WEEK = 10;
-const LAST_RACE_WEEK = 48;
+const POSTSEASON_START_WEEK = 50;
+const FIRST_RACE_WEEK = 11;
+const LAST_RACE_WEEK = 49;
 
 /**
  * Gameplay constants
@@ -834,20 +834,20 @@ function determineChiefRetirements(chiefs: Chief[]): string[] {
  */
 function calculateRaceWeek(index: number, raceCount: number, availableWeeks: number): number {
   if (raceCount === 1) return FIRST_RACE_WEEK;
-  // Spread races so first is at week 10, last is at week 48
+  // Spread races so first is at FIRST_RACE_WEEK, last is at LAST_RACE_WEEK
   const spacing = (availableWeeks - 1) / (raceCount - 1);
   return FIRST_RACE_WEEK + Math.round(index * spacing);
 }
 
 /**
  * Generate a new season calendar from circuits
- * Distributes races evenly across the race weeks (10-48)
+ * Distributes races evenly across the race weeks (11-49)
  * Limits races to available weeks if too many circuits provided
  */
 function generateNewCalendar(circuits: Circuit[]): CalendarEntry[] {
   if (circuits.length === 0) return [];
 
-  // Available weeks for races (weeks 10-48 inclusive)
+  // Available weeks for races (weeks 11-49 inclusive)
   const availableWeeks = LAST_RACE_WEEK - FIRST_RACE_WEEK + 1;
 
   // Shuffle circuits first, then take only as many as fit in available weeks
