@@ -1,11 +1,16 @@
+import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { GameDate, CalendarEvent } from '../../shared/domain';
 import {
   getCalendarStripDays,
   getShortDayName,
   getShortMonthName,
-  isSameDay,
 } from '../../shared/utils/date-utils';
+
+/** Create a lookup key from a GameDate */
+function dateKey(date: GameDate): string {
+  return `${date.year}-${date.month}-${date.day}`;
+}
 
 /** Index positions in the 9-day strip: [past, current, future x7] */
 const PAST_DAY_INDEX = 0;
@@ -64,16 +69,14 @@ function DayCell({ date, isCurrent, isPast, showMonth, event }: DayCellProps) {
 export function CalendarStrip({ currentDate, events, isVisible }: CalendarStripProps) {
   const days = getCalendarStripDays(currentDate);
 
-  // Find events for each day
-  const getEventForDay = (date: GameDate): CalendarEvent | undefined => {
-    return events.find((e) => isSameDay(e.date, date));
-  };
-
-  // Determine if we should show month for a day (first day of month, or first day in strip)
-  const shouldShowMonth = (date: GameDate, index: number): boolean => {
-    if (index === PAST_DAY_INDEX) return true; // Always show for first cell
-    return date.day === 1; // Show on month boundaries
-  };
+  // Pre-compute events lookup map for O(1) access
+  const eventsByDate = useMemo(() => {
+    const map = new Map<string, CalendarEvent>();
+    for (const event of events) {
+      map.set(dateKey(event.date), event);
+    }
+    return map;
+  }, [events]);
 
   return (
     <AnimatePresence>
@@ -88,12 +91,12 @@ export function CalendarStrip({ currentDate, events, isVisible }: CalendarStripP
           <div className="flex bg-[var(--neutral-850)] h-14">
             {days.map((date, index) => (
               <DayCell
-                key={`${date.year}-${date.month}-${date.day}`}
+                key={dateKey(date)}
                 date={date}
                 isCurrent={index === CURRENT_DAY_INDEX}
                 isPast={index === PAST_DAY_INDEX}
-                showMonth={shouldShowMonth(date, index)}
-                event={getEventForDay(date)}
+                showMonth={index === PAST_DAY_INDEX || date.day === 1}
+                event={eventsByDate.get(dateKey(date))}
               />
             ))}
           </div>

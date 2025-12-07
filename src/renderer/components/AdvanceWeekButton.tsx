@@ -7,6 +7,14 @@ import { getWeekNumber } from '../../shared/utils/date-utils';
 
 type ButtonAction = 'startSimulation' | 'stopSimulation' | 'goToCircuit' | 'disabled';
 
+/** Icon for each button action */
+const ACTION_ICONS: Record<ButtonAction, typeof Play> = {
+  startSimulation: Play,
+  stopSimulation: Square,
+  goToCircuit: MapPin,
+  disabled: Play,
+};
+
 /**
  * Determine the button action and text based on game state
  */
@@ -48,7 +56,7 @@ export function AdvanceWeekButton() {
   // Esc key handler to stop simulation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isSimulating) {
+      if (e.key === 'Escape' && isSimulating && !stopSimulation.isPending) {
         stopSimulation.mutate();
       }
     };
@@ -90,14 +98,7 @@ export function AdvanceWeekButton() {
   };
 
   const isDisabled = action === 'disabled' || isLoading;
-
-  // Choose icon based on action
-  let Icon = Play;
-  if (action === 'stopSimulation') {
-    Icon = Square;
-  } else if (action === 'goToCircuit') {
-    Icon = MapPin;
-  }
+  const Icon = ACTION_ICONS[action];
 
   return (
     <button
