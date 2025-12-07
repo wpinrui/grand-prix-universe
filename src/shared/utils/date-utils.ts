@@ -13,6 +13,12 @@ export const BASE_YEAR = 1998;
 /** Days per month (non-leap year) */
 const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
+/** Full month names for display */
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
 /** Day of week constants (1=Monday, 7=Sunday) */
 export const DayOfWeek = {
   Monday: 1,
@@ -53,8 +59,8 @@ export function getDayOfYear(date: GameDate): number {
 }
 
 /**
- * Get the week number (1-52) for a GameDate
- * Week 1 starts on January 1st
+ * Get the week number (1-53) for a GameDate
+ * Week 1 starts on January 1st; week 53 possible in late December
  */
 export function getWeekNumber(date: GameDate): number {
   const dayOfYear = getDayOfYear(date);
@@ -80,25 +86,6 @@ export function yearToSeason(year: number): number {
  */
 export function createGameDate(year: number, month: number, day: number): GameDate {
   return { year, month, day };
-}
-
-/**
- * Create a GameDate from season and week (for backward compatibility)
- * Places the date at the start of that week (Monday)
- */
-export function createGameDateFromSeasonWeek(season: number, week: number): GameDate {
-  const year = seasonToYear(season);
-  // Week 1 starts Jan 1, so week N starts on day (N-1)*7 + 1
-  let dayOfYear = (week - 1) * 7 + 1;
-
-  // Convert day of year to month/day
-  let month = 1;
-  while (dayOfYear > getDaysInMonth(year, month)) {
-    dayOfYear -= getDaysInMonth(year, month);
-    month++;
-  }
-
-  return { year, month, day: dayOfYear };
 }
 
 /**
@@ -155,25 +142,8 @@ export function isFriday(date: GameDate): boolean {
 /**
  * Format a GameDate for display (e.g., "15 March 1998")
  */
-const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
-
 export function formatGameDate(date: GameDate): string {
   return `${date.day} ${MONTH_NAMES[date.month - 1]} ${date.year}`;
-}
-
-/**
- * Format a GameDate for short display (e.g., "15 Mar")
- */
-const MONTH_SHORT_NAMES = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-];
-
-export function formatGameDateShort(date: GameDate): string {
-  return `${date.day} ${MONTH_SHORT_NAMES[date.month - 1]}`;
 }
 
 /**
