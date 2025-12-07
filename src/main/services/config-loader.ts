@@ -50,6 +50,16 @@ interface ChiefsFile {
   chiefs: Chief[];
 }
 
+/** Race schedule entry mapping circuit to week */
+export interface RaceScheduleEntry {
+  circuitId: string;
+  weekNumber: number;
+}
+
+interface RaceScheduleFile {
+  schedule: RaceScheduleEntry[];
+}
+
 /**
  * Get the base data directory path.
  * In development: project root /data
@@ -108,7 +118,7 @@ function loadConfigFile<T>(filename: string): T | null {
 }
 
 // Unified cache for all content types
-type CacheKey = 'teams' | 'drivers' | 'circuits' | 'sponsors' | 'manufacturers' | 'chiefs';
+type CacheKey = 'teams' | 'drivers' | 'circuits' | 'sponsors' | 'manufacturers' | 'chiefs' | 'raceSchedule';
 const cache: Record<CacheKey, unknown[] | null> = {
   teams: null,
   drivers: null,
@@ -116,6 +126,7 @@ const cache: Record<CacheKey, unknown[] | null> = {
   sponsors: null,
   manufacturers: null,
   chiefs: null,
+  raceSchedule: null,
 };
 
 // Separate cache for config files (single objects, not arrays)
@@ -215,6 +226,14 @@ export const ConfigLoader = {
     return this.getChiefs().find((chief) => chief.id === id);
   },
 
+  getRaceSchedule(): RaceScheduleEntry[] {
+    return getCachedContent<RaceScheduleFile, RaceScheduleEntry>(
+      'raceSchedule',
+      'race-schedule.json',
+      (f) => f.schedule
+    );
+  },
+
   getRules(): GameRules | null {
     if (configCache.rules !== NOT_LOADED) {
       return configCache.rules as GameRules | null;
@@ -282,6 +301,7 @@ export const ConfigLoader = {
     cache.sponsors = null;
     cache.manufacturers = null;
     cache.chiefs = null;
+    cache.raceSchedule = null;
     configCache.rules = NOT_LOADED;
     configCache.regulations = NOT_LOADED;
     configCache.compounds = NOT_LOADED;
