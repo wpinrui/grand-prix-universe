@@ -23,7 +23,9 @@ import {
   isActionType,
   type ActionType,
   Championship,
+  RaceWeekend,
 } from '../content';
+import { GamePhase } from '../../shared/domain';
 import { RoutePaths } from '../routes';
 
 type ActiveDialog = ActionType | null;
@@ -80,6 +82,26 @@ export function MainLayout() {
   const closeDialog = () => setActiveDialog(null);
 
   const isOptionsScreen = selectedSectionId === 'options';
+
+  // Race weekend takes over the entire screen (no navigation)
+  if (gameState?.phase === GamePhase.RaceWeekend) {
+    return (
+      <div className="flex w-full h-screen surface-base text-primary">
+        {playerTeam && (
+          <BackgroundLayer
+            teamId={playerTeam.id}
+            tintColor="var(--accent-900)"
+            position="absolute"
+            tintOpacity={75}
+            baseOpacity={92}
+          />
+        )}
+        <div className="relative z-10 w-full h-full">
+          <RaceWeekend />
+        </div>
+      </div>
+    );
+  }
 
   const renderContent = () => {
     if (selectedSectionId === 'team' && selectedSubItemId === 'profile') {

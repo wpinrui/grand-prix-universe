@@ -106,6 +106,8 @@ export const IpcChannels = {
   GAME_GET_STATE: 'game:getState',
   GAME_CLEAR_STATE: 'game:clearState',
   GAME_ADVANCE_WEEK: 'game:advanceWeek',
+  GAME_GO_TO_CIRCUIT: 'game:goToCircuit',
+  GAME_RUN_RACE: 'game:runRace',
   GAME_NEW_SEASON: 'game:newSeason',
 
   // Save/load
@@ -193,6 +195,14 @@ export interface IpcInvokeMap {
     result: void;
   };
   [IpcChannels.GAME_ADVANCE_WEEK]: {
+    args: [];
+    result: AdvanceWeekResult;
+  };
+  [IpcChannels.GAME_GO_TO_CIRCUIT]: {
+    args: [];
+    result: AdvanceWeekResult;
+  };
+  [IpcChannels.GAME_RUN_RACE]: {
     args: [];
     result: AdvanceWeekResult;
   };

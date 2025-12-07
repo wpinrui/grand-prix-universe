@@ -1,8 +1,10 @@
-import type { CSSProperties } from 'react';
-import { Calendar, DollarSign } from 'lucide-react';
+import { Calendar, Coins } from 'lucide-react';
 import type { GameDate, Team } from '../../shared/domain';
-import { ACCENT_MUTED_BUTTON_CLASSES, ACCENT_MUTED_BUTTON_STYLE, ACCENT_TEXT_STYLE } from '../utils/theme-styles';
+import { ACCENT_MUTED_BUTTON_CLASSES, ACCENT_MUTED_BUTTON_STYLE } from '../utils/theme-styles';
 import { AdvanceWeekButton } from './AdvanceWeekButton';
+
+/** Year that season 1 corresponds to (season 1 = 2025, season 2 = 2026, etc.) */
+const SEASON_BASE_YEAR = 2024;
 
 interface TopBarProps {
   sectionLabel: string;
@@ -12,11 +14,6 @@ interface TopBarProps {
 }
 
 export function TopBar({ sectionLabel, subItemLabel, currentDate, playerTeam }: TopBarProps) {
-  const budgetStyle: CSSProperties = {
-    ...ACCENT_TEXT_STYLE,
-    textShadow: '0 0 20px color-mix(in srgb, var(--accent-400) 30%, transparent)',
-  };
-
   return (
     <header className="top-bar flex items-center justify-between h-16 px-6 surface-primary border-b border-subtle">
       {/* Breadcrumb */}
@@ -30,10 +27,18 @@ export function TopBar({ sectionLabel, subItemLabel, currentDate, playerTeam }: 
         </span>
       </div>
 
-      {/* Right side: Advance Week, Calendar & Budget */}
-      <div className="flex items-center gap-4">
-        {/* Advance Week Button */}
-        <AdvanceWeekButton />
+      {/* Right side: Budget, Calendar, Advance Week */}
+      <div className="flex items-center gap-3">
+        {/* Budget Display */}
+        <div
+          className={`${ACCENT_MUTED_BUTTON_CLASSES} px-3 py-1.5`}
+          style={ACCENT_MUTED_BUTTON_STYLE}
+        >
+          <Coins size={16} />
+          <span className="tabular-nums">
+            {playerTeam ? `$${playerTeam.budget.toLocaleString()}` : '—'}
+          </span>
+        </div>
 
         {/* Calendar Button */}
         <button
@@ -45,21 +50,13 @@ export function TopBar({ sectionLabel, subItemLabel, currentDate, playerTeam }: 
           <Calendar size={16} />
           <span>
             {currentDate
-              ? `Week ${currentDate.week}, S${currentDate.season}`
+              ? `Week ${currentDate.week}, ${SEASON_BASE_YEAR + currentDate.season}`
               : '—'}
           </span>
         </button>
 
-        {/* Budget Display */}
-        <div
-          className="flex items-center gap-2 text-xl font-bold tabular-nums"
-          style={budgetStyle}
-        >
-          <DollarSign size={18} className="opacity-70" />
-          <span>
-            {playerTeam ? playerTeam.budget.toLocaleString() : '—'}
-          </span>
-        </div>
+        {/* Advance Week Button */}
+        <AdvanceWeekButton />
       </div>
     </header>
   );

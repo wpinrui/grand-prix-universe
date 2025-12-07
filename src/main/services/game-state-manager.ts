@@ -890,7 +890,10 @@ function findCurrentRace(
   state: GameState
 ): { race: CalendarEntry } | { error: AdvanceWeekResult } {
   const race = state.currentSeason.calendar.find(
-    (entry) => entry.weekNumber === state.currentDate.week && !entry.completed
+    (entry) =>
+      entry.weekNumber === state.currentDate.week &&
+      !entry.completed &&
+      !entry.cancelled
   );
 
   if (!race) {
@@ -991,11 +994,7 @@ export const GameStateManager = {
 
   /**
    * Advances the game by one week.
-   *
-   * Logic flow:
-   * 1. If PostSeason → return blocked (player must end season first)
-   * 2. If RaceWeekend → run race, process results, then advance
-   * 3. Otherwise → process weekly changes, check for upcoming race
+   * Does NOT run races - use runRace for that.
    */
   advanceWeek(): AdvanceWeekResult {
     const state = GameStateManager.currentState;
@@ -1003,17 +1002,72 @@ export const GameStateManager = {
       return { success: false, error: 'No active game' };
     }
 
-    // Handle RaceWeekend phase - run the race
+    // Cannot advance during race weekend - must run race first
     if (state.phase === GamePhase.RaceWeekend) {
-      const result = findCurrentRace(state);
-      if ('error' in result) {
-        return result.error;
-      }
-      processRaceWeekend(state, result.race);
+      return { success: false, error: 'Cannot advance during race weekend' };
     }
 
     // Advance to next week (handles blocked state and phase transitions)
     return processTurn(state);
+  },
+
+  /**
+   * Transitions to RaceWeekend phase without advancing the week.
+   * Used when the current week has a race but we haven't entered the weekend yet.
+   */
+  goToCircuit(): AdvanceWeekResult {
+    const state = GameStateManager.currentState;
+    if (!state) {
+      return { success: false, error: 'No active game' };
+    }
+
+    // Already in RaceWeekend - nothing to do
+    if (state.phase === GamePhase.RaceWeekend) {
+      return { success: false, error: 'Already at circuit' };
+    }
+
+    // Verify current week has an uncompleted, non-cancelled race
+    const race = state.currentSeason.calendar.find(
+      (entry) =>
+        entry.weekNumber === state.currentDate.week &&
+        !entry.completed &&
+        !entry.cancelled
+    );
+
+    if (!race) {
+      return { success: false, error: 'No race scheduled for current week' };
+    }
+
+    // Just change phase - no week advancement
+    state.phase = GamePhase.RaceWeekend;
+    return { success: true, state };
+  },
+
+  /**
+   * Runs the race and returns to BetweenRaces phase.
+   * Does NOT advance the week - use advanceWeek for that.
+   */
+  runRace(): AdvanceWeekResult {
+    const state = GameStateManager.currentState;
+    if (!state) {
+      return { success: false, error: 'No active game' };
+    }
+
+    // Must be in RaceWeekend phase
+    if (state.phase !== GamePhase.RaceWeekend) {
+      return { success: false, error: 'Not at circuit' };
+    }
+
+    // Find and process the race
+    const result = findCurrentRace(state);
+    if ('error' in result) {
+      return result.error;
+    }
+    processRaceWeekend(state, result.race);
+
+    // Return to BetweenRaces - week stays the same
+    state.phase = GamePhase.BetweenRaces;
+    return { success: true, state };
   },
 
   /**

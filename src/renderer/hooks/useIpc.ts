@@ -9,6 +9,13 @@
 import { useCallback, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { IpcChannels, IpcEvents, type SaveResult, type LoadResult, type SaveSlotInfo, type AdvanceWeekResult } from '../../shared/ipc';
+
+/** Channels that return AdvanceWeekResult and mutate game state */
+type GameStateMutationChannel =
+  | typeof IpcChannels.GAME_ADVANCE_WEEK
+  | typeof IpcChannels.GAME_GO_TO_CIRCUIT
+  | typeof IpcChannels.GAME_RUN_RACE;
+
 import type {
   Team,
   Driver,
@@ -146,17 +153,31 @@ export function useNewGame() {
   });
 }
 
-export function useAdvanceWeek() {
+/** Helper hook for game state mutations that update the cache on success */
+function useGameStateMutation(channel: GameStateMutationChannel) {
   const queryClient = useQueryClient();
 
   return useMutation<AdvanceWeekResult, Error, void>({
-    mutationFn: () => window.electronAPI.invoke(IpcChannels.GAME_ADVANCE_WEEK),
+    mutationFn: () => window.electronAPI.invoke(channel),
     onSuccess: (result) => {
       if (result.success && result.state) {
         queryClient.setQueryData(queryKeys.gameState, result.state);
+        queryClient.invalidateQueries({ queryKey: queryKeys.gameState });
       }
     },
   });
+}
+
+export function useAdvanceWeek() {
+  return useGameStateMutation(IpcChannels.GAME_ADVANCE_WEEK);
+}
+
+export function useGoToCircuit() {
+  return useGameStateMutation(IpcChannels.GAME_GO_TO_CIRCUIT);
+}
+
+export function useRunRace() {
+  return useGameStateMutation(IpcChannels.GAME_RUN_RACE);
 }
 
 // =============================================================================
