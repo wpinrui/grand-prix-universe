@@ -86,6 +86,10 @@ export function registerIpcHandlers(): void {
     return GameStateManager.goToCircuit();
   });
 
+  ipcMain.handle(IpcChannels.GAME_RUN_RACE, () => {
+    return GameStateManager.runRace();
+  });
+
   ipcMain.handle(IpcChannels.GAME_NEW_SEASON, () => {
     return GameStateManager.startNewSeason();
   });

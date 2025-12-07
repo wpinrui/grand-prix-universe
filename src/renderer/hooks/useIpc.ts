@@ -174,6 +174,20 @@ export function useGoToCircuit() {
   });
 }
 
+export function useRunRace() {
+  const queryClient = useQueryClient();
+
+  return useMutation<AdvanceWeekResult, Error, void>({
+    mutationFn: () => window.electronAPI.invoke(IpcChannels.GAME_RUN_RACE),
+    onSuccess: (result) => {
+      if (result.success && result.state) {
+        queryClient.setQueryData(queryKeys.gameState, result.state);
+        queryClient.invalidateQueries({ queryKey: queryKeys.gameState });
+      }
+    },
+  });
+}
+
 // =============================================================================
 // SAVE/LOAD HOOKS
 // =============================================================================

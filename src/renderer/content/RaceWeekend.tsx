@@ -1,16 +1,16 @@
 import { Flag, Loader2 } from 'lucide-react';
-import { useDerivedGameState, useAdvanceWeek } from '../hooks';
+import { useDerivedGameState, useRunRace } from '../hooks';
 import { ACCENT_BUTTON_CLASSES, ACCENT_BORDERED_BUTTON_STYLE } from '../utils/theme-styles';
 
 export function RaceWeekend() {
   const { nextRace, nextRaceCircuit } = useDerivedGameState();
-  const advanceWeek = useAdvanceWeek();
+  const runRace = useRunRace();
 
   const circuitName = nextRaceCircuit?.name ?? 'Circuit';
   const raceNumber = nextRace?.raceNumber ?? 0;
 
   const handleRunRace = () => {
-    advanceWeek.mutate();
+    runRace.mutate();
   };
 
   return (
@@ -24,11 +24,11 @@ export function RaceWeekend() {
       <button
         type="button"
         onClick={handleRunRace}
-        disabled={advanceWeek.isPending}
+        disabled={runRace.isPending}
         className={`${ACCENT_BUTTON_CLASSES} px-6 py-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed`}
         style={ACCENT_BORDERED_BUTTON_STYLE}
       >
-        {advanceWeek.isPending ? (
+        {runRace.isPending ? (
           <Loader2 size={20} className="animate-spin" />
         ) : (
           <Flag size={20} />
