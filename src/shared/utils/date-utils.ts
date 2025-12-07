@@ -5,13 +5,24 @@
  * Used for race scheduling (still week-based) while UI shows actual dates.
  */
 
-import type { GameDate } from '../domain/types';
+import type { GameDate, SimulationState } from '../domain/types';
 
 /** Base year that season 1 maps to */
 export const BASE_YEAR = 1998;
 
 /** Days per month (non-leap year) */
 const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+/** Day of week constants (1=Monday, 7=Sunday) */
+export const DayOfWeek = {
+  Monday: 1,
+  Tuesday: 2,
+  Wednesday: 3,
+  Thursday: 4,
+  Friday: 5,
+  Saturday: 6,
+  Sunday: 7,
+} as const;
 
 /**
  * Check if a year is a leap year
@@ -135,10 +146,10 @@ export function getDayOfWeek(date: GameDate): number {
 }
 
 /**
- * Check if a date is a Friday (day 5)
+ * Check if a date is a Friday
  */
 export function isFriday(date: GameDate): boolean {
-  return getDayOfWeek(date) === 5;
+  return getDayOfWeek(date) === DayOfWeek.Friday;
 }
 
 /**
@@ -175,7 +186,7 @@ export function getPreSeasonStartDate(season: number): GameDate {
 /**
  * Default simulation state
  */
-export const DEFAULT_SIMULATION_STATE = {
+export const DEFAULT_SIMULATION_STATE: SimulationState = {
   isSimulating: false,
   speed: 1, // 1 day per second
 };

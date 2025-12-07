@@ -1029,15 +1029,8 @@ export const GameStateManager = {
     }
 
     // Verify current week has an uncompleted, non-cancelled race
-    const currentWeek = getWeekNumber(state.currentDate);
-    const race = state.currentSeason.calendar.find(
-      (entry) =>
-        entry.weekNumber === currentWeek &&
-        !entry.completed &&
-        !entry.cancelled
-    );
-
-    if (!race) {
+    const result = findCurrentRace(state);
+    if ('error' in result) {
       return { success: false, error: 'No race scheduled for current week' };
     }
 
