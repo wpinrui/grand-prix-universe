@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 import { Calendar, DollarSign } from 'lucide-react';
 import type { GameDate, Team } from '../../shared/domain';
 import { ACCENT_MUTED_BUTTON_CLASSES, ACCENT_MUTED_BUTTON_STYLE, ACCENT_TEXT_STYLE } from '../utils/theme-styles';
+import { AdvanceWeekButton } from './AdvanceWeekButton';
 
 interface TopBarProps {
   sectionLabel: string;
@@ -29,8 +30,11 @@ export function TopBar({ sectionLabel, subItemLabel, currentDate, playerTeam }: 
         </span>
       </div>
 
-      {/* Right side: Calendar & Budget */}
+      {/* Right side: Advance Week, Calendar & Budget */}
       <div className="flex items-center gap-4">
+        {/* Advance Week Button */}
+        <AdvanceWeekButton />
+
         {/* Calendar Button */}
         <button
           type="button"
