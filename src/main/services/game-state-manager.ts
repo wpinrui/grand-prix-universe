@@ -57,7 +57,7 @@ import {
   Department,
   ManufacturerType,
   ManufacturerDealType,
-  DriverRole,
+  hasRaceSeat,
 } from '../../shared/domain';
 
 /** Current save format version */
@@ -174,14 +174,6 @@ function createInitialTeamState(
       handlingProblemsFound: [],
     },
   };
-}
-
-/**
- * Type guard: driver has a race seat (assigned to a team and not a test driver)
- * Used to filter drivers for championship standings
- */
-function hasRaceSeat(driver: Driver): driver is Driver & { teamId: string } {
-  return driver.teamId !== null && driver.role !== DriverRole.Test;
 }
 
 /** All entity arrays loaded from config */
