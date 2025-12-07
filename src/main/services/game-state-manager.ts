@@ -681,27 +681,18 @@ function applyChiefChanges(state: GameState, changes: ChiefChange[]): void {
 }
 
 /**
- * Mark retired drivers by clearing their teamId (makes them free agents)
+ * Mark retired entities by clearing their teamId (makes them free agents)
+ * Works for any entity with id and teamId properties (Driver, Chief)
  * In future, could remove from roster entirely or add to "retired" list
  */
-function applyDriverRetirements(state: GameState, retiredIds: string[]): void {
-  for (const driverId of retiredIds) {
-    const driver = state.drivers.find((d) => d.id === driverId);
-    if (driver) {
-      driver.teamId = null;
-    }
-  }
-}
-
-/**
- * Mark retired chiefs by clearing their teamId
- * In future, could remove from roster entirely or add to "retired" list
- */
-function applyChiefRetirements(state: GameState, retiredIds: string[]): void {
-  for (const chiefId of retiredIds) {
-    const chief = state.chiefs.find((c) => c.id === chiefId);
-    if (chief) {
-      chief.teamId = null;
+function applyRetirements<T extends { id: string; teamId: string | null }>(
+  entities: T[],
+  retiredIds: string[]
+): void {
+  for (const id of retiredIds) {
+    const entity = entities.find((e) => e.id === id);
+    if (entity) {
+      entity.teamId = null;
     }
   }
 }
@@ -745,8 +736,8 @@ function buildSeasonEndInput(state: GameState): SeasonEndInput {
 function applySeasonEndResult(state: GameState, result: SeasonEndResult): void {
   applyDriverAttributeChanges(state, result.driverAttributeChanges);
   applyChiefChanges(state, result.chiefChanges);
-  applyDriverRetirements(state, result.retiredDriverIds);
-  applyChiefRetirements(state, result.retiredChiefIds);
+  applyRetirements(state.drivers, result.retiredDriverIds);
+  applyRetirements(state.chiefs, result.retiredChiefIds);
   applyResetDriverStates(state, result.resetDriverStates);
 }
 
