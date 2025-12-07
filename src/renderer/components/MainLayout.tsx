@@ -222,6 +222,9 @@ export function MainLayout() {
           nextRace={nextRace}
           isVisible={gameState.simulation?.isSimulating ?? false}
           isPostSeason={gameState.phase === GamePhase.PostSeason}
+          sectionLabel={selectedSection.label}
+          subItemLabel={selectedSubItem.label}
+          playerTeam={playerTeam}
         />
       )}
     </div>

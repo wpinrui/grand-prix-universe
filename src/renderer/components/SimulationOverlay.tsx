@@ -1,6 +1,7 @@
-import { useMemo, useRef, useEffect } from 'react';
+import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { GameDate, CalendarEvent, CalendarEntry, Circuit } from '../../shared/domain';
+import type { GameDate, CalendarEvent, CalendarEntry, Circuit, Team } from '../../shared/domain';
+import { TopBar } from './TopBar';
 import {
   getCalendarStripDays,
   getShortDayName,
@@ -20,9 +21,13 @@ function dateKey(date: GameDate): string {
 /** Index positions in the 9-day strip */
 const PAST_DAY_INDEX = 0;
 const CURRENT_DAY_INDEX = 1;
+const TOTAL_DAYS = 9;
 
 /** Panel configuration */
 const PANEL_HEIGHT = 300;
+
+/** Slide animation offset (1/9 of width as percentage) */
+const SLIDE_OFFSET_PERCENT = `${(100 / TOTAL_DAYS).toFixed(2)}%`;
 
 interface SimulationOverlayProps {
   currentDate: GameDate;
@@ -32,6 +37,10 @@ interface SimulationOverlayProps {
   nextRace: CalendarEntry | null;
   isVisible: boolean;
   isPostSeason: boolean;
+  // TopBar props
+  sectionLabel: string;
+  subItemLabel: string;
+  playerTeam: Team | null;
 }
 
 interface RaceWeekendInfo {
@@ -44,12 +53,11 @@ interface DayCardProps {
   date: GameDate;
   isCurrent: boolean;
   isPast: boolean;
-  showMonth: boolean;
   events: CalendarEvent[];
   raceWeekendInfo: RaceWeekendInfo | null;
 }
 
-function DayCard({ date, isCurrent, isPast, showMonth, events, raceWeekendInfo }: DayCardProps) {
+function DayCard({ date, isCurrent, isPast, events, raceWeekendInfo }: DayCardProps) {
   const dayName = getShortDayName(date);
   const monthName = getShortMonthName(date);
 
@@ -70,9 +78,7 @@ function DayCard({ date, isCurrent, isPast, showMonth, events, raceWeekendInfo }
           <span className={`text-xl font-bold ${isCurrent ? 'text-[var(--accent-200)]' : 'text-primary'}`}>
             {date.day}
           </span>
-          {showMonth && (
-            <span className="text-sm text-muted ml-1">{monthName}</span>
-          )}
+          <span className="text-sm text-muted ml-1">{monthName}</span>
         </div>
       </div>
 
@@ -128,15 +134,12 @@ export function SimulationOverlay({
   nextRace,
   isVisible,
   isPostSeason,
+  sectionLabel,
+  subItemLabel,
+  playerTeam,
 }: SimulationOverlayProps) {
   const days = getCalendarStripDays(currentDate);
-  const prevDateRef = useRef<string>(dateKey(currentDate));
   const animationKey = dateKey(currentDate);
-
-  // Track date changes for animation direction
-  useEffect(() => {
-    prevDateRef.current = animationKey;
-  }, [animationKey]);
 
   // Build circuit lookup map
   const circuitsById = useMemo(() => {
@@ -159,26 +162,31 @@ export function SimulationOverlay({
     return map;
   }, [events]);
 
-  // Get race weekend info for a date
-  const getRaceWeekendInfo = (date: GameDate): RaceWeekendInfo | null => {
-    // Check all upcoming races in the calendar
+  // Build race weekend info lookup map (memoized for O(1) access per day)
+  const raceWeekendByDate = useMemo(() => {
+    const map = new Map<string, RaceWeekendInfo>();
+
     for (const entry of calendar) {
       if (entry.completed || entry.cancelled) continue;
 
-      const session = getRaceSessionForDate(date, entry.weekNumber);
-      if (session) {
-        const circuit = circuitsById.get(entry.circuitId);
-        if (circuit) {
-          return {
+      const circuit = circuitsById.get(entry.circuitId);
+      if (!circuit) continue;
+
+      // Check each day in our strip for this race weekend
+      for (const date of days) {
+        const session = getRaceSessionForDate(date, entry.weekNumber);
+        if (session) {
+          map.set(dateKey(date), {
             session,
             circuitName: circuit.name,
             country: circuit.country,
-          };
+          });
         }
       }
     }
-    return null;
-  };
+
+    return map;
+  }, [calendar, circuitsById, days]);
 
   // Calculate footer text
   const footerText = useMemo(() => {
@@ -217,7 +225,17 @@ export function SimulationOverlay({
           {/* Blurred backdrop */}
           <div className="absolute inset-0 bg-[var(--neutral-950)]/80 backdrop-blur-sm" />
 
-          {/* Calendar panel - positioned at top */}
+          {/* TopBar with stop button */}
+          <div className="relative z-10">
+            <TopBar
+              sectionLabel={sectionLabel}
+              subItemLabel={subItemLabel}
+              currentDate={currentDate}
+              playerTeam={playerTeam}
+            />
+          </div>
+
+          {/* Calendar panel - positioned below TopBar */}
           <motion.div
             initial={{ y: -PANEL_HEIGHT, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -236,9 +254,9 @@ export function SimulationOverlay({
                 <AnimatePresence mode="popLayout" initial={false}>
                   <motion.div
                     key={animationKey}
-                    initial={{ x: '11.11%', opacity: 0 }}
+                    initial={{ x: SLIDE_OFFSET_PERCENT, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: '-11.11%', opacity: 0 }}
+                    exit={{ x: `-${SLIDE_OFFSET_PERCENT}`, opacity: 0 }}
                     transition={{ duration: 0.3, ease: 'easeInOut' }}
                     className="h-full flex"
                   >
@@ -248,9 +266,8 @@ export function SimulationOverlay({
                         date={date}
                         isCurrent={index === CURRENT_DAY_INDEX}
                         isPast={index === PAST_DAY_INDEX}
-                        showMonth={index === PAST_DAY_INDEX || date.day === 1}
                         events={eventsByDate.get(dateKey(date)) ?? []}
-                        raceWeekendInfo={getRaceWeekendInfo(date)}
+                        raceWeekendInfo={raceWeekendByDate.get(dateKey(date)) ?? null}
                       />
                     ))}
                   </motion.div>
