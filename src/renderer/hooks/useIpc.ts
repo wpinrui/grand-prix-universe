@@ -154,6 +154,7 @@ export function useAdvanceWeek() {
     onSuccess: (result) => {
       if (result.success && result.state) {
         queryClient.setQueryData(queryKeys.gameState, result.state);
+        queryClient.invalidateQueries({ queryKey: queryKeys.gameState });
       }
     },
   });
@@ -167,6 +168,7 @@ export function useGoToCircuit() {
     onSuccess: (result) => {
       if (result.success && result.state) {
         queryClient.setQueryData(queryKeys.gameState, result.state);
+        queryClient.invalidateQueries({ queryKey: queryKeys.gameState });
       }
     },
   });
