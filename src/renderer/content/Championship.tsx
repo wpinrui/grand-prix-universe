@@ -14,7 +14,12 @@ import type {
 // ===========================================
 
 const CELL_BASE = 'px-4 py-3';
-const CELL_STAT = `${CELL_BASE} text-center text-secondary tabular-nums`;
+const CELL_STAT_BASE = `${CELL_BASE} text-center tabular-nums`;
+
+// Table structure styling
+const TABLE_HEADER_CLASS = 'surface-inset border-b border-[var(--neutral-600)]';
+const TABLE_HEADER_ROW_CLASS = 'text-xs font-semibold text-muted uppercase tracking-wider';
+const TABLE_BODY_CLASS = 'divide-y divide-[var(--neutral-700)]';
 
 // ===========================================
 // HELPERS
@@ -66,8 +71,8 @@ interface StatCellProps {
 }
 
 function StatCell({ value, muted }: StatCellProps) {
-  const className = muted ? `${CELL_BASE} text-center text-muted tabular-nums` : CELL_STAT;
-  return <td className={className}>{value}</td>;
+  const colorClass = muted ? 'text-muted' : 'text-secondary';
+  return <td className={`${CELL_STAT_BASE} ${colorClass}`}>{value}</td>;
 }
 
 interface PositionCellProps {
@@ -179,8 +184,8 @@ export function Championship() {
         <SectionHeading>Drivers Championship</SectionHeading>
         <div className="card overflow-hidden">
           <table className="w-full">
-            <thead className="surface-inset border-b border-[var(--neutral-600)]">
-              <tr className="text-xs font-semibold text-muted uppercase tracking-wider">
+            <thead className={TABLE_HEADER_CLASS}>
+              <tr className={TABLE_HEADER_ROW_CLASS}>
                 <HeaderCell className="w-16">Pos</HeaderCell>
                 <HeaderCell align="left">Driver</HeaderCell>
                 <HeaderCell align="left">Team</HeaderCell>
@@ -192,7 +197,7 @@ export function Championship() {
                 <HeaderCell>DNF</HeaderCell>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[var(--neutral-700)]">
+            <tbody className={TABLE_BODY_CLASS}>
               {driverStandings.map((standing) => (
                 <DriverRow
                   key={standing.driverId}
@@ -212,8 +217,8 @@ export function Championship() {
         <SectionHeading>Constructors Championship</SectionHeading>
         <div className="card overflow-hidden">
           <table className="w-full">
-            <thead className="surface-inset border-b border-[var(--neutral-600)]">
-              <tr className="text-xs font-semibold text-muted uppercase tracking-wider">
+            <thead className={TABLE_HEADER_CLASS}>
+              <tr className={TABLE_HEADER_ROW_CLASS}>
                 <HeaderCell className="w-16">Pos</HeaderCell>
                 <HeaderCell align="left">Team</HeaderCell>
                 <HeaderCell align="right">Points</HeaderCell>
@@ -222,7 +227,7 @@ export function Championship() {
                 <HeaderCell>Poles</HeaderCell>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[var(--neutral-700)]">
+            <tbody className={TABLE_BODY_CLASS}>
               {constructorStandings.map((standing) => (
                 <ConstructorRow
                   key={standing.teamId}
