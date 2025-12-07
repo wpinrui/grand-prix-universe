@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 import { useDerivedGameState } from '../hooks';
 import { TeamBadge } from '../components/TeamBadge';
+import { SectionHeading } from '../components';
 import { ACCENT_CARD_STYLE, ACCENT_TEXT_STYLE } from '../utils/theme-styles';
 import { formatCurrency, formatAnnualSalary, DRIVER_ROLE_LABELS } from '../utils/format';
 import type {
@@ -106,19 +107,6 @@ function StatCard({ label, value, accent = false }: StatCardProps) {
         {value}
       </div>
     </div>
-  );
-}
-
-interface SectionHeadingProps {
-  children: React.ReactNode;
-}
-
-function SectionHeading({ children }: SectionHeadingProps) {
-  return (
-    <h2 className="text-lg font-bold text-primary uppercase tracking-wide mb-4 flex items-center gap-3">
-      <span>{children}</span>
-      <div className="flex-1 h-px bg-[var(--neutral-600)]" />
-    </h2>
   );
 }
 

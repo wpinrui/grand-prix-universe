@@ -22,6 +22,7 @@ import {
   ACTION_CONFIGS,
   isActionType,
   type ActionType,
+  Championship,
 } from '../content';
 import { RoutePaths } from '../routes';
 
@@ -83,6 +84,10 @@ export function MainLayout() {
   const renderContent = () => {
     if (selectedSectionId === 'team' && selectedSubItemId === 'profile') {
       return <TeamProfile />;
+    }
+
+    if (selectedSectionId === 'fia' && selectedSubItemId === 'championship') {
+      return <Championship />;
     }
 
     if (isOptionsScreen) {
