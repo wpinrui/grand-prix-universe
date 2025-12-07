@@ -21,16 +21,16 @@ const CELL_STAT = `${CELL_BASE} text-center text-secondary tabular-nums`;
 // ===========================================
 
 interface RowStyles {
-  row: CSSProperties;
+  rowStyle: CSSProperties;
   rowClass: string;
-  name: CSSProperties;
+  nameStyle: CSSProperties;
 }
 
 function getRowStyles(isPlayerTeam: boolean): RowStyles {
   return {
-    row: isPlayerTeam ? ACCENT_CARD_STYLE : {},
+    rowStyle: isPlayerTeam ? ACCENT_CARD_STYLE : {},
     rowClass: isPlayerTeam ? 'bg-[var(--accent-900)]/30' : '',
-    name: isPlayerTeam ? ACCENT_TEXT_STYLE : {},
+    nameStyle: isPlayerTeam ? ACCENT_TEXT_STYLE : {},
   };
 }
 
@@ -62,12 +62,12 @@ function DriverRow({ standing, driver, team, isPlayerTeam }: DriverRowProps) {
     : standing.driverId;
 
   return (
-    <tr className={styles.rowClass} style={styles.row}>
+    <tr className={styles.rowClass} style={styles.rowStyle}>
       <td className={`${CELL_BASE} text-center font-bold text-primary tabular-nums`}>
         {standing.position}
       </td>
       <td className={CELL_BASE}>
-        <span className="font-semibold text-primary" style={styles.name}>
+        <span className="font-semibold text-primary" style={styles.nameStyle}>
           {driverName}
         </span>
       </td>
@@ -94,12 +94,12 @@ function ConstructorRow({ standing, team, isPlayerTeam }: ConstructorRowProps) {
   const styles = getRowStyles(isPlayerTeam);
 
   return (
-    <tr className={styles.rowClass} style={styles.row}>
+    <tr className={styles.rowClass} style={styles.rowStyle}>
       <td className={`${CELL_BASE} text-center font-bold text-primary tabular-nums`}>
         {standing.position}
       </td>
       <td className={CELL_BASE}>
-        <span className="font-semibold text-primary" style={styles.name}>
+        <span className="font-semibold text-primary" style={styles.nameStyle}>
           {team?.name ?? standing.teamId}
         </span>
       </td>
