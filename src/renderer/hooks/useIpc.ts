@@ -159,6 +159,19 @@ export function useAdvanceWeek() {
   });
 }
 
+export function useGoToCircuit() {
+  const queryClient = useQueryClient();
+
+  return useMutation<AdvanceWeekResult, Error, void>({
+    mutationFn: () => window.electronAPI.invoke(IpcChannels.GAME_GO_TO_CIRCUIT),
+    onSuccess: (result) => {
+      if (result.success && result.state) {
+        queryClient.setQueryData(queryKeys.gameState, result.state);
+      }
+    },
+  });
+}
+
 // =============================================================================
 // SAVE/LOAD HOOKS
 // =============================================================================

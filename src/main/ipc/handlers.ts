@@ -82,6 +82,10 @@ export function registerIpcHandlers(): void {
     return GameStateManager.advanceWeek();
   });
 
+  ipcMain.handle(IpcChannels.GAME_GO_TO_CIRCUIT, () => {
+    return GameStateManager.goToCircuit();
+  });
+
   ipcMain.handle(IpcChannels.GAME_NEW_SEASON, () => {
     return GameStateManager.startNewSeason();
   });

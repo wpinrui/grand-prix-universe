@@ -246,12 +246,15 @@ function determinePhaseForWeek(
   }
 
   // Check if this week has a race
+  // Note: We return BetweenRaces even for race weeks - the player must explicitly
+  // "go to circuit" to enter RaceWeekend phase. This gives them a chance to see
+  // the race week before committing to it.
   const raceEntry = calendar.find(
     (entry) => entry.weekNumber === week && !entry.completed && !entry.cancelled
   );
 
   if (raceEntry) {
-    return { phase: GamePhase.RaceWeekend, raceWeek: { circuitId: raceEntry.circuitId } };
+    return { phase: GamePhase.BetweenRaces, raceWeek: { circuitId: raceEntry.circuitId } };
   }
 
   return { phase: GamePhase.BetweenRaces, raceWeek: null };

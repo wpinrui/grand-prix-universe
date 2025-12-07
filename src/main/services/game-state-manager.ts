@@ -1017,6 +1017,35 @@ export const GameStateManager = {
   },
 
   /**
+   * Transitions to RaceWeekend phase without advancing the week.
+   * Used when the current week has a race but we haven't entered the weekend yet.
+   */
+  goToCircuit(): AdvanceWeekResult {
+    const state = GameStateManager.currentState;
+    if (!state) {
+      return { success: false, error: 'No active game' };
+    }
+
+    // Already in RaceWeekend - nothing to do
+    if (state.phase === GamePhase.RaceWeekend) {
+      return { success: false, error: 'Already at circuit' };
+    }
+
+    // Verify current week has an uncompleted race
+    const race = state.currentSeason.calendar.find(
+      (entry) => entry.weekNumber === state.currentDate.week && !entry.completed
+    );
+
+    if (!race) {
+      return { success: false, error: 'No race scheduled for current week' };
+    }
+
+    // Just change phase - no week advancement
+    state.phase = GamePhase.RaceWeekend;
+    return { success: true, state };
+  },
+
+  /**
    * Saves the current game state to a new file.
    * Handles timestamp syncing automatically.
    */

@@ -1,74 +1,81 @@
-import { ChevronRight, Flag, Loader2 } from 'lucide-react';
-import { useDerivedGameState, useAdvanceWeek } from '../hooks';
-import { GamePhase } from '../../shared/domain';
+import { ChevronRight, Flag, Loader2, MapPin } from 'lucide-react';
+import { useDerivedGameState, useAdvanceWeek, useGoToCircuit } from '../hooks';
+import { GamePhase, CalendarEntry } from '../../shared/domain';
 import { ACCENT_BUTTON_CLASSES, ACCENT_BORDERED_BUTTON_STYLE } from '../utils/theme-styles';
 
+type ButtonAction = 'advanceWeek' | 'goToCircuit' | 'runRace' | 'disabled';
+
 /**
- * Get the button text based on game phase and calendar
+ * Determine the button action and text based on game state
  */
-function getButtonText(
+function getButtonConfig(
   phase: GamePhase,
   currentWeek: number,
-  nextRaceWeek: number | null,
+  nextRace: CalendarEntry | null,
   raceName: string
-): string {
-  if (phase === GamePhase.RaceWeekend) {
-    return `Run ${raceName}`;
-  }
-
+): { action: ButtonAction; text: string } {
   if (phase === GamePhase.PostSeason) {
-    return 'Season Complete';
+    return { action: 'disabled', text: 'Season Complete' };
   }
 
-  if (nextRaceWeek !== null && nextRaceWeek === currentWeek + 1) {
-    return `Go to ${raceName}`;
+  if (phase === GamePhase.RaceWeekend) {
+    return { action: 'runRace', text: `Run ${raceName}` };
   }
 
-  return 'Advance Week';
+  // Check if current week has a race (next uncompleted race is this week)
+  if (nextRace && nextRace.weekNumber === currentWeek) {
+    return { action: 'goToCircuit', text: `Go to ${raceName}` };
+  }
+
+  return { action: 'advanceWeek', text: 'Advance Week' };
 }
 
 export function AdvanceWeekButton() {
   const { gameState, nextRace, nextRaceCircuit } = useDerivedGameState();
   const advanceWeek = useAdvanceWeek();
+  const goToCircuit = useGoToCircuit();
 
   if (!gameState) {
     return null;
   }
 
   const { phase, currentDate } = gameState;
-  const isPostSeason = phase === GamePhase.PostSeason;
-  const isRaceWeekend = phase === GamePhase.RaceWeekend;
-  const isLoading = advanceWeek.isPending;
+  const isLoading = advanceWeek.isPending || goToCircuit.isPending;
 
   const raceName = nextRaceCircuit?.name ?? 'Race';
-  const buttonText = getButtonText(
+  const { action, text } = getButtonConfig(
     phase,
     currentDate.week,
-    nextRace?.weekNumber ?? null,
+    nextRace,
     raceName
   );
 
   const handleClick = () => {
-    advanceWeek.mutate();
+    if (action === 'goToCircuit') {
+      goToCircuit.mutate();
+    } else if (action === 'advanceWeek' || action === 'runRace') {
+      advanceWeek.mutate();
+    }
   };
 
-  const Icon = isRaceWeekend ? Flag : ChevronRight;
+  const isDisabled = action === 'disabled' || isLoading;
+  const Icon = action === 'runRace' ? Flag : action === 'goToCircuit' ? MapPin : ChevronRight;
 
   return (
     <button
       type="button"
       onClick={handleClick}
-      disabled={isPostSeason || isLoading}
+      disabled={isDisabled}
       className={`${ACCENT_BUTTON_CLASSES} px-4 py-1.5 disabled:opacity-50 disabled:cursor-not-allowed`}
       style={ACCENT_BORDERED_BUTTON_STYLE}
-      title={isPostSeason ? 'End season to continue' : buttonText}
+      title={action === 'disabled' ? 'End season to continue' : text}
     >
       {isLoading ? (
         <Loader2 size={16} className="animate-spin" />
       ) : (
         <Icon size={16} />
       )}
-      <span>{buttonText}</span>
+      <span>{text}</span>
     </button>
   );
 }
