@@ -38,6 +38,28 @@ function getRowStyles(isPlayerTeam: boolean): RowStyles {
 // TABLE COMPONENTS
 // ===========================================
 
+type TextAlign = 'left' | 'center' | 'right';
+
+const TEXT_ALIGN_CLASSES: Record<TextAlign, string> = {
+  left: 'text-left',
+  center: 'text-center',
+  right: 'text-right',
+};
+
+interface HeaderCellProps {
+  children: React.ReactNode;
+  align?: TextAlign;
+  className?: string;
+}
+
+function HeaderCell({ children, align = 'center', className = '' }: HeaderCellProps) {
+  return (
+    <th className={`${CELL_BASE} ${TEXT_ALIGN_CLASSES[align]} ${className}`.trim()}>
+      {children}
+    </th>
+  );
+}
+
 interface StatCellProps {
   value: number;
   muted?: boolean;
@@ -159,15 +181,15 @@ export function Championship() {
           <table className="w-full">
             <thead className="surface-inset border-b border-[var(--neutral-600)]">
               <tr className="text-xs font-semibold text-muted uppercase tracking-wider">
-                <th className={`${CELL_BASE} text-center w-16`}>Pos</th>
-                <th className={`${CELL_BASE} text-left`}>Driver</th>
-                <th className={`${CELL_BASE} text-left`}>Team</th>
-                <th className={`${CELL_BASE} text-right`}>Points</th>
-                <th className={`${CELL_BASE} text-center`}>Wins</th>
-                <th className={`${CELL_BASE} text-center`}>Podiums</th>
-                <th className={`${CELL_BASE} text-center`}>Poles</th>
-                <th className={`${CELL_BASE} text-center`}>FL</th>
-                <th className={`${CELL_BASE} text-center`}>DNF</th>
+                <HeaderCell className="w-16">Pos</HeaderCell>
+                <HeaderCell align="left">Driver</HeaderCell>
+                <HeaderCell align="left">Team</HeaderCell>
+                <HeaderCell align="right">Points</HeaderCell>
+                <HeaderCell>Wins</HeaderCell>
+                <HeaderCell>Podiums</HeaderCell>
+                <HeaderCell>Poles</HeaderCell>
+                <HeaderCell>FL</HeaderCell>
+                <HeaderCell>DNF</HeaderCell>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--neutral-700)]">
@@ -192,12 +214,12 @@ export function Championship() {
           <table className="w-full">
             <thead className="surface-inset border-b border-[var(--neutral-600)]">
               <tr className="text-xs font-semibold text-muted uppercase tracking-wider">
-                <th className={`${CELL_BASE} text-center w-16`}>Pos</th>
-                <th className={`${CELL_BASE} text-left`}>Team</th>
-                <th className={`${CELL_BASE} text-right`}>Points</th>
-                <th className={`${CELL_BASE} text-center`}>Wins</th>
-                <th className={`${CELL_BASE} text-center`}>Podiums</th>
-                <th className={`${CELL_BASE} text-center`}>Poles</th>
+                <HeaderCell className="w-16">Pos</HeaderCell>
+                <HeaderCell align="left">Team</HeaderCell>
+                <HeaderCell align="right">Points</HeaderCell>
+                <HeaderCell>Wins</HeaderCell>
+                <HeaderCell>Podiums</HeaderCell>
+                <HeaderCell>Poles</HeaderCell>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--neutral-700)]">
