@@ -8,7 +8,7 @@
 
 import { useCallback, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { IpcChannels, IpcEvents, type SaveResult, type LoadResult, type SaveSlotInfo, type AdvanceWeekResult } from '../../shared/ipc';
+import { IpcChannels, IpcEvents, type SaveResult, type LoadResult, type SaveSlotInfo, type AdvanceWeekResult, type SimulationResult, type SimulationTickPayload } from '../../shared/ipc';
 
 /** Channels that return AdvanceWeekResult and mutate game state */
 type GameStateMutationChannel =
@@ -299,4 +299,64 @@ export function useAutoSaveListener(onAutoSave: (filename: string) => void) {
     });
     return unsubscribe;
   }, [onAutoSave]);
+}
+
+// =============================================================================
+// SIMULATION HOOKS
+// =============================================================================
+
+/**
+ * Start the simulation (day-by-day progression)
+ */
+export function useStartSimulation() {
+  const queryClient = useQueryClient();
+
+  return useMutation<SimulationResult, Error, void>({
+    mutationFn: () => window.electronAPI.invoke(IpcChannels.GAME_SIMULATION_START),
+    onSuccess: (result) => {
+      if (result.success) {
+        // Optimistically update isSimulating
+        queryClient.setQueryData(queryKeys.gameState, (old: GameState | null | undefined) => {
+          if (!old) return old;
+          return { ...old, simulation: { ...old.simulation, isSimulating: true } };
+        });
+      }
+    },
+  });
+}
+
+/**
+ * Stop the simulation
+ */
+export function useStopSimulation() {
+  const queryClient = useQueryClient();
+
+  return useMutation<SimulationResult, Error, void>({
+    mutationFn: () => window.electronAPI.invoke(IpcChannels.GAME_SIMULATION_STOP),
+    onSuccess: (result) => {
+      if (result.success) {
+        // Optimistically update isSimulating
+        queryClient.setQueryData(queryKeys.gameState, (old: GameState | null | undefined) => {
+          if (!old) return old;
+          return { ...old, simulation: { ...old.simulation, isSimulating: false } };
+        });
+      }
+    },
+  });
+}
+
+/**
+ * Subscribe to simulation tick events (day advancement)
+ * Updates game state cache on each tick
+ */
+export function useSimulationTickListener() {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const unsubscribe = window.electronAPI.on(IpcEvents.SIMULATION_TICK, (payload: SimulationTickPayload) => {
+      // Update the game state cache with the new state from the tick
+      queryClient.setQueryData(queryKeys.gameState, payload.state);
+    });
+    return unsubscribe;
+  }, [queryClient]);
 }
