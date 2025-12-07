@@ -829,20 +829,84 @@ function determineChiefRetirements(chiefs: Chief[]): string[] {
 }
 
 /**
- * Calculate week number for a race to achieve even distribution
- * Ensures first race at FIRST_RACE_WEEK and last race at LAST_RACE_WEEK
+ * Distribute gap weeks with variation.
+ * Creates some 0-gaps (headers) and some larger gaps for breaks.
  */
-function calculateRaceWeek(index: number, raceCount: number, availableWeeks: number): number {
-  if (raceCount === 1) return FIRST_RACE_WEEK;
-  // Spread races so first is at FIRST_RACE_WEEK, last is at LAST_RACE_WEEK
-  const spacing = (availableWeeks - 1) / (raceCount - 1);
-  return FIRST_RACE_WEEK + Math.round(index * spacing);
+function generateGapsWithVariation(totalGapWeeks: number, numGaps: number): number[] {
+  if (numGaps === 0) return [];
+
+  const gaps: number[] = Array(numGaps).fill(0);
+  let remaining = totalGapWeeks;
+
+  // First pass: assign gaps with weighted randomness
+  for (let i = 0; i < numGaps && remaining > 0; i++) {
+    const roll = Math.random();
+    let gap: number;
+
+    if (roll < 0.30) {
+      gap = 0; // ~30% headers (consecutive races)
+    } else if (roll < 0.65) {
+      gap = 1; // ~35% normal 1-week gap
+    } else if (roll < 0.85) {
+      gap = 2; // ~20% 2-week gap
+    } else {
+      gap = Math.min(3, remaining); // ~15% occasional 3-week gap
+    }
+
+    gap = Math.min(gap, remaining);
+    gaps[i] = gap;
+    remaining -= gap;
+  }
+
+  // Second pass: distribute any remaining weeks randomly
+  while (remaining > 0) {
+    const index = Math.floor(Math.random() * numGaps);
+    gaps[index]++;
+    remaining--;
+  }
+
+  // Shuffle gaps to randomize header positions throughout season
+  shuffleInPlace(gaps);
+
+  return gaps;
 }
 
 /**
- * Generate a new season calendar from circuits
- * Distributes races evenly across the race weeks (11-49)
- * Limits races to available weeks if too many circuits provided
+ * Generate race week numbers with semi-random distribution.
+ * Creates double/triple headers (consecutive race weeks) with varied gaps between.
+ */
+function generateRaceWeeks(raceCount: number, firstWeek: number, lastWeek: number): number[] {
+  if (raceCount === 0) return [];
+  if (raceCount === 1) return [firstWeek];
+
+  const totalWeeks = lastWeek - firstWeek + 1;
+  const actualRaceCount = Math.min(raceCount, totalWeeks);
+
+  // Total gap weeks to distribute between races
+  const totalGapWeeks = totalWeeks - actualRaceCount;
+  const numGaps = actualRaceCount - 1;
+
+  if (numGaps === 0) return [firstWeek];
+
+  // Generate varied gaps
+  const gaps = generateGapsWithVariation(totalGapWeeks, numGaps);
+
+  // Build week numbers starting from firstWeek
+  const weeks: number[] = [firstWeek];
+  let currentWeek = firstWeek;
+
+  for (const gap of gaps) {
+    currentWeek += 1 + gap; // Move to next race week
+    weeks.push(currentWeek);
+  }
+
+  return weeks;
+}
+
+/**
+ * Generate a new season calendar from circuits.
+ * Creates a semi-random distribution with some double/triple headers
+ * and varied gaps between race blocks.
  */
 function generateNewCalendar(circuits: Circuit[]): CalendarEntry[] {
   if (circuits.length === 0) return [];
@@ -854,10 +918,13 @@ function generateNewCalendar(circuits: Circuit[]): CalendarEntry[] {
   const shuffledCircuits = shuffleArray(circuits).slice(0, availableWeeks);
   const raceCount = shuffledCircuits.length;
 
+  // Generate week numbers with variation
+  const weekNumbers = generateRaceWeeks(raceCount, FIRST_RACE_WEEK, LAST_RACE_WEEK);
+
   return shuffledCircuits.map((circuit, index) => ({
     raceNumber: index + 1,
     circuitId: circuit.id,
-    weekNumber: calculateRaceWeek(index, raceCount, availableWeeks),
+    weekNumber: weekNumbers[index],
     completed: false,
     cancelled: false,
   }));
