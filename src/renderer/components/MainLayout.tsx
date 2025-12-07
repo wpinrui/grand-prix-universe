@@ -11,6 +11,7 @@ import { useDerivedGameState, useTeamTheme, useClearGameState, useQuitApp, useAu
 import { SectionButton } from './NavButtons';
 import { TopBar } from './TopBar';
 import { BottomBar } from './BottomBar';
+import { CalendarStrip } from './CalendarStrip';
 import { ConfirmDialog } from './ConfirmDialog';
 import { AutoSaveToast } from './AutoSaveToast';
 import { BackgroundLayer } from './BackgroundLayer';
@@ -166,6 +167,15 @@ export function MainLayout() {
           currentDate={gameState?.currentDate ?? null}
           playerTeam={playerTeam}
         />
+
+        {/* Calendar Strip - visible during simulation */}
+        {gameState?.currentDate && (
+          <CalendarStrip
+            currentDate={gameState.currentDate}
+            events={gameState.calendarEvents ?? []}
+            isVisible={gameState.simulation?.isSimulating ?? false}
+          />
+        )}
 
         {/* Content Area - with background image, blur, and team tint */}
         <main className="content relative flex-1 overflow-hidden">

@@ -19,6 +19,15 @@ const MONTH_NAMES = [
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
+/** Short month names for calendar strip */
+const SHORT_MONTH_NAMES = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
+
+/** Short day names (Monday = 1) */
+const SHORT_DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
 /** Day of week constants (1=Monday, 7=Sunday) */
 export const DayOfWeek = {
   Monday: 1,
@@ -160,3 +169,67 @@ export const DEFAULT_SIMULATION_STATE: SimulationState = {
   isSimulating: false,
   speed: 1, // 1 day per second
 };
+
+/**
+ * Subtract one day from a GameDate
+ */
+export function subtractDay(date: GameDate): GameDate {
+  let { year, month, day } = date;
+
+  day--;
+  if (day < 1) {
+    month--;
+    if (month < 1) {
+      month = 12;
+      year--;
+    }
+    day = getDaysInMonth(year, month);
+  }
+
+  return { year, month, day };
+}
+
+/**
+ * Get short weekday name (Mon, Tue, etc.)
+ */
+export function getShortDayName(date: GameDate): string {
+  const dayOfWeek = getDayOfWeek(date);
+  return SHORT_DAY_NAMES[dayOfWeek - 1];
+}
+
+/**
+ * Get short month name (Jan, Feb, etc.)
+ */
+export function getShortMonthName(date: GameDate): string {
+  return SHORT_MONTH_NAMES[date.month - 1];
+}
+
+/**
+ * Check if two GameDates are the same day
+ */
+export function isSameDay(a: GameDate, b: GameDate): boolean {
+  return a.year === b.year && a.month === b.month && a.day === b.day;
+}
+
+/**
+ * Get array of days for the calendar strip
+ * Returns 9 days: 1 past, current, 7 future
+ */
+export function getCalendarStripDays(currentDate: GameDate): GameDate[] {
+  const days: GameDate[] = [];
+
+  // 1 day in the past
+  days.push(subtractDay(currentDate));
+
+  // Current day
+  days.push(currentDate);
+
+  // 7 days in the future
+  let nextDay = currentDate;
+  for (let i = 0; i < 7; i++) {
+    nextDay = advanceDay(nextDay);
+    days.push(nextDay);
+  }
+
+  return days;
+}
