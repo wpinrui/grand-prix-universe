@@ -63,15 +63,20 @@ import type {
   Circuit,
   DriverRuntimeState,
   DriverAttributes,
+  GameState,
+  RaceWeekendResult,
+  DriverQualifyingResult,
+  DriverRaceResult,
 } from '../../shared/domain/types';
 
 import {
   Department,
   GamePhase,
   RaceFinishStatus,
+  WeatherCondition,
+  DriverRole,
   DriverStanding,
   ConstructorStanding,
-  DriverRaceResult,
 } from '../../shared/domain/types';
 
 export class StubRaceEngine implements IRaceEngine {
@@ -165,6 +170,18 @@ function shuffleInPlace<T>(array: T[]): T[] {
     [array[i], array[j]] = [array[j], array[i]];
   }
   return array;
+}
+
+/**
+ * Shuffle array using Fisher-Yates algorithm (returns new array, does not mutate)
+ */
+function shuffleArray<T>(array: T[]): T[] {
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
 }
 
 /**
@@ -861,6 +878,122 @@ function generateResetDriverStates(
   return Object.fromEntries(
     drivers.map((driver) => [driver.id, { ...INITIAL_DRIVER_RUNTIME_STATE }])
   );
+}
+
+// =============================================================================
+// STUB RACE RESULT GENERATOR
+// =============================================================================
+
+/** Points awarded per finishing position (1st through 10th) */
+const POINTS_BY_POSITION = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
+
+/** DNF probability per driver */
+const DNF_PROBABILITY = 0.1;
+
+/** Base lap time for stub results (in ms) */
+const BASE_LAP_TIME_MS = 90000;
+
+/** Lap time variation range (in ms) */
+const LAP_TIME_VARIATION_MS = 5000;
+
+/** Number of laps for stub race */
+const STUB_RACE_LAPS = 50;
+
+/** Maximum gap to pole position in qualifying (in ms) */
+const MAX_GAP_TO_POLE_MS = 2000;
+
+/** Maximum gap to winner / total time variation in race (in ms) */
+const MAX_GAP_TO_WINNER_MS = 60000;
+
+/** Minimum and maximum pit stops for stub race */
+const STUB_PIT_STOPS_MIN = 1;
+const STUB_PIT_STOPS_MAX = 3;
+
+/**
+ * Type guard: driver has a race seat (assigned to a team and not a test driver)
+ * Used to filter drivers for race results
+ */
+function hasRaceSeat(driver: Driver): driver is Driver & { teamId: string } {
+  return driver.teamId !== null && driver.role !== DriverRole.Test;
+}
+
+/**
+ * Generate a stub race weekend result
+ * Uses simple random logic - will be replaced with full simulation later
+ */
+export function generateStubRaceResult(
+  state: GameState,
+  circuitId: string,
+  raceNumber: number
+): RaceWeekendResult {
+  // Get all drivers with race seats
+  const raceDrivers = state.drivers.filter(hasRaceSeat);
+
+  // Shuffle for random grid order
+  const gridOrder = shuffleArray(raceDrivers);
+
+  // Generate qualifying results
+  const qualifying: DriverQualifyingResult[] = gridOrder.map((driver, index) => {
+    const lapTime = BASE_LAP_TIME_MS + Math.random() * LAP_TIME_VARIATION_MS;
+    return {
+      driverId: driver.id,
+      teamId: driver.teamId,
+      gridPosition: index + 1,
+      bestLapTime: lapTime,
+      gapToPole: index === 0 ? 0 : Math.random() * MAX_GAP_TO_POLE_MS,
+    };
+  });
+
+  // Shuffle again for race finish order (different from grid)
+  const finishOrder = shuffleArray(raceDrivers);
+
+  // Track fastest lap
+  let fastestLapTime = Infinity;
+  let fastestLapDriverId = finishOrder[0]?.id ?? '';
+
+  // Generate race results
+  const race: DriverRaceResult[] = finishOrder.map((driver, index) => {
+    const gridPosition = gridOrder.findIndex((d) => d.id === driver.id) + 1;
+    const isDNF = Math.random() < DNF_PROBABILITY;
+    const finishPosition = isDNF ? null : index + 1;
+    const points =
+      finishPosition !== null && finishPosition <= POINTS_BY_POSITION.length
+        ? POINTS_BY_POSITION[finishPosition - 1]
+        : 0;
+
+    const lapTime = BASE_LAP_TIME_MS + Math.random() * LAP_TIME_VARIATION_MS;
+    const isFastestLap = lapTime < fastestLapTime && !isDNF;
+    if (isFastestLap) {
+      fastestLapTime = lapTime;
+      fastestLapDriverId = driver.id;
+    }
+
+    return {
+      driverId: driver.id,
+      teamId: driver.teamId,
+      finishPosition,
+      gridPosition,
+      lapsCompleted: isDNF ? Math.floor(Math.random() * STUB_RACE_LAPS) : STUB_RACE_LAPS,
+      totalTime: isDNF ? undefined : BASE_LAP_TIME_MS * STUB_RACE_LAPS + Math.random() * MAX_GAP_TO_WINNER_MS,
+      gapToWinner: finishPosition === 1 ? 0 : Math.random() * MAX_GAP_TO_WINNER_MS,
+      points,
+      fastestLap: isFastestLap,
+      fastestLapTime: lapTime,
+      status: isDNF ? RaceFinishStatus.Retired : RaceFinishStatus.Finished,
+      pitStops: Math.floor(Math.random() * STUB_PIT_STOPS_MAX) + STUB_PIT_STOPS_MIN,
+    };
+  });
+
+  return {
+    raceNumber,
+    circuitId,
+    seasonNumber: state.currentDate.season,
+    qualifying,
+    race,
+    weather: WeatherCondition.Dry,
+    fastestLapDriverId,
+    fastestLapTime,
+  };
 }
 
 /**
