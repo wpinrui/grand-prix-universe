@@ -7,7 +7,7 @@
 
 import { useMemo } from 'react';
 import { useGameState } from './useIpc';
-import type { Team, CalendarEntry, GameState } from '../../shared/domain';
+import type { Team, CalendarEntry, GameState, Circuit } from '../../shared/domain';
 
 interface DerivedGameState {
   // @agent: null = no game exists, undefined = React Query loading state. Do not "simplify".
@@ -15,6 +15,7 @@ interface DerivedGameState {
   isLoading: boolean;
   playerTeam: Team | null;
   nextRace: CalendarEntry | null;
+  nextRaceCircuit: Circuit | null;
 }
 
 export function useDerivedGameState(): DerivedGameState {
@@ -30,10 +31,16 @@ export function useDerivedGameState(): DerivedGameState {
     return gameState.currentSeason.calendar.find((entry) => !entry.completed && !entry.cancelled) ?? null;
   }, [gameState]);
 
+  const nextRaceCircuit = useMemo(() => {
+    if (!gameState || !nextRace) return null;
+    return gameState.circuits.find((c) => c.id === nextRace.circuitId) ?? null;
+  }, [gameState, nextRace]);
+
   return {
     gameState,
     isLoading,
     playerTeam,
     nextRace,
+    nextRaceCircuit,
   };
 }
