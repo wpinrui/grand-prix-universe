@@ -74,6 +74,10 @@ export function registerIpcHandlers(): void {
     return GameStateManager.getCurrentState();
   });
 
+  ipcMain.handle(IpcChannels.GAME_CLEAR_STATE, () => {
+    GameStateManager.clearState();
+  });
+
   ipcMain.handle(IpcChannels.GAME_ADVANCE_WEEK, () => {
     return GameStateManager.advanceWeek();
   });
