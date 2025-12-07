@@ -91,6 +91,9 @@ const INITIAL_BONUS_LEVEL = 0;
 /** First race typically in March (week 11) */
 const FIRST_RACE_WEEK = 11;
 
+/** Default gap between races when schedule data unavailable (bi-weekly) */
+const DEFAULT_WEEKS_BETWEEN_RACES = 2;
+
 /** Auto-save interval in milliseconds (5 minutes) */
 const AUTO_SAVE_INTERVAL_MS = 5 * 60 * 1000;
 
@@ -315,7 +318,8 @@ function createCalendar(circuitIds: string[]): CalendarEntry[] {
 
   return circuitIds.map((circuitId, index) => {
     // Use schedule week if available, otherwise fall back to even spacing
-    const weekNumber = scheduleMap.get(circuitId) ?? FIRST_RACE_WEEK + index * 2;
+    const weekNumber =
+      scheduleMap.get(circuitId) ?? FIRST_RACE_WEEK + index * DEFAULT_WEEKS_BETWEEN_RACES;
 
     return {
       raceNumber: index + 1,
