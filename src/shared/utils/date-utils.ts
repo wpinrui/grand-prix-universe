@@ -8,7 +8,7 @@
 import type { GameDate, SimulationState } from '../domain/types';
 
 /** Base year that season 1 maps to */
-export const BASE_YEAR = 1998;
+export const BASE_YEAR = 2025;
 
 /** Days per month (non-leap year) */
 const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
@@ -140,7 +140,7 @@ export function isFriday(date: GameDate): boolean {
 }
 
 /**
- * Format a GameDate for display (e.g., "15 March 1998")
+ * Format a GameDate for display (e.g., "15 March 2025")
  */
 export function formatGameDate(date: GameDate): string {
   return `${date.day} ${MONTH_NAMES[date.month - 1]} ${date.year}`;

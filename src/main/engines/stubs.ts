@@ -659,7 +659,7 @@ function updateStandings(
 
 /**
  * Calculate a person's age given their date of birth and current season
- * Assumes season number roughly maps to a year (e.g., season 1 = 1998)
+ * Assumes season number roughly maps to a year (e.g., season 1 = 2025)
  */
 function calculateAge(dateOfBirth: string, currentSeason: number): number {
   const birthYear = new Date(dateOfBirth).getFullYear();

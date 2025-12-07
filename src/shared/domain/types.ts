@@ -406,7 +406,7 @@ export enum GamePhase {
  * Day-by-day progression with sliding calendar UI
  */
 export interface GameDate {
-  year: number;  // Calendar year (e.g., 1998)
+  year: number;  // Calendar year (e.g., 2025)
   month: number; // Month (1-12)
   day: number;   // Day of month (1-31)
 }
