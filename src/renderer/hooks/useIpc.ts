@@ -8,7 +8,7 @@
 
 import { useCallback, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { IpcChannels, IpcEvents, type SaveResult, type LoadResult, type SaveSlotInfo, type AdvanceWeekResult } from '../../shared/ipc';
+import { IpcChannels, IpcEvents, type IpcChannel, type SaveResult, type LoadResult, type SaveSlotInfo, type AdvanceWeekResult } from '../../shared/ipc';
 import type {
   Team,
   Driver,
@@ -146,11 +146,12 @@ export function useNewGame() {
   });
 }
 
-export function useAdvanceWeek() {
+/** Helper hook for game state mutations that update the cache on success */
+function useGameStateMutation(channel: IpcChannel) {
   const queryClient = useQueryClient();
 
   return useMutation<AdvanceWeekResult, Error, void>({
-    mutationFn: () => window.electronAPI.invoke(IpcChannels.GAME_ADVANCE_WEEK),
+    mutationFn: () => window.electronAPI.invoke(channel),
     onSuccess: (result) => {
       if (result.success && result.state) {
         queryClient.setQueryData(queryKeys.gameState, result.state);
@@ -158,34 +159,18 @@ export function useAdvanceWeek() {
       }
     },
   });
+}
+
+export function useAdvanceWeek() {
+  return useGameStateMutation(IpcChannels.GAME_ADVANCE_WEEK);
 }
 
 export function useGoToCircuit() {
-  const queryClient = useQueryClient();
-
-  return useMutation<AdvanceWeekResult, Error, void>({
-    mutationFn: () => window.electronAPI.invoke(IpcChannels.GAME_GO_TO_CIRCUIT),
-    onSuccess: (result) => {
-      if (result.success && result.state) {
-        queryClient.setQueryData(queryKeys.gameState, result.state);
-        queryClient.invalidateQueries({ queryKey: queryKeys.gameState });
-      }
-    },
-  });
+  return useGameStateMutation(IpcChannels.GAME_GO_TO_CIRCUIT);
 }
 
 export function useRunRace() {
-  const queryClient = useQueryClient();
-
-  return useMutation<AdvanceWeekResult, Error, void>({
-    mutationFn: () => window.electronAPI.invoke(IpcChannels.GAME_RUN_RACE),
-    onSuccess: (result) => {
-      if (result.success && result.state) {
-        queryClient.setQueryData(queryKeys.gameState, result.state);
-        queryClient.invalidateQueries({ queryKey: queryKeys.gameState });
-      }
-    },
-  });
+  return useGameStateMutation(IpcChannels.GAME_RUN_RACE);
 }
 
 // =============================================================================
