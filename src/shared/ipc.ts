@@ -73,6 +73,16 @@ export interface AdvanceWeekResult {
   error?: string; // Error message on failure
 }
 
+/**
+ * Result of a new season operation
+ * Transitions from PostSeason to PreSeason of next year
+ */
+export interface NewSeasonResult {
+  success: boolean;
+  state?: GameState; // Updated state on success
+  error?: string; // Error message on failure
+}
+
 /** Channel names for IPC invoke calls (renderer -> main) */
 export const IpcChannels = {
   // App lifecycle
@@ -95,6 +105,7 @@ export const IpcChannels = {
   GAME_NEW: 'game:new',
   GAME_GET_STATE: 'game:getState',
   GAME_ADVANCE_WEEK: 'game:advanceWeek',
+  GAME_NEW_SEASON: 'game:newSeason',
 
   // Save/load
   GAME_SAVE: 'game:save',
@@ -179,6 +190,10 @@ export interface IpcInvokeMap {
   [IpcChannels.GAME_ADVANCE_WEEK]: {
     args: [];
     result: AdvanceWeekResult;
+  };
+  [IpcChannels.GAME_NEW_SEASON]: {
+    args: [];
+    result: NewSeasonResult;
   };
 
   // Save/load

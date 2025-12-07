@@ -78,6 +78,10 @@ export function registerIpcHandlers(): void {
     return GameStateManager.advanceWeek();
   });
 
+  ipcMain.handle(IpcChannels.GAME_NEW_SEASON, () => {
+    return GameStateManager.startNewSeason();
+  });
+
   // Save/Load handlers
   ipcMain.handle(IpcChannels.GAME_SAVE, async () => {
     return GameStateManager.saveGame();

@@ -18,13 +18,18 @@ import {
   type SaveResult,
   type LoadResult,
   type AdvanceWeekResult,
+  type NewSeasonResult,
 } from '../../shared/ipc';
 import type {
   TurnProcessingInput,
   TurnProcessingResult,
   RaceProcessingInput,
   RaceProcessingResult,
+  SeasonEndInput,
+  SeasonEndResult,
   DriverStateChange,
+  DriverAttributeChange,
+  ChiefChange,
   TeamStateChange,
   ChampionshipStandings,
 } from '../../shared/domain/engines';
@@ -640,6 +645,142 @@ function updateChampionshipStandings(
 }
 
 // =============================================================================
+// SEASON END APPLICATION HELPERS
+// =============================================================================
+
+/**
+ * Apply driver attribute changes to game state (mutates state)
+ * Used for aging effects (improvement for young, decline for old)
+ */
+function applyDriverAttributeChanges(
+  state: GameState,
+  changes: DriverAttributeChange[]
+): void {
+  for (const change of changes) {
+    const driver = state.drivers.find((d) => d.id === change.driverId);
+    if (!driver) continue;
+
+    const currentValue = driver.attributes[change.attribute];
+    driver.attributes[change.attribute] = clampPercentage(currentValue + change.change);
+  }
+}
+
+/**
+ * Apply chief changes to game state (mutates state)
+ * Handles ability adjustments
+ */
+function applyChiefChanges(state: GameState, changes: ChiefChange[]): void {
+  for (const change of changes) {
+    const chief = state.chiefs.find((c) => c.id === change.chiefId);
+    if (!chief) continue;
+
+    if (change.abilityChange !== undefined) {
+      chief.ability = clampPercentage(chief.ability + change.abilityChange);
+    }
+  }
+}
+
+/**
+ * Mark retired entities by clearing their teamId (makes them free agents)
+ * Works for any entity with id and teamId properties (Driver, Chief)
+ * In future, could remove from roster entirely or add to "retired" list
+ */
+function applyRetirements<T extends { id: string; teamId: string | null }>(
+  entities: T[],
+  retiredIds: string[]
+): void {
+  for (const id of retiredIds) {
+    const entity = entities.find((e) => e.id === id);
+    if (entity) {
+      entity.teamId = null;
+    }
+  }
+}
+
+/**
+ * Reset driver runtime states for new season
+ * Applies partial state overrides (fatigue, fitness, etc.)
+ */
+function applyResetDriverStates(
+  state: GameState,
+  resets: Record<string, Partial<DriverRuntimeState>>
+): void {
+  for (const [driverId, resetValues] of Object.entries(resets)) {
+    const driverState = state.driverStates[driverId];
+    if (driverState) {
+      Object.assign(driverState, resetValues);
+    }
+  }
+}
+
+/**
+ * Build SeasonEndInput from current game state
+ */
+function buildSeasonEndInput(state: GameState): SeasonEndInput {
+  return {
+    drivers: state.drivers,
+    teams: state.teams,
+    chiefs: state.chiefs,
+    driverStates: state.driverStates,
+    teamStates: state.teamStates,
+    currentSeason: state.currentDate.season,
+    circuits: state.circuits,
+  };
+}
+
+/**
+ * Apply all season end results to game state (mutates state)
+ * Note: Does NOT update calendar - that's handled by transitionToNewSeason
+ * to avoid polluting the archive with the new calendar
+ */
+function applySeasonEndResult(state: GameState, result: SeasonEndResult): void {
+  applyDriverAttributeChanges(state, result.driverAttributeChanges);
+  applyChiefChanges(state, result.chiefChanges);
+  applyRetirements(state.drivers, result.retiredDriverIds);
+  applyRetirements(state.chiefs, result.retiredChiefIds);
+  applyResetDriverStates(state, result.resetDriverStates);
+}
+
+/**
+ * Archive current season to pastSeasons and prepare for new season
+ */
+function transitionToNewSeason(state: GameState, newCalendar: CalendarEntry[]): void {
+  // Archive the completed season
+  state.pastSeasons.push({
+    seasonNumber: state.currentSeason.seasonNumber,
+    calendar: state.currentSeason.calendar,
+    driverStandings: state.currentSeason.driverStandings,
+    constructorStandings: state.currentSeason.constructorStandings,
+    regulations: state.currentSeason.regulations,
+  });
+
+  // Increment season number
+  const newSeasonNumber = state.currentDate.season + 1;
+
+  // Get regulations for new season (fall back to current if not found)
+  const newRegulations =
+    ConfigLoader.getRegulationsBySeason(newSeasonNumber) ?? state.currentSeason.regulations;
+
+  // Reset current season data
+  state.currentSeason = {
+    seasonNumber: newSeasonNumber,
+    calendar: newCalendar,
+    driverStandings: createInitialDriverStandings(state.drivers),
+    constructorStandings: createInitialConstructorStandings(state.teams),
+    regulations: newRegulations,
+  };
+
+  // Update date to week 1 of new season
+  state.currentDate = {
+    season: newSeasonNumber,
+    week: PRE_SEASON_START_WEEK,
+  };
+
+  // Set phase to PreSeason
+  state.phase = GamePhase.PreSeason;
+}
+
+// =============================================================================
 // TURN PROCESSING HELPERS
 // =============================================================================
 
@@ -902,5 +1043,41 @@ export const GameStateManager = {
       startAutoSave();
     }
     return result;
+  },
+
+  /**
+   * Starts a new season after post-season is complete.
+   *
+   * Logic flow:
+   * 1. Verify we're in PostSeason phase
+   * 2. Process season end (aging, retirements, attribute changes)
+   * 3. Archive current season to pastSeasons
+   * 4. Initialize new season (standings, calendar, date, phase)
+   */
+  startNewSeason(): NewSeasonResult {
+    const state = GameStateManager.currentState;
+    if (!state) {
+      return { success: false, error: 'No active game' };
+    }
+
+    // Only allowed from PostSeason phase
+    if (state.phase !== GamePhase.PostSeason) {
+      return {
+        success: false,
+        error: 'Can only start a new season from the PostSeason phase',
+      };
+    }
+
+    // Process season end through engine
+    const seasonEndInput = buildSeasonEndInput(state);
+    const seasonEndResult = engineManager.turn.processSeasonEnd(seasonEndInput);
+
+    // Apply aging, retirements, and state resets
+    applySeasonEndResult(state, seasonEndResult);
+
+    // Transition to new season (archive old, create new)
+    transitionToNewSeason(state, seasonEndResult.newCalendar);
+
+    return { success: true, state };
   },
 };
