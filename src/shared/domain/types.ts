@@ -403,11 +403,41 @@ export enum GamePhase {
 
 /**
  * GameDate - Current position in the game timeline
- * Week-by-week progression (GPW style)
+ * Day-by-day progression with sliding calendar UI
  */
 export interface GameDate {
-  season: number; // Season/year number (1-based)
-  week: number; // Week within season (1-52)
+  year: number;  // Calendar year (e.g., 2025)
+  month: number; // Month (1-12)
+  day: number;   // Day of month (1-31)
+}
+
+/**
+ * SimulationState - Controls for time progression
+ * Manages play/pause and speed of day advancement
+ */
+export interface SimulationState {
+  isSimulating: boolean; // True when time is actively advancing
+  speed: number;         // Days per second (default 1)
+}
+
+/**
+ * CalendarEventType - Types of events that appear on the calendar
+ */
+export enum CalendarEventType {
+  Email = 'email',
+  Headline = 'headline',
+}
+
+/**
+ * CalendarEvent - An event displayed on the calendar strip
+ * Shows brief text on the relevant day; full content via Mail/News screens
+ */
+export interface CalendarEvent {
+  id: string;
+  date: GameDate;
+  type: CalendarEventType;
+  subject: string;   // Brief text shown on calendar
+  critical: boolean; // If true, auto-stops simulation
 }
 
 /**
@@ -650,6 +680,10 @@ export interface GameState {
   // Time & Phase
   currentDate: GameDate;
   phase: GamePhase;
+  simulation: SimulationState;
+
+  // Calendar Events (emails/headlines for calendar strip)
+  calendarEvents: CalendarEvent[];
 
   // Current Season
   currentSeason: SeasonData;

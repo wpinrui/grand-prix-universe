@@ -2,9 +2,7 @@ import { Calendar, Coins } from 'lucide-react';
 import type { GameDate, Team } from '../../shared/domain';
 import { ACCENT_MUTED_BUTTON_CLASSES, ACCENT_MUTED_BUTTON_STYLE } from '../utils/theme-styles';
 import { AdvanceWeekButton } from './AdvanceWeekButton';
-
-/** Year that season 1 corresponds to (season 1 = 2025, season 2 = 2026, etc.) */
-const SEASON_BASE_YEAR = 2024;
+import { formatGameDate } from '../../shared/utils/date-utils';
 
 interface TopBarProps {
   sectionLabel: string;
@@ -49,9 +47,7 @@ export function TopBar({ sectionLabel, subItemLabel, currentDate, playerTeam }: 
         >
           <Calendar size={16} />
           <span>
-            {currentDate
-              ? `Week ${currentDate.week}, ${SEASON_BASE_YEAR + currentDate.season}`
-              : '—'}
+            {currentDate ? formatGameDate(currentDate) : '—'}
           </span>
         </button>
 

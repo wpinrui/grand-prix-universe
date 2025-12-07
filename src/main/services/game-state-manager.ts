@@ -65,12 +65,15 @@ import {
   ManufacturerDealType,
   hasRaceSeat,
 } from '../../shared/domain';
+import {
+  getPreSeasonStartDate,
+  getWeekNumber,
+  yearToSeason,
+  DEFAULT_SIMULATION_STATE,
+} from '../../shared/utils/date-utils';
 
 /** Current save format version */
 const SAVE_VERSION = '1.0.0';
-
-/** Default starting week for pre-season */
-const PRE_SEASON_START_WEEK = 1;
 
 /** Default contract duration in seasons */
 const DEFAULT_CONTRACT_DURATION = 3;
@@ -466,10 +469,8 @@ function buildGameState(params: BuildGameStateParams): GameState {
     careerStartSeason: seasonNumber,
   };
 
-  const currentDate: GameDate = {
-    season: seasonNumber,
-    week: PRE_SEASON_START_WEEK,
-  };
+  // Start at pre-season (January 1st of the season's year)
+  const currentDate: GameDate = getPreSeasonStartDate(seasonNumber);
 
   // Assemble complete game state
   const now = new Date().toISOString();
@@ -481,6 +482,8 @@ function buildGameState(params: BuildGameStateParams): GameState {
     player,
     currentDate,
     phase: GamePhase.PreSeason,
+    simulation: { ...DEFAULT_SIMULATION_STATE },
+    calendarEvents: [],
 
     currentSeason,
 
@@ -723,7 +726,7 @@ function buildSeasonEndInput(state: GameState): SeasonEndInput {
     chiefs: state.chiefs,
     driverStates: state.driverStates,
     teamStates: state.teamStates,
-    currentSeason: state.currentDate.season,
+    currentSeason: yearToSeason(state.currentDate.year),
     circuits: state.circuits,
   };
 }
@@ -755,7 +758,8 @@ function transitionToNewSeason(state: GameState, newCalendar: CalendarEntry[]): 
   });
 
   // Increment season number
-  const newSeasonNumber = state.currentDate.season + 1;
+  const currentSeasonNumber = yearToSeason(state.currentDate.year);
+  const newSeasonNumber = currentSeasonNumber + 1;
 
   // Get regulations for new season (fall back to current if not found)
   const newRegulations =
@@ -770,11 +774,8 @@ function transitionToNewSeason(state: GameState, newCalendar: CalendarEntry[]): 
     regulations: newRegulations,
   };
 
-  // Update date to week 1 of new season
-  state.currentDate = {
-    season: newSeasonNumber,
-    week: PRE_SEASON_START_WEEK,
-  };
+  // Update date to start of new season (January 1st)
+  state.currentDate = getPreSeasonStartDate(newSeasonNumber);
 
   // Set phase to PreSeason
   state.phase = GamePhase.PreSeason;
@@ -872,7 +873,7 @@ function applyBlockedResult(state: GameState, turnResult: TurnProcessingResult):
  */
 function processTurn(state: GameState): AdvanceWeekResult {
   const turnInput = buildTurnInput(state);
-  const turnResult = engineManager.turn.processWeek(turnInput);
+  const turnResult = engineManager.turn.processDay(turnInput);
 
   if (turnResult.blocked) {
     return applyBlockedResult(state, turnResult);
@@ -889,9 +890,10 @@ function processTurn(state: GameState): AdvanceWeekResult {
 function findCurrentRace(
   state: GameState
 ): { race: CalendarEntry } | { error: AdvanceWeekResult } {
+  const currentWeek = getWeekNumber(state.currentDate);
   const race = state.currentSeason.calendar.find(
     (entry) =>
-      entry.weekNumber === state.currentDate.week &&
+      entry.weekNumber === currentWeek &&
       !entry.completed &&
       !entry.cancelled
   );
@@ -1027,14 +1029,8 @@ export const GameStateManager = {
     }
 
     // Verify current week has an uncompleted, non-cancelled race
-    const race = state.currentSeason.calendar.find(
-      (entry) =>
-        entry.weekNumber === state.currentDate.week &&
-        !entry.completed &&
-        !entry.cancelled
-    );
-
-    if (!race) {
+    const result = findCurrentRace(state);
+    if ('error' in result) {
       return { success: false, error: 'No race scheduled for current week' };
     }
 

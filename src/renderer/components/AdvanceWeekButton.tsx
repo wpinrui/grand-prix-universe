@@ -2,6 +2,7 @@ import { ChevronRight, Loader2, MapPin } from 'lucide-react';
 import { useDerivedGameState, useAdvanceWeek, useGoToCircuit } from '../hooks';
 import { GamePhase, CalendarEntry } from '../../shared/domain';
 import { ACCENT_MUTED_BUTTON_CLASSES, ACCENT_BORDERED_BUTTON_STYLE } from '../utils/theme-styles';
+import { getWeekNumber } from '../../shared/utils/date-utils';
 
 type ButtonAction = 'advanceWeek' | 'goToCircuit' | 'disabled';
 
@@ -44,9 +45,10 @@ export function AdvanceWeekButton() {
 
   const isLoading = advanceWeek.isPending || goToCircuit.isPending;
   const raceName = nextRaceCircuit?.name ?? 'Race';
+  const currentWeek = getWeekNumber(currentDate);
   const { action, text } = getButtonConfig(
     phase,
-    currentDate.week,
+    currentWeek,
     nextRace,
     raceName
   );

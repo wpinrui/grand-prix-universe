@@ -78,6 +78,13 @@ import {
   ConstructorStanding,
   hasRaceSeat,
 } from '../../shared/domain';
+import {
+  getWeekNumber,
+  advanceDay,
+  yearToSeason,
+  seasonToYear,
+  isFriday,
+} from '../../shared/utils/date-utils';
 
 export class StubRaceEngine implements IRaceEngine {
   simulateQualifying(_input: QualifyingInput): QualifyingResult {
@@ -348,7 +355,6 @@ const CHIEF_RETIREMENT_MAX_AGE = 70; // Very likely to retire at this age
 const ATTRIBUTE_IMPROVEMENT_AMOUNT = 2; // Max improvement value per attribute for young drivers
 const ATTRIBUTE_DECLINE_AMOUNT = 3; // Max decline value per attribute for aging drivers
 const CHIEF_ABILITY_CHANGE_RANGE = 2; // +/- ability change per season
-const BASE_YEAR = 1998; // Year that season 1 corresponds to
 const ATTRIBUTE_IMPROVEMENT_CHANCE = 0.3; // 30% chance per attribute to improve
 const DECLINE_BASE_CHANCE = 0.2; // Base chance for attribute decline
 const DECLINE_CHANCE_PER_YEAR = 0.1; // Additional decline chance per year over decline age
@@ -653,11 +659,11 @@ function updateStandings(
 
 /**
  * Calculate a person's age given their date of birth and current season
- * Assumes season number roughly maps to a year (e.g., season 1 = 1998)
+ * Assumes season number roughly maps to a year (e.g., season 1 = 2025)
  */
 function calculateAge(dateOfBirth: string, currentSeason: number): number {
   const birthYear = new Date(dateOfBirth).getFullYear();
-  const currentYear = BASE_YEAR + currentSeason - 1;
+  const currentYear = seasonToYear(currentSeason);
   return currentYear - birthYear;
 }
 
@@ -1101,7 +1107,7 @@ export function generateStubRaceResult(
   return {
     raceNumber,
     circuitId,
-    seasonNumber: state.currentDate.season,
+    seasonNumber: yearToSeason(state.currentDate.year),
     qualifying,
     race,
     weather: WeatherCondition.Dry,
@@ -1118,13 +1124,16 @@ export function generateStubRaceResult(
  */
 export class StubTurnEngine implements ITurnEngine {
   /**
-   * Process a weekly turn - advance time and apply state changes
+   * Process a daily turn - advance time by one day and apply state changes
    */
-  processWeek(input: TurnProcessingInput): TurnProcessingResult {
+  processDay(input: TurnProcessingInput): TurnProcessingResult {
     const { currentDate, phase, calendar, drivers, teams, driverStates, teamStates } = input;
 
-    // Check for post-season block (week 49+)
-    if (currentDate.week >= POSTSEASON_START_WEEK) {
+    // Get current week number for phase/race determination
+    const currentWeek = getWeekNumber(currentDate);
+
+    // Check for post-season block (week 50+)
+    if (currentWeek >= POSTSEASON_START_WEEK) {
       return {
         newDate: currentDate,
         newPhase: GamePhase.PostSeason,
@@ -1140,21 +1149,26 @@ export class StubTurnEngine implements ITurnEngine {
       };
     }
 
-    // Calculate next week
-    const nextWeek = currentDate.week + 1;
-    const newDate = { season: currentDate.season, week: nextWeek };
+    // Advance to next day
+    const newDate = advanceDay(currentDate);
+    const newWeek = getWeekNumber(newDate);
 
-    // Determine new phase
-    const { phase: newPhase, raceWeek } = determinePhaseForWeek(nextWeek, calendar);
+    // Determine new phase based on week
+    const { phase: newPhase, raceWeek } = determinePhaseForWeek(newWeek, calendar);
+
+    // Check if we should stop simulation (Friday of race weekend)
+    const shouldStop = raceWeek !== null && isFriday(newDate);
 
     return {
       newDate,
       newPhase,
       driverStateChanges: generateDriverStateChanges(drivers, driverStates, phase),
-      driverAttributeChanges: [], // No attribute changes during weekly processing
-      chiefChanges: [], // No chief changes during weekly processing
+      driverAttributeChanges: [], // No attribute changes during daily processing
+      chiefChanges: [], // No chief changes during daily processing
       teamStateChanges: generateTeamStateChanges(teams, teamStates),
       raceWeek,
+      shouldStopSimulation: shouldStop,
+      stopReason: shouldStop ? 'race-weekend-friday' : undefined,
     };
   }
 

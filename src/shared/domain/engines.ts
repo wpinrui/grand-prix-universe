@@ -214,18 +214,28 @@ export interface RaceWeekInfo {
 }
 
 /**
- * TurnProcessingResult - Result of processing a weekly turn
+ * DayStopReason - Why the simulation should auto-stop
+ */
+export type DayStopReason = 'race-weekend-friday' | 'critical-event';
+
+/**
+ * TurnProcessingResult - Result of processing a daily turn
  *
  * If `blocked` is set, the turn could not progress and the caller should:
  * - NOT apply any state changes (all change arrays will be empty)
  * - Display the blocked message to the player
  * - `newDate` and `newPhase` will match the input (no time progression)
+ *
+ * If `shouldStopSimulation` is true, auto-advancing should pause but
+ * the player can still manually advance or take other actions.
  */
 export interface TurnProcessingResult extends StateChanges, ProgressionChanges {
   newDate: GameDate;
   newPhase: GamePhase;
   raceWeek: RaceWeekInfo | null;
   blocked?: TurnBlocked;
+  shouldStopSimulation?: boolean;
+  stopReason?: DayStopReason;
 }
 
 /**
@@ -268,17 +278,18 @@ export interface SeasonEndResult extends ProgressionChanges {
 
 /**
  * ITurnEngine - Core game loop engine for time progression
- * Responsible for processing weekly turns, race results, and season transitions
+ * Responsible for processing daily turns, race results, and season transitions
  *
- * This is the heart of the simulation - it determines what changes each week,
+ * This is the heart of the simulation - it determines what changes each day,
  * how race results affect state, and how seasons transition.
  */
 export interface ITurnEngine {
   /**
-   * Process a weekly turn (advance time by one week)
+   * Process a daily turn (advance time by one day)
    * Handles fatigue, fitness, morale, budget, injuries, etc.
+   * Returns stop flags for race weekends and critical events.
    */
-  processWeek(input: TurnProcessingInput): TurnProcessingResult;
+  processDay(input: TurnProcessingInput): TurnProcessingResult;
 
   /**
    * Process race results and update standings/state
