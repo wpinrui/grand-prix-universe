@@ -7,7 +7,7 @@ import { IpcChannels } from '../../shared/ipc';
 import type { Team, Driver } from '../../shared/domain';
 import { DriverRole } from '../../shared/domain';
 import { generateFace, type TeamColors } from '../utils/face-generator';
-import { TEAM_ID_ALL } from '../hooks';
+import { TEAM_ID_ALL, useNewGame } from '../hooks';
 import { BackgroundLayer } from '../components';
 import { TeamBadge } from '../components/TeamBadge';
 import { IconButton } from '../components/NavButtons';
@@ -126,8 +126,8 @@ export function TeamSelectScreen() {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [isStarting, setIsStarting] = useState(false);
-  const [startError, setStartError] = useState<string | null>(null);
+
+  const newGameMutation = useNewGame();
 
   // Redirect if no player name
   useEffect(() => {
@@ -176,30 +176,24 @@ export function TeamSelectScreen() {
 
   const handlePrevTeam = () => {
     setSelectedIndex((i) => (i > 0 ? i - 1 : teams.length - 1));
-    setStartError(null);
+    newGameMutation.reset();
   };
 
   const handleNextTeam = () => {
     setSelectedIndex((i) => (i < teams.length - 1 ? i + 1 : 0));
-    setStartError(null);
+    newGameMutation.reset();
   };
 
-  const handleStartGame = async () => {
+  const handleStartGame = () => {
     if (!selectedTeam || !playerName) return;
 
-    setIsStarting(true);
-    setStartError(null);
-    try {
-      await window.electronAPI.invoke(IpcChannels.GAME_NEW, {
-        playerName,
-        teamId: selectedTeam.id,
-      });
-      navigate(RoutePaths.GAME);
-    } catch (error) {
-      console.error('Failed to start game:', error);
-      setStartError('Failed to start game. Please try again.');
-      setIsStarting(false);
-    }
+    newGameMutation.mutate(
+      { playerName, teamId: selectedTeam.id },
+      {
+        onSuccess: () => navigate(RoutePaths.GAME),
+        onError: (error) => console.error('Failed to start game:', error),
+      }
+    );
   };
 
   // Loading / Error states
@@ -363,8 +357,10 @@ export function TeamSelectScreen() {
           </button>
 
           <div className="flex items-center gap-4">
-            {startError && <span className="text-red-400 text-sm">{startError}</span>}
-            {!startError && (
+            {newGameMutation.error && (
+              <span className="text-red-400 text-sm">Failed to start game. Please try again.</span>
+            )}
+            {!newGameMutation.error && (
               <span className="text-secondary text-sm hidden sm:inline">
                 Manage <span className="text-primary font-medium">{selectedTeam.name}</span>?
               </span>
@@ -372,10 +368,10 @@ export function TeamSelectScreen() {
             <button
               type="button"
               onClick={handleStartGame}
-              disabled={isStarting}
+              disabled={newGameMutation.isPending}
               className={PRIMARY_BUTTON_CLASSES}
             >
-              <span>{isStarting ? 'Starting...' : 'OK'}</span>
+              <span>{newGameMutation.isPending ? 'Starting...' : 'OK'}</span>
               <ArrowRight size={18} />
             </button>
           </div>
