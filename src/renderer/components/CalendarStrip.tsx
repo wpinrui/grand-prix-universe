@@ -7,6 +7,10 @@ import {
   isSameDay,
 } from '../../shared/utils/date-utils';
 
+/** Index positions in the 9-day strip: [past, current, future x7] */
+const PAST_DAY_INDEX = 0;
+const CURRENT_DAY_INDEX = 1;
+
 interface CalendarStripProps {
   currentDate: GameDate;
   events: CalendarEvent[];
@@ -67,7 +71,7 @@ export function CalendarStrip({ currentDate, events, isVisible }: CalendarStripP
 
   // Determine if we should show month for a day (first day of month, or first day in strip)
   const shouldShowMonth = (date: GameDate, index: number): boolean => {
-    if (index === 0) return true; // Always show for first cell
+    if (index === PAST_DAY_INDEX) return true; // Always show for first cell
     return date.day === 1; // Show on month boundaries
   };
 
@@ -86,8 +90,8 @@ export function CalendarStrip({ currentDate, events, isVisible }: CalendarStripP
               <DayCell
                 key={`${date.year}-${date.month}-${date.day}`}
                 date={date}
-                isCurrent={index === 1} // Index 1 is the current day
-                isPast={index === 0} // Index 0 is the past day
+                isCurrent={index === CURRENT_DAY_INDEX}
+                isPast={index === PAST_DAY_INDEX}
                 showMonth={shouldShowMonth(date, index)}
                 event={getEventForDay(date)}
               />

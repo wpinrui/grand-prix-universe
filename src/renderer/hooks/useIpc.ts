@@ -305,44 +305,33 @@ export function useAutoSaveListener(onAutoSave: (filename: string) => void) {
 // SIMULATION HOOKS
 // =============================================================================
 
-/**
- * Start the simulation (day-by-day progression)
- */
-export function useStartSimulation() {
+type SimulationChannel =
+  | typeof IpcChannels.GAME_SIMULATION_START
+  | typeof IpcChannels.GAME_SIMULATION_STOP;
+
+/** Helper for simulation mutations (start/stop) */
+function useSimulationMutation(channel: SimulationChannel, simulatingValue: boolean) {
   const queryClient = useQueryClient();
 
   return useMutation<SimulationResult, Error, void>({
-    mutationFn: () => window.electronAPI.invoke(IpcChannels.GAME_SIMULATION_START),
+    mutationFn: () => window.electronAPI.invoke(channel),
     onSuccess: (result) => {
       if (result.success) {
-        // Optimistically update isSimulating
         queryClient.setQueryData(queryKeys.gameState, (old: GameState | null | undefined) => {
           if (!old) return old;
-          return { ...old, simulation: { ...old.simulation, isSimulating: true } };
+          return { ...old, simulation: { ...old.simulation, isSimulating: simulatingValue } };
         });
       }
     },
   });
 }
 
-/**
- * Stop the simulation
- */
-export function useStopSimulation() {
-  const queryClient = useQueryClient();
+export function useStartSimulation() {
+  return useSimulationMutation(IpcChannels.GAME_SIMULATION_START, true);
+}
 
-  return useMutation<SimulationResult, Error, void>({
-    mutationFn: () => window.electronAPI.invoke(IpcChannels.GAME_SIMULATION_STOP),
-    onSuccess: (result) => {
-      if (result.success) {
-        // Optimistically update isSimulating
-        queryClient.setQueryData(queryKeys.gameState, (old: GameState | null | undefined) => {
-          if (!old) return old;
-          return { ...old, simulation: { ...old.simulation, isSimulating: false } };
-        });
-      }
-    },
-  });
+export function useStopSimulation() {
+  return useSimulationMutation(IpcChannels.GAME_SIMULATION_STOP, false);
 }
 
 /**
