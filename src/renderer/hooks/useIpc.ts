@@ -8,7 +8,14 @@
 
 import { useCallback, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { IpcChannels, IpcEvents, type IpcChannel, type SaveResult, type LoadResult, type SaveSlotInfo, type AdvanceWeekResult } from '../../shared/ipc';
+import { IpcChannels, IpcEvents, type SaveResult, type LoadResult, type SaveSlotInfo, type AdvanceWeekResult } from '../../shared/ipc';
+
+/** Channels that return AdvanceWeekResult and mutate game state */
+type GameStateMutationChannel =
+  | typeof IpcChannels.GAME_ADVANCE_WEEK
+  | typeof IpcChannels.GAME_GO_TO_CIRCUIT
+  | typeof IpcChannels.GAME_RUN_RACE;
+
 import type {
   Team,
   Driver,
@@ -147,7 +154,7 @@ export function useNewGame() {
 }
 
 /** Helper hook for game state mutations that update the cache on success */
-function useGameStateMutation(channel: IpcChannel) {
+function useGameStateMutation(channel: GameStateMutationChannel) {
   const queryClient = useQueryClient();
 
   return useMutation<AdvanceWeekResult, Error, void>({
