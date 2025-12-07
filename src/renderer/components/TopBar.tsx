@@ -1,7 +1,6 @@
-import type { CSSProperties } from 'react';
-import { Calendar, DollarSign } from 'lucide-react';
+import { Calendar, Coins } from 'lucide-react';
 import type { GameDate, Team } from '../../shared/domain';
-import { ACCENT_MUTED_BUTTON_CLASSES, ACCENT_MUTED_BUTTON_STYLE, ACCENT_TEXT_STYLE } from '../utils/theme-styles';
+import { ACCENT_MUTED_BUTTON_CLASSES, ACCENT_MUTED_BUTTON_STYLE } from '../utils/theme-styles';
 import { AdvanceWeekButton } from './AdvanceWeekButton';
 
 interface TopBarProps {
@@ -12,11 +11,6 @@ interface TopBarProps {
 }
 
 export function TopBar({ sectionLabel, subItemLabel, currentDate, playerTeam }: TopBarProps) {
-  const budgetStyle: CSSProperties = {
-    ...ACCENT_TEXT_STYLE,
-    textShadow: '0 0 20px color-mix(in srgb, var(--accent-400) 30%, transparent)',
-  };
-
   return (
     <header className="top-bar flex items-center justify-between h-16 px-6 surface-primary border-b border-subtle">
       {/* Breadcrumb */}
@@ -31,15 +25,15 @@ export function TopBar({ sectionLabel, subItemLabel, currentDate, playerTeam }: 
       </div>
 
       {/* Right side: Budget, Calendar, Advance Week */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         {/* Budget Display */}
         <div
-          className="flex items-center gap-2 text-xl font-bold tabular-nums"
-          style={budgetStyle}
+          className={`${ACCENT_MUTED_BUTTON_CLASSES} px-3 py-1.5`}
+          style={ACCENT_MUTED_BUTTON_STYLE}
         >
-          <DollarSign size={18} className="opacity-70" />
-          <span>
-            {playerTeam ? playerTeam.budget.toLocaleString() : '—'}
+          <Coins size={16} />
+          <span className="tabular-nums">
+            {playerTeam ? `$${playerTeam.budget.toLocaleString()}` : '—'}
           </span>
         </div>
 

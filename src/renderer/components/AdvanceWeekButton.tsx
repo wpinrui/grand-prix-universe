@@ -72,16 +72,16 @@ export function AdvanceWeekButton() {
       type="button"
       onClick={handleClick}
       disabled={isDisabled}
-      className={`${ACCENT_BUTTON_CLASSES} px-4 py-1.5 disabled:opacity-50 disabled:cursor-not-allowed`}
+      className={`${ACCENT_BUTTON_CLASSES} px-3 py-1.5 disabled:opacity-50 disabled:cursor-not-allowed`}
       style={ACCENT_BORDERED_BUTTON_STYLE}
       title={action === 'disabled' ? 'End season to continue' : text}
     >
+      <span>{text}</span>
       {isLoading ? (
         <Loader2 size={16} className="animate-spin" />
       ) : (
         <Icon size={16} />
       )}
-      <span>{text}</span>
     </button>
   );
 }
