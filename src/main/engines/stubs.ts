@@ -938,10 +938,10 @@ interface FastestLapTracker {
 function generateSingleRaceResult(
   driver: Driver & { teamId: string },
   finishIndex: number,
-  gridOrder: Array<Driver & { teamId: string }>,
+  gridPositionMap: Map<string, number>,
   fastestLap: FastestLapTracker
 ): DriverRaceResult {
-  const gridPosition = gridOrder.findIndex((d) => d.id === driver.id) + 1;
+  const gridPosition = gridPositionMap.get(driver.id) ?? 0;
   const didNotFinish = Math.random() < DNF_PROBABILITY;
   const finishPosition = didNotFinish ? null : finishIndex + 1;
   const points =
@@ -973,6 +973,15 @@ function generateSingleRaceResult(
 }
 
 /**
+ * Build a map from driver ID to grid position for O(1) lookups
+ */
+function buildGridPositionMap(
+  gridOrder: Array<Driver & { teamId: string }>
+): Map<string, number> {
+  return new Map(gridOrder.map((driver, index) => [driver.id, index + 1]));
+}
+
+/**
  * Generate race results for all drivers
  * Returns both the results array and fastest lap info
  */
@@ -985,8 +994,11 @@ function generateRaceResults(
     driverId: finishOrder[0]?.id ?? '',
   };
 
+  // Precompute grid positions for O(1) lookups instead of O(n) per driver
+  const gridPositionMap = buildGridPositionMap(gridOrder);
+
   const race = finishOrder.map((driver, index) =>
-    generateSingleRaceResult(driver, index, gridOrder, fastestLap)
+    generateSingleRaceResult(driver, index, gridPositionMap, fastestLap)
   );
 
   return {
