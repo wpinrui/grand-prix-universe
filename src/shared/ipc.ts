@@ -19,7 +19,7 @@ import type {
   GameState,
   NewGameParams,
 } from './domain';
-import type { TurnBlocked } from './domain/engines';
+import type { TurnBlocked, DayStopReason } from './domain/engines';
 
 // =============================================================================
 // SAVE/LOAD TYPES
@@ -83,6 +83,28 @@ export interface NewSeasonResult {
   error?: string; // Error message on failure
 }
 
+// =============================================================================
+// SIMULATION TYPES
+// =============================================================================
+
+/**
+ * Result of starting/stopping simulation
+ */
+export interface SimulationResult {
+  success: boolean;
+  error?: string;
+}
+
+/**
+ * Payload sent on each simulation tick (day advancement)
+ * Pushed from main -> renderer via IPC event
+ */
+export interface SimulationTickPayload {
+  state: GameState;
+  stopped: boolean; // True if simulation auto-stopped
+  stopReason?: DayStopReason; // Why it stopped (if stopped)
+}
+
 /** Channel names for IPC invoke calls (renderer -> main) */
 export const IpcChannels = {
   // App lifecycle
@@ -110,6 +132,10 @@ export const IpcChannels = {
   GAME_RUN_RACE: 'game:runRace',
   GAME_NEW_SEASON: 'game:newSeason',
 
+  // Simulation control
+  GAME_SIMULATION_START: 'game:simulationStart',
+  GAME_SIMULATION_STOP: 'game:simulationStop',
+
   // Save/load
   GAME_SAVE: 'game:save',
   GAME_LOAD: 'game:load',
@@ -123,6 +149,7 @@ export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];
 /** Channel names for IPC events (main -> renderer) */
 export const IpcEvents = {
   AUTO_SAVE_COMPLETE: 'event:autoSaveComplete',
+  SIMULATION_TICK: 'event:simulationTick',
 } as const;
 
 export type IpcEvent = (typeof IpcEvents)[keyof typeof IpcEvents];
@@ -130,6 +157,7 @@ export type IpcEvent = (typeof IpcEvents)[keyof typeof IpcEvents];
 /** Payload types for IPC events */
 export interface IpcEventPayloads {
   [IpcEvents.AUTO_SAVE_COMPLETE]: { filename: string };
+  [IpcEvents.SIMULATION_TICK]: SimulationTickPayload;
 }
 
 /** Type definitions for IPC invoke calls (renderer -> main) */
@@ -209,6 +237,16 @@ export interface IpcInvokeMap {
   [IpcChannels.GAME_NEW_SEASON]: {
     args: [];
     result: NewSeasonResult;
+  };
+
+  // Simulation control
+  [IpcChannels.GAME_SIMULATION_START]: {
+    args: [];
+    result: SimulationResult;
+  };
+  [IpcChannels.GAME_SIMULATION_STOP]: {
+    args: [];
+    result: SimulationResult;
   };
 
   // Save/load
