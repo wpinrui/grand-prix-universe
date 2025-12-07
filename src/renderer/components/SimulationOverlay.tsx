@@ -256,7 +256,7 @@ export function SimulationOverlay({
                     key={animationKey}
                     initial={{ x: SLIDE_OFFSET_PERCENT, opacity: 0.5 }}
                     animate={{ x: 0, opacity: 1 }}
-                    transition={{ duration: 0.15, ease: 'easeOut' }}
+                    transition={{ duration: 0.25, ease: 'easeOut' }}
                     className="h-full flex"
                   >
                     {days.map((date, index) => (
