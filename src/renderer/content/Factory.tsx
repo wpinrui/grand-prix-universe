@@ -142,6 +142,8 @@ interface LimitCardProps {
 }
 
 function LimitCard({ label, current, max }: LimitCardProps) {
+  const percent = Math.min(100, Math.round((current / max) * 100));
+
   return (
     <div>
       <DetailRow
@@ -153,7 +155,7 @@ function LimitCard({ label, current, max }: LimitCardProps) {
         }
       />
       <div className="mt-2">
-        <ProgressBar value={(current / max) * 100} />
+        <ProgressBar value={percent} />
       </div>
     </div>
   );
