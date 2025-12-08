@@ -62,8 +62,8 @@ export function SaveGroupCard({
   loadingFilename,
 }: SaveGroupCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { primary, autosaves } = group;
-  const hasAutosaves = autosaves.length > 0;
+  const { primary, history } = group;
+  const hasHistory = history.length > 0;
 
   return (
     <div className="card overflow-hidden">
@@ -95,16 +95,16 @@ export function SaveGroupCard({
 
         {/* Actions */}
         <div className="flex items-center gap-2 shrink-0">
-          {/* Expand autosaves button */}
-          {hasAutosaves && (
+          {/* Expand history button */}
+          {hasHistory && (
             <button
               type="button"
               onClick={() => setIsExpanded(!isExpanded)}
               className={`${ICON_BUTTON_NEUTRAL_CLASSES} flex items-center gap-1`}
-              title={isExpanded ? 'Hide autosaves' : 'Show autosaves'}
+              title={isExpanded ? 'Hide save history' : 'Show save history'}
             >
               <Clock className="w-4 h-4" />
-              <span className="text-xs">{autosaves.length}</span>
+              <span className="text-xs">{history.length}</span>
               {isExpanded ? (
                 <ChevronUp className="w-3 h-3" />
               ) : (
@@ -122,36 +122,39 @@ export function SaveGroupCard({
         </div>
       </div>
 
-      {/* Autosaves dropdown */}
-      {hasAutosaves && isExpanded && (
+      {/* Save history dropdown */}
+      {hasHistory && isExpanded && (
         <div className="border-t border-neutral-700/50 bg-neutral-800/30">
           <div className="px-4 py-2 text-xs text-muted uppercase tracking-wider">
-            Autosaves
+            Save History
           </div>
           <div className="divide-y divide-neutral-700/30">
-            {autosaves.map((autosave) => (
+            {history.map((save) => (
               <div
-                key={autosave.filename}
+                key={save.filename}
                 className="px-4 py-3 flex items-center gap-4 hover:bg-neutral-700/20 transition-colors"
               >
                 {/* Indent space matching the team badge */}
                 <div className="w-14 shrink-0" />
 
-                {/* Autosave info */}
+                {/* Save info */}
                 <div className="flex-1 min-w-0">
                   <div className="text-sm text-secondary">
-                    Season {autosave.seasonNumber}, Week {autosave.weekNumber}
+                    Season {save.seasonNumber}, Week {save.weekNumber}
+                    {save.isAutosave && (
+                      <span className="ml-2 text-amber-400">(autosave)</span>
+                    )}
                   </div>
                   <div className="text-xs text-muted">
-                    {formatDateTime(autosave.savedAt)}
+                    {formatDateTime(save.savedAt)}
                   </div>
                 </div>
 
                 <SaveActions
-                  save={autosave}
-                  onLoad={() => onLoad(autosave.filename)}
-                  onDelete={() => onDelete(autosave)}
-                  isLoading={loadingFilename === autosave.filename}
+                  save={save}
+                  onLoad={() => onLoad(save.filename)}
+                  onDelete={() => onDelete(save)}
+                  isLoading={loadingFilename === save.filename}
                 />
               </div>
             ))}
