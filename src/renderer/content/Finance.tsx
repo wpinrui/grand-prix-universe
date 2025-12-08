@@ -83,6 +83,22 @@ function EmptyState({ message }: { message: string }) {
   return <p className="text-muted py-2">{message}</p>;
 }
 
+interface ExpenseGroupProps {
+  label: string;
+  children: React.ReactNode;
+}
+
+function ExpenseGroup({ label, children }: ExpenseGroupProps) {
+  return (
+    <div className="mb-4">
+      <div className="text-xs font-medium text-muted uppercase tracking-wider mb-2">
+        {label}
+      </div>
+      {children}
+    </div>
+  );
+}
+
 // ===========================================
 // SECTION COMPONENTS
 // ===========================================
@@ -145,12 +161,8 @@ function ExpensesSection({
     <section>
       <SectionHeading>Annual Expenses</SectionHeading>
       <div className="card p-5">
-        {/* Drivers */}
         {drivers.length > 0 && (
-          <div className="mb-4">
-            <div className="text-xs font-medium text-muted uppercase tracking-wider mb-2">
-              Drivers
-            </div>
+          <ExpenseGroup label="Drivers">
             {drivers.map((driver) => (
               <LineItem
                 key={driver.id}
@@ -159,15 +171,11 @@ function ExpensesSection({
                 isExpense
               />
             ))}
-          </div>
+          </ExpenseGroup>
         )}
 
-        {/* Chiefs */}
         {chiefs.length > 0 && (
-          <div className="mb-4">
-            <div className="text-xs font-medium text-muted uppercase tracking-wider mb-2">
-              Department Chiefs
-            </div>
+          <ExpenseGroup label="Department Chiefs">
             {chiefs.map((chief) => (
               <LineItem
                 key={chief.id}
@@ -177,15 +185,11 @@ function ExpensesSection({
                 isExpense
               />
             ))}
-          </div>
+          </ExpenseGroup>
         )}
 
-        {/* Manufacturer Contracts */}
         {paidContracts.length > 0 && (
-          <div className="mb-4">
-            <div className="text-xs font-medium text-muted uppercase tracking-wider mb-2">
-              Supplier Contracts
-            </div>
+          <ExpenseGroup label="Supplier Contracts">
             {paidContracts.map((contract) => {
               const manufacturer = manufacturerMap.get(contract.manufacturerId);
               return (
@@ -198,7 +202,7 @@ function ExpensesSection({
                 />
               );
             })}
-          </div>
+          </ExpenseGroup>
         )}
 
         {totalExpenses === 0 && <EmptyState message="No recorded expenses" />}
