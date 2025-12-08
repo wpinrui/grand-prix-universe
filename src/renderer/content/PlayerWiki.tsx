@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useDerivedGameState } from '../hooks';
-import { SectionHeading, SummaryStat, DetailRow } from '../components';
+import { SectionHeading, SummaryStat, DetailRow, CenteredMessage } from '../components';
 import { ACCENT_CARD_STYLE } from '../utils/theme-styles';
 import { formatGameDate } from '../../shared/utils/date-utils';
 import { PLAYER_MANAGER_ID } from '../../shared/domain/events';
@@ -11,7 +11,7 @@ import type { GameEvent, GameDate } from '../../shared/domain';
 // TYPES
 // ===========================================
 
-type WikiTab = 'stats' | 'timeline' | 'prose';
+type WikiTab = 'stats' | 'timeline' | 'biography';
 
 interface CareerStartedData {
   playerName: string;
@@ -62,7 +62,7 @@ function StatRow({ label, value }: StatRowProps) {
 const WIKI_TABS: { id: WikiTab; label: string }[] = [
   { id: 'stats', label: 'Stats' },
   { id: 'timeline', label: 'Timeline' },
-  { id: 'prose', label: 'Biography' },
+  { id: 'biography', label: 'Biography' },
 ];
 
 interface WikiTabBarProps {
@@ -188,44 +188,24 @@ export function PlayerWiki() {
   }, [gameId]);
 
   if (!gameState || !playerTeam) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-secondary">Loading player data...</p>
-      </div>
-    );
+    return <CenteredMessage>Loading player data...</CenteredMessage>;
   }
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-secondary">Loading career history...</p>
-      </div>
-    );
+    return <CenteredMessage>Loading career history...</CenteredMessage>;
   }
 
   if (error) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-secondary">{error}</p>
-      </div>
-    );
+    return <CenteredMessage>{error}</CenteredMessage>;
   }
 
   if (!careerEvent) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-secondary">No career history found.</p>
-      </div>
-    );
+    return <CenteredMessage>No career history found.</CenteredMessage>;
   }
 
   const careerData = getCareerStartedData(careerEvent);
   if (!careerData) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-secondary">Unable to load career data.</p>
-      </div>
-    );
+    return <CenteredMessage>Unable to load career data.</CenteredMessage>;
   }
 
   // Find starting team name from teams list
@@ -257,7 +237,7 @@ export function PlayerWiki() {
             </p>
           </div>
         );
-      case 'prose':
+      case 'biography':
         return (
           <div className="card p-6">
             <p className="text-muted italic">
