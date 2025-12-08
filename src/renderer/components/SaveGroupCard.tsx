@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Download, Trash2, Loader2, ChevronDown, ChevronUp, Clock } from 'lucide-react';
 import { TeamBadge } from './TeamBadge';
-import { formatDateTime, formatSeasonWeek } from '../utils/format';
+import { formatInGameDate, formatSavedAt } from '../utils/format';
 import {
   ICON_BUTTON_SUCCESS_CLASSES,
   ICON_BUTTON_DANGER_CLASSES,
@@ -93,7 +93,7 @@ export function SaveGroupCard({
           <div className="font-bold text-primary truncate">{primary.teamName}</div>
           <div className="text-sm text-secondary">{primary.playerName}</div>
           <div className="text-xs text-muted mt-1">
-            {formatSeasonWeek(primary)} · {formatDateTime(primary.savedAt)}
+            {formatInGameDate(primary)} · {formatSavedAt(primary)}
             {primary.isAutosave && <AutosaveLabel />}
           </div>
         </div>
@@ -145,11 +145,11 @@ export function SaveGroupCard({
                 {/* Save info */}
                 <div className="flex-1 min-w-0">
                   <div className="text-sm text-secondary">
-                    {formatSeasonWeek(save)}
+                    {formatInGameDate(save)}
                     {save.isAutosave && <AutosaveLabel />}
                   </div>
                   <div className="text-xs text-muted">
-                    {formatDateTime(save.savedAt)}
+                    {formatSavedAt(save)}
                   </div>
                 </div>
 

@@ -4,6 +4,7 @@
 
 import type { DriverRole } from '../../shared/domain';
 import { compareSavesByNewest, type SaveSlotInfo } from '../../shared/ipc';
+import { formatGameDate } from '../../shared/utils/date-utils';
 
 // ===========================================
 // DRIVER ROLE LABELS
@@ -78,10 +79,17 @@ export function getSaveDisplayName(save: SaveSlotInfo): string {
 }
 
 /**
- * Format season and week (e.g., "Season 1, Week 12")
+ * Format a save's in-game date (e.g., "15 March 2025 (in-game)")
  */
-export function formatSeasonWeek(save: SaveSlotInfo): string {
-  return `Season ${save.seasonNumber}, Week ${save.weekNumber}`;
+export function formatInGameDate(save: SaveSlotInfo): string {
+  return `${formatGameDate(save.currentDate)} (in-game)`;
+}
+
+/**
+ * Format a save's real-world saved date (e.g., "Saved Dec 8, 2025 at 3:45 PM")
+ */
+export function formatSavedAt(save: SaveSlotInfo): string {
+  return `Saved ${formatDateTime(save.savedAt)}`;
 }
 
 // ===========================================

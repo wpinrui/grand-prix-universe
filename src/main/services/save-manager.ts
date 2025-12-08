@@ -16,7 +16,6 @@ import {
   type SaveResult,
   type LoadResult,
 } from '../../shared/ipc';
-import { yearToSeason, getWeekNumber } from '../../shared/utils/date-utils';
 
 /** Directory name for saves within userData */
 const SAVES_DIR = 'saves';
@@ -88,8 +87,7 @@ function extractSaveInfo(
     playerName: state.player.name,
     teamId: state.player.teamId,
     teamName: team?.name ?? 'Unknown Team',
-    seasonNumber: yearToSeason(state.currentDate.year),
-    weekNumber: getWeekNumber(state.currentDate),
+    currentDate: state.currentDate,
     savedAt: state.lastSavedAt,
     fileSize,
   };
