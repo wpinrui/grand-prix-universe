@@ -133,25 +133,25 @@ interface WikiTabBarProps {
 
 function WikiTabBar({ activeTab, onTabChange }: WikiTabBarProps) {
   return (
-    <div className="flex border-b border-subtle mb-6">
-      {WIKI_TABS.map((tab) => (
-        <button
-          key={tab.id}
-          type="button"
-          onClick={() => onTabChange(tab.id)}
-          className={`relative px-6 py-3 text-sm font-medium transition-colors ${
-            activeTab === tab.id ? 'text-primary' : 'text-muted hover:text-secondary'
-          }`}
-        >
-          {tab.label}
-          {activeTab === tab.id && (
-            <span
-              className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent-500"
-              style={{ boxShadow: '0 0 8px var(--accent-500)' }}
-            />
-          )}
-        </button>
-      ))}
+    <div className="flex gap-2 mb-6">
+      {WIKI_TABS.map((tab) => {
+        const isActive = activeTab === tab.id;
+        return (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => onTabChange(tab.id)}
+            className={`px-5 py-2 text-sm font-medium rounded-lg transition-all ${
+              isActive
+                ? 'bg-accent-600 text-white shadow-md'
+                : 'bg-neutral-800 text-muted hover:bg-neutral-700 hover:text-secondary'
+            }`}
+            style={isActive ? { boxShadow: '0 0 12px var(--accent-600)' } : undefined}
+          >
+            {tab.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
