@@ -11,8 +11,7 @@
  */
 
 import { chromium } from 'playwright';
-
-const CDP_URL = 'http://localhost:9222';
+import { CDP_URL } from './utils';
 
 async function connectAndRecord() {
   console.log('Connecting to Electron app via CDP...');
