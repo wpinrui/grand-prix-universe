@@ -224,7 +224,7 @@ export function CalendarPreviewPanel({
           style={isExpanded ? undefined : { height: CALENDAR_PANEL_HEIGHT }}
           onWheel={handleWheel}
         >
-          <div className="absolute inset-0 bg-[var(--neutral-900)]" />
+          <div className="absolute inset-0 bg-[var(--neutral-900)]/80 backdrop-blur-sm" />
 
           <div className="relative h-full flex flex-col">
             {/* Header */}

@@ -93,7 +93,7 @@ export function SimulationOverlay({
             style={{ height: CALENDAR_PANEL_HEIGHT }}
           >
             {/* Panel background */}
-            <div className="absolute inset-0 bg-[var(--neutral-900)]" />
+            <div className="absolute inset-0 bg-[var(--neutral-900)]/80 backdrop-blur-sm" />
 
             {/* Panel content */}
             <div className="relative h-full flex flex-col">
