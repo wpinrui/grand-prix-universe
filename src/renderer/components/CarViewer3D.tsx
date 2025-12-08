@@ -68,14 +68,14 @@ function CarModel({ primaryColor }: CarModelProps) {
     // Production: apply team colors
     if (!primaryColor) return;
 
-    const primaryHex = primaryColor ? new THREE.Color(primaryColor) : null;
+    const primaryHex = new THREE.Color(primaryColor);
 
     scene.traverse((child) => {
       if (child instanceof THREE.Mesh && child.material) {
         const mats = Array.isArray(child.material) ? child.material : [child.material];
         mats.forEach((mat) => {
           if (mat instanceof THREE.MeshStandardMaterial) {
-            if (primaryHex && PRIMARY_COLOR_MATERIALS.includes(mat.name)) {
+            if (PRIMARY_COLOR_MATERIALS.includes(mat.name)) {
               mat.map = null; // Remove texture to show pure color
               mat.color.copy(primaryHex);
               mat.metalness = 0.4;
