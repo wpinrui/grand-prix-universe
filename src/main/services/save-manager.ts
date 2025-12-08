@@ -120,7 +120,8 @@ function isValidGameState(data: unknown): data is GameState {
     typeof obj.phase === 'string' &&
     typeof obj.currentSeason === 'object' &&
     Array.isArray(obj.teams) &&
-    Array.isArray(obj.drivers)
+    Array.isArray(obj.drivers) &&
+    Array.isArray(obj.events)
   );
 }
 

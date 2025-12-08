@@ -383,6 +383,115 @@ export interface NewGameParams {
 }
 
 // =============================================================================
+// EVENTS INFRASTRUCTURE
+// =============================================================================
+
+/**
+ * EntityType - Types of entities that can be involved in game events
+ * Used for filtering and querying events by participant type
+ */
+export enum EntityType {
+  Driver = 'driver',
+  Team = 'team',
+  Manager = 'manager', // The player
+  Circuit = 'circuit',
+  Sponsor = 'sponsor',
+  Staff = 'staff', // Chiefs
+}
+
+/**
+ * EntityRef - Reference to an entity involved in an event
+ * Enables querying events by any participant
+ */
+export interface EntityRef {
+  type: EntityType;
+  id: string;
+}
+
+/**
+ * EventImportance - Significance level for filtering and display
+ * - high: Major events (championships, first wins, signings)
+ * - medium: Notable events (race results, contract renewals)
+ * - low: Minor events (routine updates, small changes)
+ */
+export type EventImportance = 'high' | 'medium' | 'low';
+
+/**
+ * GameEventType - Discriminated union of all event types
+ * Add new event types here as features are built.
+ * Each category groups related events for easier filtering.
+ */
+export type GameEventType =
+  // Career events
+  | 'CAREER_STARTED'
+  | 'TEAM_CHANGED'
+  // Racing events (added when race engine emits events)
+  | 'RACE_FINISH'
+  | 'QUALIFYING_RESULT'
+  | 'RACE_RETIREMENT'
+  | 'CRASH_INCIDENT'
+  // Championship events (added when season processor emits events)
+  | 'CHAMPIONSHIP_WON'
+  | 'POSITION_IMPROVED'
+  | 'POINTS_MILESTONE'
+  // Contract events (added when staff/contract systems emit events)
+  | 'DRIVER_SIGNED'
+  | 'DRIVER_RELEASED'
+  | 'STAFF_HIRED'
+  | 'STAFF_FIRED'
+  | 'CONTRACT_EXPIRED'
+  // Commercial events (added when financial systems emit events)
+  | 'SPONSOR_SIGNED'
+  | 'SPONSOR_LOST'
+  | 'PRIZE_MONEY_RECEIVED'
+  // Technical events (added when engineering systems emit events)
+  | 'CAR_DESIGNED'
+  | 'UPGRADE_COMPLETED'
+  | 'TEST_SESSION_RUN'
+  // Media events (future)
+  | 'MEDIA_STATEMENT'
+  | 'PRESS_CONFERENCE';
+
+/**
+ * GameEvent - A recorded in-game occurrence
+ *
+ * Events are the source of truth for game history. They are:
+ * - Immutable once created
+ * - Append-only (no deletion in normal gameplay)
+ * - Queryable by entity, type, date, importance
+ *
+ * Used by: Player Wiki, News, Emails, Engine simulations, Commentary
+ */
+export interface GameEvent {
+  /** Unique identifier (UUID) */
+  id: string;
+
+  /** Event type - determines the structure of data payload */
+  type: GameEventType;
+
+  /** In-game date when event occurred */
+  date: GameDate;
+
+  /** All entities involved in this event (for querying) */
+  involvedEntities: EntityRef[];
+
+  /**
+   * Event-specific payload
+   * Structure varies by event type. Examples:
+   * - CAREER_STARTED: { teamId, playerName }
+   * - RACE_FINISH: { position, points, circuitId }
+   * - DRIVER_SIGNED: { contractLength, salary }
+   */
+  data: Record<string, unknown>;
+
+  /** Significance level for filtering/display */
+  importance: EventImportance;
+
+  /** Real-world timestamp for ordering same-day events */
+  createdAt: number;
+}
+
+// =============================================================================
 // GAME STATE TYPES
 // =============================================================================
 
@@ -709,6 +818,10 @@ export interface GameState {
 
   // Historical Data (for career stats, Player Wiki)
   pastSeasons: SeasonData[];
+
+  // Events (for Player Wiki, News, relationships, engine simulations)
+  // See proposal.md > Events Infrastructure for full documentation
+  events: GameEvent[];
 
   // Game Rules (copied from config, could theoretically change)
   rules: GameRules;
