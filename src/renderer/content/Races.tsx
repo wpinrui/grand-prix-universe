@@ -1,5 +1,5 @@
 import { useDerivedGameState } from '../hooks';
-import { SectionHeading } from '../components';
+import { SectionHeading, HeaderCell } from '../components';
 import { FlagIcon } from '../components/FlagIcon';
 import {
   TABLE_CELL_BASE,
@@ -137,12 +137,12 @@ export function Races() {
           <table className="w-full">
             <thead className={TABLE_HEADER_CLASS}>
               <tr className={TABLE_HEADER_ROW_CLASS}>
-                <th className={`${TABLE_CELL_BASE} text-center w-16`}>Rd</th>
-                <th className={`${TABLE_CELL_BASE} text-left w-40`}>Country</th>
-                <th className={`${TABLE_CELL_BASE} text-left`}>Circuit</th>
-                <th className={`${TABLE_CELL_BASE} text-left`}>Date</th>
-                <th className={`${TABLE_CELL_BASE} text-center whitespace-nowrap`}>In</th>
-                <th className={`${TABLE_CELL_BASE} text-center w-28`}>Status</th>
+                <HeaderCell className="w-16">Rd</HeaderCell>
+                <HeaderCell align="left" className="w-40">Country</HeaderCell>
+                <HeaderCell align="left">Circuit</HeaderCell>
+                <HeaderCell align="left">Date</HeaderCell>
+                <HeaderCell className="whitespace-nowrap">In</HeaderCell>
+                <HeaderCell className="w-28">Status</HeaderCell>
               </tr>
             </thead>
             <tbody className={TABLE_BODY_CLASS}>
