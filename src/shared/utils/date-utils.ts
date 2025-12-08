@@ -323,11 +323,12 @@ export function getRaceSessionForDate(
   raceWeekNumber: number
 ): RaceSessionType | null {
   const friday = getFridayOfWeek(date.year, raceWeekNumber);
-  const saturday = advanceDay(friday);
-  const sunday = advanceDay(saturday);
-
   if (isSameDay(date, friday)) return 'Practice';
+
+  const saturday = advanceDay(friday);
   if (isSameDay(date, saturday)) return 'Qualifying';
+
+  const sunday = advanceDay(saturday);
   if (isSameDay(date, sunday)) return 'Race';
 
   return null;
@@ -338,9 +339,6 @@ export function getRaceSessionForDate(
  * Returns positive if b is after a, negative if before
  */
 export function daysBetween(a: GameDate, b: GameDate): number {
-  const daysInYearA = isLeapYear(a.year) ? 366 : 365;
-  const daysInYearB = isLeapYear(b.year) ? 366 : 365;
-
   if (a.year === b.year) {
     return getDayOfYear(b) - getDayOfYear(a);
   }
@@ -350,6 +348,7 @@ export function daysBetween(a: GameDate, b: GameDate): number {
 
   if (b.year > a.year) {
     // Days remaining in year a
+    const daysInYearA = isLeapYear(a.year) ? 366 : 365;
     days += daysInYearA - getDayOfYear(a);
     // Full years between
     for (let y = a.year + 1; y < b.year; y++) {
@@ -359,6 +358,7 @@ export function daysBetween(a: GameDate, b: GameDate): number {
     days += getDayOfYear(b);
   } else {
     // b is before a (negative result)
+    const daysInYearB = isLeapYear(b.year) ? 366 : 365;
     days -= daysInYearB - getDayOfYear(b);
     for (let y = b.year + 1; y < a.year; y++) {
       days -= isLeapYear(y) ? 366 : 365;
