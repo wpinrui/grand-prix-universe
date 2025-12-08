@@ -148,6 +148,24 @@ function BackButton({ onClick, label = 'Back to Results' }: BackButtonProps) {
   );
 }
 
+interface DetailHeaderProps {
+  flagCountry: string;
+  title: string;
+  subtitle: string;
+}
+
+function DetailHeader({ flagCountry, title, subtitle }: DetailHeaderProps) {
+  return (
+    <div className="flex items-center gap-4 mb-6">
+      <FlagIcon country={flagCountry} size="md" />
+      <div>
+        <h2 className="text-2xl font-bold text-primary">{title}</h2>
+        <p className="text-secondary">{subtitle}</p>
+      </div>
+    </div>
+  );
+}
+
 // ===========================================
 // SEASON RESULTS GRID
 // ===========================================
@@ -364,15 +382,11 @@ function RaceDetailView({
   return (
     <div className="space-y-6">
       <BackButton onClick={onBack} />
-
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <FlagIcon country={circuit?.country ?? ''} size="md" />
-        <div>
-          <h2 className="text-2xl font-bold text-primary">{circuit?.name ?? result.circuitId}</h2>
-          <p className="text-secondary">Round {result.raceNumber}</p>
-        </div>
-      </div>
+      <DetailHeader
+        flagCountry={circuit?.country ?? ''}
+        title={circuit?.name ?? result.circuitId}
+        subtitle={`Round ${result.raceNumber}`}
+      />
 
       {/* Qualifying Results */}
       <section>
@@ -560,17 +574,11 @@ function DriverCareerView({
   return (
     <div className="space-y-6">
       <BackButton onClick={onBack} />
-
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <FlagIcon country={driver.nationality} size="md" />
-        <div>
-          <h2 className="text-2xl font-bold text-primary">
-            {driver.firstName} {driver.lastName}
-          </h2>
-          <p className="text-secondary">{team?.name ?? 'Free Agent'}</p>
-        </div>
-      </div>
+      <DetailHeader
+        flagCountry={driver.nationality}
+        title={`${driver.firstName} ${driver.lastName}`}
+        subtitle={team?.name ?? 'Free Agent'}
+      />
 
       {/* Season Stats Summary */}
       <div className="grid grid-cols-5 gap-4">
