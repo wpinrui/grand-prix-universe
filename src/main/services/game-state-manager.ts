@@ -68,6 +68,9 @@ import {
   ManufacturerType,
   ManufacturerDealType,
   hasRaceSeat,
+  createEvent,
+  managerRef,
+  teamRef,
 } from '../../shared/domain';
 import {
   getPreSeasonStartDate,
@@ -1179,6 +1182,16 @@ export const GameStateManager = {
       rules: cloneDeep(rules),
       regulations: cloneDeep(regulations),
     });
+
+    // Emit CAREER_STARTED event
+    const careerStartedEvent = createEvent({
+      type: 'CAREER_STARTED',
+      date: gameState.currentDate,
+      involvedEntities: [managerRef(), teamRef(teamId)],
+      data: { playerName, teamId, seasonNumber },
+      importance: 'high',
+    });
+    gameState.events.push(careerStartedEvent);
 
     // Store as current state
     GameStateManager.currentState = gameState;
