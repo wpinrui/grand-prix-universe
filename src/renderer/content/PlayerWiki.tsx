@@ -233,7 +233,8 @@ function WikiTabBar({ activeTab, onTabChange }: WikiTabBarProps) {
   );
 }
 
-interface CareerStatsProps {
+/** Shared props for career view components (Stats, Biography) */
+interface CareerViewProps {
   playerName: string;
   careerStartDate: GameDate;
   startingTeamName: string;
@@ -247,7 +248,7 @@ function CareerStats({
   startingTeamName,
   currentTeamName,
   seasonsPlayed,
-}: CareerStatsProps) {
+}: CareerViewProps) {
   const hasChangedTeams = startingTeamName !== currentTeamName;
 
   return (
@@ -393,21 +394,13 @@ function ProseParagraph({ children }: ProseParagraphProps) {
   );
 }
 
-interface CareerBiographyProps {
-  playerName: string;
-  careerStartDate: GameDate;
-  startingTeamName: string;
-  currentTeamName: string;
-  seasonsPlayed: number;
-}
-
 function CareerBiography({
   playerName,
   careerStartDate,
   startingTeamName,
   currentTeamName,
   seasonsPlayed,
-}: CareerBiographyProps) {
+}: CareerViewProps) {
   const openingParagraph = generateOpeningParagraph(
     playerName,
     careerStartDate,
