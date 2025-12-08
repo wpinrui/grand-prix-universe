@@ -34,7 +34,17 @@ type ViewState =
 // ENTITY LOOKUP HELPERS
 // ===========================================
 
-function createEntityLookups(drivers: Driver[], teams: Team[], circuits: Circuit[]) {
+interface EntityLookups {
+  getDriver: (id: string) => Driver | undefined;
+  getTeam: (id: string) => Team | undefined;
+  getCircuit: (id: string) => Circuit | undefined;
+}
+
+function createEntityLookups(
+  drivers: Driver[],
+  teams: Team[],
+  circuits: Circuit[]
+): EntityLookups {
   return {
     getDriver: (id: string) => drivers.find((d) => d.id === id),
     getTeam: (id: string) => teams.find((t) => t.id === id),
@@ -268,9 +278,7 @@ function DriverRow({
 interface SeasonGridProps {
   driverStandings: DriverStanding[];
   calendar: CalendarEntry[];
-  drivers: Driver[];
-  teams: Team[];
-  circuits: Circuit[];
+  lookups: EntityLookups;
   pointsPositions: number;
   playerTeamId: string;
   onRaceClick: (raceNumber: number) => void;
@@ -280,15 +288,13 @@ interface SeasonGridProps {
 function SeasonGrid({
   driverStandings,
   calendar,
-  drivers,
-  teams,
-  circuits,
+  lookups,
   pointsPositions,
   playerTeamId,
   onRaceClick,
   onDriverClick,
 }: SeasonGridProps) {
-  const { getDriver, getTeam, getCircuit } = createEntityLookups(drivers, teams, circuits);
+  const { getDriver, getTeam, getCircuit } = lookups;
 
   return (
     <section>
@@ -339,8 +345,7 @@ function SeasonGrid({
 interface RaceDetailViewProps {
   result: RaceWeekendResult;
   circuit: Circuit | undefined;
-  drivers: Driver[];
-  teams: Team[];
+  lookups: EntityLookups;
   playerTeamId: string;
   onBack: () => void;
   onDriverClick: (driverId: string) => void;
@@ -349,13 +354,12 @@ interface RaceDetailViewProps {
 function RaceDetailView({
   result,
   circuit,
-  drivers,
-  teams,
+  lookups,
   playerTeamId,
   onBack,
   onDriverClick,
 }: RaceDetailViewProps) {
-  const { getDriver, getTeam } = createEntityLookups(drivers, teams, []);
+  const { getDriver, getTeam } = lookups;
 
   return (
     <div className="space-y-6">
@@ -503,7 +507,7 @@ interface DriverCareerViewProps {
   driver: Driver;
   team: Team | undefined;
   calendar: CalendarEntry[];
-  circuits: Circuit[];
+  lookups: EntityLookups;
   pointsPositions: number;
   playerTeamId: string;
   onBack: () => void;
@@ -514,13 +518,13 @@ function DriverCareerView({
   driver,
   team,
   calendar,
-  circuits,
+  lookups,
   pointsPositions,
   playerTeamId,
   onBack,
   onRaceClick,
 }: DriverCareerViewProps) {
-  const { getCircuit } = createEntityLookups([], [], circuits);
+  const { getCircuit } = lookups;
   const isPlayerTeam = driver.teamId === playerTeamId;
   const rowStyles = getHighlightedRowStyles(isPlayerTeam);
 
@@ -675,7 +679,9 @@ export function Results({ initialRaceNumber, onRaceViewed }: ResultsProps) {
   // Number of positions that score points (based on points system array length)
   const pointsPositions = rules.points.system.length;
 
-  const { getDriver, getTeam, getCircuit } = createEntityLookups(drivers, teams, circuits);
+  // Create lookups once and pass to child components
+  const lookups = createEntityLookups(drivers, teams, circuits);
+  const { getDriver, getTeam, getCircuit } = lookups;
 
   // Race detail view
   if (view.type === 'race') {
@@ -685,8 +691,7 @@ export function Results({ initialRaceNumber, onRaceViewed }: ResultsProps) {
         <RaceDetailView
           result={raceEntry.result}
           circuit={getCircuit(raceEntry.circuitId)}
-          drivers={drivers}
-          teams={teams}
+          lookups={lookups}
           playerTeamId={playerTeam.id}
           onBack={goToGrid}
           onDriverClick={goToDriver}
@@ -704,7 +709,7 @@ export function Results({ initialRaceNumber, onRaceViewed }: ResultsProps) {
           driver={driver}
           team={driver.teamId ? getTeam(driver.teamId) : undefined}
           calendar={calendar}
-          circuits={circuits}
+          lookups={lookups}
           pointsPositions={pointsPositions}
           playerTeamId={playerTeam.id}
           onBack={goToGrid}
@@ -719,9 +724,7 @@ export function Results({ initialRaceNumber, onRaceViewed }: ResultsProps) {
     <SeasonGrid
       driverStandings={driverStandings}
       calendar={calendar}
-      drivers={drivers}
-      teams={teams}
-      circuits={circuits}
+      lookups={lookups}
       pointsPositions={pointsPositions}
       playerTeamId={playerTeam.id}
       onRaceClick={goToRace}
