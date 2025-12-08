@@ -5,7 +5,7 @@
  *
  * Run with:
  *   Terminal 1: yarn start:debug
- *   Terminal 2: yarn test:e2e tests/e2e/new-game-flow.test.ts
+ *   Terminal 2: yarn test:one tests/e2e/new-game-flow.test.ts
  */
 
 import { connectToApp, verifyStep } from './utils';

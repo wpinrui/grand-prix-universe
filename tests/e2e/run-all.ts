@@ -1,7 +1,7 @@
 /**
  * Run all E2E tests sequentially
  *
- * Usage: yarn test:e2e:all
+ * Usage: yarn test
  */
 
 import { readdirSync } from 'fs';
