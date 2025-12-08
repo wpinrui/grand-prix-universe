@@ -19,7 +19,6 @@ interface UseCalendarDataParams {
 }
 
 interface CalendarData {
-  circuitsById: Map<string, Circuit>;
   eventsByDate: Map<string, CalendarEvent[]>;
   raceWeekendByDate: Map<string, RaceWeekendInfo>;
   footerText: string;
@@ -110,7 +109,6 @@ export function useCalendarData({
   }, [currentDate, nextRace, isPostSeason]);
 
   return {
-    circuitsById,
     eventsByDate,
     raceWeekendByDate,
     footerText,
