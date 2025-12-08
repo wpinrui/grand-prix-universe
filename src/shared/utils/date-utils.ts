@@ -424,3 +424,35 @@ export function getCalendarStripDaysFromCenter(centerDate: GameDate): GameDate[]
 
   return days;
 }
+
+/**
+ * Get full month name
+ */
+export function getMonthName(date: GameDate): string {
+  return MONTH_NAMES[date.month - 1];
+}
+
+/**
+ * Get array of days for a month calendar grid
+ * Returns 6 weeks (42 days) including leading days from previous month
+ * and trailing days from next month to complete the grid
+ */
+export function getMonthCalendarDays(year: number, month: number): GameDate[] {
+  const days: GameDate[] = [];
+  const firstOfMonth = createGameDate(year, month, 1);
+
+  // Day of week for the 1st (1=Mon, 7=Sun)
+  const firstDayOfWeek = getDayOfWeek(firstOfMonth);
+
+  // Days from previous month to fill the first row (Mon-start week)
+  const leadingDays = firstDayOfWeek - 1;
+  let startDate = offsetDate(firstOfMonth, -leadingDays);
+
+  // Generate 6 weeks (42 days) - standard calendar grid
+  for (let i = 0; i < 42; i++) {
+    days.push(startDate);
+    startDate = advanceDay(startDate);
+  }
+
+  return days;
+}

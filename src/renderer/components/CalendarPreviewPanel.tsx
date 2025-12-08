@@ -1,22 +1,35 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Maximize2, X } from 'lucide-react';
+import { Maximize2, Minimize2, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import type { GameDate, CalendarEvent, CalendarEntry, Circuit } from '../../shared/domain';
 import { DayCard } from './DayCard';
 import { useCalendarData } from '../hooks';
-import { offsetDate, isSameDay, dateKey } from '../../shared/utils/date-utils';
+import {
+  offsetDate,
+  isSameDay,
+  dateKey,
+  getMonthCalendarDays,
+  getMonthName,
+  getCountryFlag,
+} from '../../shared/utils/date-utils';
 import { CALENDAR_PANEL_HEIGHT } from '../utils/theme-styles';
 
-/** Number of visible days */
+/** Number of visible days in strip view */
 const VISIBLE_DAYS = 9;
 /** Extra days rendered on each side for smooth scrolling */
 const BUFFER_DAYS = 3;
-/** Total days rendered */
+/** Total days rendered in strip */
 const TOTAL_DAYS = VISIBLE_DAYS + BUFFER_DAYS * 2;
 /** Width of one day as percentage of visible area */
 const DAY_WIDTH_PERCENT = 100 / VISIBLE_DAYS;
 /** Pixels of scroll needed to move one day */
 const PIXELS_PER_DAY = 80;
+
+/** Height for expanded month view */
+const MONTH_VIEW_HEIGHT = 500;
+
+/** Day names for month grid header */
+const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 /**
  * Get extended array of days for smooth scrolling
@@ -40,7 +53,6 @@ interface CalendarPreviewPanelProps {
   nextRace: CalendarEntry | null;
   isVisible: boolean;
   onClose: () => void;
-  onExpandToMonth?: () => void;
 }
 
 export function CalendarPreviewPanel({
@@ -51,12 +63,16 @@ export function CalendarPreviewPanel({
   nextRace,
   isVisible,
   onClose,
-  onExpandToMonth,
 }: CalendarPreviewPanelProps) {
-  // Day offset (whole days from current date)
+  // Strip view state
   const [dayOffset, setDayOffset] = useState(0);
-  // Visual offset in pixels for smooth scrolling
   const [pixelOffset, setPixelOffset] = useState(0);
+
+  // Expanded state
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [viewYear, setViewYear] = useState(currentDate.year);
+  const [viewMonth, setViewMonth] = useState(currentDate.month);
+
   const panelRef = useRef<HTMLDivElement>(null);
 
   // Reset when panel opens
@@ -64,18 +80,27 @@ export function CalendarPreviewPanel({
     if (isVisible) {
       setDayOffset(0);
       setPixelOffset(0);
+      setIsExpanded(false);
+      setViewYear(currentDate.year);
+      setViewMonth(currentDate.month);
     }
-  }, [isVisible]);
+  }, [isVisible, currentDate.year, currentDate.month]);
 
   // Close on Escape
   useEffect(() => {
     if (!isVisible) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        if (isExpanded) {
+          setIsExpanded(false);
+        } else {
+          onClose();
+        }
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isVisible, onClose]);
+  }, [isVisible, isExpanded, onClose]);
 
   // Close on click outside
   useEffect(() => {
@@ -94,31 +119,43 @@ export function CalendarPreviewPanel({
     };
   }, [isVisible, onClose]);
 
-  // Scrollwheel - pure smooth scroll
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
+  // Scrollwheel - pure smooth scroll (strip view only)
+  const handleWheel = useCallback(
+    (e: React.WheelEvent) => {
+      if (isExpanded) return;
+      e.preventDefault();
 
-    setPixelOffset((prev) => {
-      const newOffset = prev + e.deltaY;
-      const daysDelta = Math.trunc(newOffset / PIXELS_PER_DAY);
+      setPixelOffset((prev) => {
+        const newOffset = prev + e.deltaY;
+        const daysDelta = Math.trunc(newOffset / PIXELS_PER_DAY);
 
-      // If we've scrolled enough to shift days, commit that
-      if (Math.abs(daysDelta) >= 1) {
-        setDayOffset((d) => d + daysDelta);
-        return newOffset % PIXELS_PER_DAY;
-      }
+        if (Math.abs(daysDelta) >= 1) {
+          setDayOffset((d) => d + daysDelta);
+          return newOffset % PIXELS_PER_DAY;
+        }
 
-      return newOffset;
-    });
-  }, []);
+        return newOffset;
+      });
+    },
+    [isExpanded]
+  );
 
   // Calculate translateX from pixel offset
   const fractionalDays = pixelOffset / PIXELS_PER_DAY;
   const translateX = `${-(BUFFER_DAYS + fractionalDays) * DAY_WIDTH_PERCENT}%`;
 
-  // Center date and days array
+  // Strip view data
   const centerDate = useMemo(() => offsetDate(currentDate, dayOffset), [currentDate, dayOffset]);
-  const days = useMemo(() => getExtendedDays(centerDate), [centerDate]);
+  const stripDays = useMemo(() => getExtendedDays(centerDate), [centerDate]);
+
+  // Month view data
+  const monthDays = useMemo(
+    () => getMonthCalendarDays(viewYear, viewMonth),
+    [viewYear, viewMonth]
+  );
+
+  // Use the appropriate days array for calendar data
+  const days = isExpanded ? monthDays : stripDays;
 
   // Calendar data
   const { eventsByDate, raceWeekendByDate, footerText } = useCalendarData({
@@ -130,25 +167,63 @@ export function CalendarPreviewPanel({
     nextRace,
   });
 
-  // Jump to today
+  // Jump to today (strip view)
   const handleJumpToToday = useCallback(() => {
     setDayOffset(0);
     setPixelOffset(0);
   }, []);
 
+  // Month navigation
+  const handlePrevMonth = useCallback(() => {
+    if (viewMonth === 1) {
+      setViewYear((y) => y - 1);
+      setViewMonth(12);
+    } else {
+      setViewMonth((m) => m - 1);
+    }
+  }, [viewMonth]);
+
+  const handleNextMonth = useCallback(() => {
+    if (viewMonth === 12) {
+      setViewYear((y) => y + 1);
+      setViewMonth(1);
+    } else {
+      setViewMonth((m) => m + 1);
+    }
+  }, [viewMonth]);
+
+  const handleJumpToCurrentMonth = useCallback(() => {
+    setViewYear(currentDate.year);
+    setViewMonth(currentDate.month);
+  }, [currentDate.year, currentDate.month]);
+
+  // Toggle expand/collapse
+  const handleToggleExpand = useCallback(() => {
+    if (!isExpanded) {
+      // When expanding, set month view to current date's month
+      setViewYear(currentDate.year);
+      setViewMonth(currentDate.month);
+    }
+    setIsExpanded((prev) => !prev);
+  }, [isExpanded, currentDate.year, currentDate.month]);
+
   const isOffToday = dayOffset !== 0 || Math.abs(pixelOffset) > 10;
+  const isViewingDifferentMonth =
+    viewYear !== currentDate.year || viewMonth !== currentDate.month;
+
+  const panelHeight = isExpanded ? MONTH_VIEW_HEIGHT : CALENDAR_PANEL_HEIGHT;
+  const monthDisplayDate = { year: viewYear, month: viewMonth, day: 1 };
 
   return (
     <AnimatePresence>
       {isVisible && (
         <motion.div
           ref={panelRef}
-          initial={{ y: -CALENDAR_PANEL_HEIGHT, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: -CALENDAR_PANEL_HEIGHT, opacity: 0 }}
+          initial={{ y: -panelHeight, opacity: 0 }}
+          animate={{ y: 0, opacity: 1, height: panelHeight }}
+          exit={{ y: -panelHeight, opacity: 0 }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
           className="absolute top-16 left-0 right-0 z-40 border-b border-[var(--neutral-700)]"
-          style={{ height: CALENDAR_PANEL_HEIGHT }}
           onWheel={handleWheel}
         >
           <div className="absolute inset-0 bg-[var(--neutral-900)]" />
@@ -157,28 +232,61 @@ export function CalendarPreviewPanel({
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--neutral-700)]">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-secondary">Calendar Preview</span>
-                {isOffToday && (
-                  <button
-                    type="button"
-                    onClick={handleJumpToToday}
-                    className="text-xs text-[var(--accent-400)] hover:text-[var(--accent-300)] underline"
-                  >
-                    Jump to today
-                  </button>
+                {isExpanded ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handlePrevMonth}
+                      className="p-1 rounded hover:bg-[var(--neutral-700)] text-secondary hover:text-primary transition-colors"
+                      title="Previous month"
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
+                    <span className="text-sm font-medium text-secondary min-w-[140px] text-center">
+                      {getMonthName(monthDisplayDate)} {viewYear}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleNextMonth}
+                      className="p-1 rounded hover:bg-[var(--neutral-700)] text-secondary hover:text-primary transition-colors"
+                      title="Next month"
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                    {isViewingDifferentMonth && (
+                      <button
+                        type="button"
+                        onClick={handleJumpToCurrentMonth}
+                        className="ml-2 text-xs text-[var(--accent-400)] hover:text-[var(--accent-300)] underline"
+                      >
+                        Jump to current month
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <span className="text-sm font-medium text-secondary">Calendar Preview</span>
+                    {isOffToday && (
+                      <button
+                        type="button"
+                        onClick={handleJumpToToday}
+                        className="text-xs text-[var(--accent-400)] hover:text-[var(--accent-300)] underline"
+                      >
+                        Jump to today
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
               <div className="flex items-center gap-2">
-                {onExpandToMonth && (
-                  <button
-                    type="button"
-                    onClick={onExpandToMonth}
-                    className="p-1.5 rounded hover:bg-[var(--neutral-700)] text-secondary hover:text-primary transition-colors"
-                    title="Expand to month view"
-                  >
-                    <Maximize2 size={16} />
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={handleToggleExpand}
+                  className="p-1.5 rounded hover:bg-[var(--neutral-700)] text-secondary hover:text-primary transition-colors"
+                  title={isExpanded ? 'Collapse to strip view' : 'Expand to month view'}
+                >
+                  {isExpanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                </button>
                 <button
                   type="button"
                   onClick={onClose}
@@ -190,36 +298,114 @@ export function CalendarPreviewPanel({
               </div>
             </div>
 
-            {/* Days strip */}
-            <div className="flex-1 overflow-hidden">
-              <div
-                className="h-full flex"
-                style={{
-                  width: `${(TOTAL_DAYS / VISIBLE_DAYS) * 100}%`,
-                  transform: `translateX(${translateX})`,
-                }}
-              >
-                {days.map((date) => {
-                  const key = dateKey(date);
-                  const isActualCurrentDay = isSameDay(date, currentDate);
-                  return (
-                    <DayCard
-                      key={key}
-                      date={date}
-                      isCurrent={isActualCurrentDay}
-                      isPast={false}
-                      events={eventsByDate.get(key) ?? []}
-                      raceWeekendInfo={raceWeekendByDate.get(key) ?? null}
-                    />
-                  );
-                })}
+            {/* Content */}
+            {isExpanded ? (
+              // Month Grid View
+              <div className="flex-1 overflow-hidden p-4">
+                {/* Day names header */}
+                <div className="grid grid-cols-7 gap-1 mb-1">
+                  {DAY_NAMES.map((name) => (
+                    <div
+                      key={name}
+                      className="text-center text-xs font-medium text-muted py-1"
+                    >
+                      {name}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Calendar grid */}
+                <div className="grid grid-cols-7 gap-1 h-[calc(100%-28px)]">
+                  {monthDays.map((date) => {
+                    const key = dateKey(date);
+                    const isCurrentDay = isSameDay(date, currentDate);
+                    const isCurrentMonth = date.month === viewMonth;
+                    const dayEvents = eventsByDate.get(key) ?? [];
+                    const raceInfo = raceWeekendByDate.get(key);
+
+                    return (
+                      <div
+                        key={key}
+                        className={`
+                          rounded border p-1 flex flex-col overflow-hidden
+                          ${isCurrentMonth ? 'bg-[var(--neutral-800)]/50 border-[var(--neutral-700)]/50' : 'bg-[var(--neutral-850)]/30 border-transparent'}
+                          ${isCurrentDay ? 'ring-2 ring-[var(--accent-500)] bg-[var(--accent-900)]/30' : ''}
+                        `}
+                      >
+                        {/* Day number */}
+                        <div
+                          className={`text-xs font-medium mb-0.5 ${
+                            isCurrentDay
+                              ? 'text-[var(--accent-300)]'
+                              : isCurrentMonth
+                                ? 'text-secondary'
+                                : 'text-muted/50'
+                          }`}
+                        >
+                          {date.day}
+                        </div>
+
+                        {/* Race weekend indicator */}
+                        {raceInfo && isCurrentMonth && (
+                          <div
+                            className={`
+                              text-xs truncate px-1 py-0.5 rounded mb-0.5
+                              ${raceInfo.session === 'Race' ? 'bg-[var(--accent-700)]/40 text-[var(--accent-200)]' : 'bg-[var(--neutral-700)]/40 text-muted'}
+                            `}
+                            title={`${raceInfo.session}: ${raceInfo.circuitName}`}
+                          >
+                            {getCountryFlag(raceInfo.country)} {raceInfo.session}
+                          </div>
+                        )}
+
+                        {/* Events indicator */}
+                        {dayEvents.length > 0 && isCurrentMonth && (
+                          <div
+                            className="text-xs text-muted truncate"
+                            title={dayEvents.map((e) => e.subject).join(', ')}
+                          >
+                            {dayEvents.length} event{dayEvents.length > 1 ? 's' : ''}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            ) : (
+              // Strip View
+              <div className="flex-1 overflow-hidden">
+                <div
+                  className="h-full flex"
+                  style={{
+                    width: `${(TOTAL_DAYS / VISIBLE_DAYS) * 100}%`,
+                    transform: `translateX(${translateX})`,
+                  }}
+                >
+                  {stripDays.map((date) => {
+                    const key = dateKey(date);
+                    const isActualCurrentDay = isSameDay(date, currentDate);
+                    return (
+                      <DayCard
+                        key={key}
+                        date={date}
+                        isCurrent={isActualCurrentDay}
+                        isPast={false}
+                        events={eventsByDate.get(key) ?? []}
+                        raceWeekendInfo={raceWeekendByDate.get(key) ?? null}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Footer */}
             <div className="px-4 py-2 border-t border-[var(--neutral-700)] bg-[var(--neutral-850)]">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-muted">Scroll to navigate days</span>
+                <span className="text-xs text-muted">
+                  {isExpanded ? 'Use arrows to navigate months' : 'Scroll to navigate days'}
+                </span>
                 <span className="text-sm text-secondary">{footerText}</span>
               </div>
             </div>
