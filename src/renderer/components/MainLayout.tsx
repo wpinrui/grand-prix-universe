@@ -94,6 +94,17 @@ export function MainLayout() {
 
   const isOptionsScreen = selectedSectionId === 'options';
 
+  // Shared calendar data props (used by both CalendarPreviewPanel and SimulationOverlay)
+  const calendarDataProps = gameState?.currentDate
+    ? {
+        currentDate: gameState.currentDate,
+        events: gameState.calendarEvents ?? [],
+        calendar: gameState.currentSeason?.calendar ?? [],
+        circuits: gameState.circuits ?? [],
+        nextRace,
+      }
+    : null;
+
   // Race weekend takes over the entire screen (no navigation)
   if (gameState?.phase === GamePhase.RaceWeekend) {
     return (
@@ -180,14 +191,10 @@ export function MainLayout() {
         />
 
         {/* Calendar Preview Panel */}
-        {gameState?.currentDate && (
+        {calendarDataProps && (
           <CalendarPreviewPanel
-            currentDate={gameState.currentDate}
-            events={gameState.calendarEvents ?? []}
-            calendar={gameState.currentSeason?.calendar ?? []}
-            circuits={gameState.circuits ?? []}
-            nextRace={nextRace}
-            isVisible={isCalendarPreviewOpen && !(gameState.simulation?.isSimulating ?? false)}
+            {...calendarDataProps}
+            isVisible={isCalendarPreviewOpen && !(gameState?.simulation?.isSimulating ?? false)}
             onClose={closeCalendarPreview}
           />
         )}
@@ -237,15 +244,11 @@ export function MainLayout() {
       )}
 
       {/* Simulation Overlay - full screen during simulation */}
-      {gameState?.currentDate && (
+      {calendarDataProps && (
         <SimulationOverlay
-          currentDate={gameState.currentDate}
-          events={gameState.calendarEvents ?? []}
-          calendar={gameState.currentSeason?.calendar ?? []}
-          circuits={gameState.circuits ?? []}
-          nextRace={nextRace}
-          isVisible={gameState.simulation?.isSimulating ?? false}
-          isPostSeason={gameState.phase === GamePhase.PostSeason}
+          {...calendarDataProps}
+          isVisible={gameState?.simulation?.isSimulating ?? false}
+          isPostSeason={gameState?.phase === GamePhase.PostSeason}
           sectionLabel={selectedSection.label}
           subItemLabel={selectedSubItem.label}
           playerTeam={playerTeam}
