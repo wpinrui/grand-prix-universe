@@ -151,3 +151,13 @@ export const SUCCESS_ALERT_CLASSES =
 
 /** Height of the calendar panel (used by SimulationOverlay and CalendarPreviewPanel) */
 export const CALENDAR_PANEL_HEIGHT = 300;
+
+// ===========================================
+// PANEL STYLE CONSTANTS
+// ===========================================
+
+/** Translucent panel background with blur effect */
+export const PANEL_TRANSLUCENT_BG_CLASSES = 'bg-[var(--neutral-900)]/80 backdrop-blur-sm';
+
+/** Standard panel footer styling */
+export const PANEL_FOOTER_CLASSES = 'px-4 py-2 border-t border-[var(--neutral-700)] bg-[var(--neutral-850)]';

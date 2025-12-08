@@ -5,7 +5,7 @@ import { TopBar } from './TopBar';
 import { DayCard } from './DayCard';
 import { useCalendarData } from '../hooks';
 import { getCalendarStripDays, dateKey } from '../../shared/utils/date-utils';
-import { CALENDAR_PANEL_HEIGHT } from '../utils/theme-styles';
+import { CALENDAR_PANEL_HEIGHT, PANEL_TRANSLUCENT_BG_CLASSES, PANEL_FOOTER_CLASSES } from '../utils/theme-styles';
 
 /** Index positions in the 9-day strip */
 const PAST_DAY_INDEX = 0;
@@ -93,7 +93,7 @@ export function SimulationOverlay({
             style={{ height: CALENDAR_PANEL_HEIGHT }}
           >
             {/* Panel background */}
-            <div className="absolute inset-0 bg-[var(--neutral-900)]/80 backdrop-blur-sm" />
+            <div className={`absolute inset-0 ${PANEL_TRANSLUCENT_BG_CLASSES}`} />
 
             {/* Panel content */}
             <div className="relative h-full flex flex-col">
@@ -125,7 +125,7 @@ export function SimulationOverlay({
               </div>
 
               {/* Footer */}
-              <div className="px-4 py-2 border-t border-[var(--neutral-700)] bg-[var(--neutral-850)]">
+              <div className={PANEL_FOOTER_CLASSES}>
                 <div className="text-sm text-secondary text-center">
                   {footerText}
                 </div>

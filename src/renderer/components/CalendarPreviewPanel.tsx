@@ -12,7 +12,7 @@ import {
   getMonthName,
 } from '../../shared/utils/date-utils';
 import { FlagIcon } from './FlagIcon';
-import { CALENDAR_PANEL_HEIGHT, ICON_BUTTON_GHOST_CLASSES } from '../utils/theme-styles';
+import { CALENDAR_PANEL_HEIGHT, ICON_BUTTON_GHOST_CLASSES, PANEL_TRANSLUCENT_BG_CLASSES, PANEL_FOOTER_CLASSES } from '../utils/theme-styles';
 
 /** Number of visible days in strip view */
 const VISIBLE_DAYS = 9;
@@ -223,7 +223,7 @@ export function CalendarPreviewPanel({
           style={isExpanded ? undefined : { height: CALENDAR_PANEL_HEIGHT }}
           onWheel={handleWheel}
         >
-          <div className="absolute inset-0 bg-[var(--neutral-900)]/80 backdrop-blur-sm" />
+          <div className={`absolute inset-0 ${PANEL_TRANSLUCENT_BG_CLASSES}`} />
 
           <div className="relative h-full flex flex-col">
             {/* Header */}
@@ -399,7 +399,7 @@ export function CalendarPreviewPanel({
             )}
 
             {/* Footer */}
-            <div className="px-4 py-2 border-t border-[var(--neutral-700)] bg-[var(--neutral-850)]">
+            <div className={PANEL_FOOTER_CLASSES}>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted">
                   {isExpanded ? 'Use arrows to navigate months' : 'Scroll to navigate days'}
