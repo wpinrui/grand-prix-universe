@@ -128,6 +128,13 @@ function formatDateForProse(date: GameDate): string {
 }
 
 /**
+ * Pluralize "season" based on count
+ */
+function pluralizeSeasons(count: number): string {
+  return count === 1 ? 'season' : 'seasons';
+}
+
+/**
  * Generate the opening paragraph for the biography
  */
 function generateOpeningParagraph(
@@ -139,14 +146,13 @@ function generateOpeningParagraph(
 ): string {
   const startDateStr = formatDateForProse(careerStartDate);
   const hasChangedTeams = startingTeamName !== currentTeamName;
-  const seasonWord = seasonsPlayed === 1 ? 'season' : 'seasons';
 
   let opening = `**${playerName}** is a Formula One team principal who began their management career in ${startDateStr} with ${startingTeamName}.`;
 
   if (hasChangedTeams) {
-    opening += ` They currently serve as principal of ${currentTeamName}, having managed multiple teams over ${seasonsPlayed} ${seasonWord}.`;
+    opening += ` They currently serve as principal of ${currentTeamName}, having managed multiple teams over ${seasonsPlayed} ${pluralizeSeasons(seasonsPlayed)}.`;
   } else if (seasonsPlayed > 1) {
-    opening += ` They have led ${startingTeamName} for ${seasonsPlayed} ${seasonWord}.`;
+    opening += ` They have led ${startingTeamName} for ${seasonsPlayed} ${pluralizeSeasons(seasonsPlayed)}.`;
   }
 
   return opening;
@@ -169,10 +175,8 @@ function generateCareerBeginnings(
  * Generate statistics summary prose
  */
 function generateStatisticsSummary(seasonsPlayed: number): string {
-  const seasonWord = seasonsPlayed === 1 ? 'season' : 'seasons';
-
   // Placeholder text - will be enhanced when race/championship events exist
-  return `Over ${seasonsPlayed} ${seasonWord} in management, their career statistics continue to develop as they guide their team through the rigours of Formula One competition.`;
+  return `Over ${seasonsPlayed} ${pluralizeSeasons(seasonsPlayed)} in management, their career statistics continue to develop as they guide their team through the rigours of Formula One competition.`;
 }
 
 // ===========================================
