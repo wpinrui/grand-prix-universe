@@ -10,7 +10,12 @@ import { app } from 'electron';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import type { GameState } from '../../shared/domain';
-import type { SaveSlotInfo, SaveResult, LoadResult } from '../../shared/ipc';
+import {
+  compareSavesByNewest,
+  type SaveSlotInfo,
+  type SaveResult,
+  type LoadResult,
+} from '../../shared/ipc';
 import { yearToSeason, getWeekNumber } from '../../shared/utils/date-utils';
 
 /** Directory name for saves within userData */
@@ -222,9 +227,7 @@ export const SaveManager = {
       }
 
       // Sort by savedAt, most recent first
-      saves.sort(
-        (a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()
-      );
+      saves.sort(compareSavesByNewest);
 
       return saves;
     } catch (error) {

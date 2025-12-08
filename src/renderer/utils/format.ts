@@ -3,7 +3,7 @@
  */
 
 import type { DriverRole } from '../../shared/domain';
-import type { SaveSlotInfo } from '../../shared/ipc';
+import { compareSavesByNewest, type SaveSlotInfo } from '../../shared/ipc';
 
 // ===========================================
 // DRIVER ROLE LABELS
@@ -81,10 +81,6 @@ export function getSaveDisplayName(save: SaveSlotInfo): string {
 // SAVE GROUPING
 // ===========================================
 
-/** Sort comparator for saves: newest first by savedAt */
-const byNewestFirst = (a: SaveSlotInfo, b: SaveSlotInfo) =>
-  new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime();
-
 /**
  * A group of saves from the same playthrough
  */
@@ -116,7 +112,7 @@ export function groupSavesByGame(saves: SaveSlotInfo[]): SaveGroup[] {
   const groups: SaveGroup[] = [];
 
   for (const [gameId, gameSaves] of groupMap.entries()) {
-    gameSaves.sort(byNewestFirst);
+    gameSaves.sort(compareSavesByNewest);
 
     // Separate manual saves and autosaves
     const manualSaves = gameSaves.filter((s) => !s.isAutosave);
@@ -134,7 +130,7 @@ export function groupSavesByGame(saves: SaveSlotInfo[]): SaveGroup[] {
   }
 
   // Sort groups by most recent primary save
-  groups.sort((a, b) => byNewestFirst(a.primary, b.primary));
+  groups.sort((a, b) => compareSavesByNewest(a.primary, b.primary));
 
   return groups;
 }

@@ -41,6 +41,10 @@ export interface SaveSlotInfo {
   fileSize: number; // bytes
 }
 
+/** Sort comparator for SaveSlotInfo: newest savedAt first */
+export const compareSavesByNewest = (a: SaveSlotInfo, b: SaveSlotInfo): number =>
+  new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime();
+
 /**
  * Result of a save operation
  */
