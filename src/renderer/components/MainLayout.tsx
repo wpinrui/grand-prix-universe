@@ -19,6 +19,7 @@ import { BackgroundLayer } from './BackgroundLayer';
 import {
   TeamProfile,
   News,
+  Mail,
   SavedGames,
   GameOptions,
   ActionScreen,
@@ -146,6 +147,10 @@ export function MainLayout() {
 
     if (selectedSectionId === 'team' && selectedSubItemId === 'news') {
       return <News />;
+    }
+
+    if (selectedSectionId === 'team' && selectedSubItemId === 'mail') {
+      return <Mail />;
     }
 
     if (selectedSectionId === 'fia' && selectedSubItemId === 'championship') {
