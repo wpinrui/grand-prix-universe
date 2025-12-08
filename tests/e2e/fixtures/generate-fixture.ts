@@ -9,7 +9,7 @@
  * To use the fixture:
  * 1. Run this script to generate the JSON
  * 2. Copy the output file to your app's save directory
- *    (Windows: %APPDATA%/grand-prix-universe/saves/)
+ *    (Windows: %APPDATA%/Grand Prix Universe/saves/)
  * 3. Load it from Options -> Saved Games in the app
  */
 
@@ -396,9 +396,9 @@ function main() {
   console.log(`\nFixture generated: ${OUTPUT_PATH}`);
   console.log(`\nTo use this fixture:`);
   console.log(`1. Copy the file to your saves directory:`);
-  console.log(`   Windows: %APPDATA%/grand-prix-universe/saves/`);
-  console.log(`   Mac: ~/Library/Application Support/grand-prix-universe/saves/`);
-  console.log(`   Linux: ~/.config/grand-prix-universe/saves/`);
+  console.log(`   Windows: %APPDATA%/Grand Prix Universe/saves/`);
+  console.log(`   Mac: ~/Library/Application Support/Grand Prix Universe/saves/`);
+  console.log(`   Linux: ~/.config/Grand Prix Universe/saves/`);
   console.log(`2. Rename it to include a valid timestamp if needed`);
   console.log(`3. Load it from Options -> Saved Games in the app`);
 }
