@@ -165,9 +165,10 @@ interface LimitsSectionProps {
   limits: FactoryLimits;
   currentStaff: number;
   largestDepartmentSize: number;
+  ownedFacilityCount: number;
 }
 
-function LimitsSection({ limits, currentStaff, largestDepartmentSize }: LimitsSectionProps) {
+function LimitsSection({ limits, currentStaff, largestDepartmentSize, ownedFacilityCount }: LimitsSectionProps) {
   return (
     <section>
       <SectionHeading>Factory Limits</SectionHeading>
@@ -175,7 +176,7 @@ function LimitsSection({ limits, currentStaff, largestDepartmentSize }: LimitsSe
         <div className="grid grid-cols-3 gap-6">
           <LimitCard label="Staff Capacity" current={currentStaff} max={limits.staffLimit} />
           <LimitCard label="Max per Department" current={largestDepartmentSize} max={limits.departmentLimit} />
-          <LimitCard label="Facility Slots" current={TOTAL_FACILITY_TYPES} max={limits.facilityLimit} />
+          <LimitCard label="Facility Slots" current={ownedFacilityCount} max={limits.facilityLimit} />
         </div>
       </div>
     </section>
@@ -234,6 +235,7 @@ export function Factory() {
         limits={factory.limits}
         currentStaff={currentStaff}
         largestDepartmentSize={largestDepartmentSize}
+        ownedFacilityCount={owned.length}
       />
     </div>
   );
