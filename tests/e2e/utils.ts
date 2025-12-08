@@ -13,7 +13,7 @@ export const CDP_URL = 'http://localhost:9222';
  */
 export function getSavesDir(): string {
   const appData = process.env.APPDATA || path.join(process.env.HOME || '', 'AppData', 'Roaming');
-  return path.join(appData, 'grand-prix-universe', 'saves');
+  return path.join(appData, 'Grand Prix Universe', 'saves');
 }
 
 /**
