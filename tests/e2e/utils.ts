@@ -11,7 +11,16 @@ export const CDP_URL = 'http://localhost:9222';
  * Returns the browser and first page
  */
 export async function connectToApp(): Promise<{ browser: Browser; page: Page }> {
-  const browser = await chromium.connectOverCDP(CDP_URL);
+  let browser: Browser;
+
+  try {
+    browser = await chromium.connectOverCDP(CDP_URL);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ECONNREFUSED') {
+      throw new Error('Could not connect. Run `yarn start:debug` first.');
+    }
+    throw error;
+  }
 
   const contexts = browser.contexts();
   if (contexts.length === 0) {

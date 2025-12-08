@@ -8,6 +8,7 @@ import { readdirSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
 
+const SEPARATOR = '='.repeat(60);
 const testsDir = __dirname;
 const testFiles = readdirSync(testsDir).filter((f) => f.endsWith('.test.ts'));
 
@@ -25,9 +26,9 @@ let failed = 0;
 
 for (const file of testFiles) {
   const filePath = join(testsDir, file);
-  console.log(`\n${'='.repeat(60)}`);
+  console.log(`\n${SEPARATOR}`);
   console.log(`Running: ${file}`);
-  console.log('='.repeat(60));
+  console.log(SEPARATOR);
 
   try {
     execSync(`npx ts-node "${filePath}"`, {
@@ -41,8 +42,8 @@ for (const file of testFiles) {
   }
 }
 
-console.log(`\n${'='.repeat(60)}`);
+console.log(`\n${SEPARATOR}`);
 console.log(`Results: ${passed} passed, ${failed} failed`);
-console.log('='.repeat(60));
+console.log(SEPARATOR);
 
 process.exit(failed > 0 ? 1 : 0);
