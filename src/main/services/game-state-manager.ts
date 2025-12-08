@@ -568,8 +568,14 @@ function startAutoSave(): void {
   stopAutoSave(); // Clear any existing timer
   autoSaveTimer = setInterval(async () => {
     if (GameStateManager.currentState) {
-      const result = await GameStateManager.saveGame();
-      if (result.success && result.filename) {
+      const result = await SaveManager.autoSave(GameStateManager.currentState);
+      if (result.skipped) {
+        console.log('[AutoSave] Skipped - no changes since last autosave');
+      } else if (result.success && result.filename) {
+        // Update the state's lastSavedAt timestamp
+        if (result.savedAt) {
+          GameStateManager.currentState.lastSavedAt = result.savedAt;
+        }
         console.log(`[AutoSave] Saved to ${result.filename}`);
         sendToRenderer(IpcEvents.AUTO_SAVE_COMPLETE, { filename: result.filename });
       } else {
