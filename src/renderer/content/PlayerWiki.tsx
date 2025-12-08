@@ -11,6 +11,8 @@ import type { GameEvent, GameDate } from '../../shared/domain';
 // TYPES
 // ===========================================
 
+type WikiTab = 'stats' | 'timeline' | 'prose';
+
 interface CareerStartedData {
   playerName: string;
   teamId: string;
@@ -57,6 +59,38 @@ function StatRow({ label, value }: StatRowProps) {
   );
 }
 
+const WIKI_TABS: { id: WikiTab; label: string }[] = [
+  { id: 'stats', label: 'Stats' },
+  { id: 'timeline', label: 'Timeline' },
+  { id: 'prose', label: 'Biography' },
+];
+
+interface WikiTabBarProps {
+  activeTab: WikiTab;
+  onTabChange: (tab: WikiTab) => void;
+}
+
+function WikiTabBar({ activeTab, onTabChange }: WikiTabBarProps) {
+  return (
+    <div className="flex gap-1 mb-6">
+      {WIKI_TABS.map((tab) => (
+        <button
+          key={tab.id}
+          type="button"
+          onClick={() => onTabChange(tab.id)}
+          className={`px-4 py-2 text-sm font-medium rounded transition-colors ${
+            activeTab === tab.id
+              ? 'bg-accent-600 text-white'
+              : 'bg-neutral-700 text-secondary hover:bg-neutral-600'
+          }`}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 interface CareerStatsProps {
   playerName: string;
   careerStartDate: GameDate;
@@ -75,7 +109,7 @@ function CareerStats({
   const hasChangedTeams = startingTeamName !== currentTeamName;
 
   return (
-    <div className="space-y-8 max-w-4xl">
+    <div className="space-y-8">
       {/* Summary Card */}
       <div className="card p-6" style={ACCENT_CARD_STYLE}>
         <div className="grid grid-cols-3 gap-8">
@@ -123,6 +157,7 @@ export function PlayerWiki() {
   const [careerEvent, setCareerEvent] = useState<GameEvent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<WikiTab>('stats');
 
   // Query career events for the player manager
   // Only refetch when gameId changes (new game loaded), not on every state update
@@ -202,13 +237,41 @@ export function PlayerWiki() {
     gameState.currentDate.year
   );
 
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'stats':
+        return (
+          <CareerStats
+            playerName={careerData.playerName}
+            careerStartDate={careerEvent.date}
+            startingTeamName={startingTeamName}
+            currentTeamName={playerTeam.name}
+            seasonsPlayed={seasonsPlayed}
+          />
+        );
+      case 'timeline':
+        return (
+          <div className="card p-6">
+            <p className="text-muted italic">
+              Timeline view coming soon. This will show a chronological list of career events.
+            </p>
+          </div>
+        );
+      case 'prose':
+        return (
+          <div className="card p-6">
+            <p className="text-muted italic">
+              Biography view coming soon. This will display a Wikipedia-style narrative of your career.
+            </p>
+          </div>
+        );
+    }
+  };
+
   return (
-    <CareerStats
-      playerName={careerData.playerName}
-      careerStartDate={careerEvent.date}
-      startingTeamName={startingTeamName}
-      currentTeamName={playerTeam.name}
-      seasonsPlayed={seasonsPlayed}
-    />
+    <div className="max-w-4xl">
+      <WikiTabBar activeTab={activeTab} onTabChange={setActiveTab} />
+      {renderTabContent()}
+    </div>
   );
 }
