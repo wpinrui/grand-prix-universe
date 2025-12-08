@@ -28,6 +28,9 @@ const PIXELS_PER_DAY = 80;
 /** Day names for month grid header */
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
+/** Delay before adding click-outside listener (prevents opening click from closing) */
+const CLICK_OUTSIDE_DELAY_MS = 100;
+
 /**
  * Get extended array of days for smooth scrolling
  */
@@ -109,7 +112,7 @@ export function CalendarPreviewPanel({
     };
     const timeout = setTimeout(() => {
       document.addEventListener('mousedown', handleClickOutside);
-    }, 100);
+    }, CLICK_OUTSIDE_DELAY_MS);
     return () => {
       clearTimeout(timeout);
       document.removeEventListener('mousedown', handleClickOutside);
@@ -382,12 +385,12 @@ export function CalendarPreviewPanel({
                 >
                   {stripDays.map((date) => {
                     const key = dateKey(date);
-                    const isActualCurrentDay = isSameDay(date, currentDate);
+                    const isCurrentDay = isSameDay(date, currentDate);
                     return (
                       <DayCard
                         key={key}
                         date={date}
-                        isCurrent={isActualCurrentDay}
+                        isCurrent={isCurrentDay}
                         isPast={false}
                         events={eventsByDate.get(key) ?? []}
                         raceWeekendInfo={raceWeekendByDate.get(key) ?? null}
