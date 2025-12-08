@@ -90,11 +90,11 @@ function EmptyState({ message }: { message: string }) {
 interface IncomeSectionProps {
   deals: ActiveSponsorDeal[];
   sponsors: Sponsor[];
+  totalIncome: number;
 }
 
-function IncomeSection({ deals, sponsors }: IncomeSectionProps) {
+function IncomeSection({ deals, sponsors, totalIncome }: IncomeSectionProps) {
   const sponsorMap = new Map(sponsors.map((s) => [s.id, s]));
-  const totalIncome = deals.reduce((sum, deal) => sum + deal.annualPayment, 0);
 
   return (
     <section>
@@ -126,20 +126,20 @@ function IncomeSection({ deals, sponsors }: IncomeSectionProps) {
 interface ExpensesSectionProps {
   drivers: Driver[];
   chiefs: Chief[];
-  contracts: ActiveManufacturerContract[];
+  /** Contracts with annualCost > 0 (pre-filtered) */
+  paidContracts: ActiveManufacturerContract[];
   manufacturers: Manufacturer[];
+  totalExpenses: number;
 }
 
-function ExpensesSection({ drivers, chiefs, contracts, manufacturers }: ExpensesSectionProps) {
+function ExpensesSection({
+  drivers,
+  chiefs,
+  paidContracts,
+  manufacturers,
+  totalExpenses,
+}: ExpensesSectionProps) {
   const manufacturerMap = new Map(manufacturers.map((m) => [m.id, m]));
-
-  const driverCosts = drivers.reduce((sum, d) => sum + d.salary, 0);
-  const chiefCosts = chiefs.reduce((sum, c) => sum + c.salary, 0);
-  const contractCosts = contracts
-    .filter((c) => c.annualCost > 0)
-    .reduce((sum, c) => sum + c.annualCost, 0);
-
-  const totalExpenses = driverCosts + chiefCosts + contractCosts;
 
   return (
     <section>
@@ -181,25 +181,23 @@ function ExpensesSection({ drivers, chiefs, contracts, manufacturers }: Expenses
         )}
 
         {/* Manufacturer Contracts */}
-        {contracts.filter((c) => c.annualCost > 0).length > 0 && (
+        {paidContracts.length > 0 && (
           <div className="mb-4">
             <div className="text-xs font-medium text-muted uppercase tracking-wider mb-2">
               Supplier Contracts
             </div>
-            {contracts
-              .filter((c) => c.annualCost > 0)
-              .map((contract) => {
-                const manufacturer = manufacturerMap.get(contract.manufacturerId);
-                return (
-                  <LineItem
-                    key={contract.manufacturerId}
-                    label={manufacturer?.name ?? contract.manufacturerId}
-                    sublabel={MANUFACTURER_TYPE_LABELS[contract.type]}
-                    amount={contract.annualCost}
-                    isExpense
-                  />
-                );
-              })}
+            {paidContracts.map((contract) => {
+              const manufacturer = manufacturerMap.get(contract.manufacturerId);
+              return (
+                <LineItem
+                  key={contract.manufacturerId}
+                  label={manufacturer?.name ?? contract.manufacturerId}
+                  sublabel={MANUFACTURER_TYPE_LABELS[contract.type]}
+                  amount={contract.annualCost}
+                  isExpense
+                />
+              );
+            })}
           </div>
         )}
 
@@ -226,19 +224,20 @@ export function Finance() {
     );
   }
 
+  // Filter data for player's team
   const teamDrivers = gameState.drivers.filter((d) => d.teamId === playerTeam.id);
   const teamChiefs = gameState.chiefs.filter((c) => c.teamId === playerTeam.id);
   const teamSponsorDeals = gameState.sponsorDeals.filter((d) => d.teamId === playerTeam.id);
-  const teamContracts = gameState.manufacturerContracts.filter((c) => c.teamId === playerTeam.id);
+  const teamPaidContracts = gameState.manufacturerContracts.filter(
+    (c) => c.teamId === playerTeam.id && c.annualCost > 0
+  );
 
-  // Calculate totals
+  // Calculate totals (single source of truth)
   const totalIncome = teamSponsorDeals.reduce((sum, d) => sum + d.annualPayment, 0);
-  const driverCosts = teamDrivers.reduce((sum, d) => sum + d.salary, 0);
-  const chiefCosts = teamChiefs.reduce((sum, c) => sum + c.salary, 0);
-  const contractCosts = teamContracts
-    .filter((c) => c.annualCost > 0)
-    .reduce((sum, c) => sum + c.annualCost, 0);
-  const totalExpenses = driverCosts + chiefCosts + contractCosts;
+  const totalExpenses =
+    teamDrivers.reduce((sum, d) => sum + d.salary, 0) +
+    teamChiefs.reduce((sum, c) => sum + c.salary, 0) +
+    teamPaidContracts.reduce((sum, c) => sum + c.annualCost, 0);
   const netAnnual = totalIncome - totalExpenses;
   const projectedBalance = playerTeam.budget + netAnnual;
 
@@ -255,14 +254,19 @@ export function Finance() {
       </div>
 
       {/* Income Section */}
-      <IncomeSection deals={teamSponsorDeals} sponsors={gameState.sponsors} />
+      <IncomeSection
+        deals={teamSponsorDeals}
+        sponsors={gameState.sponsors}
+        totalIncome={totalIncome}
+      />
 
       {/* Expenses Section */}
       <ExpensesSection
         drivers={teamDrivers}
         chiefs={teamChiefs}
-        contracts={teamContracts}
+        paidContracts={teamPaidContracts}
         manufacturers={gameState.manufacturers}
+        totalExpenses={totalExpenses}
       />
 
       {/* Summary */}
