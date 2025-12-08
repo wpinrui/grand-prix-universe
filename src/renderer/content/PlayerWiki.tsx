@@ -506,30 +506,22 @@ export function PlayerWiki() {
     gameState.currentDate.year
   );
 
+  const careerViewProps: CareerViewProps = {
+    playerName: careerData.playerName,
+    careerStartDate: careerEvent.date,
+    startingTeamName,
+    currentTeamName: playerTeam.name,
+    seasonsPlayed,
+  };
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'stats':
-        return (
-          <CareerStats
-            playerName={careerData.playerName}
-            careerStartDate={careerEvent.date}
-            startingTeamName={startingTeamName}
-            currentTeamName={playerTeam.name}
-            seasonsPlayed={seasonsPlayed}
-          />
-        );
+        return <CareerStats {...careerViewProps} />;
       case 'timeline':
         return <CareerTimeline events={allEvents} teams={gameState.teams} />;
       case 'biography':
-        return (
-          <CareerBiography
-            playerName={careerData.playerName}
-            careerStartDate={careerEvent.date}
-            startingTeamName={startingTeamName}
-            currentTeamName={playerTeam.name}
-            seasonsPlayed={seasonsPlayed}
-          />
-        );
+        return <CareerBiography {...careerViewProps} />;
     }
   };
 
