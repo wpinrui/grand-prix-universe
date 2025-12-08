@@ -122,13 +122,17 @@ export function PlayerWiki() {
   const { gameState, playerTeam } = useDerivedGameState();
   const [careerEvent, setCareerEvent] = useState<GameEvent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Query career events for the player manager
+  // Only refetch when gameId changes (new game loaded), not on every state update
+  const gameId = gameState?.gameId;
   useEffect(() => {
-    if (!gameState) return;
+    if (!gameId) return;
 
     const fetchEvents = async () => {
       setIsLoading(true);
+      setError(null);
       try {
         const events = await window.electronAPI.invoke(IpcChannels.EVENTS_QUERY, {
           entityIds: [PLAYER_MANAGER_ID],
@@ -137,13 +141,16 @@ export function PlayerWiki() {
           order: 'asc',
         });
         setCareerEvent(events[0] ?? null);
+      } catch (err) {
+        setError('Failed to load career history');
+        console.error('Failed to query career events:', err);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchEvents();
-  }, [gameState]);
+  }, [gameId]);
 
   if (!gameState || !playerTeam) {
     return (
@@ -157,6 +164,14 @@ export function PlayerWiki() {
     return (
       <div className="flex items-center justify-center h-full">
         <p className="text-secondary">Loading career history...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-secondary">{error}</p>
       </div>
     );
   }
