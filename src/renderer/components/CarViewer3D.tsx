@@ -14,6 +14,27 @@ const PRIMARY_COLOR_MATERIALS: string[] = ['livery_audi_01', 'glass', 'fom_car_d
 // Materials that should always be dark carbon (not team secondary color)
 const CARBON_MATERIALS: string[] = ['livery_audi_01_carbon2', 'material'];
 
+/** Normalize material(s) from a mesh into an array */
+function getMaterials(mesh: THREE.Mesh): THREE.Material[] {
+  return Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+}
+
+/** Traverse scene and call callback for each MeshStandardMaterial */
+function forEachMaterial(
+  scene: THREE.Group,
+  callback: (mat: THREE.MeshStandardMaterial, mesh: THREE.Mesh) => void
+): void {
+  scene.traverse((child) => {
+    if (child instanceof THREE.Mesh && child.material) {
+      for (const mat of getMaterials(child)) {
+        if (mat instanceof THREE.MeshStandardMaterial) {
+          callback(mat, child);
+        }
+      }
+    }
+  });
+}
+
 // ===========================================
 // CAR MODEL COMPONENT
 // ===========================================
@@ -39,21 +60,16 @@ function CarModel({ primaryColor }: CarModelProps) {
       let colorIndex = 0;
       const materials = new Map<string, string>();
 
-      scene.traverse((child) => {
-        if (child instanceof THREE.Mesh && child.material) {
-          const mats = Array.isArray(child.material) ? child.material : [child.material];
-          mats.forEach((mat) => {
-            if (!materials.has(mat.name) && mat instanceof THREE.MeshStandardMaterial) {
-              const color = debugColors[colorIndex % debugColors.length];
-              materials.set(mat.name, color);
-              mat.color.set(color);
-              mat.map = null; // Remove texture to see color
-              mat.metalness = 0.3;
-              mat.roughness = 0.4;
-              mat.needsUpdate = true;
-              colorIndex++;
-            }
-          });
+      forEachMaterial(scene, (mat) => {
+        if (!materials.has(mat.name)) {
+          const color = debugColors[colorIndex % debugColors.length];
+          materials.set(mat.name, color);
+          mat.color.set(color);
+          mat.map = null; // Remove texture to see color
+          mat.metalness = 0.3;
+          mat.roughness = 0.4;
+          mat.needsUpdate = true;
+          colorIndex++;
         }
       });
 
@@ -68,34 +84,27 @@ function CarModel({ primaryColor }: CarModelProps) {
     // Production: apply team colors
     if (!primaryColor) return;
 
-    const primaryHex = new THREE.Color(primaryColor);
+    const teamColor = new THREE.Color(primaryColor);
 
-    scene.traverse((child) => {
-      if (child instanceof THREE.Mesh && child.material) {
-        const mats = Array.isArray(child.material) ? child.material : [child.material];
-        mats.forEach((mat) => {
-          if (mat instanceof THREE.MeshStandardMaterial) {
-            if (PRIMARY_COLOR_MATERIALS.includes(mat.name)) {
-              mat.map = null; // Remove texture to show pure color
-              mat.color.copy(primaryHex);
-              mat.metalness = 0.4;
-              mat.roughness = 0.15;
-              mat.envMapIntensity = 1.5;
-              mat.needsUpdate = true;
-            }
-            if (CARBON_MATERIALS.includes(mat.name)) {
-              // Replace with MeshPhongMaterial for subtle shading without PBR reflections
-              const phongMat = new THREE.MeshPhongMaterial({
-                color: '#444444',
-                shininess: 35,
-                specular: '#333333',
-              });
-              child.material = Array.isArray(child.material)
-                ? child.material.map((m) => (m.name === mat.name ? phongMat : m))
-                : phongMat;
-            }
-          }
+    forEachMaterial(scene, (mat, mesh) => {
+      if (PRIMARY_COLOR_MATERIALS.includes(mat.name)) {
+        mat.map = null; // Remove texture to show pure color
+        mat.color.copy(teamColor);
+        mat.metalness = 0.4;
+        mat.roughness = 0.15;
+        mat.envMapIntensity = 1.5;
+        mat.needsUpdate = true;
+      }
+      if (CARBON_MATERIALS.includes(mat.name)) {
+        // Replace with MeshPhongMaterial for subtle shading without PBR reflections
+        const phongMat = new THREE.MeshPhongMaterial({
+          color: '#444444',
+          shininess: 35,
+          specular: '#333333',
         });
+        mesh.material = Array.isArray(mesh.material)
+          ? mesh.material.map((m) => (m.name === mat.name ? phongMat : m))
+          : phongMat;
       }
     });
   }, [scene, primaryColor]);
