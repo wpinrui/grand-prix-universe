@@ -2,23 +2,13 @@ import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Maximize2, X } from 'lucide-react';
 import type { GameDate, CalendarEvent, CalendarEntry, Circuit } from '../../shared/domain';
-import { DayCard, type RaceWeekendInfo } from './DayCard';
-import {
-  getCalendarStripDaysFromCenter,
-  offsetDate,
-  getRaceSessionForDate,
-  getRaceSunday,
-  daysBetween,
-  isSameDay,
-} from '../../shared/utils/date-utils';
+import { DayCard } from './DayCard';
+import { useCalendarData } from '../hooks';
+import { getCalendarStripDaysFromCenter, offsetDate, isSameDay, dateKey } from '../../shared/utils/date-utils';
+import { CALENDAR_PANEL_HEIGHT } from '../utils/theme-styles';
 
-/** Create a lookup key from a GameDate */
-function dateKey(date: GameDate): string {
-  return `${date.year}-${date.month}-${date.day}`;
-}
-
-/** Panel configuration */
-const PANEL_HEIGHT = 300;
+/** Scroll sensitivity: higher = more scroll needed to move one day */
+const SCROLL_THRESHOLD = 80;
 
 interface CalendarPreviewPanelProps {
   currentDate: GameDate;
@@ -43,12 +33,15 @@ export function CalendarPreviewPanel({
 }: CalendarPreviewPanelProps) {
   // View offset: how many days shifted from current date (positive = future)
   const [viewOffset, setViewOffset] = useState(0);
+  // Accumulated scroll delta for smooth threshold-based scrolling
+  const scrollAccumulator = useRef(0);
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // Reset view offset when panel opens
+  // Reset view offset and scroll accumulator when panel opens
   useEffect(() => {
     if (isVisible) {
       setViewOffset(0);
+      scrollAccumulator.current = 0;
     }
   }, [isVisible]);
 
@@ -87,12 +80,17 @@ export function CalendarPreviewPanel({
     };
   }, [isVisible, onClose]);
 
-  // Scrollwheel handler to shift days
+  // Scrollwheel handler with threshold-based sensitivity
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault();
-    // Scroll down (positive deltaY) = move to future days
-    const direction = e.deltaY > 0 ? 1 : -1;
-    setViewOffset((prev) => prev + direction);
+    scrollAccumulator.current += e.deltaY;
+
+    // Only move when accumulated scroll exceeds threshold
+    if (Math.abs(scrollAccumulator.current) >= SCROLL_THRESHOLD) {
+      const steps = Math.trunc(scrollAccumulator.current / SCROLL_THRESHOLD);
+      setViewOffset((prev) => prev + steps);
+      scrollAccumulator.current = scrollAccumulator.current % SCROLL_THRESHOLD;
+    }
   }, []);
 
   // The center date of the strip (current game date + view offset)
@@ -107,76 +105,20 @@ export function CalendarPreviewPanel({
     [centerDate]
   );
 
-  // Build circuit lookup map
-  const circuitsById = useMemo(() => {
-    const map = new Map<string, Circuit>();
-    for (const circuit of circuits) {
-      map.set(circuit.id, circuit);
-    }
-    return map;
-  }, [circuits]);
-
-  // Build events lookup map (multiple events per day possible)
-  const eventsByDate = useMemo(() => {
-    const map = new Map<string, CalendarEvent[]>();
-    for (const event of events) {
-      const key = dateKey(event.date);
-      const existing = map.get(key) ?? [];
-      existing.push(event);
-      map.set(key, existing);
-    }
-    return map;
-  }, [events]);
-
-  // Build race weekend info lookup map
-  const raceWeekendByDate = useMemo(() => {
-    const map = new Map<string, RaceWeekendInfo>();
-
-    for (const entry of calendar) {
-      if (entry.completed || entry.cancelled) continue;
-
-      const circuit = circuitsById.get(entry.circuitId);
-      if (!circuit) continue;
-
-      // Check each day in our strip for this race weekend
-      for (const date of days) {
-        const session = getRaceSessionForDate(date, entry.weekNumber);
-        if (session) {
-          map.set(dateKey(date), {
-            session,
-            circuitName: circuit.name,
-            country: circuit.country,
-          });
-        }
-      }
-    }
-
-    return map;
-  }, [calendar, circuitsById, days]);
-
-  // Calculate footer text
-  const footerText = useMemo(() => {
-    if (!nextRace) {
-      return 'No upcoming races';
-    }
-
-    const raceSunday = getRaceSunday(currentDate.year, nextRace.weekNumber);
-    const daysUntil = daysBetween(currentDate, raceSunday);
-
-    if (daysUntil === 0) {
-      return 'Race day!';
-    } else if (daysUntil === 1) {
-      return '1 day to race';
-    } else if (daysUntil > 0) {
-      return `${daysUntil} days to next race`;
-    } else {
-      return 'Race in progress';
-    }
-  }, [currentDate, nextRace]);
+  // Use shared hook for calendar data
+  const { eventsByDate, raceWeekendByDate, footerText } = useCalendarData({
+    days,
+    events,
+    calendar,
+    circuits,
+    currentDate,
+    nextRace,
+  });
 
   // Jump back to today
   const handleJumpToToday = useCallback(() => {
     setViewOffset(0);
+    scrollAccumulator.current = 0;
   }, []);
 
   return (
@@ -184,12 +126,12 @@ export function CalendarPreviewPanel({
       {isVisible && (
         <motion.div
           ref={panelRef}
-          initial={{ y: -PANEL_HEIGHT, opacity: 0 }}
+          initial={{ y: -CALENDAR_PANEL_HEIGHT, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          exit={{ y: -PANEL_HEIGHT, opacity: 0 }}
+          exit={{ y: -CALENDAR_PANEL_HEIGHT, opacity: 0 }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
           className="absolute top-16 left-0 right-0 z-40 border-b border-[var(--neutral-700)]"
-          style={{ height: PANEL_HEIGHT }}
+          style={{ height: CALENDAR_PANEL_HEIGHT }}
           onWheel={handleWheel}
         >
           {/* Panel background */}
