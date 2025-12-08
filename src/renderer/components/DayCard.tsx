@@ -23,12 +23,12 @@ export function DayCard({ date, isCurrent, isPast, events, raceWeekendInfo }: Da
     <div
       className={`
         flex-1 min-w-0 flex flex-col border-r border-[var(--neutral-700)] last:border-r-0
-        ${isCurrent ? 'bg-[var(--accent-800)]/30' : ''}
+        ${isCurrent ? 'bg-[var(--accent-900)]' : 'bg-[var(--neutral-850)]'}
         ${isPast ? 'opacity-50' : ''}
       `}
     >
       {/* Date header */}
-      <div className="px-3 py-2 border-b border-[var(--neutral-700)]/50">
+      <div className="px-3 py-2 border-b border-[var(--neutral-700)]">
         <div className="flex items-baseline gap-1.5">
           <span className={`text-base font-medium ${isCurrent ? 'text-[var(--accent-300)]' : 'text-secondary'}`}>
             {dayName}
@@ -42,14 +42,14 @@ export function DayCard({ date, isCurrent, isPast, events, raceWeekendInfo }: Da
 
       {/* Content card area */}
       <div className="flex-1 p-2 overflow-hidden">
-        <div className="h-full bg-[var(--neutral-800)]/50 rounded border border-[var(--neutral-700)]/30 p-2 overflow-y-auto">
+        <div className="h-full bg-[var(--neutral-800)] rounded border border-[var(--neutral-700)] p-2 overflow-y-auto">
           {/* Race weekend session */}
           {raceWeekendInfo && (
             <div className={`
               mb-2 p-2 rounded text-sm font-medium
               ${raceWeekendInfo.session === 'Race'
-                ? 'bg-[var(--accent-700)]/40 text-[var(--accent-200)]'
-                : 'bg-[var(--neutral-700)]/40 text-secondary'}
+                ? 'bg-[var(--accent-700)] text-[var(--accent-200)]'
+                : 'bg-[var(--neutral-700)] text-secondary'}
             `}>
               <div className="flex items-center gap-1.5">
                 <span className="text-base">{getCountryFlag(raceWeekendInfo.country)}</span>
@@ -65,7 +65,7 @@ export function DayCard({ date, isCurrent, isPast, events, raceWeekendInfo }: Da
           {events.map((event) => (
             <div
               key={event.id}
-              className="mb-1.5 p-1.5 rounded bg-[var(--neutral-700)]/30 text-xs text-muted"
+              className="mb-1.5 p-1.5 rounded bg-[var(--neutral-750)] text-xs text-muted"
               title={event.subject}
             >
               <span className="truncate block">{event.subject}</span>

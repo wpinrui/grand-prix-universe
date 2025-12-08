@@ -326,8 +326,8 @@ export function CalendarPreviewPanel({
                         key={key}
                         className={`
                           rounded border p-1 flex flex-col overflow-hidden
-                          ${isCurrentMonth ? 'bg-[var(--neutral-800)]/50 border-[var(--neutral-700)]/50' : 'bg-[var(--neutral-850)]/30 border-transparent'}
-                          ${isCurrentDay ? 'ring-2 ring-[var(--accent-500)] bg-[var(--accent-900)]/30' : ''}
+                          ${isCurrentMonth ? 'bg-[var(--neutral-800)] border-[var(--neutral-700)]' : 'bg-[var(--neutral-850)] border-[var(--neutral-800)]'}
+                          ${isCurrentDay ? 'ring-2 ring-[var(--accent-500)] bg-[var(--accent-800)]' : ''}
                         `}
                       >
                         {/* Day number */}
@@ -348,7 +348,7 @@ export function CalendarPreviewPanel({
                           <div
                             className={`
                               text-xs truncate px-1 py-0.5 rounded mb-0.5
-                              ${raceInfo.session === 'Race' ? 'bg-[var(--accent-700)]/40 text-[var(--accent-200)]' : 'bg-[var(--neutral-700)]/40 text-muted'}
+                              ${raceInfo.session === 'Race' ? 'bg-[var(--accent-700)] text-[var(--accent-200)]' : 'bg-[var(--neutral-700)] text-muted'}
                             `}
                             title={`${raceInfo.session}: ${raceInfo.circuitName}`}
                           >
