@@ -25,8 +25,6 @@ const DAY_WIDTH_PERCENT = 100 / VISIBLE_DAYS;
 /** Pixels of scroll needed to move one day */
 const PIXELS_PER_DAY = 80;
 
-/** Height for expanded month view */
-const MONTH_VIEW_HEIGHT = 500;
 
 /** Day names for month grid header */
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -211,7 +209,6 @@ export function CalendarPreviewPanel({
   const isViewingDifferentMonth =
     viewYear !== currentDate.year || viewMonth !== currentDate.month;
 
-  const panelHeight = isExpanded ? MONTH_VIEW_HEIGHT : CALENDAR_PANEL_HEIGHT;
   const monthDisplayDate = { year: viewYear, month: viewMonth, day: 1 };
 
   return (
@@ -219,11 +216,12 @@ export function CalendarPreviewPanel({
       {isVisible && (
         <motion.div
           ref={panelRef}
-          initial={{ y: -panelHeight, opacity: 0 }}
-          animate={{ y: 0, opacity: 1, height: panelHeight }}
-          exit={{ y: -panelHeight, opacity: 0 }}
+          initial={{ y: -CALENDAR_PANEL_HEIGHT, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: -CALENDAR_PANEL_HEIGHT, opacity: 0 }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
-          className="absolute top-16 left-0 right-0 z-40 border-b border-[var(--neutral-700)]"
+          className={`absolute top-16 left-0 right-0 z-40 border-b border-[var(--neutral-700)] ${isExpanded ? 'bottom-0' : ''}`}
+          style={isExpanded ? undefined : { height: CALENDAR_PANEL_HEIGHT }}
           onWheel={handleWheel}
         >
           <div className="absolute inset-0 bg-[var(--neutral-900)]" />
