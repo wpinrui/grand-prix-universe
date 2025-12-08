@@ -7,6 +7,7 @@
  * - Auto-save functionality
  */
 
+import { randomUUID } from 'crypto';
 import { BrowserWindow } from 'electron';
 import { ConfigLoader } from './config-loader';
 import { SaveManager } from './save-manager';
@@ -486,6 +487,7 @@ function buildGameState(params: BuildGameStateParams): GameState {
   const now = new Date().toISOString();
   return {
     version: SAVE_VERSION,
+    gameId: randomUUID(),
     createdAt: now,
     lastSavedAt: now,
 
