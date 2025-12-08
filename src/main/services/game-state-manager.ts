@@ -548,6 +548,7 @@ function buildGameState(params: BuildGameStateParams): GameState {
     manufacturerContracts,
 
     pastSeasons: [],
+    events: [],
     rules,
   };
 }
