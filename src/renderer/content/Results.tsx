@@ -60,7 +60,7 @@ function getPositionStyle(
   if (position === 3) return 'bg-orange-500/60 text-orange-100 font-bold';
 
   // Points finish - pale green (Wikipedia style)
-  if (position <= pointsPositions) return 'bg-lime-200/25 text-lime-100';
+  if (position <= pointsPositions) return 'bg-[#d4edda]/30 text-[#c3e6cb]';
 
   // Outside points
   return 'bg-[var(--neutral-700)]/50 text-muted';
