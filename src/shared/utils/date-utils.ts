@@ -394,29 +394,6 @@ export function dateKey(date: GameDate): string {
 }
 
 /**
- * Get array of days for calendar strip with custom center date
- * Returns 9 days: 1 before center, center, 7 after
- */
-export function getCalendarStripDaysFromCenter(centerDate: GameDate): GameDate[] {
-  const days: GameDate[] = [];
-
-  // 1 day before center
-  days.push(subtractDay(centerDate));
-
-  // Center day
-  days.push(centerDate);
-
-  // 7 days after center
-  let nextDay = centerDate;
-  for (let i = 0; i < 7; i++) {
-    nextDay = advanceDay(nextDay);
-    days.push(nextDay);
-  }
-
-  return days;
-}
-
-/**
  * Get full month name
  */
 export function getMonthName(date: GameDate): string {

@@ -123,6 +123,12 @@ export const ICON_BUTTON_DANGER_CLASSES =
 export const ICON_BUTTON_NEUTRAL_CLASSES =
   'btn p-2 rounded-lg bg-neutral-700/50 text-secondary hover:bg-neutral-700 hover:text-primary transition-all';
 
+/**
+ * Icon button - ghost variant (panel controls, minimal buttons)
+ */
+export const ICON_BUTTON_GHOST_CLASSES =
+  'rounded hover:bg-[var(--neutral-700)] text-secondary hover:text-primary transition-colors';
+
 // ===========================================
 // ALERT CLASS CONSTANTS
 // ===========================================

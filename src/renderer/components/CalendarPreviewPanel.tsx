@@ -12,7 +12,7 @@ import {
   getMonthName,
 } from '../../shared/utils/date-utils';
 import { FlagIcon } from './FlagIcon';
-import { CALENDAR_PANEL_HEIGHT } from '../utils/theme-styles';
+import { CALENDAR_PANEL_HEIGHT, ICON_BUTTON_GHOST_CLASSES } from '../utils/theme-styles';
 
 /** Number of visible days in strip view */
 const VISIBLE_DAYS = 9;
@@ -24,7 +24,6 @@ const TOTAL_DAYS = VISIBLE_DAYS + BUFFER_DAYS * 2;
 const DAY_WIDTH_PERCENT = 100 / VISIBLE_DAYS;
 /** Pixels of scroll needed to move one day */
 const PIXELS_PER_DAY = 80;
-
 
 /** Day names for month grid header */
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -235,7 +234,7 @@ export function CalendarPreviewPanel({
                     <button
                       type="button"
                       onClick={handlePrevMonth}
-                      className="p-1 rounded hover:bg-[var(--neutral-700)] text-secondary hover:text-primary transition-colors"
+                      className={`p-1 ${ICON_BUTTON_GHOST_CLASSES}`}
                       title="Previous month"
                     >
                       <ChevronLeft size={18} />
@@ -246,7 +245,7 @@ export function CalendarPreviewPanel({
                     <button
                       type="button"
                       onClick={handleNextMonth}
-                      className="p-1 rounded hover:bg-[var(--neutral-700)] text-secondary hover:text-primary transition-colors"
+                      className={`p-1 ${ICON_BUTTON_GHOST_CLASSES}`}
                       title="Next month"
                     >
                       <ChevronRight size={18} />
@@ -280,7 +279,7 @@ export function CalendarPreviewPanel({
                 <button
                   type="button"
                   onClick={handleToggleExpand}
-                  className="p-1.5 rounded hover:bg-[var(--neutral-700)] text-secondary hover:text-primary transition-colors"
+                  className={`p-1.5 ${ICON_BUTTON_GHOST_CLASSES}`}
                   title={isExpanded ? 'Collapse to strip view' : 'Expand to month view'}
                 >
                   {isExpanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
@@ -288,7 +287,7 @@ export function CalendarPreviewPanel({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="p-1.5 rounded hover:bg-[var(--neutral-700)] text-secondary hover:text-primary transition-colors"
+                  className={`p-1.5 ${ICON_BUTTON_GHOST_CLASSES}`}
                   title="Close (Esc)"
                 >
                   <X size={16} />
