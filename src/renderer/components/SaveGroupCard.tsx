@@ -11,6 +11,13 @@ import type { SaveGroup } from '../utils/format';
 import type { SaveSlotInfo } from '../../shared/ipc';
 import type { Team } from '../../shared/domain';
 
+/** Width class for badge column - used for badge and history row alignment */
+const BADGE_COLUMN_WIDTH = 'w-14';
+
+function AutosaveLabel() {
+  return <span className="ml-2 text-amber-400">(autosave)</span>;
+}
+
 interface SaveGroupCardProps {
   group: SaveGroup;
   team: Team | undefined;
@@ -72,9 +79,9 @@ export function SaveGroupCard({
         {/* Team badge */}
         <div className="shrink-0">
           {team ? (
-            <TeamBadge team={team} className="w-14 h-12" />
+            <TeamBadge team={team} className={`${BADGE_COLUMN_WIDTH} h-12`} />
           ) : (
-            <div className="w-14 h-12 rounded surface-inset flex items-center justify-center">
+            <div className={`${BADGE_COLUMN_WIDTH} h-12 rounded surface-inset flex items-center justify-center`}>
               <span className="text-xs text-muted">?</span>
             </div>
           )}
@@ -87,9 +94,7 @@ export function SaveGroupCard({
           <div className="text-xs text-muted mt-1">
             Season {primary.seasonNumber}, Week {primary.weekNumber} ·{' '}
             {formatDateTime(primary.savedAt)}
-            {primary.isAutosave && (
-              <span className="ml-2 text-amber-400">(autosave)</span>
-            )}
+            {primary.isAutosave && <AutosaveLabel />}
           </div>
         </div>
 
@@ -135,15 +140,13 @@ export function SaveGroupCard({
                 className="px-4 py-3 flex items-center gap-4 hover:bg-neutral-700/20 transition-colors"
               >
                 {/* Indent space matching the team badge */}
-                <div className="w-14 shrink-0" />
+                <div className={`${BADGE_COLUMN_WIDTH} shrink-0`} />
 
                 {/* Save info */}
                 <div className="flex-1 min-w-0">
                   <div className="text-sm text-secondary">
                     Season {save.seasonNumber}, Week {save.weekNumber}
-                    {save.isAutosave && (
-                      <span className="ml-2 text-amber-400">(autosave)</span>
-                    )}
+                    {save.isAutosave && <AutosaveLabel />}
                   </div>
                   <div className="text-xs text-muted">
                     {formatDateTime(save.savedAt)}
