@@ -31,6 +31,33 @@ type ViewState =
   | { type: 'driver'; driverId: string };
 
 // ===========================================
+// ENTITY LOOKUP HELPERS
+// ===========================================
+
+function createEntityLookups(drivers: Driver[], teams: Team[], circuits: Circuit[]) {
+  return {
+    getDriver: (id: string) => drivers.find((d) => d.id === id),
+    getTeam: (id: string) => teams.find((t) => t.id === id),
+    getCircuit: (id: string) => circuits.find((c) => c.id === id),
+  };
+}
+
+function formatDriverName(driver: Driver | undefined, fallbackId: string): string {
+  return driver ? `${driver.firstName} ${driver.lastName}` : fallbackId;
+}
+
+function sortRaceResults(results: DriverRaceResult[]): DriverRaceResult[] {
+  return [...results].sort((a, b) => {
+    if (a.finishPosition !== null && b.finishPosition !== null) {
+      return a.finishPosition - b.finishPosition;
+    }
+    if (a.finishPosition !== null) return -1;
+    if (b.finishPosition !== null) return 1;
+    return b.lapsCompleted - a.lapsCompleted;
+  });
+}
+
+// ===========================================
 // POSITION CELL STYLING
 // ===========================================
 
@@ -190,7 +217,7 @@ function DriverRow({
   onRaceClick,
 }: DriverRowProps) {
   const styles = getHighlightedRowStyles(isPlayerTeam);
-  const driverName = driver ? `${driver.firstName} ${driver.lastName}` : standing.driverId;
+  const driverName = formatDriverName(driver, standing.driverId);
 
   const resultsByRace = useMemo(() => {
     const map = new Map<number, DriverRaceResult>();
@@ -261,9 +288,7 @@ function SeasonGrid({
   onRaceClick,
   onDriverClick,
 }: SeasonGridProps) {
-  const getDriver = (id: string) => drivers.find((d) => d.id === id);
-  const getTeam = (id: string) => teams.find((t) => t.id === id);
-  const getCircuit = (id: string) => circuits.find((c) => c.id === id);
+  const { getDriver, getTeam, getCircuit } = createEntityLookups(drivers, teams, circuits);
 
   return (
     <section>
@@ -330,8 +355,7 @@ function RaceDetailView({
   onBack,
   onDriverClick,
 }: RaceDetailViewProps) {
-  const getDriver = (id: string) => drivers.find((d) => d.id === id);
-  const getTeam = (id: string) => teams.find((t) => t.id === id);
+  const { getDriver, getTeam } = createEntityLookups(drivers, teams, []);
 
   return (
     <div className="space-y-6">
@@ -381,7 +405,7 @@ function RaceDetailView({
                           className="hover:underline font-semibold"
                           style={rowStyles.nameStyle}
                         >
-                          {driver ? `${driver.firstName} ${driver.lastName}` : q.driverId}
+                          {formatDriverName(driver, q.driverId)}
                         </button>
                       </td>
                       <td className={`${TABLE_CELL_BASE} text-secondary`}>
@@ -418,16 +442,7 @@ function RaceDetailView({
               </tr>
             </thead>
             <tbody className={TABLE_BODY_CLASS}>
-              {result.race
-                .sort((a, b) => {
-                  if (a.finishPosition !== null && b.finishPosition !== null) {
-                    return a.finishPosition - b.finishPosition;
-                  }
-                  if (a.finishPosition !== null) return -1;
-                  if (b.finishPosition !== null) return 1;
-                  return b.lapsCompleted - a.lapsCompleted;
-                })
-                .map((r) => {
+              {sortRaceResults(result.race).map((r) => {
                   const driver = getDriver(r.driverId);
                   const team = getTeam(r.teamId);
                   const isPlayer = r.teamId === playerTeamId;
@@ -445,7 +460,7 @@ function RaceDetailView({
                           className="hover:underline font-semibold"
                           style={rowStyles.nameStyle}
                         >
-                          {driver ? `${driver.firstName} ${driver.lastName}` : r.driverId}
+                          {formatDriverName(driver, r.driverId)}
                         </button>
                       </td>
                       <td className={`${TABLE_CELL_BASE} text-secondary`}>
@@ -505,7 +520,7 @@ function DriverCareerView({
   onBack,
   onRaceClick,
 }: DriverCareerViewProps) {
-  const getCircuit = (id: string) => circuits.find((c) => c.id === id);
+  const { getCircuit } = createEntityLookups([], [], circuits);
   const isPlayerTeam = driver.teamId === playerTeamId;
   const rowStyles = getHighlightedRowStyles(isPlayerTeam);
 
@@ -660,9 +675,7 @@ export function Results({ initialRaceNumber, onRaceViewed }: ResultsProps) {
   // Number of positions that score points (based on points system array length)
   const pointsPositions = rules.points.system.length;
 
-  const getDriver = (id: string) => drivers.find((d) => d.id === id);
-  const getTeam = (id: string) => teams.find((t) => t.id === id);
-  const getCircuit = (id: string) => circuits.find((c) => c.id === id);
+  const { getDriver, getTeam, getCircuit } = createEntityLookups(drivers, teams, circuits);
 
   // Race detail view
   if (view.type === 'race') {
