@@ -21,7 +21,7 @@ import type {
 // ===========================================
 
 const CELL_PRIMARY = 'font-bold text-primary tabular-nums';
-const CELL_STAT_BASE = `${TABLE_TABLE_CELL_BASE} text-center tabular-nums`;
+const CELL_STAT_BASE = `${TABLE_CELL_BASE} text-center tabular-nums`;
 const POSITION_COL_CLASS = 'w-16';
 
 // ===========================================
