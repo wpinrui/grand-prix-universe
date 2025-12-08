@@ -18,6 +18,7 @@ import { AutoSaveToast } from './AutoSaveToast';
 import { BackgroundLayer } from './BackgroundLayer';
 import {
   TeamProfile,
+  News,
   SavedGames,
   GameOptions,
   ActionScreen,
@@ -141,6 +142,10 @@ export function MainLayout() {
   const renderContent = () => {
     if (selectedSectionId === 'team' && selectedSubItemId === 'profile') {
       return <TeamProfile />;
+    }
+
+    if (selectedSectionId === 'team' && selectedSubItemId === 'news') {
+      return <News />;
     }
 
     if (selectedSectionId === 'fia' && selectedSubItemId === 'championship') {
