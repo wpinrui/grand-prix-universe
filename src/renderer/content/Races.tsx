@@ -113,7 +113,7 @@ function RaceRow({ entry, circuit, raceDate, currentDate, status }: RaceRowProps
       </td>
 
       {/* Days Until */}
-      <td className={`${CELL_BASE} text-center tabular-nums w-24`}>
+      <td className={`${CELL_BASE} text-center tabular-nums whitespace-nowrap`}>
         {daysUntil && (
           <span className={isNext ? 'text-emerald-400 font-medium' : 'text-muted'}>
             {daysUntil}
@@ -162,7 +162,7 @@ export function Races() {
                 <th className={`${CELL_BASE} text-left w-40`}>Country</th>
                 <th className={`${CELL_BASE} text-left`}>Circuit</th>
                 <th className={`${CELL_BASE} text-left`}>Date</th>
-                <th className={`${CELL_BASE} text-center w-24`}>In</th>
+                <th className={`${CELL_BASE} text-center whitespace-nowrap`}>In</th>
                 <th className={`${CELL_BASE} text-center w-28`}>Status</th>
               </tr>
             </thead>
