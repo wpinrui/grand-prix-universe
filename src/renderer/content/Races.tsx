@@ -2,12 +2,11 @@ import { useDerivedGameState } from '../hooks';
 import { SectionHeading } from '../components';
 import { FlagIcon } from '../components/FlagIcon';
 import {
-  ACCENT_CARD_STYLE,
-  ACCENT_TEXT_STYLE,
   TABLE_CELL_BASE,
   TABLE_HEADER_CLASS,
   TABLE_HEADER_ROW_CLASS,
   TABLE_BODY_CLASS,
+  getHighlightedRowStyles,
 } from '../utils/theme-styles';
 import { getRaceSunday, formatGameDate, daysBetween } from '../../shared/utils/date-utils';
 import type { CalendarEntry, Circuit, GameDate } from '../../shared/domain';
@@ -26,27 +25,15 @@ function getRaceStatus(entry: CalendarEntry, nextRaceNumber: number | null): Rac
 
 const STATUS_BADGE_BASE = 'px-2 py-0.5 text-xs rounded';
 
-function getStatusBadge(status: RaceStatus) {
-  switch (status) {
-    case 'completed':
-      return (
-        <span className={`${STATUS_BADGE_BASE} bg-[var(--neutral-700)] text-muted`}>
-          Completed
-        </span>
-      );
-    case 'next':
-      return (
-        <span className={`${STATUS_BADGE_BASE} bg-emerald-600/30 text-emerald-400 border border-emerald-600/50`}>
-          Next Race
-        </span>
-      );
-    case 'upcoming':
-      return (
-        <span className={`${STATUS_BADGE_BASE} bg-[var(--neutral-800)] text-secondary`}>
-          Upcoming
-        </span>
-      );
-  }
+const STATUS_BADGE_STYLES: Record<RaceStatus, { className: string; label: string }> = {
+  completed: { className: 'bg-[var(--neutral-700)] text-muted', label: 'Completed' },
+  next: { className: 'bg-emerald-600/30 text-emerald-400 border border-emerald-600/50', label: 'Next Race' },
+  upcoming: { className: 'bg-[var(--neutral-800)] text-secondary', label: 'Upcoming' },
+};
+
+function StatusBadge({ status }: { status: RaceStatus }) {
+  const { className, label } = STATUS_BADGE_STYLES[status];
+  return <span className={`${STATUS_BADGE_BASE} ${className}`}>{label}</span>;
 }
 
 function getDaysUntilText(raceDate: GameDate, currentDate: GameDate): string {
@@ -71,14 +58,11 @@ interface RaceRowProps {
 
 function RaceRow({ entry, circuit, raceDate, currentDate, status }: RaceRowProps) {
   const isNext = status === 'next';
-  const rowStyle = isNext ? ACCENT_CARD_STYLE : {};
-  const rowClass = isNext ? 'bg-[var(--accent-900)]/30' : '';
-  const nameStyle = isNext ? ACCENT_TEXT_STYLE : {};
-
+  const styles = getHighlightedRowStyles(isNext);
   const daysUntil = status !== 'completed' ? getDaysUntilText(raceDate, currentDate) : '';
 
   return (
-    <tr className={rowClass} style={rowStyle}>
+    <tr className={styles.rowClass} style={styles.rowStyle}>
       {/* Race Number */}
       <td className={`${TABLE_CELL_BASE} text-center font-bold text-primary tabular-nums w-16`}>
         {entry.raceNumber}
@@ -94,7 +78,7 @@ function RaceRow({ entry, circuit, raceDate, currentDate, status }: RaceRowProps
 
       {/* Circuit Name */}
       <td className={TABLE_CELL_BASE}>
-        <span className="font-semibold text-primary" style={nameStyle}>
+        <span className="font-semibold text-primary" style={styles.nameStyle}>
           {circuit?.name ?? entry.circuitId}
         </span>
         <span className="text-muted text-sm ml-2">
@@ -118,7 +102,7 @@ function RaceRow({ entry, circuit, raceDate, currentDate, status }: RaceRowProps
 
       {/* Status */}
       <td className={`${TABLE_CELL_BASE} text-center w-28`}>
-        {getStatusBadge(status)}
+        <StatusBadge status={status} />
       </td>
     </tr>
   );

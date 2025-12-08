@@ -1,13 +1,11 @@
-import type { CSSProperties } from 'react';
 import { useDerivedGameState } from '../hooks';
 import { SectionHeading } from '../components';
 import {
-  ACCENT_CARD_STYLE,
-  ACCENT_TEXT_STYLE,
   TABLE_CELL_BASE,
   TABLE_HEADER_CLASS,
   TABLE_HEADER_ROW_CLASS,
   TABLE_BODY_CLASS,
+  getHighlightedRowStyles,
 } from '../utils/theme-styles';
 import type {
   DriverStanding,
@@ -23,24 +21,6 @@ import type {
 const CELL_PRIMARY = 'font-bold text-primary tabular-nums';
 const CELL_STAT_BASE = `${TABLE_CELL_BASE} text-center tabular-nums`;
 const POSITION_COL_CLASS = 'w-16';
-
-// ===========================================
-// HELPERS
-// ===========================================
-
-interface RowStyles {
-  rowStyle: CSSProperties;
-  rowClass: string;
-  nameStyle: CSSProperties;
-}
-
-function getRowStyles(isPlayerTeam: boolean): RowStyles {
-  return {
-    rowStyle: isPlayerTeam ? ACCENT_CARD_STYLE : {},
-    rowClass: isPlayerTeam ? 'bg-[var(--accent-900)]/30' : '',
-    nameStyle: isPlayerTeam ? ACCENT_TEXT_STYLE : {},
-  };
-}
 
 // ===========================================
 // TABLE COMPONENTS
@@ -110,7 +90,7 @@ interface DriverRowProps {
 }
 
 function DriverRow({ standing, driver, team, isPlayerTeam }: DriverRowProps) {
-  const styles = getRowStyles(isPlayerTeam);
+  const styles = getHighlightedRowStyles(isPlayerTeam);
   const driverName = driver
     ? `${driver.firstName} ${driver.lastName}`
     : standing.driverId;
@@ -141,7 +121,7 @@ interface ConstructorRowProps {
 }
 
 function ConstructorRow({ standing, team, isPlayerTeam }: ConstructorRowProps) {
-  const styles = getRowStyles(isPlayerTeam);
+  const styles = getHighlightedRowStyles(isPlayerTeam);
 
   return (
     <tr className={styles.rowClass} style={styles.rowStyle}>

@@ -177,3 +177,25 @@ export const TABLE_HEADER_ROW_CLASS = 'text-xs font-semibold text-muted uppercas
 
 /** Table body with dividers */
 export const TABLE_BODY_CLASS = 'divide-y divide-[var(--neutral-700)]';
+
+// ===========================================
+// TABLE ROW HIGHLIGHT STYLES
+// ===========================================
+
+export interface HighlightedRowStyles {
+  rowStyle: CSSProperties;
+  rowClass: string;
+  nameStyle: CSSProperties;
+}
+
+/**
+ * Get styles for a highlighted table row (player's team, next race, etc.)
+ * Used by Championship and Races tables.
+ */
+export function getHighlightedRowStyles(isHighlighted: boolean): HighlightedRowStyles {
+  return {
+    rowStyle: isHighlighted ? ACCENT_CARD_STYLE : {},
+    rowClass: isHighlighted ? 'bg-[var(--accent-900)]/30' : '',
+    nameStyle: isHighlighted ? ACCENT_TEXT_STYLE : {},
+  };
+}
