@@ -1,5 +1,5 @@
 import { useDerivedGameState } from '../hooks';
-import { SectionHeading } from '../components';
+import { SectionHeading, SummaryStat, DetailRow, ProgressBar } from '../components';
 import {
   formatCurrency,
   DEPARTMENT_LABELS,
@@ -10,7 +10,7 @@ import {
   CHIEF_ROLE_ORDER,
   ROLE_TO_DEPARTMENT,
 } from '../utils/format';
-import { ACCENT_CARD_STYLE, ACCENT_TEXT_STYLE } from '../utils/theme-styles';
+import { ACCENT_CARD_STYLE } from '../utils/theme-styles';
 import {
   Department,
   StaffQuality,
@@ -22,15 +22,6 @@ import {
 // ===========================================
 // HELPER FUNCTIONS
 // ===========================================
-
-/** Returns morale color class based on 0-100 value */
-function getMoraleColorClass(morale: number): string {
-  if (morale >= 80) return 'bg-emerald-500';
-  if (morale >= 60) return 'bg-lime-500';
-  if (morale >= 40) return 'bg-yellow-500';
-  if (morale >= 20) return 'bg-orange-500';
-  return 'bg-red-500';
-}
 
 /** Returns ability rating text based on 0-100 value */
 function getAbilityLabel(ability: number): string {
@@ -45,60 +36,6 @@ function getAbilityLabel(ability: number): string {
 /** Total staff count for a department */
 function getTotalStaff(counts: StaffCounts): number {
   return Object.values(counts).reduce((sum, count) => sum + count, 0);
-}
-
-// ===========================================
-// SHARED COMPONENTS
-// ===========================================
-
-interface SummaryStatProps {
-  label: string;
-  value: React.ReactNode;
-}
-
-function SummaryStat({ label, value }: SummaryStatProps) {
-  return (
-    <div>
-      <div className="text-sm font-medium text-muted uppercase tracking-wider mb-1">
-        {label}
-      </div>
-      <div className="text-3xl font-bold" style={ACCENT_TEXT_STYLE}>
-        {value}
-      </div>
-    </div>
-  );
-}
-
-interface DetailRowProps {
-  label: string;
-  value: React.ReactNode;
-}
-
-function DetailRow({ label, value }: DetailRowProps) {
-  return (
-    <div>
-      <span className="text-muted">{label}:</span>{' '}
-      <span className="text-secondary">{value}</span>
-    </div>
-  );
-}
-
-interface MoraleBarProps {
-  value: number;
-}
-
-function MoraleBar({ value }: MoraleBarProps) {
-  return (
-    <div className="flex items-center gap-2">
-      <div className="w-24 h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
-        <div
-          className={`h-full ${getMoraleColorClass(value)} transition-all duration-300`}
-          style={{ width: `${value}%` }}
-        />
-      </div>
-      <span className="text-xs text-muted w-8">{value}%</span>
-    </div>
-  );
 }
 
 // ===========================================
@@ -124,7 +61,7 @@ function ChiefCard({ chief, departmentMorale }: ChiefCardProps) {
         </div>
         <div className="text-right">
           <div className="text-xs text-muted">Dept Morale</div>
-          <MoraleBar value={departmentMorale} />
+          <ProgressBar value={departmentMorale} />
         </div>
       </div>
 
@@ -196,7 +133,7 @@ function DepartmentCard({ department, staffCounts, morale }: DepartmentCardProps
         <div className="text-sm font-medium text-muted uppercase tracking-wider">
           {DEPARTMENT_LABELS[department]}
         </div>
-        <MoraleBar value={morale} />
+        <ProgressBar value={morale} />
       </div>
 
       <div className="space-y-1 mb-3">

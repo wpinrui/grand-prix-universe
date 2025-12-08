@@ -1,20 +1,27 @@
 import { useDerivedGameState } from '../hooks';
-import { SectionHeading } from '../components';
-import { ACCENT_CARD_STYLE, ACCENT_TEXT_STYLE } from '../utils/theme-styles';
-import { ManufacturerType, type Car, type Manufacturer, type ActiveManufacturerContract } from '../../shared/domain';
+import { SectionHeading, SummaryStat, DetailRow, ProgressBar } from '../components';
+import { ACCENT_CARD_STYLE } from '../utils/theme-styles';
+import {
+  ManufacturerType,
+  ManufacturerDealType,
+  type Car,
+  type Manufacturer,
+  type ActiveManufacturerContract,
+} from '../../shared/domain';
+
+// ===========================================
+// CONSTANTS
+// ===========================================
+
+const DEAL_TYPE_LABELS: Record<ManufacturerDealType, string> = {
+  [ManufacturerDealType.Customer]: 'Customer',
+  [ManufacturerDealType.Partner]: 'Partner',
+  [ManufacturerDealType.Works]: 'Works Team',
+};
 
 // ===========================================
 // HELPER FUNCTIONS
 // ===========================================
-
-/** Returns condition color class based on 0-100 value */
-function getConditionColorClass(condition: number): string {
-  if (condition >= 80) return 'bg-emerald-500';
-  if (condition >= 60) return 'bg-lime-500';
-  if (condition >= 40) return 'bg-yellow-500';
-  if (condition >= 20) return 'bg-orange-500';
-  return 'bg-red-500';
-}
 
 /** Returns condition text label based on 0-100 value */
 function getConditionLabel(condition: number): string {
@@ -34,60 +41,6 @@ function formatMileage(mileage: number): string {
 function getCarNumber(carId: string): string {
   const match = carId.match(/-car-(\d+)$/);
   return match ? `#${match[1]}` : carId;
-}
-
-// ===========================================
-// SHARED COMPONENTS
-// ===========================================
-
-interface SummaryStatProps {
-  label: string;
-  value: React.ReactNode;
-}
-
-function SummaryStat({ label, value }: SummaryStatProps) {
-  return (
-    <div>
-      <div className="text-sm font-medium text-muted uppercase tracking-wider mb-1">
-        {label}
-      </div>
-      <div className="text-3xl font-bold" style={ACCENT_TEXT_STYLE}>
-        {value}
-      </div>
-    </div>
-  );
-}
-
-interface ConditionBarProps {
-  value: number;
-}
-
-function ConditionBar({ value }: ConditionBarProps) {
-  return (
-    <div className="flex items-center gap-2">
-      <div className="w-24 h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
-        <div
-          className={`h-full ${getConditionColorClass(value)} transition-all duration-300`}
-          style={{ width: `${value}%` }}
-        />
-      </div>
-      <span className="text-xs text-muted w-8">{value}%</span>
-    </div>
-  );
-}
-
-interface DetailRowProps {
-  label: string;
-  value: React.ReactNode;
-}
-
-function DetailRow({ label, value }: DetailRowProps) {
-  return (
-    <div>
-      <span className="text-muted">{label}:</span>{' '}
-      <span className="text-secondary">{value}</span>
-    </div>
-  );
 }
 
 // ===========================================
@@ -113,7 +66,7 @@ function CarCard({ car, engineName }: CarCardProps) {
         </div>
         <div className="text-right">
           <div className="text-xs text-muted">Condition</div>
-          <ConditionBar value={car.condition} />
+          <ProgressBar value={car.condition} />
         </div>
       </div>
 
@@ -162,12 +115,6 @@ interface EngineInfoProps {
 }
 
 function EngineInfo({ manufacturer, contract }: EngineInfoProps) {
-  const dealTypeLabels: Record<string, string> = {
-    customer: 'Customer',
-    partner: 'Partner',
-    works: 'Works Team',
-  };
-
   return (
     <section>
       <SectionHeading>Engine Supplier</SectionHeading>
@@ -175,7 +122,7 @@ function EngineInfo({ manufacturer, contract }: EngineInfoProps) {
         <div className="flex items-center justify-between mb-3">
           <div className="text-lg font-semibold text-primary">{manufacturer.name}</div>
           <div className="text-sm font-medium text-accent">
-            {dealTypeLabels[contract.dealType] ?? contract.dealType}
+            {DEAL_TYPE_LABELS[contract.dealType]}
           </div>
         </div>
 
