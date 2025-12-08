@@ -210,7 +210,7 @@ function DriverRow({
       <td className="w-12 px-3 py-2 text-center font-bold text-primary tabular-nums">
         {standing.position}
       </td>
-      <td className="min-w-[140px] px-3 py-2 whitespace-nowrap">
+      <td className="w-40 px-3 py-2 whitespace-nowrap">
         <button
           type="button"
           onClick={onDriverClick}
@@ -220,7 +220,7 @@ function DriverRow({
           {driverName}
         </button>
       </td>
-      <td className="w-16 px-2 py-2 text-secondary text-sm whitespace-nowrap">
+      <td className="w-28 px-2 py-2 text-secondary text-sm whitespace-nowrap">
         {team?.shortName ?? standing.teamId}
       </td>
       {calendar.map((entry) => (
@@ -273,8 +273,8 @@ function SeasonGrid({
           <thead className={TABLE_HEADER_CLASS}>
             <tr className={TABLE_HEADER_ROW_CLASS}>
               <th className="w-12 px-3 py-3 text-center">Pos</th>
-              <th className="min-w-[140px] px-3 py-3 text-left">Driver</th>
-              <th className="w-16 px-2 py-3 text-left">Team</th>
+              <th className="w-40 px-3 py-3 text-left">Driver</th>
+              <th className="w-28 px-2 py-3 text-left">Team</th>
               {calendar.map((entry) => (
                 <RaceHeaderCell
                   key={entry.raceNumber}
