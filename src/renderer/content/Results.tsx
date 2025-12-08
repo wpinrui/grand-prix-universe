@@ -53,10 +53,10 @@ function getPositionStyle(position: number | null, status: RaceFinishStatus): st
   // Podium positions
   if (position === 1) return 'bg-amber-400/80 text-amber-950 font-bold';
   if (position === 2) return 'bg-gray-300/70 text-gray-800 font-bold';
-  if (position === 3) return 'bg-amber-600/60 text-amber-100 font-bold';
+  if (position === 3) return 'bg-orange-500/60 text-orange-100 font-bold';
 
   // Points finish (P4-P10) - light green
-  if (position <= 10) return 'bg-emerald-600/40 text-emerald-200';
+  if (position <= 10) return 'bg-green-400/30 text-green-200';
 
   // Outside points
   return 'bg-[var(--neutral-700)]/50 text-muted';
