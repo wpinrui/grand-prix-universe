@@ -1,10 +1,19 @@
-import { ChevronRight, Loader2, MapPin } from 'lucide-react';
-import { useDerivedGameState, useAdvanceWeek, useGoToCircuit } from '../hooks';
+import { useEffect } from 'react';
+import { Play, Square, Loader2, MapPin, type LucideIcon } from 'lucide-react';
+import { useDerivedGameState, useGoToCircuit, useStartSimulation, useStopSimulation, useSimulationTickListener } from '../hooks';
 import { GamePhase, CalendarEntry } from '../../shared/domain';
 import { ACCENT_MUTED_BUTTON_CLASSES, ACCENT_BORDERED_BUTTON_STYLE } from '../utils/theme-styles';
 import { getWeekNumber } from '../../shared/utils/date-utils';
 
-type ButtonAction = 'advanceWeek' | 'goToCircuit' | 'disabled';
+type ButtonAction = 'startSimulation' | 'stopSimulation' | 'goToCircuit' | 'disabled';
+
+/** Icon for each button action */
+const ACTION_ICONS: Record<ButtonAction, LucideIcon> = {
+  startSimulation: Play,
+  stopSimulation: Square,
+  goToCircuit: MapPin,
+  disabled: Play,
+};
 
 /**
  * Determine the button action and text based on game state
@@ -13,10 +22,16 @@ function getButtonConfig(
   phase: GamePhase,
   currentWeek: number,
   nextRace: CalendarEntry | null,
-  raceName: string
+  raceName: string,
+  isSimulating: boolean
 ): { action: ButtonAction; text: string } {
   if (phase === GamePhase.PostSeason) {
     return { action: 'disabled', text: 'Season Complete' };
+  }
+
+  // If simulating, show stop button
+  if (isSimulating) {
+    return { action: 'stopSimulation', text: 'Stop' };
   }
 
   // Check if current week has a race (next uncompleted race is this week)
@@ -24,13 +39,31 @@ function getButtonConfig(
     return { action: 'goToCircuit', text: `Go to ${raceName}` };
   }
 
-  return { action: 'advanceWeek', text: 'Advance Week' };
+  return { action: 'startSimulation', text: 'Advance Time' };
 }
 
 export function AdvanceWeekButton() {
   const { gameState, nextRace, nextRaceCircuit } = useDerivedGameState();
-  const advanceWeek = useAdvanceWeek();
   const goToCircuit = useGoToCircuit();
+  const startSimulation = useStartSimulation();
+  const stopSimulation = useStopSimulation();
+
+  // Subscribe to simulation tick events to update game state
+  useSimulationTickListener();
+
+  const isSimulating = gameState?.simulation?.isSimulating ?? false;
+
+  // Esc key handler to stop simulation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isSimulating && !stopSimulation.isPending) {
+        stopSimulation.mutate();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isSimulating, stopSimulation]);
 
   if (!gameState) {
     return null;
@@ -43,26 +76,29 @@ export function AdvanceWeekButton() {
     return null;
   }
 
-  const isLoading = advanceWeek.isPending || goToCircuit.isPending;
+  const isLoading = goToCircuit.isPending || startSimulation.isPending || stopSimulation.isPending;
   const raceName = nextRaceCircuit?.name ?? 'Race';
   const currentWeek = getWeekNumber(currentDate);
   const { action, text } = getButtonConfig(
     phase,
     currentWeek,
     nextRace,
-    raceName
+    raceName,
+    isSimulating
   );
 
   const handleClick = () => {
     if (action === 'goToCircuit') {
       goToCircuit.mutate();
-    } else if (action === 'advanceWeek') {
-      advanceWeek.mutate();
+    } else if (action === 'startSimulation') {
+      startSimulation.mutate();
+    } else if (action === 'stopSimulation') {
+      stopSimulation.mutate();
     }
   };
 
   const isDisabled = action === 'disabled' || isLoading;
-  const Icon = action === 'goToCircuit' ? MapPin : ChevronRight;
+  const Icon = ACTION_ICONS[action];
 
   return (
     <button

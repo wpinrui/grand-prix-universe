@@ -19,6 +19,15 @@ const MONTH_NAMES = [
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
+/** Short month names for calendar strip */
+const SHORT_MONTH_NAMES = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
+
+/** Short day names (Monday = 1) */
+const SHORT_DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
 /** Day of week constants (1=Monday, 7=Sunday) */
 export const DayOfWeek = {
   Monday: 1,
@@ -160,3 +169,210 @@ export const DEFAULT_SIMULATION_STATE: SimulationState = {
   isSimulating: false,
   speed: 1, // 1 day per second
 };
+
+/**
+ * Subtract one day from a GameDate
+ */
+export function subtractDay(date: GameDate): GameDate {
+  let { year, month, day } = date;
+
+  day--;
+  if (day < 1) {
+    month--;
+    if (month < 1) {
+      month = 12;
+      year--;
+    }
+    day = getDaysInMonth(year, month);
+  }
+
+  return { year, month, day };
+}
+
+/**
+ * Get short weekday name (Mon, Tue, etc.)
+ */
+export function getShortDayName(date: GameDate): string {
+  const dayOfWeek = getDayOfWeek(date);
+  return SHORT_DAY_NAMES[dayOfWeek - 1];
+}
+
+/**
+ * Get short month name (Jan, Feb, etc.)
+ */
+export function getShortMonthName(date: GameDate): string {
+  return SHORT_MONTH_NAMES[date.month - 1];
+}
+
+/**
+ * Check if two GameDates are the same day
+ */
+export function isSameDay(a: GameDate, b: GameDate): boolean {
+  return a.year === b.year && a.month === b.month && a.day === b.day;
+}
+
+/**
+ * Get array of days for the calendar strip
+ * Returns 9 days: 1 past, current, 7 future
+ */
+export function getCalendarStripDays(currentDate: GameDate): GameDate[] {
+  const days: GameDate[] = [];
+
+  // 1 day in the past
+  days.push(subtractDay(currentDate));
+
+  // Current day
+  days.push(currentDate);
+
+  // 7 days in the future
+  let nextDay = currentDate;
+  for (let i = 0; i < 7; i++) {
+    nextDay = advanceDay(nextDay);
+    days.push(nextDay);
+  }
+
+  return days;
+}
+
+/**
+ * Country name to emoji flag mapping
+ * Uses regional indicator symbols to form flag emojis
+ */
+const COUNTRY_TO_CODE: Record<string, string> = {
+  'Australia': 'AU',
+  'Austria': 'AT',
+  'Azerbaijan': 'AZ',
+  'Bahrain': 'BH',
+  'Belgium': 'BE',
+  'Brazil': 'BR',
+  'Canada': 'CA',
+  'China': 'CN',
+  'France': 'FR',
+  'Germany': 'DE',
+  'Hungary': 'HU',
+  'Italy': 'IT',
+  'Japan': 'JP',
+  'Mexico': 'MX',
+  'Monaco': 'MC',
+  'Netherlands': 'NL',
+  'Portugal': 'PT',
+  'Qatar': 'QA',
+  'Russia': 'RU',
+  'Saudi Arabia': 'SA',
+  'Singapore': 'SG',
+  'Spain': 'ES',
+  'Turkey': 'TR',
+  'UAE': 'AE',
+  'United Arab Emirates': 'AE',
+  'United Kingdom': 'GB',
+  'UK': 'GB',
+  'United States': 'US',
+  'USA': 'US',
+};
+
+/**
+ * Get emoji flag for a country name
+ */
+export function getCountryFlag(country: string): string {
+  const code = COUNTRY_TO_CODE[country];
+  if (!code) return '🏁'; // Default racing flag if country not found
+
+  // Convert country code to regional indicator symbols
+  const codePoints = code
+    .toUpperCase()
+    .split('')
+    .map((char) => 127397 + char.charCodeAt(0));
+  return String.fromCodePoint(...codePoints);
+}
+
+/** Race weekend session types */
+export type RaceSessionType = 'Practice' | 'Qualifying' | 'Race';
+
+/**
+ * Get the Friday of a given week number for a year
+ * Week 1 contains January 1st
+ */
+export function getFridayOfWeek(year: number, weekNumber: number): GameDate {
+  // Start from Jan 1st
+  let date = createGameDate(year, 1, 1);
+
+  // Move to the correct week (week 1 = days 1-7, etc.)
+  const targetDayOfYear = (weekNumber - 1) * 7 + 1;
+  for (let d = 1; d < targetDayOfYear; d++) {
+    date = advanceDay(date);
+  }
+
+  // Now find Friday of this week
+  const currentDayOfWeek = getDayOfWeek(date);
+  let daysToFriday = DayOfWeek.Friday - currentDayOfWeek;
+  if (daysToFriday < 0) daysToFriday += 7;
+
+  for (let d = 0; d < daysToFriday; d++) {
+    date = advanceDay(date);
+  }
+
+  return date;
+}
+
+/**
+ * Check if a date falls on a race weekend (Fri/Sat/Sun) for a given race week
+ * Returns the session type if it does, null otherwise
+ */
+export function getRaceSessionForDate(
+  date: GameDate,
+  raceWeekNumber: number
+): RaceSessionType | null {
+  const friday = getFridayOfWeek(date.year, raceWeekNumber);
+  if (isSameDay(date, friday)) return 'Practice';
+
+  const saturday = advanceDay(friday);
+  if (isSameDay(date, saturday)) return 'Qualifying';
+
+  const sunday = advanceDay(saturday);
+  if (isSameDay(date, sunday)) return 'Race';
+
+  return null;
+}
+
+/**
+ * Calculate days between two GameDates (b - a)
+ * Returns positive if b is after a, negative if before
+ */
+export function daysBetween(a: GameDate, b: GameDate): number {
+  if (a.year === b.year) {
+    return getDayOfYear(b) - getDayOfYear(a);
+  }
+
+  // Different years - calculate through year boundaries
+  let days = 0;
+
+  if (b.year > a.year) {
+    // Days remaining in year a
+    const daysInYearA = isLeapYear(a.year) ? 366 : 365;
+    days += daysInYearA - getDayOfYear(a);
+    // Full years between
+    for (let y = a.year + 1; y < b.year; y++) {
+      days += isLeapYear(y) ? 366 : 365;
+    }
+    // Days into year b
+    days += getDayOfYear(b);
+  } else {
+    // b is before a (negative result)
+    const daysInYearB = isLeapYear(b.year) ? 366 : 365;
+    days -= daysInYearB - getDayOfYear(b);
+    for (let y = b.year + 1; y < a.year; y++) {
+      days -= isLeapYear(y) ? 366 : 365;
+    }
+    days -= getDayOfYear(a);
+  }
+
+  return days;
+}
+
+/**
+ * Get the Sunday (race day) of a race week
+ */
+export function getRaceSunday(year: number, weekNumber: number): GameDate {
+  const friday = getFridayOfWeek(year, weekNumber);
+  return advanceDay(advanceDay(friday));
+}

@@ -11,6 +11,7 @@ import { useDerivedGameState, useTeamTheme, useClearGameState, useQuitApp, useAu
 import { SectionButton } from './NavButtons';
 import { TopBar } from './TopBar';
 import { BottomBar } from './BottomBar';
+import { SimulationOverlay } from './SimulationOverlay';
 import { ConfirmDialog } from './ConfirmDialog';
 import { AutoSaveToast } from './AutoSaveToast';
 import { BackgroundLayer } from './BackgroundLayer';
@@ -208,6 +209,22 @@ export function MainLayout() {
         <AutoSaveToast
           message="Game auto-saved"
           onDismiss={handleDismissToast}
+        />
+      )}
+
+      {/* Simulation Overlay - full screen during simulation */}
+      {gameState?.currentDate && (
+        <SimulationOverlay
+          currentDate={gameState.currentDate}
+          events={gameState.calendarEvents ?? []}
+          calendar={gameState.currentSeason?.calendar ?? []}
+          circuits={gameState.circuits ?? []}
+          nextRace={nextRace}
+          isVisible={gameState.simulation?.isSimulating ?? false}
+          isPostSeason={gameState.phase === GamePhase.PostSeason}
+          sectionLabel={selectedSection.label}
+          subItemLabel={selectedSubItem.label}
+          playerTeam={playerTeam}
         />
       )}
     </div>
