@@ -7,7 +7,6 @@
  * See proposal.md > Events Infrastructure for full documentation.
  */
 
-import { randomUUID } from 'crypto';
 import type {
   GameEvent,
   GameEventType,
@@ -60,7 +59,7 @@ export interface CreateEventParams {
  */
 export function createEvent(params: CreateEventParams): GameEvent {
   return {
-    id: randomUUID(),
+    id: crypto.randomUUID(),
     type: params.type,
     date: params.date,
     involvedEntities: params.involvedEntities,
