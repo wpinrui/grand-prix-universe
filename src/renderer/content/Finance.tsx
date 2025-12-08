@@ -29,6 +29,11 @@ const MANUFACTURER_TYPE_LABELS: Record<ManufacturerType, string> = {
   fuel: 'Fuel',
 };
 
+/** Returns green for positive/zero amounts, red for negative */
+function getAmountColorClass(amount: number): string {
+  return amount >= 0 ? 'text-emerald-400' : 'text-red-400';
+}
+
 // ===========================================
 // SHARED COMPONENTS
 // ===========================================
@@ -42,7 +47,6 @@ interface LineItemProps {
 
 function LineItem({ label, sublabel, amount, isExpense = false }: LineItemProps) {
   const displayAmount = isExpense && amount > 0 ? -amount : amount;
-  const colorClass = displayAmount >= 0 ? 'text-emerald-400' : 'text-red-400';
 
   return (
     <div className="flex items-center justify-between py-2">
@@ -50,7 +54,7 @@ function LineItem({ label, sublabel, amount, isExpense = false }: LineItemProps)
         <span className="text-primary">{label}</span>
         {sublabel && <span className="text-muted text-sm ml-2">({sublabel})</span>}
       </div>
-      <span className={`font-mono tabular-nums ${colorClass}`}>
+      <span className={`font-mono tabular-nums ${getAmountColorClass(displayAmount)}`}>
         {formatCurrency(displayAmount)}
       </span>
     </div>
@@ -64,13 +68,11 @@ interface TotalRowProps {
 }
 
 function TotalRow({ label, amount, accent = false }: TotalRowProps) {
-  const colorClass = amount >= 0 ? 'text-emerald-400' : 'text-red-400';
-
   return (
     <div className="flex items-center justify-between pt-3 border-t border-[var(--neutral-600)]">
       <span className="font-semibold text-secondary">{label}</span>
       <span
-        className={`font-mono tabular-nums font-bold text-lg ${accent ? '' : colorClass}`}
+        className={`font-mono tabular-nums font-bold text-lg ${accent ? '' : getAmountColorClass(amount)}`}
         style={accent ? ACCENT_TEXT_STYLE : undefined}
       >
         {formatCurrency(amount)}
@@ -280,7 +282,7 @@ export function Finance() {
           <div className="flex items-center justify-between">
             <span className="text-secondary">Net Annual Cash Flow</span>
             <span
-              className={`font-mono tabular-nums font-semibold ${netAnnual >= 0 ? 'text-emerald-400' : 'text-red-400'}`}
+              className={`font-mono tabular-nums font-semibold ${getAmountColorClass(netAnnual)}`}
             >
               {formatCurrency(netAnnual)}
             </span>
