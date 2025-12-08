@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Save, Loader2, FolderOpen } from 'lucide-react';
 import { useSavesList, useSaveGame, useTeamsById, useOpenSavesFolder, useDeleteConfirmation, useLoadGameHandler } from '../hooks';
 import { DeleteConfirmDialog } from '../components/DeleteConfirmDialog';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { SaveGroupCard } from '../components/SaveGroupCard';
 import { PRIMARY_BUTTON_CLASSES, GHOST_BUTTON_CLASSES, ERROR_ALERT_CLASSES, SUCCESS_ALERT_CLASSES } from '../utils/theme-styles';
 import { getSaveDisplayName, groupSavesByGame } from '../utils/format';
@@ -25,6 +26,7 @@ export function SavedGames({ onNavigateToProfile }: SavedGamesProps) {
   const openSavesFolder = useOpenSavesFolder();
   const { deleteTarget, requestDelete, cancelDelete, confirmDelete } = useDeleteConfirmation();
   const { loadingFilename, loadError, handleLoad } = useLoadGameHandler();
+  const [loadTarget, setLoadTarget] = useState<string | null>(null);
 
   // Group saves by gameId for cleaner display
   const saveGroups = useMemo(
@@ -36,7 +38,18 @@ export function SavedGames({ onNavigateToProfile }: SavedGamesProps) {
     saveGame.mutate();
   };
 
-  const onLoad = async (filename: string) => {
+  const requestLoad = (filename: string) => {
+    setLoadTarget(filename);
+  };
+
+  const cancelLoad = () => {
+    setLoadTarget(null);
+  };
+
+  const confirmLoad = async () => {
+    if (!loadTarget) return;
+    const filename = loadTarget;
+    setLoadTarget(null);
     const success = await handleLoad(filename);
     if (success) {
       onNavigateToProfile();
@@ -104,7 +117,7 @@ export function SavedGames({ onNavigateToProfile }: SavedGamesProps) {
               key={group.primary.filename}
               group={group}
               team={teamsById[group.primary.teamId]}
-              onLoad={onLoad}
+              onLoad={requestLoad}
               onDelete={requestDelete}
               loadingFilename={loadingFilename}
             />
@@ -126,6 +139,18 @@ export function SavedGames({ onNavigateToProfile }: SavedGamesProps) {
           saveName={getSaveDisplayName(deleteTarget)}
           onConfirm={confirmDelete}
           onCancel={cancelDelete}
+        />
+      )}
+
+      {/* Load confirmation dialog */}
+      {loadTarget && (
+        <ConfirmDialog
+          title="Load Game?"
+          message="Are you sure you want to load this save? Any unsaved progress will be lost."
+          confirmLabel="Load"
+          variant="warning"
+          onConfirm={confirmLoad}
+          onCancel={cancelLoad}
         />
       )}
     </div>
