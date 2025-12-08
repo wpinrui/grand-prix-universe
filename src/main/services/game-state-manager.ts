@@ -61,12 +61,18 @@ import type {
   SeasonRegulations,
   NewGameParams,
   RaceWeekendResult,
+  DesignState,
+  TechnologyLevel,
+  CurrentYearChassisState,
+  HandlingProblemState,
 } from '../../shared/domain';
 import {
   GamePhase,
   Department,
   ManufacturerType,
   ManufacturerDealType,
+  TechnologyComponent,
+  HandlingProblem,
   hasRaceSeat,
   createEvent,
   managerRef,
@@ -125,6 +131,55 @@ const BASE_SIMULATION_TICK_MS = 1000;
 const SIM_WARMUP_DAYS = 7;      // Days at 1x speed before acceleration starts
 const SIM_ACCEL_DAYS = 15;      // Days over which we accelerate from 1x to 3x (day 8 to day 22)
 const SIM_MAX_SPEED = 3.0;      // Maximum speed multiplier (333ms per tick)
+
+/** Initial technology attribute level (1-5 scale, 3 = average) */
+const INITIAL_TECH_LEVEL = 3;
+
+/**
+ * Creates initial technology levels for all 7 components
+ * All components start at average (3) for both performance and reliability
+ */
+function createInitialTechnologyLevels(): TechnologyLevel[] {
+  return Object.values(TechnologyComponent).map((component) => ({
+    component,
+    performance: INITIAL_TECH_LEVEL,
+    reliability: INITIAL_TECH_LEVEL,
+  }));
+}
+
+/**
+ * Creates initial handling problem state for all 8 problems
+ * All problems start undiscovered (revealed through testing)
+ */
+function createInitialHandlingProblems(): HandlingProblemState[] {
+  return Object.values(HandlingProblem).map((problem) => ({
+    problem,
+    discovered: false,
+    solutionProgress: 0,
+    solutionDesigned: false,
+    solutionInstalled: false,
+  }));
+}
+
+/**
+ * Creates initial design state for a team
+ * No active design projects, average technology, no handling info revealed
+ */
+function createInitialDesignState(): DesignState {
+  const currentYearChassis: CurrentYearChassisState = {
+    handlingRevealed: 0,
+    problems: createInitialHandlingProblems(),
+    activeDesignProblem: null,
+    designersAssigned: 0,
+  };
+
+  return {
+    nextYearChassis: null,
+    technologyLevels: createInitialTechnologyLevels(),
+    activeTechnologyProject: null,
+    currentYearChassis,
+  };
+}
 
 /**
  * Asserts that an array is not empty, throwing a descriptive error if it is
@@ -203,6 +258,7 @@ function createInitialTeamState(
       handlingPercentage: 0,
       handlingProblemsFound: [],
     },
+    designState: createInitialDesignState(),
   };
 }
 

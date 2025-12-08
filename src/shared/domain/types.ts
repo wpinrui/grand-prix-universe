@@ -63,6 +63,146 @@ export enum ManufacturerDealType {
 }
 
 // =============================================================================
+// DESIGN SYSTEM TYPES
+// =============================================================================
+
+/**
+ * ChassisDesignStage - The 4 stages of designing a new chassis
+ * Each stage requires completion (0-10 progress) before moving to next
+ * GPW-faithful: Design → CFD → Model → Wind Tunnel
+ */
+export enum ChassisDesignStage {
+  Design = 'design', // Computer model "blueprint"
+  CFD = 'cfd', // Computational Fluid Dynamics simulation
+  Model = 'model', // Physical scale model construction
+  WindTunnel = 'wind-tunnel', // Real wind tunnel testing (requires facility)
+}
+
+/**
+ * TechnologyComponent - The 7 internal car components that can be improved
+ * Each has Performance and Reliability attributes (1-5 scale)
+ */
+export enum TechnologyComponent {
+  Brakes = 'brakes',
+  Clutch = 'clutch',
+  Electronics = 'electronics',
+  Gearbox = 'gearbox',
+  Hydraulics = 'hydraulics',
+  Suspension = 'suspension',
+  Throttle = 'throttle',
+}
+
+/**
+ * TechnologyAttribute - What aspect of a component is being improved
+ */
+export enum TechnologyAttribute {
+  Performance = 'performance', // Speed/function improvement
+  Reliability = 'reliability', // Failure rate reduction
+}
+
+/**
+ * HandlingProblem - The 8 chassis handling problems that can be discovered
+ * Revealed through Development Testing, each has a solution to design
+ */
+export enum HandlingProblem {
+  OversteerFast = 'oversteer-fast', // Less grip on high-speed circuits
+  OversteerSlow = 'oversteer-slow', // Less grip on low-speed circuits
+  UndersteerFast = 'understeer-fast', // Increased tyre wear on high-speed circuits
+  UndersteerSlow = 'understeer-slow', // Increased tyre wear on low-speed circuits
+  HighDrag = 'high-drag', // Increased fuel consumption and engine heat
+  PoorBalance = 'poor-balance', // Increased brake wear, harder to control
+  LowDownforce = 'low-downforce', // Less grip overall
+  HighPitchSensitivity = 'high-pitch-sensitivity', // Less grip in wind, suspension wear
+}
+
+/**
+ * ChassisStageProgress - Progress for a single chassis design stage
+ * Max 10 points per stage, 40 total for a perfect chassis
+ */
+export interface ChassisStageProgress {
+  stage: ChassisDesignStage;
+  progress: number; // 0-10
+  completed: boolean;
+}
+
+/**
+ * ChassisDesign - State of a chassis being designed (next year's car)
+ * Tracks progress through all 4 stages and overall efficiency
+ */
+export interface ChassisDesign {
+  targetSeason: number; // Which season this chassis is for
+  stages: ChassisStageProgress[];
+  designersAssigned: number; // Staff currently working on this
+  efficiencyRating: number; // 0-100, calculated from stage progress + chief ability
+  isLegal: boolean; // Meets FIA regulations (can become illegal if regs change)
+  startedAt: GameDate | null; // When design work began
+}
+
+/**
+ * TechnologyLevel - Current level of a technology component
+ * Both attributes range 1-5 (1 = basic, 5 = cutting edge)
+ */
+export interface TechnologyLevel {
+  component: TechnologyComponent;
+  performance: number; // 1-5
+  reliability: number; // 1-5
+}
+
+/**
+ * TechnologyDesignProject - An in-progress technology improvement
+ * Only one can be active at a time per team
+ */
+export interface TechnologyDesignProject {
+  component: TechnologyComponent;
+  attribute: TechnologyAttribute;
+  targetLevel: number; // What level we're designing to (current + 1)
+  progress: number; // 0-10
+  designersAssigned: number;
+  startedAt: GameDate;
+}
+
+/**
+ * HandlingProblemState - State of a discovered handling problem
+ * Problems are discovered through testing, then solutions are designed
+ */
+export interface HandlingProblemState {
+  problem: HandlingProblem;
+  discovered: boolean; // Found through development testing
+  solutionProgress: number; // 0-10 for designing the fix
+  solutionDesigned: boolean; // Ready for construction
+  solutionInstalled: boolean; // Upgrade applied to cars
+}
+
+/**
+ * CurrentYearChassisState - State of current season's chassis improvements
+ * Tracks handling revelation and problem solutions
+ */
+export interface CurrentYearChassisState {
+  handlingRevealed: number; // 0-100, how much handling info is known
+  problems: HandlingProblemState[];
+  activeDesignProblem: HandlingProblem | null; // Which problem is being worked on
+  designersAssigned: number;
+}
+
+/**
+ * DesignState - Complete design department state for a team
+ * Contains all chassis, technology, and improvement tracking
+ */
+export interface DesignState {
+  /** Next year's chassis design (null if not started) */
+  nextYearChassis: ChassisDesign | null;
+
+  /** Current technology levels for all 7 components */
+  technologyLevels: TechnologyLevel[];
+
+  /** Active technology design project (null if none) */
+  activeTechnologyProject: TechnologyDesignProject | null;
+
+  /** Current year chassis state (handling problems/solutions) */
+  currentYearChassis: CurrentYearChassisState;
+}
+
+// =============================================================================
 // FACTORY TYPES
 // =============================================================================
 
@@ -814,6 +954,8 @@ export interface TeamRuntimeState {
   // Testing progress
   setupPoints: number; // Accumulated from set-up testing
   developmentTesting: DevelopmentTestingState;
+  // Design department state (chassis, technology, improvements)
+  designState: DesignState;
 }
 
 /**
