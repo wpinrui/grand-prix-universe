@@ -34,7 +34,11 @@ type ViewState =
 // POSITION CELL STYLING
 // ===========================================
 
-function getPositionStyle(position: number | null, status: RaceFinishStatus): string {
+function getPositionStyle(
+  position: number | null,
+  status: RaceFinishStatus,
+  pointsPositions: number
+): string {
   // Handle non-classified finishes by status
   if (position === null) {
     switch (status) {
@@ -55,8 +59,8 @@ function getPositionStyle(position: number | null, status: RaceFinishStatus): st
   if (position === 2) return 'bg-gray-300/70 text-gray-800 font-bold';
   if (position === 3) return 'bg-orange-500/60 text-orange-100 font-bold';
 
-  // Points finish (P4-P10) - light green
-  if (position <= 10) return 'bg-green-400/30 text-green-200';
+  // Points finish - light green
+  if (position <= pointsPositions) return 'bg-green-400/30 text-green-200';
 
   // Outside points
   return 'bg-[var(--neutral-700)]/50 text-muted';
@@ -113,15 +117,16 @@ function BackButton({ onClick, label = 'Back to Results' }: BackButtonProps) {
 
 interface ResultCellProps {
   result: DriverRaceResult | undefined;
+  pointsPositions: number;
   onClick?: () => void;
 }
 
-function ResultCell({ result, onClick }: ResultCellProps) {
+function ResultCell({ result, pointsPositions, onClick }: ResultCellProps) {
   if (!result) {
     return <td className="w-9 px-0.5 py-1 text-center" />;
   }
 
-  const style = getPositionStyle(result.finishPosition, result.status);
+  const style = getPositionStyle(result.finishPosition, result.status, pointsPositions);
   const text = formatPosition(result.finishPosition, result.status);
 
   return (
@@ -168,6 +173,7 @@ interface DriverRowProps {
   driver: Driver | undefined;
   team: Team | undefined;
   calendar: CalendarEntry[];
+  pointsPositions: number;
   isPlayerTeam: boolean;
   onDriverClick: () => void;
   onRaceClick: (raceNumber: number) => void;
@@ -178,6 +184,7 @@ function DriverRow({
   driver,
   team,
   calendar,
+  pointsPositions,
   isPlayerTeam,
   onDriverClick,
   onRaceClick,
@@ -220,6 +227,7 @@ function DriverRow({
         <ResultCell
           key={entry.raceNumber}
           result={resultsByRace.get(entry.raceNumber)}
+          pointsPositions={pointsPositions}
           onClick={() => entry.completed && onRaceClick(entry.raceNumber)}
         />
       ))}
@@ -236,6 +244,7 @@ interface SeasonGridProps {
   drivers: Driver[];
   teams: Team[];
   circuits: Circuit[];
+  pointsPositions: number;
   playerTeamId: string;
   onRaceClick: (raceNumber: number) => void;
   onDriverClick: (driverId: string) => void;
@@ -247,6 +256,7 @@ function SeasonGrid({
   drivers,
   teams,
   circuits,
+  pointsPositions,
   playerTeamId,
   onRaceClick,
   onDriverClick,
@@ -284,6 +294,7 @@ function SeasonGrid({
                 driver={getDriver(standing.driverId)}
                 team={getTeam(standing.teamId)}
                 calendar={calendar}
+                pointsPositions={pointsPositions}
                 isPlayerTeam={standing.teamId === playerTeamId}
                 onDriverClick={() => onDriverClick(standing.driverId)}
                 onRaceClick={onRaceClick}
@@ -478,6 +489,7 @@ interface DriverCareerViewProps {
   team: Team | undefined;
   calendar: CalendarEntry[];
   circuits: Circuit[];
+  pointsPositions: number;
   playerTeamId: string;
   onBack: () => void;
   onRaceClick: (raceNumber: number) => void;
@@ -488,6 +500,7 @@ function DriverCareerView({
   team,
   calendar,
   circuits,
+  pointsPositions,
   playerTeamId,
   onBack,
   onRaceClick,
@@ -591,6 +604,7 @@ function DriverCareerView({
                     <ResultCell
                       key={entry.raceNumber}
                       result={driverResult}
+                      pointsPositions={pointsPositions}
                       onClick={() => entry.completed && onRaceClick(entry.raceNumber)}
                     />
                   );
@@ -628,7 +642,10 @@ export function Results() {
   }
 
   const { driverStandings, calendar } = gameState.currentSeason;
-  const { drivers, teams, circuits } = gameState;
+  const { drivers, teams, circuits, rules } = gameState;
+
+  // Number of positions that score points (based on points system array length)
+  const pointsPositions = rules.points.system.length;
 
   const getDriver = (id: string) => drivers.find((d) => d.id === id);
   const getTeam = (id: string) => teams.find((t) => t.id === id);
@@ -662,6 +679,7 @@ export function Results() {
           team={driver.teamId ? getTeam(driver.teamId) : undefined}
           calendar={calendar}
           circuits={circuits}
+          pointsPositions={pointsPositions}
           playerTeamId={playerTeam.id}
           onBack={goToGrid}
           onRaceClick={goToRace}
@@ -678,6 +696,7 @@ export function Results() {
       drivers={drivers}
       teams={teams}
       circuits={circuits}
+      pointsPositions={pointsPositions}
       playerTeamId={playerTeam.id}
       onRaceClick={goToRace}
       onDriverClick={goToDriver}
