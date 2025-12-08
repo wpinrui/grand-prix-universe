@@ -123,6 +123,12 @@ export const ICON_BUTTON_DANGER_CLASSES =
 export const ICON_BUTTON_NEUTRAL_CLASSES =
   'btn p-2 rounded-lg bg-neutral-700/50 text-secondary hover:bg-neutral-700 hover:text-primary transition-all';
 
+/**
+ * Icon button - ghost variant (panel controls, minimal buttons)
+ */
+export const ICON_BUTTON_GHOST_CLASSES =
+  'rounded hover:bg-[var(--neutral-700)] text-secondary hover:text-primary transition-colors';
+
 // ===========================================
 // ALERT CLASS CONSTANTS
 // ===========================================
@@ -138,3 +144,20 @@ export const ERROR_ALERT_CLASSES =
  */
 export const SUCCESS_ALERT_CLASSES =
   'card p-3 bg-emerald-600/20 border-emerald-600/30 text-emerald-300 text-sm';
+
+// ===========================================
+// LAYOUT CONSTANTS
+// ===========================================
+
+/** Height of the calendar panel (used by SimulationOverlay and CalendarPreviewPanel) */
+export const CALENDAR_PANEL_HEIGHT = 300;
+
+// ===========================================
+// PANEL STYLE CONSTANTS
+// ===========================================
+
+/** Translucent panel background with blur effect */
+export const PANEL_TRANSLUCENT_BG_CLASSES = 'bg-[var(--neutral-900)]/80 backdrop-blur-sm';
+
+/** Standard panel footer styling */
+export const PANEL_FOOTER_CLASSES = 'px-4 py-2 border-t border-[var(--neutral-700)] bg-[var(--neutral-850)]';

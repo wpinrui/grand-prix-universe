@@ -12,6 +12,7 @@ import { SectionButton } from './NavButtons';
 import { TopBar } from './TopBar';
 import { BottomBar } from './BottomBar';
 import { SimulationOverlay } from './SimulationOverlay';
+import { CalendarPreviewPanel } from './CalendarPreviewPanel';
 import { ConfirmDialog } from './ConfirmDialog';
 import { AutoSaveToast } from './AutoSaveToast';
 import { BackgroundLayer } from './BackgroundLayer';
@@ -36,6 +37,7 @@ export function MainLayout() {
   const [selectedSubItemId, setSelectedSubItemId] = useState<string>(defaultSubItem);
   const [activeDialog, setActiveDialog] = useState<ActiveDialog>(null);
   const [showAutoSaveToast, setShowAutoSaveToast] = useState(false);
+  const [isCalendarPreviewOpen, setIsCalendarPreviewOpen] = useState(false);
 
   const navigate = useNavigate();
   const clearGameState = useClearGameState();
@@ -82,7 +84,26 @@ export function MainLayout() {
 
   const closeDialog = () => setActiveDialog(null);
 
+  // Calendar preview handlers
+  const toggleCalendarPreview = useCallback(() => {
+    setIsCalendarPreviewOpen((prev) => !prev);
+  }, []);
+  const closeCalendarPreview = useCallback(() => {
+    setIsCalendarPreviewOpen(false);
+  }, []);
+
   const isOptionsScreen = selectedSectionId === 'options';
+
+  // Shared calendar data props (used by both CalendarPreviewPanel and SimulationOverlay)
+  const calendarDataProps = gameState?.currentDate
+    ? {
+        currentDate: gameState.currentDate,
+        events: gameState.calendarEvents ?? [],
+        calendar: gameState.currentSeason?.calendar ?? [],
+        circuits: gameState.circuits ?? [],
+        nextRace,
+      }
+    : null;
 
   // Race weekend takes over the entire screen (no navigation)
   if (gameState?.phase === GamePhase.RaceWeekend) {
@@ -160,13 +181,23 @@ export function MainLayout() {
       </aside>
 
       {/* Main Area */}
-      <div className="flex flex-col flex-1 min-w-0">
+      <div className="relative flex flex-col flex-1 min-w-0">
         <TopBar
           sectionLabel={selectedSection.label}
           subItemLabel={selectedSubItem.label}
           currentDate={gameState?.currentDate ?? null}
           playerTeam={playerTeam}
+          onCalendarClick={toggleCalendarPreview}
         />
+
+        {/* Calendar Preview Panel */}
+        {calendarDataProps && (
+          <CalendarPreviewPanel
+            {...calendarDataProps}
+            isVisible={isCalendarPreviewOpen && !(gameState?.simulation?.isSimulating ?? false)}
+            onClose={closeCalendarPreview}
+          />
+        )}
 
         {/* Content Area - with background image, blur, and team tint */}
         <main className="content relative flex-1 overflow-hidden">
@@ -213,15 +244,11 @@ export function MainLayout() {
       )}
 
       {/* Simulation Overlay - full screen during simulation */}
-      {gameState?.currentDate && (
+      {calendarDataProps && (
         <SimulationOverlay
-          currentDate={gameState.currentDate}
-          events={gameState.calendarEvents ?? []}
-          calendar={gameState.currentSeason?.calendar ?? []}
-          circuits={gameState.circuits ?? []}
-          nextRace={nextRace}
-          isVisible={gameState.simulation?.isSimulating ?? false}
-          isPostSeason={gameState.phase === GamePhase.PostSeason}
+          {...calendarDataProps}
+          isVisible={gameState?.simulation?.isSimulating ?? false}
+          isPostSeason={gameState?.phase === GamePhase.PostSeason}
           sectionLabel={selectedSection.label}
           subItemLabel={selectedSubItem.label}
           playerTeam={playerTeam}

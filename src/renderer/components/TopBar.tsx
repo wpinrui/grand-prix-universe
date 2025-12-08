@@ -9,9 +9,10 @@ interface TopBarProps {
   subItemLabel: string;
   currentDate: GameDate | null;
   playerTeam: Team | null;
+  onCalendarClick?: () => void;
 }
 
-export function TopBar({ sectionLabel, subItemLabel, currentDate, playerTeam }: TopBarProps) {
+export function TopBar({ sectionLabel, subItemLabel, currentDate, playerTeam, onCalendarClick }: TopBarProps) {
   return (
     <header className="top-bar flex items-center justify-between h-16 px-6 surface-primary border-b border-subtle">
       {/* Breadcrumb */}
@@ -44,6 +45,7 @@ export function TopBar({ sectionLabel, subItemLabel, currentDate, playerTeam }: 
           className={`${ACCENT_MUTED_BUTTON_CLASSES} px-3 py-1.5`}
           style={ACCENT_MUTED_BUTTON_STYLE}
           title="View Calendar"
+          onClick={onCalendarClick}
         >
           <Calendar size={16} />
           <span>
