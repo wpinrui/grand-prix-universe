@@ -24,6 +24,7 @@ import {
   Staff,
   PlayerWiki,
   Cars,
+  Factory,
   SavedGames,
   GameOptions,
   ActionScreen,
@@ -171,6 +172,10 @@ export function MainLayout() {
 
     if (selectedSectionId === 'engineering' && selectedSubItemId === 'cars') {
       return <Cars />;
+    }
+
+    if (selectedSectionId === 'engineering' && selectedSubItemId === 'factory') {
+      return <Factory />;
     }
 
     if (selectedSectionId === 'fia' && selectedSubItemId === 'championship') {
