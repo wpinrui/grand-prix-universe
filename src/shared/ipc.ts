@@ -30,7 +30,7 @@ import type { TurnBlocked, DayStopReason } from './domain/engines';
  */
 export interface SaveSlotInfo {
   filename: string;
-  gameId: string; // Unique playthrough identifier (empty for legacy saves)
+  gameId: string; // Unique playthrough identifier (UUID)
   isAutosave: boolean;
   playerName: string;
   teamId: string;

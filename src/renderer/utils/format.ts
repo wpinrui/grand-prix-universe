@@ -95,27 +95,24 @@ export interface SaveGroup {
 /**
  * Groups saves by gameId.
  * - Saves with the same gameId are grouped together
- * - Legacy saves (empty gameId) are each treated as their own group
  * - Primary save is the most recent manual save, or most recent autosave if no manual saves
  * - Autosaves are collected separately for the dropdown
  */
 export function groupSavesByGame(saves: SaveSlotInfo[]): SaveGroup[] {
-  // First, separate by gameId
+  // Group by gameId
   const groupMap = new Map<string, SaveSlotInfo[]>();
 
   for (const save of saves) {
-    // Treat each legacy save as its own unique group
-    const key = save.gameId || `legacy-${save.filename}`;
-    const existing = groupMap.get(key) ?? [];
+    const existing = groupMap.get(save.gameId) ?? [];
     existing.push(save);
-    groupMap.set(key, existing);
+    groupMap.set(save.gameId, existing);
   }
 
   // Build SaveGroup for each group
   const groups: SaveGroup[] = [];
 
   for (const [gameId, gameSaves] of groupMap.entries()) {
-    // Sort by savedAt (newest first) - already sorted from backend but be safe
+    // Sort by savedAt (newest first)
     gameSaves.sort(
       (a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()
     );
@@ -127,11 +124,7 @@ export function groupSavesByGame(saves: SaveSlotInfo[]): SaveGroup[] {
     // Primary is most recent manual save, or most recent autosave if no manual saves
     const primary = manualSaves[0] ?? autosaves[0];
 
-    groups.push({
-      gameId: gameId.startsWith('legacy-') ? '' : gameId,
-      primary,
-      autosaves,
-    });
+    groups.push({ gameId, primary, autosaves });
   }
 
   // Sort groups by most recent primary save

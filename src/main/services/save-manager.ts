@@ -39,11 +39,10 @@ const AUTOSAVE_PREFIX = 'auto_';
  */
 function generateFilename(state: GameState, isAutosave: boolean): string {
   const prefix = isAutosave ? AUTOSAVE_PREFIX : '';
-  const gameId = state.gameId ?? 'legacy';
   const now = new Date();
   const dateStr = now.toISOString().slice(0, 10); // YYYY-MM-DD
   const timeStr = now.toTimeString().slice(0, 8).replace(/:/g, '-'); // HH-MM-SS
-  return `${prefix}${gameId}_${dateStr}_${timeStr}${SAVE_EXTENSION}`;
+  return `${prefix}${state.gameId}_${dateStr}_${timeStr}${SAVE_EXTENSION}`;
 }
 
 /**
@@ -77,11 +76,9 @@ function extractSaveInfo(
   fileSize: number
 ): SaveSlotInfo {
   const team = state.teams.find((t) => t.id === state.player.teamId);
-  // For legacy saves, extract gameId from filename or use empty string
-  const gameId = state.gameId ?? extractGameIdFromFilename(filename);
   return {
     filename,
-    gameId: gameId === 'legacy' ? '' : gameId,
+    gameId: state.gameId,
     isAutosave: isAutosaveFile(filename),
     playerName: state.player.name,
     teamId: state.player.teamId,
@@ -112,6 +109,7 @@ function isValidGameState(data: unknown): data is GameState {
   const obj = data as Record<string, unknown>;
   return (
     typeof obj.version === 'string' &&
+    typeof obj.gameId === 'string' &&
     typeof obj.createdAt === 'string' &&
     typeof obj.lastSavedAt === 'string' &&
     typeof obj.player === 'object' &&
@@ -119,9 +117,7 @@ function isValidGameState(data: unknown): data is GameState {
     typeof obj.phase === 'string' &&
     typeof obj.currentSeason === 'object' &&
     Array.isArray(obj.teams) &&
-    Array.isArray(obj.drivers) &&
-    // gameId is required for new saves but optional for legacy saves
-    (typeof obj.gameId === 'string' || obj.gameId === undefined)
+    Array.isArray(obj.drivers)
   );
 }
 
@@ -303,15 +299,9 @@ export const SaveManager = {
    * Returns success with skipped=true if no save was needed.
    */
   async autoSave(state: GameState): Promise<SaveResult & { skipped?: boolean }> {
-    const gameId = state.gameId;
-    if (!gameId) {
-      // Legacy save without gameId - just save normally
-      return SaveManager.save(state, true);
-    }
-
     try {
       // Get the latest autosave for this game
-      const lastAutosave = await SaveManager.getLatestAutosave(gameId);
+      const lastAutosave = await SaveManager.getLatestAutosave(state.gameId);
 
       if (lastAutosave) {
         // Compare hashes to check if state has changed
