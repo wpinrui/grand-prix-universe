@@ -34,6 +34,9 @@ const FACILITY_ORDER: FacilityType[] = [
   FacilityType.TestRig,
 ];
 
+const MAX_FACILITY_QUALITY = 5;
+const TOTAL_FACILITY_TYPES = FACILITY_ORDER.length;
+
 // ===========================================
 // HELPER FUNCTIONS
 // ===========================================
@@ -48,10 +51,20 @@ function getQualityLabel(quality: number): string {
   return 'Elite';
 }
 
+/** Filter facilities to only owned (quality > 0) */
+function getOwnedFacilities(facilities: Facility[]): Facility[] {
+  return facilities.filter((f) => f.quality > 0);
+}
+
+/** Sum staff counts for a single department */
+function sumDepartmentStaff(counts: Record<string, number>): number {
+  return Object.values(counts).reduce((sum, count) => sum + count, 0);
+}
+
 /** Calculate total staff across all departments */
 function getTotalStaff(staffCounts: Record<Department, Record<string, number>>): number {
   return Object.values(staffCounts).reduce(
-    (total, deptCounts) => total + Object.values(deptCounts).reduce((sum, count) => sum + count, 0),
+    (total, deptCounts) => total + sumDepartmentStaff(deptCounts),
     0
   );
 }
@@ -66,7 +79,7 @@ interface FacilityCardProps {
 
 function FacilityCard({ facility }: FacilityCardProps) {
   const isOwned = facility.quality > 0;
-  const qualityPercent = (facility.quality / 5) * 100;
+  const qualityPercent = (facility.quality / MAX_FACILITY_QUALITY) * 100;
 
   return (
     <div className={`card p-4 ${!isOwned ? 'opacity-50' : ''}`}>
@@ -100,16 +113,16 @@ interface FacilitiesSectionProps {
 
 function FacilitiesSection({ facilities }: FacilitiesSectionProps) {
   const facilityMap = new Map(facilities.map((f) => [f.type, f]));
-  const ownedCount = facilities.filter((f) => f.quality > 0).length;
+  const owned = getOwnedFacilities(facilities);
   const totalQuality = facilities.reduce((sum, f) => sum + f.quality, 0);
-  const maxQuality = facilities.length * 5;
+  const maxQuality = TOTAL_FACILITY_TYPES * MAX_FACILITY_QUALITY;
 
   return (
     <section>
       <div className="flex items-center justify-between mb-4">
         <SectionHeading>Facilities</SectionHeading>
         <div className="text-sm text-muted">
-          {ownedCount}/6 owned | {totalQuality}/{maxQuality} total quality
+          {owned.length}/{TOTAL_FACILITY_TYPES} owned | {totalQuality}/{maxQuality} total quality
         </div>
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
@@ -122,55 +135,45 @@ function FacilitiesSection({ facilities }: FacilitiesSectionProps) {
   );
 }
 
+interface LimitCardProps {
+  label: string;
+  current: number;
+  max: number;
+}
+
+function LimitCard({ label, current, max }: LimitCardProps) {
+  return (
+    <div>
+      <DetailRow
+        label={label}
+        value={
+          <span className="font-mono">
+            {current} / {max}
+          </span>
+        }
+      />
+      <div className="mt-2">
+        <ProgressBar value={(current / max) * 100} />
+      </div>
+    </div>
+  );
+}
+
 interface LimitsSectionProps {
   limits: FactoryLimits;
   currentStaff: number;
-  currentDeptMax: number;
+  largestDepartmentSize: number;
 }
 
-function LimitsSection({ limits, currentStaff, currentDeptMax }: LimitsSectionProps) {
+function LimitsSection({ limits, currentStaff, largestDepartmentSize }: LimitsSectionProps) {
   return (
     <section>
       <SectionHeading>Factory Limits</SectionHeading>
       <div className="card p-4">
         <div className="grid grid-cols-3 gap-6">
-          <div>
-            <DetailRow
-              label="Staff Capacity"
-              value={
-                <span className="font-mono">
-                  {currentStaff} / {limits.staffLimit}
-                </span>
-              }
-            />
-            <div className="mt-2">
-              <ProgressBar value={(currentStaff / limits.staffLimit) * 100} />
-            </div>
-          </div>
-
-          <div>
-            <DetailRow
-              label="Max per Department"
-              value={
-                <span className="font-mono">
-                  {currentDeptMax} / {limits.departmentLimit}
-                </span>
-              }
-            />
-            <div className="mt-2">
-              <ProgressBar value={(currentDeptMax / limits.departmentLimit) * 100} />
-            </div>
-          </div>
-
-          <div>
-            <DetailRow
-              label="Facility Slots"
-              value={<span className="font-mono">6 / {limits.facilityLimit}</span>}
-            />
-            <div className="mt-2">
-              <ProgressBar value={(6 / limits.facilityLimit) * 100} />
-            </div>
-          </div>
+          <LimitCard label="Staff Capacity" current={currentStaff} max={limits.staffLimit} />
+          <LimitCard label="Max per Department" current={largestDepartmentSize} max={limits.departmentLimit} />
+          <LimitCard label="Facility Slots" current={TOTAL_FACILITY_TYPES} max={limits.facilityLimit} />
         </div>
       </div>
     </section>
@@ -198,20 +201,16 @@ export function Factory() {
   // Calculate current staff usage
   const currentStaff = getTotalStaff(teamState.staffCounts);
 
-  // Find max staff in any department
-  const currentDeptMax = Math.max(
-    ...Object.values(teamState.staffCounts).map((counts) =>
-      Object.values(counts).reduce((sum, count) => sum + count, 0)
-    )
+  // Find largest department by staff count
+  const largestDepartmentSize = Math.max(
+    ...Object.values(teamState.staffCounts).map(sumDepartmentStaff)
   );
 
   // Summary stats
-  const ownedFacilities = factory.facilities.filter((f) => f.quality > 0).length;
+  const owned = getOwnedFacilities(factory.facilities);
   const avgQuality =
-    ownedFacilities > 0
-      ? factory.facilities
-          .filter((f) => f.quality > 0)
-          .reduce((sum, f) => sum + f.quality, 0) / ownedFacilities
+    owned.length > 0
+      ? owned.reduce((sum, f) => sum + f.quality, 0) / owned.length
       : 0;
 
   return (
@@ -219,7 +218,7 @@ export function Factory() {
       {/* Summary Card */}
       <div className="card p-6" style={ACCENT_CARD_STYLE}>
         <div className="grid grid-cols-3 gap-8">
-          <SummaryStat label="Facilities Owned" value={`${ownedFacilities}/6`} />
+          <SummaryStat label="Facilities Owned" value={`${owned.length}/${TOTAL_FACILITY_TYPES}`} />
           <SummaryStat label="Avg Quality" value={avgQuality.toFixed(1)} />
           <SummaryStat label="Staff Capacity" value={factory.limits.staffLimit} />
         </div>
@@ -232,7 +231,7 @@ export function Factory() {
       <LimitsSection
         limits={factory.limits}
         currentStaff={currentStaff}
-        currentDeptMax={currentDeptMax}
+        largestDepartmentSize={largestDepartmentSize}
       />
     </div>
   );
