@@ -4,14 +4,39 @@ import { Maximize2, X } from 'lucide-react';
 import type { GameDate, CalendarEvent, CalendarEntry, Circuit } from '../../shared/domain';
 import { DayCard } from './DayCard';
 import { useCalendarData } from '../hooks';
-import { getCalendarStripDaysFromCenter, offsetDate, isSameDay, dateKey } from '../../shared/utils/date-utils';
+import { offsetDate, isSameDay, dateKey } from '../../shared/utils/date-utils';
 import { CALENDAR_PANEL_HEIGHT } from '../utils/theme-styles';
 
+/** Number of visible days */
+const VISIBLE_DAYS = 9;
+/** Extra days rendered on each side for smooth scrolling */
+const BUFFER_DAYS = 2;
+/** Total days rendered */
+const TOTAL_DAYS = VISIBLE_DAYS + BUFFER_DAYS * 2; // 13 days
+/** Width of one day as percentage of visible area */
+const DAY_WIDTH_PERCENT = 100 / VISIBLE_DAYS;
 /** Pixels of scroll needed to move one day */
 const PIXELS_PER_DAY = 100;
-
 /** Spring config for snapping animation */
-const SNAP_SPRING = { stiffness: 300, damping: 30 };
+const SNAP_SPRING = { stiffness: 400, damping: 35 };
+
+/**
+ * Get array of days centered on a date with buffer on each side.
+ * Returns TOTAL_DAYS days: BUFFER_DAYS before, VISIBLE_DAYS centered, BUFFER_DAYS after
+ */
+function getExtendedDays(centerDate: GameDate): GameDate[] {
+  const days: GameDate[] = [];
+  // Start from (BUFFER_DAYS + half of visible - 1) days before center
+  // For 9 visible with index 1 as "current", we want centerDate at index BUFFER_DAYS + 1
+  const startOffset = -(BUFFER_DAYS + 1); // -3 for buffer=2
+
+  let date = offsetDate(centerDate, startOffset);
+  for (let i = 0; i < TOTAL_DAYS; i++) {
+    days.push(date);
+    date = offsetDate(date, 1);
+  }
+  return days;
+}
 
 interface CalendarPreviewPanelProps {
   currentDate: GameDate;
@@ -36,13 +61,16 @@ export function CalendarPreviewPanel({
 }: CalendarPreviewPanelProps) {
   // View offset in whole days from current date
   const [dayOffset, setDayOffset] = useState(0);
-  // Scroll accumulator for smooth feel
-  const scrollAccumRef = useRef(0);
-  // Spring-animated fractional offset (0-1 range, represents progress to next/prev day)
-  const scrollFraction = useSpring(0, SNAP_SPRING);
-  // Transform scrollFraction to percentage for translateX
-  const translateX = useTransform(scrollFraction, (v) => `${-v * (100 / 9)}%`);
-  // Timeout for snap-on-scroll-end
+  // Accumulated scroll in pixels
+  const scrollPixelsRef = useRef(0);
+  // Spring for smooth visual offset (in day units, can be fractional)
+  const visualOffset = useSpring(0, SNAP_SPRING);
+  // Transform to CSS translateX (accounting for buffer offset)
+  const translateX = useTransform(
+    visualOffset,
+    (v) => `${-(BUFFER_DAYS + v) * DAY_WIDTH_PERCENT}%`
+  );
+  // Snap timeout
   const snapTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -50,21 +78,17 @@ export function CalendarPreviewPanel({
   useEffect(() => {
     if (isVisible) {
       setDayOffset(0);
-      scrollAccumRef.current = 0;
-      scrollFraction.set(0);
+      scrollPixelsRef.current = 0;
+      visualOffset.jump(0);
     }
-  }, [isVisible, scrollFraction]);
+  }, [isVisible, visualOffset]);
 
   // Close on Escape key
   useEffect(() => {
     if (!isVisible) return;
-
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
+      if (e.key === 'Escape') onClose();
     };
-
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isVisible, onClose]);
@@ -72,87 +96,85 @@ export function CalendarPreviewPanel({
   // Close on click outside
   useEffect(() => {
     if (!isVisible) return;
-
     const handleClickOutside = (e: MouseEvent) => {
       if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
         onClose();
       }
     };
-
     const timeout = setTimeout(() => {
       document.addEventListener('mousedown', handleClickOutside);
     }, 100);
-
     return () => {
       clearTimeout(timeout);
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isVisible, onClose]);
 
-  // Snap to nearest day when scrolling stops
-  const snapToNearestDay = useCallback(() => {
-    const currentFraction = scrollFraction.get();
-    if (Math.abs(currentFraction) < 0.5) {
-      // Snap back to current position
-      scrollFraction.set(0);
-    } else {
-      // Snap to next/prev day
-      const direction = currentFraction > 0 ? 1 : -1;
-      setDayOffset((prev) => prev + direction);
-      scrollFraction.set(0);
-    }
-    scrollAccumRef.current = 0;
-  }, [scrollFraction]);
+  // Commit scroll and reset visual offset
+  const commitScroll = useCallback(
+    (days: number) => {
+      if (days !== 0) {
+        setDayOffset((prev) => prev + days);
+        // Jump visual offset back by the committed amount so position stays continuous
+        visualOffset.jump(visualOffset.get() - days);
+      }
+      scrollPixelsRef.current = 0;
+    },
+    [visualOffset]
+  );
 
-  // Scrollwheel handler with smooth animation
+  // Snap to nearest whole day
+  const snapToNearest = useCallback(() => {
+    const current = visualOffset.get();
+    const nearest = Math.round(current);
+    // Commit the whole days and animate to 0
+    commitScroll(nearest);
+    visualOffset.set(0);
+  }, [visualOffset, commitScroll]);
+
+  // Scrollwheel handler
   const handleWheel = useCallback(
     (e: React.WheelEvent) => {
       e.preventDefault();
 
-      // Clear any pending snap
+      // Clear pending snap
       if (snapTimeoutRef.current) {
         clearTimeout(snapTimeoutRef.current);
       }
 
       // Accumulate scroll
-      scrollAccumRef.current += e.deltaY;
+      scrollPixelsRef.current += e.deltaY;
+      const daysDelta = scrollPixelsRef.current / PIXELS_PER_DAY;
 
-      // Convert to fractional days
-      const fractionDelta = scrollAccumRef.current / PIXELS_PER_DAY;
+      // Update visual offset (smooth)
+      visualOffset.set(daysDelta);
 
-      // If we've scrolled past a full day, commit that day change
-      if (Math.abs(fractionDelta) >= 1) {
-        const wholeDays = Math.trunc(fractionDelta);
-        setDayOffset((prev) => prev + wholeDays);
-        scrollAccumRef.current = scrollAccumRef.current % PIXELS_PER_DAY;
+      // If scrolled past buffer, commit some days to keep content available
+      if (Math.abs(daysDelta) >= BUFFER_DAYS) {
+        const toCommit = Math.trunc(daysDelta);
+        commitScroll(toCommit);
       }
-
-      // Update the visual fraction (clamped to -1 to 1)
-      const visualFraction = scrollAccumRef.current / PIXELS_PER_DAY;
-      scrollFraction.set(Math.max(-1, Math.min(1, visualFraction)));
 
       // Schedule snap when scrolling stops
-      snapTimeoutRef.current = setTimeout(snapToNearestDay, 150);
+      snapTimeoutRef.current = setTimeout(snapToNearest, 150);
     },
-    [scrollFraction, snapToNearestDay]
+    [visualOffset, commitScroll, snapToNearest]
   );
 
-  // Cleanup timeout on unmount
+  // Cleanup
   useEffect(() => {
     return () => {
-      if (snapTimeoutRef.current) {
-        clearTimeout(snapTimeoutRef.current);
-      }
+      if (snapTimeoutRef.current) clearTimeout(snapTimeoutRef.current);
     };
   }, []);
 
-  // The center date of the strip (current game date + view offset)
+  // Center date for the days array
   const centerDate = useMemo(() => offsetDate(currentDate, dayOffset), [currentDate, dayOffset]);
 
-  // Get the 9 days to display
-  const days = useMemo(() => getCalendarStripDaysFromCenter(centerDate), [centerDate]);
+  // Extended days array (13 days for smooth scrolling)
+  const days = useMemo(() => getExtendedDays(centerDate), [centerDate]);
 
-  // Use shared hook for calendar data
+  // Calendar data hook
   const { eventsByDate, raceWeekendByDate, footerText } = useCalendarData({
     days,
     events,
@@ -162,12 +184,12 @@ export function CalendarPreviewPanel({
     nextRace,
   });
 
-  // Jump back to today
+  // Jump to today
   const handleJumpToToday = useCallback(() => {
     setDayOffset(0);
-    scrollAccumRef.current = 0;
-    scrollFraction.set(0);
-  }, [scrollFraction]);
+    scrollPixelsRef.current = 0;
+    visualOffset.set(0);
+  }, [visualOffset]);
 
   return (
     <AnimatePresence>
@@ -182,12 +204,10 @@ export function CalendarPreviewPanel({
           style={{ height: CALENDAR_PANEL_HEIGHT }}
           onWheel={handleWheel}
         >
-          {/* Panel background */}
           <div className="absolute inset-0 bg-[var(--neutral-900)]" />
 
-          {/* Panel content */}
           <div className="relative h-full flex flex-col">
-            {/* Header with controls */}
+            {/* Header */}
             <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--neutral-700)]">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-secondary">Calendar Preview</span>
@@ -223,10 +243,16 @@ export function CalendarPreviewPanel({
               </div>
             </div>
 
-            {/* Days strip with smooth scroll */}
+            {/* Days strip - wider than container, translated to show correct portion */}
             <div className="flex-1 overflow-hidden">
-              <motion.div className="h-full flex" style={{ x: translateX }}>
-                {days.map((date, index) => {
+              <motion.div
+                className="h-full flex"
+                style={{
+                  width: `${(TOTAL_DAYS / VISIBLE_DAYS) * 100}%`,
+                  x: translateX,
+                }}
+              >
+                {days.map((date) => {
                   const key = dateKey(date);
                   const isActualCurrentDay = isSameDay(date, currentDate);
                   return (
@@ -234,7 +260,7 @@ export function CalendarPreviewPanel({
                       key={key}
                       date={date}
                       isCurrent={isActualCurrentDay}
-                      isPast={index === 0 && dayOffset === 0}
+                      isPast={false}
                       events={eventsByDate.get(key) ?? []}
                       raceWeekendInfo={raceWeekendByDate.get(key) ?? null}
                     />
