@@ -103,6 +103,83 @@ function getEventDescription(event: GameEvent, teams: TeamInfo[]): string {
 }
 
 // ===========================================
+// PROSE GENERATION
+// ===========================================
+
+/**
+ * Format a date in prose style (e.g., "March 1998")
+ */
+function formatDateForProse(date: GameDate): string {
+  const months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+  return `${months[date.month - 1]} ${date.year}`;
+}
+
+/**
+ * Pluralize "season" based on count
+ */
+function pluralizeSeasons(count: number): string {
+  return count === 1 ? 'season' : 'seasons';
+}
+
+/**
+ * Generate the opening paragraph for the biography
+ */
+function generateOpeningParagraph(
+  playerName: string,
+  careerStartDate: GameDate,
+  startingTeamName: string,
+  currentTeamName: string,
+  seasonsPlayed: number
+): string {
+  const startDateStr = formatDateForProse(careerStartDate);
+  const hasChangedTeams = startingTeamName !== currentTeamName;
+
+  let opening = `**${playerName}** is a Formula One team principal who began their management career in ${startDateStr} with ${startingTeamName}.`;
+
+  if (hasChangedTeams) {
+    opening += ` They currently serve as principal of ${currentTeamName}, having managed multiple teams over ${seasonsPlayed} ${pluralizeSeasons(seasonsPlayed)}.`;
+  } else if (seasonsPlayed > 1) {
+    opening += ` They have led ${startingTeamName} for ${seasonsPlayed} ${pluralizeSeasons(seasonsPlayed)}.`;
+  }
+
+  return opening;
+}
+
+/**
+ * Generate the career beginnings section
+ */
+function generateCareerBeginnings(
+  playerName: string,
+  careerStartDate: GameDate,
+  startingTeamName: string
+): string {
+  const startDateStr = formatDateForProse(careerStartDate);
+
+  return `${playerName} entered Formula One management in ${startDateStr}, taking the helm at ${startingTeamName}. As a new principal in the paddock, they faced the challenge of establishing themselves among the sport's elite team managers.`;
+}
+
+/**
+ * Generate statistics summary prose
+ */
+function generateStatisticsSummary(seasonsPlayed: number): string {
+  // Placeholder text - will be enhanced when race/championship events exist
+  return `Over ${seasonsPlayed} ${pluralizeSeasons(seasonsPlayed)} in management, their career statistics continue to develop as they guide their team through the rigours of Formula One competition.`;
+}
+
+// ===========================================
 // COMPONENTS
 // ===========================================
 
@@ -156,7 +233,8 @@ function WikiTabBar({ activeTab, onTabChange }: WikiTabBarProps) {
   );
 }
 
-interface CareerStatsProps {
+/** Shared props for career view components (Stats, Biography) */
+interface CareerViewProps {
   playerName: string;
   careerStartDate: GameDate;
   startingTeamName: string;
@@ -170,7 +248,7 @@ function CareerStats({
   startingTeamName,
   currentTeamName,
   seasonsPlayed,
-}: CareerStatsProps) {
+}: CareerViewProps) {
   const hasChangedTeams = startingTeamName !== currentTeamName;
 
   return (
@@ -277,6 +355,87 @@ function CareerTimeline({ events, teams }: CareerTimelineProps) {
   );
 }
 
+interface BiographySectionProps {
+  title: string;
+  children: React.ReactNode;
+}
+
+function BiographySection({ title, children }: BiographySectionProps) {
+  return (
+    <section className="mb-6">
+      <h3 className="text-lg font-semibold text-accent-400 mb-3 border-b border-accent-600/30 pb-1">
+        {title}
+      </h3>
+      {children}
+    </section>
+  );
+}
+
+interface ProseParagraphProps {
+  children: string;
+}
+
+function ProseParagraph({ children }: ProseParagraphProps) {
+  // Parse markdown-style bold (**text**) into React elements
+  const parts = children.split(/(\*\*[^*]+\*\*)/g);
+  return (
+    <p className="text-secondary leading-relaxed mb-4 last:mb-0">
+      {parts.map((part, i) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+          return (
+            <span key={i} className="font-semibold text-primary">
+              {part.slice(2, -2)}
+            </span>
+          );
+        }
+        return part;
+      })}
+    </p>
+  );
+}
+
+function CareerBiography({
+  playerName,
+  careerStartDate,
+  startingTeamName,
+  currentTeamName,
+  seasonsPlayed,
+}: CareerViewProps) {
+  const openingParagraph = generateOpeningParagraph(
+    playerName,
+    careerStartDate,
+    startingTeamName,
+    currentTeamName,
+    seasonsPlayed
+  );
+
+  const careerBeginnings = generateCareerBeginnings(playerName, careerStartDate, startingTeamName);
+
+  const statisticsSummary = generateStatisticsSummary(seasonsPlayed);
+
+  return (
+    <div className="card p-6">
+      {/* Opening summary */}
+      <div className="mb-8">
+        <ProseParagraph>{openingParagraph}</ProseParagraph>
+      </div>
+
+      {/* Career Beginnings */}
+      <BiographySection title="Career Beginnings">
+        <ProseParagraph>{careerBeginnings}</ProseParagraph>
+      </BiographySection>
+
+      {/* Statistics Summary */}
+      <BiographySection title="Career Statistics">
+        <ProseParagraph>{statisticsSummary}</ProseParagraph>
+        <p className="text-muted text-sm italic mt-4">
+          Detailed statistics will be added as race results and championships are recorded.
+        </p>
+      </BiographySection>
+    </div>
+  );
+}
+
 // ===========================================
 // MAIN COMPONENT
 // ===========================================
@@ -347,28 +506,22 @@ export function PlayerWiki() {
     gameState.currentDate.year
   );
 
+  const careerViewProps: CareerViewProps = {
+    playerName: careerData.playerName,
+    careerStartDate: careerEvent.date,
+    startingTeamName,
+    currentTeamName: playerTeam.name,
+    seasonsPlayed,
+  };
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'stats':
-        return (
-          <CareerStats
-            playerName={careerData.playerName}
-            careerStartDate={careerEvent.date}
-            startingTeamName={startingTeamName}
-            currentTeamName={playerTeam.name}
-            seasonsPlayed={seasonsPlayed}
-          />
-        );
+        return <CareerStats {...careerViewProps} />;
       case 'timeline':
         return <CareerTimeline events={allEvents} teams={gameState.teams} />;
       case 'biography':
-        return (
-          <div className="card p-6">
-            <p className="text-muted italic">
-              Biography view coming soon. This will display a Wikipedia-style narrative of your career.
-            </p>
-          </div>
-        );
+        return <CareerBiography {...careerViewProps} />;
     }
   };
 
