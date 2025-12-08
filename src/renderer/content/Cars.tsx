@@ -105,7 +105,10 @@ export function Cars() {
   return (
     <div className="relative w-full h-full overflow-hidden">
       {/* 3D Car Viewer - fills entire content area */}
-      <CarViewer3D teamColor={playerTeam.primaryColor} className="absolute inset-0" />
+      <CarViewer3D
+        primaryColor={playerTeam.primaryColor}
+        className="absolute inset-0"
+      />
 
       {/* Top-left: Summary stats overlay */}
       <div className="absolute top-4 left-4 card p-4 backdrop-blur-sm bg-surface/80 min-w-[200px]">
