@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion';
 import { Maximize2, X } from 'lucide-react';
 import type { GameDate, CalendarEvent, CalendarEntry, Circuit } from '../../shared/domain';
 import { DayCard } from './DayCard';
@@ -7,8 +7,11 @@ import { useCalendarData } from '../hooks';
 import { getCalendarStripDaysFromCenter, offsetDate, isSameDay, dateKey } from '../../shared/utils/date-utils';
 import { CALENDAR_PANEL_HEIGHT } from '../utils/theme-styles';
 
-/** Scroll sensitivity: higher = more scroll needed to move one day */
-const SCROLL_THRESHOLD = 80;
+/** Pixels of scroll needed to move one day */
+const PIXELS_PER_DAY = 100;
+
+/** Spring config for snapping animation */
+const SNAP_SPRING = { stiffness: 300, damping: 30 };
 
 interface CalendarPreviewPanelProps {
   currentDate: GameDate;
@@ -31,19 +34,26 @@ export function CalendarPreviewPanel({
   onClose,
   onExpandToMonth,
 }: CalendarPreviewPanelProps) {
-  // View offset: how many days shifted from current date (positive = future)
-  const [viewOffset, setViewOffset] = useState(0);
-  // Accumulated scroll delta for smooth threshold-based scrolling
-  const scrollAccumulator = useRef(0);
+  // View offset in whole days from current date
+  const [dayOffset, setDayOffset] = useState(0);
+  // Scroll accumulator for smooth feel
+  const scrollAccumRef = useRef(0);
+  // Spring-animated fractional offset (0-1 range, represents progress to next/prev day)
+  const scrollFraction = useSpring(0, SNAP_SPRING);
+  // Transform scrollFraction to percentage for translateX
+  const translateX = useTransform(scrollFraction, (v) => `${-v * (100 / 9)}%`);
+  // Timeout for snap-on-scroll-end
+  const snapTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // Reset view offset and scroll accumulator when panel opens
+  // Reset state when panel opens
   useEffect(() => {
     if (isVisible) {
-      setViewOffset(0);
-      scrollAccumulator.current = 0;
+      setDayOffset(0);
+      scrollAccumRef.current = 0;
+      scrollFraction.set(0);
     }
-  }, [isVisible]);
+  }, [isVisible, scrollFraction]);
 
   // Close on Escape key
   useEffect(() => {
@@ -69,7 +79,6 @@ export function CalendarPreviewPanel({
       }
     };
 
-    // Delay to prevent immediate close from the opening click
     const timeout = setTimeout(() => {
       document.addEventListener('mousedown', handleClickOutside);
     }, 100);
@@ -80,30 +89,68 @@ export function CalendarPreviewPanel({
     };
   }, [isVisible, onClose]);
 
-  // Scrollwheel handler with threshold-based sensitivity
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
-    scrollAccumulator.current += e.deltaY;
-
-    // Only move when accumulated scroll exceeds threshold
-    if (Math.abs(scrollAccumulator.current) >= SCROLL_THRESHOLD) {
-      const steps = Math.trunc(scrollAccumulator.current / SCROLL_THRESHOLD);
-      setViewOffset((prev) => prev + steps);
-      scrollAccumulator.current = scrollAccumulator.current % SCROLL_THRESHOLD;
+  // Snap to nearest day when scrolling stops
+  const snapToNearestDay = useCallback(() => {
+    const currentFraction = scrollFraction.get();
+    if (Math.abs(currentFraction) < 0.5) {
+      // Snap back to current position
+      scrollFraction.set(0);
+    } else {
+      // Snap to next/prev day
+      const direction = currentFraction > 0 ? 1 : -1;
+      setDayOffset((prev) => prev + direction);
+      scrollFraction.set(0);
     }
+    scrollAccumRef.current = 0;
+  }, [scrollFraction]);
+
+  // Scrollwheel handler with smooth animation
+  const handleWheel = useCallback(
+    (e: React.WheelEvent) => {
+      e.preventDefault();
+
+      // Clear any pending snap
+      if (snapTimeoutRef.current) {
+        clearTimeout(snapTimeoutRef.current);
+      }
+
+      // Accumulate scroll
+      scrollAccumRef.current += e.deltaY;
+
+      // Convert to fractional days
+      const fractionDelta = scrollAccumRef.current / PIXELS_PER_DAY;
+
+      // If we've scrolled past a full day, commit that day change
+      if (Math.abs(fractionDelta) >= 1) {
+        const wholeDays = Math.trunc(fractionDelta);
+        setDayOffset((prev) => prev + wholeDays);
+        scrollAccumRef.current = scrollAccumRef.current % PIXELS_PER_DAY;
+      }
+
+      // Update the visual fraction (clamped to -1 to 1)
+      const visualFraction = scrollAccumRef.current / PIXELS_PER_DAY;
+      scrollFraction.set(Math.max(-1, Math.min(1, visualFraction)));
+
+      // Schedule snap when scrolling stops
+      snapTimeoutRef.current = setTimeout(snapToNearestDay, 150);
+    },
+    [scrollFraction, snapToNearestDay]
+  );
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (snapTimeoutRef.current) {
+        clearTimeout(snapTimeoutRef.current);
+      }
+    };
   }, []);
 
   // The center date of the strip (current game date + view offset)
-  const centerDate = useMemo(
-    () => offsetDate(currentDate, viewOffset),
-    [currentDate, viewOffset]
-  );
+  const centerDate = useMemo(() => offsetDate(currentDate, dayOffset), [currentDate, dayOffset]);
 
   // Get the 9 days to display
-  const days = useMemo(
-    () => getCalendarStripDaysFromCenter(centerDate),
-    [centerDate]
-  );
+  const days = useMemo(() => getCalendarStripDaysFromCenter(centerDate), [centerDate]);
 
   // Use shared hook for calendar data
   const { eventsByDate, raceWeekendByDate, footerText } = useCalendarData({
@@ -117,9 +164,10 @@ export function CalendarPreviewPanel({
 
   // Jump back to today
   const handleJumpToToday = useCallback(() => {
-    setViewOffset(0);
-    scrollAccumulator.current = 0;
-  }, []);
+    setDayOffset(0);
+    scrollAccumRef.current = 0;
+    scrollFraction.set(0);
+  }, [scrollFraction]);
 
   return (
     <AnimatePresence>
@@ -143,7 +191,7 @@ export function CalendarPreviewPanel({
             <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--neutral-700)]">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-secondary">Calendar Preview</span>
-                {viewOffset !== 0 && (
+                {dayOffset !== 0 && (
                   <button
                     type="button"
                     onClick={handleJumpToToday}
@@ -175,9 +223,9 @@ export function CalendarPreviewPanel({
               </div>
             </div>
 
-            {/* Days strip */}
+            {/* Days strip with smooth scroll */}
             <div className="flex-1 overflow-hidden">
-              <div className="h-full flex">
+              <motion.div className="h-full flex" style={{ x: translateX }}>
                 {days.map((date, index) => {
                   const key = dateKey(date);
                   const isActualCurrentDay = isSameDay(date, currentDate);
@@ -186,13 +234,13 @@ export function CalendarPreviewPanel({
                       key={key}
                       date={date}
                       isCurrent={isActualCurrentDay}
-                      isPast={index === 0 && viewOffset === 0}
+                      isPast={index === 0 && dayOffset === 0}
                       events={eventsByDate.get(key) ?? []}
                       raceWeekendInfo={raceWeekendByDate.get(key) ?? null}
                     />
                   );
                 })}
-              </div>
+              </motion.div>
             </div>
 
             {/* Footer */}
