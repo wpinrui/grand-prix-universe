@@ -1,6 +1,7 @@
 export { TeamProfile } from './TeamProfile';
 export { News } from './News';
 export { Mail } from './Mail';
+export { Finance } from './Finance';
 export { SavedGames } from './SavedGames';
 export { GameOptions } from './GameOptions';
 export { ActionScreen, ACTION_CONFIGS, isActionType, type ActionType } from './ActionScreen';

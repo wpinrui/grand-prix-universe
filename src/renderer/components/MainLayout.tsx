@@ -20,6 +20,7 @@ import {
   TeamProfile,
   News,
   Mail,
+  Finance,
   SavedGames,
   GameOptions,
   ActionScreen,
@@ -151,6 +152,10 @@ export function MainLayout() {
 
     if (selectedSectionId === 'team' && selectedSubItemId === 'mail') {
       return <Mail />;
+    }
+
+    if (selectedSectionId === 'team' && selectedSubItemId === 'finance') {
+      return <Finance />;
     }
 
     if (selectedSectionId === 'fia' && selectedSubItemId === 'championship') {
