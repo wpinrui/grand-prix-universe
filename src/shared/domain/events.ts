@@ -7,13 +7,13 @@
  * See proposal.md > Events Infrastructure for full documentation.
  */
 
-import { randomUUID } from 'crypto';
 import type {
   GameEvent,
   GameEventType,
   EventImportance,
   EntityRef,
   GameDate,
+  EventQuery,
 } from './types';
 import { EntityType } from './types';
 
@@ -59,7 +59,7 @@ export interface CreateEventParams {
  */
 export function createEvent(params: CreateEventParams): GameEvent {
   return {
-    id: randomUUID(),
+    id: crypto.randomUUID(),
     type: params.type,
     date: params.date,
     involvedEntities: params.involvedEntities,
@@ -110,4 +110,151 @@ export function sponsorRef(sponsorId: string): EntityRef {
  */
 export function staffRef(staffId: string): EntityRef {
   return { type: EntityType.Staff, id: staffId };
+}
+
+// =============================================================================
+// EVENT QUERYING
+// =============================================================================
+
+/**
+ * Importance levels ordered from lowest to highest
+ * Used for minImportance filtering
+ */
+const IMPORTANCE_LEVELS: EventImportance[] = ['low', 'medium', 'high'];
+
+/**
+ * Compare two GameDates. Returns:
+ * - negative if a < b
+ * - 0 if a === b
+ * - positive if a > b
+ */
+function compareDates(a: GameDate, b: GameDate): number {
+  if (a.year !== b.year) return a.year - b.year;
+  if (a.month !== b.month) return a.month - b.month;
+  return a.day - b.day;
+}
+
+/**
+ * Check if a date is within a range (inclusive)
+ */
+function isDateInRange(
+  date: GameDate,
+  from: GameDate,
+  to: GameDate
+): boolean {
+  return compareDates(date, from) >= 0 && compareDates(date, to) <= 0;
+}
+
+/**
+ * Check if an event meets the minimum importance threshold
+ */
+function meetsImportanceThreshold(
+  eventImportance: EventImportance,
+  minImportance: EventImportance
+): boolean {
+  const eventLevel = IMPORTANCE_LEVELS.indexOf(eventImportance);
+  const minLevel = IMPORTANCE_LEVELS.indexOf(minImportance);
+  return eventLevel >= minLevel;
+}
+
+/**
+ * Query events from a list based on filter criteria.
+ *
+ * @param events - The full list of events to search
+ * @param query - Filter and pagination options
+ * @returns Filtered and sorted list of events
+ *
+ * @example
+ * ```ts
+ * // Get all high-importance events for the player
+ * const playerEvents = queryEvents(gameState.events, {
+ *   entityIds: [PLAYER_MANAGER_ID],
+ *   minImportance: 'high',
+ *   limit: 50,
+ * });
+ *
+ * // Get recent race events
+ * const raceEvents = queryEvents(gameState.events, {
+ *   types: ['RACE_FINISH', 'QUALIFYING_RESULT'],
+ *   order: 'desc',
+ *   limit: 10,
+ * });
+ * ```
+ */
+export function queryEvents(
+  events: GameEvent[],
+  query: EventQuery = {}
+): GameEvent[] {
+  const {
+    entityIds,
+    entityTypes,
+    types,
+    dateRange,
+    minImportance,
+    limit,
+    offset = 0,
+    order = 'desc',
+  } = query;
+
+  // Filter events
+  let result = events.filter((event) => {
+    // Filter by entity IDs (OR logic)
+    if (entityIds && entityIds.length > 0) {
+      const hasMatchingEntity = event.involvedEntities.some((ref) =>
+        entityIds.includes(ref.id)
+      );
+      if (!hasMatchingEntity) return false;
+    }
+
+    // Filter by entity types (OR logic)
+    if (entityTypes && entityTypes.length > 0) {
+      const hasMatchingType = event.involvedEntities.some((ref) =>
+        entityTypes.includes(ref.type)
+      );
+      if (!hasMatchingType) return false;
+    }
+
+    // Filter by event types (OR logic)
+    if (types && types.length > 0) {
+      if (!types.includes(event.type)) return false;
+    }
+
+    // Filter by date range
+    if (dateRange) {
+      if (!isDateInRange(event.date, dateRange.from, dateRange.to)) {
+        return false;
+      }
+    }
+
+    // Filter by minimum importance
+    if (minImportance) {
+      if (!meetsImportanceThreshold(event.importance, minImportance)) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  // Sort by date (then by createdAt for same-day ordering)
+  result.sort((a, b) => {
+    const dateComparison = compareDates(a.date, b.date);
+    if (dateComparison !== 0) {
+      return order === 'asc' ? dateComparison : -dateComparison;
+    }
+    // Same date: sort by createdAt
+    return order === 'asc'
+      ? a.createdAt - b.createdAt
+      : b.createdAt - a.createdAt;
+  });
+
+  // Apply pagination
+  if (offset > 0) {
+    result = result.slice(offset);
+  }
+  if (limit !== undefined && limit > 0) {
+    result = result.slice(0, limit);
+  }
+
+  return result;
 }

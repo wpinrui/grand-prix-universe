@@ -7,7 +7,8 @@
 import { app, ipcMain, shell } from 'electron';
 import * as path from 'path';
 import { IpcChannels } from '../../shared/ipc';
-import type { NewGameParams } from '../../shared/domain';
+import type { NewGameParams, EventQuery } from '../../shared/domain';
+import { queryEvents } from '../../shared/domain';
 import { ConfigLoader, GameStateManager, SaveManager } from '../services';
 
 /**
@@ -123,5 +124,14 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IpcChannels.GAME_OPEN_SAVES_FOLDER, async () => {
     const savesDir = path.join(app.getPath('userData'), 'saves');
     await shell.openPath(savesDir);
+  });
+
+  // Events handlers
+  ipcMain.handle(IpcChannels.EVENTS_QUERY, (_event, query: EventQuery) => {
+    const state = GameStateManager.getCurrentState();
+    if (!state) {
+      return [];
+    }
+    return queryEvents(state.events, query);
   });
 }

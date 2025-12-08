@@ -19,6 +19,8 @@ import type {
   GameState,
   NewGameParams,
   GameDate,
+  GameEvent,
+  EventQuery,
 } from './domain';
 import type { TurnBlocked, DayStopReason } from './domain/engines';
 
@@ -148,6 +150,9 @@ export const IpcChannels = {
   GAME_LIST_SAVES: 'game:listSaves',
   GAME_DELETE_SAVE: 'game:deleteSave',
   GAME_OPEN_SAVES_FOLDER: 'game:openSavesFolder',
+
+  // Events
+  EVENTS_QUERY: 'events:query',
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];
@@ -275,6 +280,12 @@ export interface IpcInvokeMap {
   [IpcChannels.GAME_OPEN_SAVES_FOLDER]: {
     args: [];
     result: void;
+  };
+
+  // Events
+  [IpcChannels.EVENTS_QUERY]: {
+    args: [query: EventQuery];
+    result: GameEvent[];
   };
 }
 

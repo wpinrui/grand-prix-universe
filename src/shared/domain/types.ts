@@ -453,6 +453,36 @@ export type GameEventType =
   | 'PRESS_CONFERENCE';
 
 /**
+ * EventQuery - Parameters for filtering and retrieving events
+ * Used by queryEvents() to find events matching specific criteria
+ */
+export interface EventQuery {
+  /** Filter by entity IDs (OR logic - must involve ANY of these entities) */
+  entityIds?: string[];
+
+  /** Filter by entity types (OR logic - must involve ANY of these types) */
+  entityTypes?: EntityType[];
+
+  /** Filter by event types (OR logic - must match ANY of these types) */
+  types?: GameEventType[];
+
+  /** Filter by date range (inclusive) */
+  dateRange?: { from: GameDate; to: GameDate };
+
+  /** Filter by minimum importance level (low includes all, high only high) */
+  minImportance?: EventImportance;
+
+  /** Maximum number of events to return */
+  limit?: number;
+
+  /** Number of events to skip (for pagination) */
+  offset?: number;
+
+  /** Sort order by date (default: 'desc' = newest first) */
+  order?: 'asc' | 'desc';
+}
+
+/**
  * GameEvent - A recorded in-game occurrence
  *
  * Events are the source of truth for game history. They are:
