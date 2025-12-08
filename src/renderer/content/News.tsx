@@ -1,36 +1,14 @@
 import { useDerivedGameState } from '../hooks';
 import { SectionHeading } from '../components';
-import { CalendarEventType, type CalendarEvent, type GameDate } from '../../shared/domain';
-import { formatGameDate, daysBetween } from '../../shared/utils/date-utils';
+import { CalendarEventType, type CalendarEvent } from '../../shared/domain';
+import { formatGameDate } from '../../shared/utils/date-utils';
+import { getFilteredCalendarEvents } from '../utils/calendar-event-utils';
 
 // ===========================================
 // CONSTANTS
 // ===========================================
 
 const MAX_NEWS_ITEMS = 20;
-
-// ===========================================
-// HELPERS
-// ===========================================
-
-/**
- * Sort news items by date (newest first)
- * daysBetween(a, b) returns positive when b > a, giving us descending order
- */
-function sortByDateDescending(a: CalendarEvent, b: CalendarEvent): number {
-  return daysBetween(a.date, b.date);
-}
-
-/**
- * Filter and sort headline events for display
- */
-function getNewsItems(events: CalendarEvent[], currentDate: GameDate): CalendarEvent[] {
-  return events
-    .filter((e) => e.type === CalendarEventType.Headline)
-    .filter((e) => daysBetween(e.date, currentDate) >= 0) // Only past/current news
-    .sort(sortByDateDescending)
-    .slice(0, MAX_NEWS_ITEMS);
-}
 
 // ===========================================
 // COMPONENTS
@@ -79,7 +57,12 @@ export function News() {
     );
   }
 
-  const newsItems = getNewsItems(gameState.calendarEvents, gameState.currentDate);
+  const newsItems = getFilteredCalendarEvents(
+    gameState.calendarEvents,
+    gameState.currentDate,
+    CalendarEventType.Headline,
+    MAX_NEWS_ITEMS
+  );
 
   return (
     <div className="max-w-3xl">

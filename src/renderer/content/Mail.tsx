@@ -1,36 +1,14 @@
 import { useDerivedGameState } from '../hooks';
 import { SectionHeading } from '../components';
-import { CalendarEventType, type CalendarEvent, type GameDate } from '../../shared/domain';
-import { formatGameDate, daysBetween } from '../../shared/utils/date-utils';
+import { CalendarEventType, type CalendarEvent } from '../../shared/domain';
+import { formatGameDate } from '../../shared/utils/date-utils';
+import { getFilteredCalendarEvents } from '../utils/calendar-event-utils';
 
 // ===========================================
 // CONSTANTS
 // ===========================================
 
 const MAX_MAIL_ITEMS = 50;
-
-// ===========================================
-// HELPERS
-// ===========================================
-
-/**
- * Sort mail items by date (newest first)
- * daysBetween(a, b) returns positive when b > a, giving us descending order
- */
-function sortByDateDescending(a: CalendarEvent, b: CalendarEvent): number {
-  return daysBetween(a.date, b.date);
-}
-
-/**
- * Filter and sort email events for display
- */
-function getMailItems(events: CalendarEvent[], currentDate: GameDate): CalendarEvent[] {
-  return events
-    .filter((e) => e.type === CalendarEventType.Email)
-    .filter((e) => daysBetween(e.date, currentDate) >= 0) // Only past/current mail
-    .sort(sortByDateDescending)
-    .slice(0, MAX_MAIL_ITEMS);
-}
 
 // ===========================================
 // COMPONENTS
@@ -82,7 +60,12 @@ export function Mail() {
     );
   }
 
-  const mailItems = getMailItems(gameState.calendarEvents, gameState.currentDate);
+  const mailItems = getFilteredCalendarEvents(
+    gameState.calendarEvents,
+    gameState.currentDate,
+    CalendarEventType.Email,
+    MAX_MAIL_ITEMS
+  );
 
   return (
     <div className="max-w-3xl">
