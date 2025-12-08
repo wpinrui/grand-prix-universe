@@ -84,3 +84,20 @@ export function ProgressBar({ value, colorClass }: ProgressBarProps) {
     </div>
   );
 }
+
+// ===========================================
+// CENTERED MESSAGE
+// ===========================================
+
+interface CenteredMessageProps {
+  children: React.ReactNode;
+}
+
+/** Full-height centered message for loading/error/empty states */
+export function CenteredMessage({ children }: CenteredMessageProps) {
+  return (
+    <div className="flex items-center justify-center h-full">
+      <p className="text-secondary">{children}</p>
+    </div>
+  );
+}

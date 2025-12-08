@@ -3,6 +3,7 @@ export { News } from './News';
 export { Mail } from './Mail';
 export { Finance } from './Finance';
 export { Staff } from './Staff';
+export { PlayerWiki } from './PlayerWiki';
 export { Cars } from './Cars';
 export { SavedGames } from './SavedGames';
 export { GameOptions } from './GameOptions';
