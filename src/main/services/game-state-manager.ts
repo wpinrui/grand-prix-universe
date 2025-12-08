@@ -254,10 +254,6 @@ function createInitialTeamState(
     sponsorSatisfaction,
     staffCounts: cloneDeep(initialStaffCounts),
     setupPoints: 0,
-    developmentTesting: {
-      handlingPercentage: 0,
-      handlingProblemsFound: [],
-    },
     designState: createInitialDesignState(),
   };
 }

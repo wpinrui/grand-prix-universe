@@ -215,24 +215,25 @@ interface DevelopmentTestingSectionProps {
 }
 
 function DevelopmentTestingSection({ teamState }: DevelopmentTestingSectionProps) {
-  const { handlingPercentage, handlingProblemsFound } = teamState.developmentTesting;
+  const { handlingRevealed, problems } = teamState.designState.currentYearChassis;
+  const discoveredProblems = problems.filter((p) => p.discovered);
 
   return (
     <div className="card p-5" style={ACCENT_CARD_STYLE}>
       <div className="flex items-center gap-4 mb-2">
         <span className="text-base font-medium text-secondary">Handling Knowledge</span>
         <ProgressBar
-          value={handlingPercentage}
+          value={handlingRevealed}
           colorClass="bg-[var(--accent-500)]"
           glow="0 0 8px color-mix(in srgb, var(--accent-500) 50%, transparent)"
         />
         <span className="text-base font-bold tabular-nums" style={ACCENT_TEXT_STYLE}>
-          {handlingPercentage}%
+          {handlingRevealed}%
         </span>
       </div>
-      {handlingProblemsFound.length > 0 && (
+      {discoveredProblems.length > 0 && (
         <div className="text-sm text-muted">
-          Problems found: {handlingProblemsFound.join(', ')}
+          Problems found: {discoveredProblems.map((p) => p.problem).join(', ')}
         </div>
       )}
     </div>
