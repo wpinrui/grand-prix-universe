@@ -60,7 +60,7 @@ function getPositionStyle(
   if (position === 3) return 'bg-orange-500/60 text-orange-100 font-bold';
 
   // Points finish - pale green (Wikipedia style)
-  if (position <= pointsPositions) return 'bg-[#c4deaf] text-neutral-900';
+  if (position <= pointsPositions) return 'bg-[#99b382] text-neutral-900';
 
   // Outside points
   return 'bg-[var(--neutral-700)]/50 text-muted';
@@ -220,8 +220,8 @@ function DriverRow({
           {driverName}
         </button>
       </td>
-      <td className="min-w-[180px] px-3 py-2 text-secondary text-sm whitespace-nowrap">
-        {team?.name ?? standing.teamId}
+      <td className="w-16 px-2 py-2 text-secondary text-sm whitespace-nowrap">
+        {team?.shortName ?? standing.teamId}
       </td>
       {calendar.map((entry) => (
         <ResultCell
@@ -274,7 +274,7 @@ function SeasonGrid({
             <tr className={TABLE_HEADER_ROW_CLASS}>
               <th className="w-12 px-3 py-3 text-center">Pos</th>
               <th className="min-w-[140px] px-3 py-3 text-left">Driver</th>
-              <th className="min-w-[180px] px-3 py-3 text-left">Team</th>
+              <th className="w-16 px-2 py-3 text-left">Team</th>
               {calendar.map((entry) => (
                 <RaceHeaderCell
                   key={entry.raceNumber}
@@ -339,7 +339,7 @@ function RaceDetailView({
 
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <FlagIcon country={circuit?.country ?? ''} size="lg" />
+        <FlagIcon country={circuit?.country ?? ''} size="md" />
         <div>
           <h2 className="text-2xl font-bold text-primary">{circuit?.name ?? result.circuitId}</h2>
           <p className="text-secondary">Round {result.raceNumber}</p>
@@ -544,7 +544,7 @@ function DriverCareerView({
 
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <FlagIcon country={driver.nationality} size="lg" />
+        <FlagIcon country={driver.nationality} size="md" />
         <div>
           <h2 className="text-2xl font-bold text-primary">
             {driver.firstName} {driver.lastName}
