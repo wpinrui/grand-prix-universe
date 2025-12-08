@@ -376,3 +376,44 @@ export function getRaceSunday(year: number, weekNumber: number): GameDate {
   const friday = getFridayOfWeek(year, weekNumber);
   return advanceDay(advanceDay(friday));
 }
+
+/**
+ * Add or subtract N days from a GameDate
+ * Positive offset = future, negative = past
+ */
+export function offsetDate(date: GameDate, days: number): GameDate {
+  let result = date;
+  if (days > 0) {
+    for (let i = 0; i < days; i++) {
+      result = advanceDay(result);
+    }
+  } else if (days < 0) {
+    for (let i = 0; i < -days; i++) {
+      result = subtractDay(result);
+    }
+  }
+  return result;
+}
+
+/**
+ * Get array of days for calendar strip with custom center date
+ * Returns 9 days: 1 before center, center, 7 after
+ */
+export function getCalendarStripDaysFromCenter(centerDate: GameDate): GameDate[] {
+  const days: GameDate[] = [];
+
+  // 1 day before center
+  days.push(subtractDay(centerDate));
+
+  // Center day
+  days.push(centerDate);
+
+  // 7 days after center
+  let nextDay = centerDate;
+  for (let i = 0; i < 7; i++) {
+    nextDay = advanceDay(nextDay);
+    days.push(nextDay);
+  }
+
+  return days;
+}
