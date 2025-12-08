@@ -4,6 +4,7 @@
 
 import type { DriverRole } from '../../shared/domain';
 import { compareSavesByNewest, type SaveSlotInfo } from '../../shared/ipc';
+import { formatGameDate } from '../../shared/utils/date-utils';
 
 // ===========================================
 // DRIVER ROLE LABELS
@@ -77,6 +78,20 @@ export function getSaveDisplayName(save: SaveSlotInfo): string {
   return `${save.teamName} - ${save.playerName}`;
 }
 
+/**
+ * Format a save's in-game date (e.g., "15 March 2025 (in-game)")
+ */
+export function formatInGameDate(save: SaveSlotInfo): string {
+  return `${formatGameDate(save.currentDate)} (in-game)`;
+}
+
+/**
+ * Format a save's real-world saved date (e.g., "Saved Dec 8, 2025 at 3:45 PM")
+ */
+export function formatSavedAt(save: SaveSlotInfo): string {
+  return `Saved ${formatDateTime(save.savedAt)}`;
+}
+
 // ===========================================
 // SAVE GROUPING
 // ===========================================
@@ -88,15 +103,15 @@ export interface SaveGroup {
   gameId: string;
   /** Most recent non-autosave, or most recent autosave if no manual saves exist */
   primary: SaveSlotInfo;
-  /** All autosaves for this game, sorted newest first */
-  autosaves: SaveSlotInfo[];
+  /** All saves except primary, sorted newest first (includes both manual and autosaves) */
+  history: SaveSlotInfo[];
 }
 
 /**
  * Groups saves by gameId.
  * - Saves with the same gameId are grouped together
  * - Primary save is the most recent manual save, or most recent autosave if no manual saves
- * - Autosaves are collected separately for the dropdown
+ * - History contains all other saves (both manual and autosaves)
  */
 export function groupSavesByGame(saves: SaveSlotInfo[]): SaveGroup[] {
   // Group by gameId
@@ -114,19 +129,14 @@ export function groupSavesByGame(saves: SaveSlotInfo[]): SaveGroup[] {
   for (const [gameId, gameSaves] of groupMap.entries()) {
     gameSaves.sort(compareSavesByNewest);
 
-    // Separate manual saves and autosaves
-    const manualSaves = gameSaves.filter((s) => !s.isAutosave);
-    const autosaves = gameSaves.filter((s) => s.isAutosave);
-
     // Primary is most recent manual save, or most recent autosave if no manual saves
-    const primary = manualSaves[0] ?? autosaves[0];
+    const manualSaves = gameSaves.filter((s) => !s.isAutosave);
+    const primary = manualSaves[0] ?? gameSaves[0];
 
-    // Exclude primary from autosaves dropdown if it's an autosave
-    const dropdownAutosaves = primary.isAutosave
-      ? autosaves.slice(1)
-      : autosaves;
+    // History is all saves except primary
+    const history = gameSaves.filter((s) => s.filename !== primary.filename);
 
-    groups.push({ gameId, primary, autosaves: dropdownAutosaves });
+    groups.push({ gameId, primary, history });
   }
 
   // Sort groups by most recent primary save

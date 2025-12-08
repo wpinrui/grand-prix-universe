@@ -18,6 +18,7 @@ import type {
   TyreCompoundConfig,
   GameState,
   NewGameParams,
+  GameDate,
 } from './domain';
 import type { TurnBlocked, DayStopReason } from './domain/engines';
 
@@ -35,9 +36,8 @@ export interface SaveSlotInfo {
   playerName: string;
   teamId: string;
   teamName: string;
-  seasonNumber: number;
-  weekNumber: number;
-  savedAt: string; // ISO date string
+  currentDate: GameDate; // In-game date when saved
+  savedAt: string; // Real-world ISO date string when file was saved
   fileSize: number; // bytes
 }
 
