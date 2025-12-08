@@ -61,7 +61,7 @@ The central entity representing an F1 team.
 | `secondaryColor` | string | Secondary hex color |
 | `headquarters` | string | Country/location |
 | `budget` | number | Current balance in dollars |
-| `factoryLevel` | number | 0-100, affects staff/facility limits |
+| `factory` | Factory | Factory facilities and limits |
 
 ### Driver
 A racing driver or test driver.
