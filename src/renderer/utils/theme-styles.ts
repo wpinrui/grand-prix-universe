@@ -138,3 +138,10 @@ export const ERROR_ALERT_CLASSES =
  */
 export const SUCCESS_ALERT_CLASSES =
   'card p-3 bg-emerald-600/20 border-emerald-600/30 text-emerald-300 text-sm';
+
+// ===========================================
+// LAYOUT CONSTANTS
+// ===========================================
+
+/** Height of the calendar panel (used by SimulationOverlay and CalendarPreviewPanel) */
+export const CALENDAR_PANEL_HEIGHT = 300;
