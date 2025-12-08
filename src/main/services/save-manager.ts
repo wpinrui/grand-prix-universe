@@ -5,11 +5,17 @@
  * Saves are stored in the user's app data directory.
  */
 
+import { createHash } from 'crypto';
 import { app } from 'electron';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import type { GameState } from '../../shared/domain';
-import type { SaveSlotInfo, SaveResult, LoadResult } from '../../shared/ipc';
+import {
+  compareSavesByNewest,
+  type SaveSlotInfo,
+  type SaveResult,
+  type LoadResult,
+} from '../../shared/ipc';
 import { yearToSeason, getWeekNumber } from '../../shared/utils/date-utils';
 
 /** Directory name for saves within userData */
@@ -27,16 +33,43 @@ async function getSavesDir(): Promise<string> {
   return savesDir;
 }
 
+/** Prefix for autosave files */
+const AUTOSAVE_PREFIX = 'auto_';
+
 /**
  * Generates a save filename from game state
- * Format: teamId_YYYY-MM-DD_HH-MM-SS.json
+ * Format: [auto_]gameId_YYYY-MM-DD_HH-MM-SS.json
+ * - auto_ prefix indicates autosave
+ * - gameId links saves from the same playthrough
  */
-function generateFilename(state: GameState): string {
-  const teamId = state.player.teamId;
+function generateFilename(state: GameState, isAutosave: boolean): string {
+  const prefix = isAutosave ? AUTOSAVE_PREFIX : '';
   const now = new Date();
   const dateStr = now.toISOString().slice(0, 10); // YYYY-MM-DD
   const timeStr = now.toTimeString().slice(0, 8).replace(/:/g, '-'); // HH-MM-SS
-  return `${teamId}_${dateStr}_${timeStr}${SAVE_EXTENSION}`;
+  return `${prefix}${state.gameId}_${dateStr}_${timeStr}${SAVE_EXTENSION}`;
+}
+
+/**
+ * Checks if a filename represents an autosave
+ */
+function isAutosaveFile(filename: string): boolean {
+  return filename.startsWith(AUTOSAVE_PREFIX);
+}
+
+/**
+ * Extracts gameId from a filename.
+ * Format: [auto_]gameId_YYYY-MM-DD_HH-MM-SS.json
+ */
+function extractGameIdFromFilename(filename: string): string {
+  // Remove auto_ prefix if present
+  const baseName = filename.startsWith(AUTOSAVE_PREFIX)
+    ? filename.slice(AUTOSAVE_PREFIX.length)
+    : filename;
+  // gameId is the first segment (UUID) before the date
+  const firstUnderscore = baseName.indexOf('_');
+  if (firstUnderscore === -1) return '';
+  return baseName.slice(0, firstUnderscore);
 }
 
 /**
@@ -50,6 +83,8 @@ function extractSaveInfo(
   const team = state.teams.find((t) => t.id === state.player.teamId);
   return {
     filename,
+    gameId: state.gameId,
+    isAutosave: isAutosaveFile(filename),
     playerName: state.player.name,
     teamId: state.player.teamId,
     teamName: team?.name ?? 'Unknown Team',
@@ -79,6 +114,7 @@ function isValidGameState(data: unknown): data is GameState {
   const obj = data as Record<string, unknown>;
   return (
     typeof obj.version === 'string' &&
+    typeof obj.gameId === 'string' &&
     typeof obj.createdAt === 'string' &&
     typeof obj.lastSavedAt === 'string' &&
     typeof obj.player === 'object' &&
@@ -91,17 +127,28 @@ function isValidGameState(data: unknown): data is GameState {
 }
 
 /**
+ * Creates a content hash of game state for comparison.
+ * Excludes timestamp fields since they change every save.
+ */
+function hashGameState(state: GameState): string {
+  const { lastSavedAt: _lastSavedAt, createdAt: _createdAt, ...stateForHash } = state;
+  const jsonStr = JSON.stringify(stateForHash);
+  return createHash('sha256').update(jsonStr).digest('hex');
+}
+
+/**
  * SaveManager - Handles save/load operations for game state
  */
 export const SaveManager = {
   /**
    * Saves the current game state to a new file
-   * Filename is auto-generated from team + timestamp
+   * @param state - The game state to save
+   * @param isAutosave - Whether this is an autosave (affects filename prefix)
    */
-  async save(state: GameState): Promise<SaveResult> {
+  async save(state: GameState, isAutosave = false): Promise<SaveResult> {
     try {
       const savesDir = await getSavesDir();
-      const filename = generateFilename(state);
+      const filename = generateFilename(state, isAutosave);
       const filePath = path.join(savesDir, filename);
 
       // Update lastSavedAt timestamp
@@ -175,9 +222,7 @@ export const SaveManager = {
       }
 
       // Sort by savedAt, most recent first
-      saves.sort(
-        (a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()
-      );
+      saves.sort(compareSavesByNewest);
 
       return saves;
     } catch (error) {
@@ -200,6 +245,79 @@ export const SaveManager = {
     } catch (error) {
       console.warn(`[SaveManager] Failed to delete save: ${filename}`, error);
       return false;
+    }
+  },
+
+  /**
+   * Gets the most recent autosave for a specific game
+   * Returns null if no autosaves exist for this game
+   */
+  async getLatestAutosave(gameId: string): Promise<GameState | null> {
+    if (!gameId) return null;
+
+    try {
+      const savesDir = await getSavesDir();
+      const files = await fs.readdir(savesDir);
+
+      // Filter to autosaves for this specific game
+      const autosaveFiles = files.filter(
+        (f) =>
+          f.endsWith(SAVE_EXTENSION) &&
+          isAutosaveFile(f) &&
+          extractGameIdFromFilename(f) === gameId
+      );
+
+      if (autosaveFiles.length === 0) return null;
+
+      // Sort by modification time, most recent first
+      const filesWithStats = await Promise.all(
+        autosaveFiles.map(async (filename) => {
+          const filePath = path.join(savesDir, filename);
+          const stats = await fs.stat(filePath);
+          return { filename, mtime: stats.mtime.getTime() };
+        })
+      );
+      filesWithStats.sort((a, b) => b.mtime - a.mtime);
+
+      // Load the most recent autosave
+      const latestFilename = filesWithStats[0].filename;
+      const filePath = path.join(savesDir, latestFilename);
+      const jsonData = await fs.readFile(filePath, 'utf-8');
+      const data: unknown = JSON.parse(jsonData);
+
+      if (!isValidGameState(data)) return null;
+      return data;
+    } catch {
+      return null;
+    }
+  },
+
+  /**
+   * Smart autosave that skips if state is identical to last autosave.
+   * Returns success with skipped=true if no save was needed.
+   */
+  async autoSave(state: GameState): Promise<SaveResult & { skipped?: boolean }> {
+    try {
+      // Get the latest autosave for this game
+      const lastAutosave = await SaveManager.getLatestAutosave(state.gameId);
+
+      if (lastAutosave) {
+        // Compare hashes to check if state has changed
+        const currentHash = hashGameState(state);
+        const lastHash = hashGameState(lastAutosave);
+
+        if (currentHash === lastHash) {
+          // State is identical - skip the save
+          return { success: true, skipped: true };
+        }
+      }
+
+      // State has changed - perform the autosave
+      return SaveManager.save(state, true);
+    } catch (error) {
+      // On any error, fall back to normal save
+      console.warn('[SaveManager] AutoSave comparison failed, saving anyway:', error);
+      return SaveManager.save(state, true);
     }
   },
 };

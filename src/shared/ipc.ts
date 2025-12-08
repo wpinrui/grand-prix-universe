@@ -30,6 +30,8 @@ import type { TurnBlocked, DayStopReason } from './domain/engines';
  */
 export interface SaveSlotInfo {
   filename: string;
+  gameId: string; // Unique playthrough identifier (UUID)
+  isAutosave: boolean;
   playerName: string;
   teamId: string;
   teamName: string;
@@ -38,6 +40,10 @@ export interface SaveSlotInfo {
   savedAt: string; // ISO date string
   fileSize: number; // bytes
 }
+
+/** Sort comparator for SaveSlotInfo: newest savedAt first */
+export const compareSavesByNewest = (a: SaveSlotInfo, b: SaveSlotInfo): number =>
+  new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime();
 
 /**
  * Result of a save operation

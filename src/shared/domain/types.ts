@@ -671,6 +671,7 @@ export interface ActiveManufacturerContract {
 export interface GameState {
   // Meta
   version: string; // Save format version for migrations
+  gameId: string; // Unique identifier for this playthrough (UUID)
   createdAt: string; // ISO date string
   lastSavedAt: string; // ISO date string
 

@@ -1,10 +1,11 @@
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useSavesList, useTeamsById, useDeleteConfirmation, useLoadGameHandler } from '../hooks';
 import { DeleteConfirmDialog } from '../components/DeleteConfirmDialog';
-import { SaveCard } from '../components/SaveCard';
+import { SaveGroupCard } from '../components/SaveGroupCard';
 import { GHOST_BUTTON_CLASSES, ERROR_ALERT_CLASSES } from '../utils/theme-styles';
-import { getSaveDisplayName } from '../utils/format';
+import { getSaveDisplayName, groupSavesByGame } from '../utils/format';
 import { RoutePaths } from '../routes';
 
 // ===========================================
@@ -17,6 +18,12 @@ export function LoadGameScreen() {
   const teamsById = useTeamsById();
   const { deleteTarget, requestDelete, cancelDelete, confirmDelete } = useDeleteConfirmation();
   const { loadingFilename, loadError, handleLoad } = useLoadGameHandler();
+
+  // Group saves by gameId for cleaner display
+  const saveGroups = useMemo(
+    () => (saves ? groupSavesByGame(saves) : []),
+    [saves]
+  );
 
   const onLoad = async (filename: string) => {
     const success = await handleLoad(filename);
@@ -48,16 +55,16 @@ export function LoadGameScreen() {
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-6 h-6 animate-spin text-muted" />
           </div>
-        ) : saves && saves.length > 0 ? (
-          <div className="space-y-3 max-h-96 overflow-y-auto">
-            {saves.map((save) => (
-              <SaveCard
-                key={save.filename}
-                save={save}
-                team={teamsById[save.teamId]}
-                onLoad={() => onLoad(save.filename)}
-                onDelete={() => requestDelete(save)}
-                isLoading={loadingFilename === save.filename}
+        ) : saveGroups.length > 0 ? (
+          <div className="space-y-3 max-h-[28rem] overflow-y-auto">
+            {saveGroups.map((group) => (
+              <SaveGroupCard
+                key={group.primary.filename}
+                group={group}
+                team={teamsById[group.primary.teamId]}
+                onLoad={onLoad}
+                onDelete={requestDelete}
+                loadingFilename={loadingFilename}
               />
             ))}
           </div>

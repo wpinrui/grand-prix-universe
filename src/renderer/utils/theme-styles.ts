@@ -117,6 +117,12 @@ export const ICON_BUTTON_SUCCESS_CLASSES =
 export const ICON_BUTTON_DANGER_CLASSES =
   'btn p-2 rounded-lg bg-red-600/20 text-red-400 border border-red-600/30 hover:bg-red-600/30 transition-all';
 
+/**
+ * Icon button - neutral variant (Expand, Toggle, etc.)
+ */
+export const ICON_BUTTON_NEUTRAL_CLASSES =
+  'btn p-2 rounded-lg bg-neutral-700/50 text-secondary hover:bg-neutral-700 hover:text-primary transition-all';
+
 // ===========================================
 // ALERT CLASS CONSTANTS
 // ===========================================

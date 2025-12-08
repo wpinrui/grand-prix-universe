@@ -3,7 +3,7 @@
  */
 
 import type { DriverRole } from '../../shared/domain';
-import type { SaveSlotInfo } from '../../shared/ipc';
+import { compareSavesByNewest, type SaveSlotInfo } from '../../shared/ipc';
 
 // ===========================================
 // DRIVER ROLE LABELS
@@ -75,4 +75,62 @@ export function formatDateTime(isoString: string): string {
  */
 export function getSaveDisplayName(save: SaveSlotInfo): string {
   return `${save.teamName} - ${save.playerName}`;
+}
+
+// ===========================================
+// SAVE GROUPING
+// ===========================================
+
+/**
+ * A group of saves from the same playthrough
+ */
+export interface SaveGroup {
+  gameId: string;
+  /** Most recent non-autosave, or most recent autosave if no manual saves exist */
+  primary: SaveSlotInfo;
+  /** All autosaves for this game, sorted newest first */
+  autosaves: SaveSlotInfo[];
+}
+
+/**
+ * Groups saves by gameId.
+ * - Saves with the same gameId are grouped together
+ * - Primary save is the most recent manual save, or most recent autosave if no manual saves
+ * - Autosaves are collected separately for the dropdown
+ */
+export function groupSavesByGame(saves: SaveSlotInfo[]): SaveGroup[] {
+  // Group by gameId
+  const groupMap = new Map<string, SaveSlotInfo[]>();
+
+  for (const save of saves) {
+    const existing = groupMap.get(save.gameId) ?? [];
+    existing.push(save);
+    groupMap.set(save.gameId, existing);
+  }
+
+  // Build SaveGroup for each group
+  const groups: SaveGroup[] = [];
+
+  for (const [gameId, gameSaves] of groupMap.entries()) {
+    gameSaves.sort(compareSavesByNewest);
+
+    // Separate manual saves and autosaves
+    const manualSaves = gameSaves.filter((s) => !s.isAutosave);
+    const autosaves = gameSaves.filter((s) => s.isAutosave);
+
+    // Primary is most recent manual save, or most recent autosave if no manual saves
+    const primary = manualSaves[0] ?? autosaves[0];
+
+    // Exclude primary from autosaves dropdown if it's an autosave
+    const dropdownAutosaves = primary.isAutosave
+      ? autosaves.slice(1)
+      : autosaves;
+
+    groups.push({ gameId, primary, autosaves: dropdownAutosaves });
+  }
+
+  // Sort groups by most recent primary save
+  groups.sort((a, b) => compareSavesByNewest(a.primary, b.primary));
+
+  return groups;
 }

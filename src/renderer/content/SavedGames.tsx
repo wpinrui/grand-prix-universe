@@ -1,9 +1,10 @@
+import { useMemo } from 'react';
 import { Save, Loader2, FolderOpen } from 'lucide-react';
 import { useSavesList, useSaveGame, useTeamsById, useOpenSavesFolder, useDeleteConfirmation, useLoadGameHandler } from '../hooks';
 import { DeleteConfirmDialog } from '../components/DeleteConfirmDialog';
-import { SaveCard } from '../components/SaveCard';
+import { SaveGroupCard } from '../components/SaveGroupCard';
 import { PRIMARY_BUTTON_CLASSES, GHOST_BUTTON_CLASSES, ERROR_ALERT_CLASSES, SUCCESS_ALERT_CLASSES } from '../utils/theme-styles';
-import { getSaveDisplayName } from '../utils/format';
+import { getSaveDisplayName, groupSavesByGame } from '../utils/format';
 
 // ===========================================
 // TYPES
@@ -24,6 +25,12 @@ export function SavedGames({ onNavigateToProfile }: SavedGamesProps) {
   const openSavesFolder = useOpenSavesFolder();
   const { deleteTarget, requestDelete, cancelDelete, confirmDelete } = useDeleteConfirmation();
   const { loadingFilename, loadError, handleLoad } = useLoadGameHandler();
+
+  // Group saves by gameId for cleaner display
+  const saveGroups = useMemo(
+    () => (saves ? groupSavesByGame(saves) : []),
+    [saves]
+  );
 
   const handleSave = () => {
     saveGame.mutate();
@@ -90,16 +97,16 @@ export function SavedGames({ onNavigateToProfile }: SavedGamesProps) {
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-6 h-6 animate-spin text-muted" />
         </div>
-      ) : saves && saves.length > 0 ? (
+      ) : saveGroups.length > 0 ? (
         <div className="space-y-3">
-          {saves.map((save) => (
-            <SaveCard
-              key={save.filename}
-              save={save}
-              team={teamsById[save.teamId]}
-              onLoad={() => onLoad(save.filename)}
-              onDelete={() => requestDelete(save)}
-              isLoading={loadingFilename === save.filename}
+          {saveGroups.map((group) => (
+            <SaveGroupCard
+              key={group.primary.filename}
+              group={group}
+              team={teamsById[group.primary.teamId]}
+              onLoad={onLoad}
+              onDelete={requestDelete}
+              loadingFilename={loadingFilename}
             />
           ))}
         </div>
