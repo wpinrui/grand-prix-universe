@@ -53,15 +53,15 @@ function isAutosaveFile(filename: string): boolean {
 }
 
 /**
- * Extracts gameId from a filename
- * Returns empty string for legacy saves without gameId
+ * Extracts gameId from a filename.
+ * Format: [auto_]gameId_YYYY-MM-DD_HH-MM-SS.json
  */
 function extractGameIdFromFilename(filename: string): string {
   // Remove auto_ prefix if present
   const baseName = filename.startsWith(AUTOSAVE_PREFIX)
     ? filename.slice(AUTOSAVE_PREFIX.length)
     : filename;
-  // gameId is the first segment before the date (UUID format or "legacy")
+  // gameId is the first segment (UUID) before the date
   const firstUnderscore = baseName.indexOf('_');
   if (firstUnderscore === -1) return '';
   return baseName.slice(0, firstUnderscore);

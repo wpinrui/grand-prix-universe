@@ -15,6 +15,41 @@ interface SaveGroupCardProps {
   loadingFilename: string | null;
 }
 
+interface SaveActionsProps {
+  save: SaveSlotInfo;
+  onLoad: () => void;
+  onDelete: () => void;
+  isLoading: boolean;
+}
+
+function SaveActions({ save, onLoad, onDelete, isLoading }: SaveActionsProps) {
+  return (
+    <div className="flex items-center gap-2 shrink-0">
+      <button
+        type="button"
+        onClick={onLoad}
+        disabled={isLoading}
+        className={ICON_BUTTON_SUCCESS_CLASSES}
+        title={`Load ${save.isAutosave ? 'autosave' : 'save'}`}
+      >
+        {isLoading ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <Download className="w-4 h-4" />
+        )}
+      </button>
+      <button
+        type="button"
+        onClick={onDelete}
+        className={ICON_BUTTON_DANGER_CLASSES}
+        title={`Delete ${save.isAutosave ? 'autosave' : 'save'}`}
+      >
+        <Trash2 className="w-4 h-4" />
+      </button>
+    </div>
+  );
+}
+
 export function SaveGroupCard({
   group,
   team,
@@ -74,27 +109,12 @@ export function SaveGroupCard({
             </button>
           )}
 
-          <button
-            type="button"
-            onClick={() => onLoad(primary.filename)}
-            disabled={loadingFilename === primary.filename}
-            className={ICON_BUTTON_SUCCESS_CLASSES}
-            title="Load save"
-          >
-            {loadingFilename === primary.filename ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Download className="w-4 h-4" />
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={() => onDelete(primary)}
-            className={ICON_BUTTON_DANGER_CLASSES}
-            title="Delete save"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          <SaveActions
+            save={primary}
+            onLoad={() => onLoad(primary.filename)}
+            onDelete={() => onDelete(primary)}
+            isLoading={loadingFilename === primary.filename}
+          />
         </div>
       </div>
 
@@ -123,30 +143,12 @@ export function SaveGroupCard({
                   </div>
                 </div>
 
-                {/* Actions */}
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => onLoad(autosave.filename)}
-                    disabled={loadingFilename === autosave.filename}
-                    className={ICON_BUTTON_SUCCESS_CLASSES}
-                    title="Load autosave"
-                  >
-                    {loadingFilename === autosave.filename ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Download className="w-4 h-4" />
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onDelete(autosave)}
-                    className={ICON_BUTTON_DANGER_CLASSES}
-                    title="Delete autosave"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+                <SaveActions
+                  save={autosave}
+                  onLoad={() => onLoad(autosave.filename)}
+                  onDelete={() => onDelete(autosave)}
+                  isLoading={loadingFilename === autosave.filename}
+                />
               </div>
             ))}
           </div>
