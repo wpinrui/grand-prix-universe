@@ -125,7 +125,12 @@ export function groupSavesByGame(saves: SaveSlotInfo[]): SaveGroup[] {
     // Primary is most recent manual save, or most recent autosave if no manual saves
     const primary = manualSaves[0] ?? autosaves[0];
 
-    groups.push({ gameId, primary, autosaves });
+    // Exclude primary from autosaves dropdown if it's an autosave
+    const dropdownAutosaves = primary.isAutosave
+      ? autosaves.slice(1)
+      : autosaves;
+
+    groups.push({ gameId, primary, autosaves: dropdownAutosaves });
   }
 
   // Sort groups by most recent primary save
