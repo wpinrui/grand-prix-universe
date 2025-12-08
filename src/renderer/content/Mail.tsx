@@ -1,7 +1,6 @@
 import { useDerivedGameState } from '../hooks';
-import { SectionHeading } from '../components';
-import { CalendarEventType, type CalendarEvent } from '../../shared/domain';
-import { formatGameDate } from '../../shared/utils/date-utils';
+import { SectionHeading, CalendarEventRow } from '../components';
+import { CalendarEventType } from '../../shared/domain';
 import { getFilteredCalendarEvents } from '../utils/calendar-event-utils';
 
 // ===========================================
@@ -9,30 +8,6 @@ import { getFilteredCalendarEvents } from '../utils/calendar-event-utils';
 // ===========================================
 
 const MAX_MAIL_ITEMS = 50;
-
-// ===========================================
-// COMPONENTS
-// ===========================================
-
-interface MailItemRowProps {
-  item: CalendarEvent;
-}
-
-function MailItemRow({ item }: MailItemRowProps) {
-  return (
-    <div className="flex gap-4 py-3 border-b border-subtle last:border-b-0">
-      <div className="w-32 shrink-0 text-muted text-sm">
-        {formatGameDate(item.date)}
-      </div>
-      <div className="flex-1">
-        <p className="text-primary">{item.subject}</p>
-        {item.critical && (
-          <span className="text-xs text-accent mt-1 inline-block">Important</span>
-        )}
-      </div>
-    </div>
-  );
-}
 
 function EmptyState() {
   return (
@@ -76,7 +51,7 @@ export function Mail() {
         ) : (
           <div className="px-4">
             {mailItems.map((item) => (
-              <MailItemRow key={item.id} item={item} />
+              <CalendarEventRow key={item.id} item={item} showCriticalBadge />
             ))}
           </div>
         )}
