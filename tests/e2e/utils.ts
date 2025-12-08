@@ -2,9 +2,54 @@
  * Shared utilities for E2E tests
  */
 
+import * as fs from 'fs';
+import * as path from 'path';
 import { chromium, Browser, Page } from 'playwright';
 
 export const CDP_URL = 'http://localhost:9222';
+
+/**
+ * Get the app's saves directory path
+ */
+export function getSavesDir(): string {
+  const appData = process.env.APPDATA || path.join(process.env.HOME || '', 'AppData', 'Roaming');
+  return path.join(appData, 'grand-prix-universe', 'saves');
+}
+
+/**
+ * Install a fixture save file to the app's saves directory
+ * Returns the filename that was installed
+ */
+export function installFixture(fixtureName: string): string {
+  const fixturesDir = path.join(__dirname, 'fixtures');
+  const sourcePath = path.join(fixturesDir, fixtureName);
+  const savesDir = getSavesDir();
+
+  // Ensure saves directory exists
+  if (!fs.existsSync(savesDir)) {
+    fs.mkdirSync(savesDir, { recursive: true });
+  }
+
+  // Generate a valid save filename with timestamp
+  const gameId = 'test-' + Date.now();
+  const now = new Date();
+  const dateStr = now.toISOString().slice(0, 10);
+  const timeStr = now.toTimeString().slice(0, 8).replace(/:/g, '-');
+  const destFilename = `${gameId}_${dateStr}_${timeStr}.json`;
+  const destPath = path.join(savesDir, destFilename);
+
+  // Read fixture and update gameId
+  const content = fs.readFileSync(sourcePath, 'utf-8');
+  const state = JSON.parse(content);
+  state.gameId = gameId;
+  state.lastSavedAt = now.toISOString();
+
+  // Write to saves directory
+  fs.writeFileSync(destPath, JSON.stringify(state, null, 2));
+
+  console.log(`Fixture installed: ${destFilename}`);
+  return destFilename;
+}
 
 /**
  * Connect to the running Electron app via CDP
