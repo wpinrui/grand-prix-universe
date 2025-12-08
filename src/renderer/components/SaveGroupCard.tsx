@@ -2,7 +2,11 @@ import { useState } from 'react';
 import { Download, Trash2, Loader2, ChevronDown, ChevronUp, Clock } from 'lucide-react';
 import { TeamBadge } from './TeamBadge';
 import { formatDateTime } from '../utils/format';
-import { ICON_BUTTON_SUCCESS_CLASSES, ICON_BUTTON_DANGER_CLASSES } from '../utils/theme-styles';
+import {
+  ICON_BUTTON_SUCCESS_CLASSES,
+  ICON_BUTTON_DANGER_CLASSES,
+  ICON_BUTTON_NEUTRAL_CLASSES,
+} from '../utils/theme-styles';
 import type { SaveGroup } from '../utils/format';
 import type { SaveSlotInfo } from '../../shared/ipc';
 import type { Team } from '../../shared/domain';
@@ -96,7 +100,7 @@ export function SaveGroupCard({
             <button
               type="button"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="btn p-2 rounded-lg bg-neutral-700/50 text-secondary hover:bg-neutral-700 hover:text-primary transition-all flex items-center gap-1"
+              className={`${ICON_BUTTON_NEUTRAL_CLASSES} flex items-center gap-1`}
               title={isExpanded ? 'Hide autosaves' : 'Show autosaves'}
             >
               <Clock className="w-4 h-4" />

@@ -128,15 +128,10 @@ function isValidGameState(data: unknown): data is GameState {
 
 /**
  * Creates a content hash of game state for comparison.
- * Excludes lastSavedAt since that changes every save.
+ * Excludes timestamp fields since they change every save.
  */
 function hashGameState(state: GameState): string {
-  // Create a copy without the timestamp fields that change every save
-  const stateForHash = {
-    ...state,
-    lastSavedAt: undefined,
-    createdAt: undefined,
-  };
+  const { lastSavedAt: _lastSavedAt, createdAt: _createdAt, ...stateForHash } = state;
   const jsonStr = JSON.stringify(stateForHash);
   return createHash('sha256').update(jsonStr).digest('hex');
 }
