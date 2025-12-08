@@ -25,6 +25,7 @@ import {
   isActionType,
   type ActionType,
   Championship,
+  Races,
   RaceWeekend,
 } from '../content';
 import { GamePhase } from '../../shared/domain';
@@ -132,6 +133,10 @@ export function MainLayout() {
 
     if (selectedSectionId === 'fia' && selectedSubItemId === 'championship') {
       return <Championship />;
+    }
+
+    if (selectedSectionId === 'fia' && selectedSubItemId === 'races') {
+      return <Races />;
     }
 
     if (isOptionsScreen) {

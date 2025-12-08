@@ -1,7 +1,12 @@
-import type { CSSProperties } from 'react';
 import { useDerivedGameState } from '../hooks';
-import { SectionHeading } from '../components';
-import { ACCENT_CARD_STYLE, ACCENT_TEXT_STYLE } from '../utils/theme-styles';
+import { SectionHeading, HeaderCell } from '../components';
+import {
+  TABLE_CELL_BASE,
+  TABLE_HEADER_CLASS,
+  TABLE_HEADER_ROW_CLASS,
+  TABLE_BODY_CLASS,
+  getHighlightedRowStyles,
+} from '../utils/theme-styles';
 import type {
   DriverStanding,
   ConstructorStanding,
@@ -13,59 +18,13 @@ import type {
 // CONSTANTS
 // ===========================================
 
-const CELL_BASE = 'px-4 py-3';
 const CELL_PRIMARY = 'font-bold text-primary tabular-nums';
-const CELL_STAT_BASE = `${CELL_BASE} text-center tabular-nums`;
-
-// Table structure styling
-const TABLE_HEADER_CLASS = 'surface-inset border-b border-[var(--neutral-600)]';
-const TABLE_HEADER_ROW_CLASS = 'text-xs font-semibold text-muted uppercase tracking-wider';
-const TABLE_BODY_CLASS = 'divide-y divide-[var(--neutral-700)]';
+const CELL_STAT_BASE = `${TABLE_CELL_BASE} text-center tabular-nums`;
 const POSITION_COL_CLASS = 'w-16';
-
-// ===========================================
-// HELPERS
-// ===========================================
-
-interface RowStyles {
-  rowStyle: CSSProperties;
-  rowClass: string;
-  nameStyle: CSSProperties;
-}
-
-function getRowStyles(isPlayerTeam: boolean): RowStyles {
-  return {
-    rowStyle: isPlayerTeam ? ACCENT_CARD_STYLE : {},
-    rowClass: isPlayerTeam ? 'bg-[var(--accent-900)]/30' : '',
-    nameStyle: isPlayerTeam ? ACCENT_TEXT_STYLE : {},
-  };
-}
 
 // ===========================================
 // TABLE COMPONENTS
 // ===========================================
-
-type TextAlign = 'left' | 'center' | 'right';
-
-const TEXT_ALIGN_CLASSES: Record<TextAlign, string> = {
-  left: 'text-left',
-  center: 'text-center',
-  right: 'text-right',
-};
-
-interface HeaderCellProps {
-  children: React.ReactNode;
-  align?: TextAlign;
-  className?: string;
-}
-
-function HeaderCell({ children, align = 'center', className = '' }: HeaderCellProps) {
-  return (
-    <th className={`${CELL_BASE} ${TEXT_ALIGN_CLASSES[align]} ${className}`.trim()}>
-      {children}
-    </th>
-  );
-}
 
 interface StatCellProps {
   value: number;
@@ -83,7 +42,7 @@ interface PositionCellProps {
 
 function PositionCell({ position }: PositionCellProps) {
   return (
-    <td className={`${CELL_BASE} text-center ${CELL_PRIMARY}`}>
+    <td className={`${TABLE_CELL_BASE} text-center ${CELL_PRIMARY}`}>
       {position}
     </td>
   );
@@ -95,7 +54,7 @@ interface PointsCellProps {
 
 function PointsCell({ points }: PointsCellProps) {
   return (
-    <td className={`${CELL_BASE} text-right ${CELL_PRIMARY}`}>
+    <td className={`${TABLE_CELL_BASE} text-right ${CELL_PRIMARY}`}>
       {points}
     </td>
   );
@@ -109,7 +68,7 @@ interface DriverRowProps {
 }
 
 function DriverRow({ standing, driver, team, isPlayerTeam }: DriverRowProps) {
-  const styles = getRowStyles(isPlayerTeam);
+  const styles = getHighlightedRowStyles(isPlayerTeam);
   const driverName = driver
     ? `${driver.firstName} ${driver.lastName}`
     : standing.driverId;
@@ -117,12 +76,12 @@ function DriverRow({ standing, driver, team, isPlayerTeam }: DriverRowProps) {
   return (
     <tr className={styles.rowClass} style={styles.rowStyle}>
       <PositionCell position={standing.position} />
-      <td className={CELL_BASE}>
+      <td className={TABLE_CELL_BASE}>
         <span className="font-semibold text-primary" style={styles.nameStyle}>
           {driverName}
         </span>
       </td>
-      <td className={`${CELL_BASE} text-secondary`}>{team?.name ?? standing.teamId}</td>
+      <td className={`${TABLE_CELL_BASE} text-secondary`}>{team?.name ?? standing.teamId}</td>
       <PointsCell points={standing.points} />
       <StatCell value={standing.wins} />
       <StatCell value={standing.podiums} />
@@ -140,12 +99,12 @@ interface ConstructorRowProps {
 }
 
 function ConstructorRow({ standing, team, isPlayerTeam }: ConstructorRowProps) {
-  const styles = getRowStyles(isPlayerTeam);
+  const styles = getHighlightedRowStyles(isPlayerTeam);
 
   return (
     <tr className={styles.rowClass} style={styles.rowStyle}>
       <PositionCell position={standing.position} />
-      <td className={CELL_BASE}>
+      <td className={TABLE_CELL_BASE}>
         <span className="font-semibold text-primary" style={styles.nameStyle}>
           {team?.name ?? standing.teamId}
         </span>
