@@ -24,23 +24,25 @@ function getRaceStatus(entry: CalendarEntry, nextRaceNumber: number | null): Rac
   return 'upcoming';
 }
 
+const STATUS_BADGE_BASE = 'px-2 py-0.5 text-xs rounded';
+
 function getStatusBadge(status: RaceStatus) {
   switch (status) {
     case 'completed':
       return (
-        <span className="px-2 py-0.5 text-xs rounded bg-[var(--neutral-700)] text-muted">
+        <span className={`${STATUS_BADGE_BASE} bg-[var(--neutral-700)] text-muted`}>
           Completed
         </span>
       );
     case 'next':
       return (
-        <span className="px-2 py-0.5 text-xs rounded bg-emerald-600/30 text-emerald-400 border border-emerald-600/50">
+        <span className={`${STATUS_BADGE_BASE} bg-emerald-600/30 text-emerald-400 border border-emerald-600/50`}>
           Next Race
         </span>
       );
     case 'upcoming':
       return (
-        <span className="px-2 py-0.5 text-xs rounded bg-[var(--neutral-800)] text-secondary">
+        <span className={`${STATUS_BADGE_BASE} bg-[var(--neutral-800)] text-secondary`}>
           Upcoming
         </span>
       );
