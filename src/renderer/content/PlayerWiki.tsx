@@ -18,6 +18,35 @@ interface CareerStartedData {
   teamId: string;
 }
 
+/** Minimal team info needed for display */
+type TeamInfo = { id: string; name: string };
+
+/** Readable labels for event types */
+const EVENT_TYPE_LABELS: Record<string, string> = {
+  CAREER_STARTED: 'Career Started',
+  TEAM_CHANGED: 'Team Change',
+  RACE_FINISH: 'Race Finish',
+  QUALIFYING_RESULT: 'Qualifying',
+  RACE_RETIREMENT: 'Race Retirement',
+  CRASH_INCIDENT: 'Crash Incident',
+  CHAMPIONSHIP_WON: 'Championship Won',
+  POSITION_IMPROVED: 'Position Improved',
+  POINTS_MILESTONE: 'Points Milestone',
+  DRIVER_SIGNED: 'Driver Signed',
+  DRIVER_RELEASED: 'Driver Released',
+  STAFF_HIRED: 'Staff Hired',
+  STAFF_FIRED: 'Staff Fired',
+  CONTRACT_EXPIRED: 'Contract Expired',
+  SPONSOR_SIGNED: 'Sponsor Signed',
+  SPONSOR_LOST: 'Sponsor Lost',
+  PRIZE_MONEY_RECEIVED: 'Prize Money',
+  CAR_DESIGNED: 'Car Designed',
+  UPGRADE_COMPLETED: 'Upgrade Completed',
+  TEST_SESSION_RUN: 'Test Session',
+  MEDIA_STATEMENT: 'Media Statement',
+  PRESS_CONFERENCE: 'Press Conference',
+};
+
 // ===========================================
 // HELPER FUNCTIONS
 // ===========================================
@@ -39,6 +68,38 @@ function getCareerStartedData(event: GameEvent): CareerStartedData | null {
     playerName: event.data.playerName as string,
     teamId: event.data.teamId as string,
   };
+}
+
+/**
+ * Get readable label for an event type
+ */
+function getEventTypeLabel(type: string): string {
+  return EVENT_TYPE_LABELS[type] ?? type;
+}
+
+/**
+ * Generate a description for an event based on its type and data
+ */
+function getEventDescription(event: GameEvent, teams: TeamInfo[]): string {
+  const getTeamName = (teamId: string) => teams.find((t) => t.id === teamId)?.name ?? teamId;
+
+  switch (event.type) {
+    case 'CAREER_STARTED': {
+      const playerName = event.data.playerName as string;
+      const teamId = event.data.teamId as string;
+      return `${playerName} began their management career with ${getTeamName(teamId)}.`;
+    }
+    case 'TEAM_CHANGED': {
+      const fromTeam = event.data.fromTeamId as string | undefined;
+      const toTeam = event.data.toTeamId as string;
+      if (fromTeam) {
+        return `Moved from ${getTeamName(fromTeam)} to ${getTeamName(toTeam)}.`;
+      }
+      return `Joined ${getTeamName(toTeam)}.`;
+    }
+    default:
+      return '';
+  }
 }
 
 // ===========================================
@@ -72,21 +133,25 @@ interface WikiTabBarProps {
 
 function WikiTabBar({ activeTab, onTabChange }: WikiTabBarProps) {
   return (
-    <div className="flex gap-1 mb-6">
-      {WIKI_TABS.map((tab) => (
-        <button
-          key={tab.id}
-          type="button"
-          onClick={() => onTabChange(tab.id)}
-          className={`px-4 py-2 text-sm font-medium rounded transition-colors ${
-            activeTab === tab.id
-              ? 'bg-accent-600 text-white'
-              : 'bg-neutral-700 text-secondary hover:bg-neutral-600'
-          }`}
-        >
-          {tab.label}
-        </button>
-      ))}
+    <div className="flex gap-2 mb-6">
+      {WIKI_TABS.map((tab) => {
+        const isActive = activeTab === tab.id;
+        return (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => onTabChange(tab.id)}
+            className={`px-5 py-2 text-sm font-medium rounded-lg transition-all cursor-pointer ${
+              isActive
+                ? 'bg-accent-600 text-white shadow-md'
+                : 'bg-neutral-800 text-muted hover:bg-neutral-700 hover:text-secondary'
+            }`}
+            style={isActive ? { boxShadow: '0 0 12px var(--accent-600)' } : undefined}
+          >
+            {tab.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -148,18 +213,82 @@ function CareerStats({
   );
 }
 
+interface TimelineEventProps {
+  event: GameEvent;
+  teams: TeamInfo[];
+  isLast: boolean;
+}
+
+function TimelineEvent({ event, teams, isLast }: TimelineEventProps) {
+  const description = getEventDescription(event, teams);
+
+  return (
+    <div className={`relative pl-6 ${isLast ? '' : 'pb-6'}`}>
+      {/* Timeline connector line - hidden on last event */}
+      {!isLast && <div className="absolute left-[7px] top-3 bottom-0 w-px bg-neutral-700" />}
+
+      {/* Timeline dot */}
+      <div
+        className="absolute left-0 top-1.5 w-[15px] h-[15px] rounded-full border-2 border-accent-500 bg-neutral-900"
+        style={{ boxShadow: '0 0 6px var(--accent-500)' }}
+      />
+
+      {/* Event content */}
+      <div className="card p-4">
+        <div className="flex items-center gap-3 mb-2">
+          <span className="text-xs font-medium text-accent-400 uppercase tracking-wide">
+            {getEventTypeLabel(event.type)}
+          </span>
+          <span className="text-xs text-muted">{formatGameDate(event.date)}</span>
+        </div>
+        {description && <p className="text-secondary text-sm">{description}</p>}
+      </div>
+    </div>
+  );
+}
+
+interface CareerTimelineProps {
+  events: GameEvent[];
+  teams: TeamInfo[];
+}
+
+function CareerTimeline({ events, teams }: CareerTimelineProps) {
+  if (events.length === 0) {
+    return (
+      <div className="card p-6">
+        <p className="text-muted italic">
+          No career events yet. Your timeline will populate as you progress through your career.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-0">
+      {events.map((event, index) => (
+        <TimelineEvent
+          key={event.id}
+          event={event}
+          teams={teams}
+          isLast={index === events.length - 1}
+        />
+      ))}
+    </div>
+  );
+}
+
 // ===========================================
 // MAIN COMPONENT
 // ===========================================
 
 export function PlayerWiki() {
   const { gameState, playerTeam } = useDerivedGameState();
-  const [careerEvent, setCareerEvent] = useState<GameEvent | null>(null);
+  const [allEvents, setAllEvents] = useState<GameEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<WikiTab>('stats');
 
-  // Query career events for the player manager
+  // Query ALL career events for the player manager
   // Only refetch when gameId changes (new game loaded), not on every state update
   const gameId = gameState?.gameId;
   useEffect(() => {
@@ -171,11 +300,9 @@ export function PlayerWiki() {
       try {
         const events = await window.electronAPI.invoke(IpcChannels.EVENTS_QUERY, {
           entityIds: [PLAYER_MANAGER_ID],
-          types: ['CAREER_STARTED'],
-          limit: 1,
-          order: 'asc',
+          order: 'desc', // Newest first for timeline
         });
-        setCareerEvent(events[0] ?? null);
+        setAllEvents(events);
       } catch (err) {
         setError('Failed to load career history');
         console.error('Failed to query career events:', err);
@@ -186,6 +313,9 @@ export function PlayerWiki() {
 
     fetchEvents();
   }, [gameId]);
+
+  // Extract CAREER_STARTED event from all events
+  const careerEvent = allEvents.find((e) => e.type === 'CAREER_STARTED') ?? null;
 
   if (!gameState || !playerTeam) {
     return <CenteredMessage>Loading player data...</CenteredMessage>;
@@ -230,13 +360,7 @@ export function PlayerWiki() {
           />
         );
       case 'timeline':
-        return (
-          <div className="card p-6">
-            <p className="text-muted italic">
-              Timeline view coming soon. This will show a chronological list of career events.
-            </p>
-          </div>
-        );
+        return <CareerTimeline events={allEvents} teams={gameState.teams} />;
       case 'biography':
         return (
           <div className="card p-6">
