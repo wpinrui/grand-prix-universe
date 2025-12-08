@@ -141,7 +141,7 @@ function WikiTabBar({ activeTab, onTabChange }: WikiTabBarProps) {
             key={tab.id}
             type="button"
             onClick={() => onTabChange(tab.id)}
-            className={`px-5 py-2 text-sm font-medium rounded-lg transition-all ${
+            className={`px-5 py-2 text-sm font-medium rounded-lg transition-all cursor-pointer ${
               isActive
                 ? 'bg-accent-600 text-white shadow-md'
                 : 'bg-neutral-800 text-muted hover:bg-neutral-700 hover:text-secondary'
