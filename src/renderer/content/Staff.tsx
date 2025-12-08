@@ -54,6 +54,22 @@ const ROLE_TO_DEPARTMENT: Record<ChiefRole, Department> = {
   [ChiefRole.Mechanic]: Department.Mechanics,
 };
 
+/** Display order for chiefs (matches department importance) */
+const CHIEF_ROLE_ORDER: ChiefRole[] = [
+  ChiefRole.Designer,
+  ChiefRole.Engineer,
+  ChiefRole.Mechanic,
+  ChiefRole.Commercial,
+];
+
+/** Display order for departments */
+const DEPARTMENT_ORDER: Department[] = [
+  Department.Design,
+  Department.Engineering,
+  Department.Mechanics,
+  Department.Commercial,
+];
+
 // ===========================================
 // HELPER FUNCTIONS
 // ===========================================
@@ -85,6 +101,38 @@ function getTotalStaff(counts: StaffCounts): number {
 // ===========================================
 // SHARED COMPONENTS
 // ===========================================
+
+interface SummaryStatProps {
+  label: string;
+  value: React.ReactNode;
+}
+
+function SummaryStat({ label, value }: SummaryStatProps) {
+  return (
+    <div>
+      <div className="text-sm font-medium text-muted uppercase tracking-wider mb-1">
+        {label}
+      </div>
+      <div className="text-3xl font-bold" style={ACCENT_TEXT_STYLE}>
+        {value}
+      </div>
+    </div>
+  );
+}
+
+interface DetailRowProps {
+  label: string;
+  value: React.ReactNode;
+}
+
+function DetailRow({ label, value }: DetailRowProps) {
+  return (
+    <div>
+      <span className="text-muted">{label}:</span>{' '}
+      <span className="text-secondary">{value}</span>
+    </div>
+  );
+}
 
 interface MoraleBarProps {
   value: number;
@@ -132,18 +180,9 @@ function ChiefCard({ chief, departmentMorale }: ChiefCardProps) {
       </div>
 
       <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-        <div>
-          <span className="text-muted">Ability:</span>{' '}
-          <span className="text-secondary">{getAbilityLabel(chief.ability)}</span>
-        </div>
-        <div>
-          <span className="text-muted">Salary:</span>{' '}
-          <span className="text-secondary font-mono">{formatCurrency(chief.salary)}</span>
-        </div>
-        <div>
-          <span className="text-muted">Contract:</span>{' '}
-          <span className="text-secondary">Season {chief.contractEnd}</span>
-        </div>
+        <DetailRow label="Ability" value={getAbilityLabel(chief.ability)} />
+        <DetailRow label="Salary" value={<span className="font-mono">{formatCurrency(chief.salary)}</span>} />
+        <DetailRow label="Contract" value={`Season ${chief.contractEnd}`} />
       </div>
     </div>
   );
@@ -155,11 +194,9 @@ interface ChiefsSectionProps {
 }
 
 function ChiefsSection({ chiefs, morale }: ChiefsSectionProps) {
-  // Sort chiefs by role order for consistent display
-  const sortedChiefs = [...chiefs].sort((a, b) => {
-    const order = [ChiefRole.Designer, ChiefRole.Engineer, ChiefRole.Mechanic, ChiefRole.Commercial];
-    return order.indexOf(a.role) - order.indexOf(b.role);
-  });
+  const sortedChiefs = [...chiefs].sort(
+    (a, b) => CHIEF_ROLE_ORDER.indexOf(a.role) - CHIEF_ROLE_ORDER.indexOf(b.role)
+  );
 
   return (
     <section>
@@ -233,18 +270,11 @@ interface DepartmentsSectionProps {
 }
 
 function DepartmentsSection({ staffCounts, morale }: DepartmentsSectionProps) {
-  const departments = [
-    Department.Design,
-    Department.Engineering,
-    Department.Mechanics,
-    Department.Commercial,
-  ];
-
   return (
     <section>
       <SectionHeading>Department Staff</SectionHeading>
       <div className="grid grid-cols-2 gap-4">
-        {departments.map((dept) => (
+        {DEPARTMENT_ORDER.map((dept) => (
           <DepartmentCard
             key={dept}
             department={dept}
@@ -287,22 +317,8 @@ export function Staff() {
       {/* Summary Card */}
       <div className="card p-6" style={ACCENT_CARD_STYLE}>
         <div className="grid grid-cols-2 gap-8">
-          <div>
-            <div className="text-sm font-medium text-muted uppercase tracking-wider mb-1">
-              Total Staff
-            </div>
-            <div className="text-3xl font-bold" style={ACCENT_TEXT_STYLE}>
-              {totalStaff}
-            </div>
-          </div>
-          <div>
-            <div className="text-sm font-medium text-muted uppercase tracking-wider mb-1">
-              Chiefs Salary (Annual)
-            </div>
-            <div className="text-3xl font-bold" style={ACCENT_TEXT_STYLE}>
-              {formatCurrency(totalSalaries)}
-            </div>
-          </div>
+          <SummaryStat label="Total Staff" value={totalStaff} />
+          <SummaryStat label="Chiefs Salary (Annual)" value={formatCurrency(totalSalaries)} />
         </div>
       </div>
 
