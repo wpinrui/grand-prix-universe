@@ -161,3 +161,19 @@ export const PANEL_TRANSLUCENT_BG_CLASSES = 'bg-[var(--neutral-900)]/80 backdrop
 
 /** Standard panel footer styling */
 export const PANEL_FOOTER_CLASSES = 'px-4 py-2 border-t border-[var(--neutral-700)] bg-[var(--neutral-850)]';
+
+// ===========================================
+// TABLE STYLE CONSTANTS
+// ===========================================
+
+/** Base cell padding for tables */
+export const TABLE_CELL_BASE = 'px-4 py-3';
+
+/** Table header row container */
+export const TABLE_HEADER_CLASS = 'surface-inset border-b border-[var(--neutral-600)]';
+
+/** Table header row text styling */
+export const TABLE_HEADER_ROW_CLASS = 'text-xs font-semibold text-muted uppercase tracking-wider';
+
+/** Table body with dividers */
+export const TABLE_BODY_CLASS = 'divide-y divide-[var(--neutral-700)]';

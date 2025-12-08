@@ -1,18 +1,16 @@
 import { useDerivedGameState } from '../hooks';
 import { SectionHeading } from '../components';
 import { FlagIcon } from '../components/FlagIcon';
-import { ACCENT_CARD_STYLE, ACCENT_TEXT_STYLE } from '../utils/theme-styles';
+import {
+  ACCENT_CARD_STYLE,
+  ACCENT_TEXT_STYLE,
+  TABLE_CELL_BASE,
+  TABLE_HEADER_CLASS,
+  TABLE_HEADER_ROW_CLASS,
+  TABLE_BODY_CLASS,
+} from '../utils/theme-styles';
 import { getRaceSunday, formatGameDate, daysBetween } from '../../shared/utils/date-utils';
 import type { CalendarEntry, Circuit, GameDate } from '../../shared/domain';
-
-// ===========================================
-// CONSTANTS
-// ===========================================
-
-const CELL_BASE = 'px-4 py-3';
-const TABLE_HEADER_CLASS = 'surface-inset border-b border-[var(--neutral-600)]';
-const TABLE_HEADER_ROW_CLASS = 'text-xs font-semibold text-muted uppercase tracking-wider';
-const TABLE_BODY_CLASS = 'divide-y divide-[var(--neutral-700)]';
 
 // ===========================================
 // HELPERS
@@ -20,12 +18,7 @@ const TABLE_BODY_CLASS = 'divide-y divide-[var(--neutral-700)]';
 
 type RaceStatus = 'completed' | 'next' | 'upcoming';
 
-function getRaceStatus(
-  entry: CalendarEntry,
-  raceDate: GameDate,
-  currentDate: GameDate,
-  nextRaceNumber: number | null
-): RaceStatus {
+function getRaceStatus(entry: CalendarEntry, nextRaceNumber: number | null): RaceStatus {
   if (entry.completed) return 'completed';
   if (entry.raceNumber === nextRaceNumber) return 'next';
   return 'upcoming';
@@ -85,12 +78,12 @@ function RaceRow({ entry, circuit, raceDate, currentDate, status }: RaceRowProps
   return (
     <tr className={rowClass} style={rowStyle}>
       {/* Race Number */}
-      <td className={`${CELL_BASE} text-center font-bold text-primary tabular-nums w-16`}>
+      <td className={`${TABLE_CELL_BASE} text-center font-bold text-primary tabular-nums w-16`}>
         {entry.raceNumber}
       </td>
 
       {/* Flag + Country */}
-      <td className={`${CELL_BASE} w-40`}>
+      <td className={`${TABLE_CELL_BASE} w-40`}>
         <div className="flex items-center gap-2">
           <FlagIcon country={circuit?.country ?? ''} size="md" />
           <span className="text-secondary">{circuit?.country ?? 'Unknown'}</span>
@@ -98,7 +91,7 @@ function RaceRow({ entry, circuit, raceDate, currentDate, status }: RaceRowProps
       </td>
 
       {/* Circuit Name */}
-      <td className={CELL_BASE}>
+      <td className={TABLE_CELL_BASE}>
         <span className="font-semibold text-primary" style={nameStyle}>
           {circuit?.name ?? entry.circuitId}
         </span>
@@ -108,12 +101,12 @@ function RaceRow({ entry, circuit, raceDate, currentDate, status }: RaceRowProps
       </td>
 
       {/* Race Date */}
-      <td className={`${CELL_BASE} text-secondary`}>
+      <td className={`${TABLE_CELL_BASE} text-secondary`}>
         {formatGameDate(raceDate)}
       </td>
 
       {/* Days Until */}
-      <td className={`${CELL_BASE} text-center tabular-nums whitespace-nowrap`}>
+      <td className={`${TABLE_CELL_BASE} text-center tabular-nums whitespace-nowrap`}>
         {daysUntil && (
           <span className={isNext ? 'text-emerald-400 font-medium' : 'text-muted'}>
             {daysUntil}
@@ -122,7 +115,7 @@ function RaceRow({ entry, circuit, raceDate, currentDate, status }: RaceRowProps
       </td>
 
       {/* Status */}
-      <td className={`${CELL_BASE} text-center w-28`}>
+      <td className={`${TABLE_CELL_BASE} text-center w-28`}>
         {getStatusBadge(status)}
       </td>
     </tr>
@@ -158,19 +151,19 @@ export function Races() {
           <table className="w-full">
             <thead className={TABLE_HEADER_CLASS}>
               <tr className={TABLE_HEADER_ROW_CLASS}>
-                <th className={`${CELL_BASE} text-center w-16`}>Rd</th>
-                <th className={`${CELL_BASE} text-left w-40`}>Country</th>
-                <th className={`${CELL_BASE} text-left`}>Circuit</th>
-                <th className={`${CELL_BASE} text-left`}>Date</th>
-                <th className={`${CELL_BASE} text-center whitespace-nowrap`}>In</th>
-                <th className={`${CELL_BASE} text-center w-28`}>Status</th>
+                <th className={`${TABLE_CELL_BASE} text-center w-16`}>Rd</th>
+                <th className={`${TABLE_CELL_BASE} text-left w-40`}>Country</th>
+                <th className={`${TABLE_CELL_BASE} text-left`}>Circuit</th>
+                <th className={`${TABLE_CELL_BASE} text-left`}>Date</th>
+                <th className={`${TABLE_CELL_BASE} text-center whitespace-nowrap`}>In</th>
+                <th className={`${TABLE_CELL_BASE} text-center w-28`}>Status</th>
               </tr>
             </thead>
             <tbody className={TABLE_BODY_CLASS}>
               {calendar.map((entry) => {
                 const circuit = getCircuit(entry.circuitId);
                 const raceDate = getRaceSunday(currentDate.year, entry.weekNumber);
-                const status = getRaceStatus(entry, raceDate, currentDate, nextRaceNumber);
+                const status = getRaceStatus(entry, nextRaceNumber);
 
                 return (
                   <RaceRow
