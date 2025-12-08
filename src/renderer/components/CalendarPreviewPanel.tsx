@@ -10,8 +10,8 @@ import {
   dateKey,
   getMonthCalendarDays,
   getMonthName,
-  getCountryFlag,
 } from '../../shared/utils/date-utils';
+import { FlagIcon } from './FlagIcon';
 import { CALENDAR_PANEL_HEIGHT } from '../utils/theme-styles';
 
 /** Number of visible days in strip view */
@@ -347,12 +347,13 @@ export function CalendarPreviewPanel({
                         {raceInfo && isCurrentMonth && (
                           <div
                             className={`
-                              text-xs truncate px-1 py-0.5 rounded mb-0.5
+                              text-xs truncate px-1 py-0.5 rounded mb-0.5 flex items-center gap-1
                               ${raceInfo.session === 'Race' ? 'bg-[var(--accent-700)] text-[var(--accent-200)]' : 'bg-[var(--neutral-700)] text-muted'}
                             `}
                             title={`${raceInfo.session}: ${raceInfo.circuitName}`}
                           >
-                            {getCountryFlag(raceInfo.country)} {raceInfo.session}
+                            <FlagIcon country={raceInfo.country} size="sm" />
+                            <span className="truncate">{raceInfo.session}</span>
                           </div>
                         )}
 

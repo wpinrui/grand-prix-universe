@@ -235,54 +235,45 @@ export function getCalendarStripDays(currentDate: GameDate): GameDate[] {
 }
 
 /**
- * Country name to emoji flag mapping
- * Uses regional indicator symbols to form flag emojis
+ * Country name to ISO 3166-1 alpha-2 code mapping
  */
 const COUNTRY_TO_CODE: Record<string, string> = {
-  'Australia': 'AU',
-  'Austria': 'AT',
-  'Azerbaijan': 'AZ',
-  'Bahrain': 'BH',
-  'Belgium': 'BE',
-  'Brazil': 'BR',
-  'Canada': 'CA',
-  'China': 'CN',
-  'France': 'FR',
-  'Germany': 'DE',
-  'Hungary': 'HU',
-  'Italy': 'IT',
-  'Japan': 'JP',
-  'Mexico': 'MX',
-  'Monaco': 'MC',
-  'Netherlands': 'NL',
-  'Portugal': 'PT',
-  'Qatar': 'QA',
-  'Russia': 'RU',
-  'Saudi Arabia': 'SA',
-  'Singapore': 'SG',
-  'Spain': 'ES',
-  'Turkey': 'TR',
-  'UAE': 'AE',
-  'United Arab Emirates': 'AE',
-  'United Kingdom': 'GB',
-  'UK': 'GB',
-  'United States': 'US',
-  'USA': 'US',
+  'Australia': 'au',
+  'Austria': 'at',
+  'Azerbaijan': 'az',
+  'Bahrain': 'bh',
+  'Belgium': 'be',
+  'Brazil': 'br',
+  'Canada': 'ca',
+  'China': 'cn',
+  'France': 'fr',
+  'Germany': 'de',
+  'Hungary': 'hu',
+  'Italy': 'it',
+  'Japan': 'jp',
+  'Mexico': 'mx',
+  'Monaco': 'mc',
+  'Netherlands': 'nl',
+  'Portugal': 'pt',
+  'Qatar': 'qa',
+  'Russia': 'ru',
+  'Saudi Arabia': 'sa',
+  'Singapore': 'sg',
+  'Spain': 'es',
+  'Turkey': 'tr',
+  'UAE': 'ae',
+  'United Arab Emirates': 'ae',
+  'United Kingdom': 'gb',
+  'UK': 'gb',
+  'United States': 'us',
+  'USA': 'us',
 };
 
 /**
- * Get emoji flag for a country name
+ * Get country code for flag URL
  */
-export function getCountryFlag(country: string): string {
-  const code = COUNTRY_TO_CODE[country];
-  if (!code) return '🏁'; // Default racing flag if country not found
-
-  // Convert country code to regional indicator symbols
-  const codePoints = code
-    .toUpperCase()
-    .split('')
-    .map((char) => 127397 + char.charCodeAt(0));
-  return String.fromCodePoint(...codePoints);
+export function getCountryCode(country: string): string | null {
+  return COUNTRY_TO_CODE[country] ?? null;
 }
 
 /** Race weekend session types */

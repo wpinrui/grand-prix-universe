@@ -1,5 +1,6 @@
 import type { GameDate, CalendarEvent } from '../../shared/domain';
-import { getShortDayName, getShortMonthName, getCountryFlag, type RaceSessionType } from '../../shared/utils/date-utils';
+import { getShortDayName, getShortMonthName, type RaceSessionType } from '../../shared/utils/date-utils';
+import { FlagIcon } from './FlagIcon';
 
 export interface RaceWeekendInfo {
   session: RaceSessionType;
@@ -52,7 +53,7 @@ export function DayCard({ date, isCurrent, isPast, events, raceWeekendInfo }: Da
                 : 'bg-[var(--neutral-700)] text-secondary'}
             `}>
               <div className="flex items-center gap-1.5">
-                <span className="text-base">{getCountryFlag(raceWeekendInfo.country)}</span>
+                <FlagIcon country={raceWeekendInfo.country} />
                 <span>{raceWeekendInfo.session}</span>
               </div>
               <div className="text-xs text-muted mt-0.5 truncate">
