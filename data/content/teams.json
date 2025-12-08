@@ -11,7 +11,21 @@
       "description": "One of the most successful teams in Formula One history, McLaren has won 8 Constructors' Championships. After years in the midfield, the Woking-based team has returned to the front under Andrea Stella's leadership, challenging for race wins and championships once again.",
       "logoUrl": "https://media.formula1.com/content/dam/fom-website/teams/2024/mclaren-logo.png",
       "budget": 220000000,
-      "factoryLevel": 95,
+      "factory": {
+        "facilities": [
+          { "type": "wind-tunnel", "quality": 5 },
+          { "type": "cad", "quality": 5 },
+          { "type": "cam", "quality": 4 },
+          { "type": "supercomputer", "quality": 5 },
+          { "type": "workshop", "quality": 4 },
+          { "type": "test-rig", "quality": 5 }
+        ],
+        "limits": {
+          "staffLimit": 150,
+          "departmentLimit": 50,
+          "facilityLimit": 6
+        }
+      },
       "initialEngineManufacturerId": "mercedes-hpe",
       "initialSponsorIds": ["vodafone", "aws", "rolex"],
       "initialStaffCounts": {
@@ -32,7 +46,21 @@
       "description": "The dominant force of the turbo-hybrid era, Mercedes won 8 consecutive Constructors' Championships from 2014-2021. Based in Brackley, the Silver Arrows are fighting to return to the top after regulatory changes shifted the competitive order.",
       "logoUrl": "https://media.formula1.com/content/dam/fom-website/teams/2024/mercedes-logo.png",
       "budget": 200000000,
-      "factoryLevel": 90,
+      "factory": {
+        "facilities": [
+          { "type": "wind-tunnel", "quality": 5 },
+          { "type": "cad", "quality": 5 },
+          { "type": "cam", "quality": 4 },
+          { "type": "supercomputer", "quality": 4 },
+          { "type": "workshop", "quality": 4 },
+          { "type": "test-rig", "quality": 4 }
+        ],
+        "limits": {
+          "staffLimit": 145,
+          "departmentLimit": 48,
+          "facilityLimit": 6
+        }
+      },
       "initialEngineManufacturerId": "mercedes-hpe",
       "initialSponsorIds": ["petronas", "monster-energy", "iwc"],
       "initialStaffCounts": {
@@ -53,7 +81,21 @@
       "description": "The energy drink giant's racing team has become the benchmark for excellence in modern F1. With legendary designer Adrian Newey's creations and Max Verstappen behind the wheel, Red Bull has dominated recent seasons with unprecedented success.",
       "logoUrl": "https://media.formula1.com/content/dam/fom-website/teams/2024/red-bull-racing-logo.png",
       "budget": 195000000,
-      "factoryLevel": 88,
+      "factory": {
+        "facilities": [
+          { "type": "wind-tunnel", "quality": 5 },
+          { "type": "cad", "quality": 5 },
+          { "type": "cam", "quality": 5 },
+          { "type": "supercomputer", "quality": 4 },
+          { "type": "workshop", "quality": 4 },
+          { "type": "test-rig", "quality": 4 }
+        ],
+        "limits": {
+          "staffLimit": 140,
+          "departmentLimit": 46,
+          "facilityLimit": 6
+        }
+      },
       "initialEngineManufacturerId": "honda-rbpt",
       "initialSponsorIds": ["oracle", "red-bull", "tag-heuer"],
       "initialStaffCounts": {
@@ -74,7 +116,21 @@
       "description": "The most iconic name in motorsport, Ferrari is the only team to have competed in every Formula One season since 1950. The Prancing Horse carries the passion of the Tifosi and boasts more race wins and championships than any other constructor.",
       "logoUrl": "https://media.formula1.com/content/dam/fom-website/teams/2024/ferrari-logo.png",
       "budget": 190000000,
-      "factoryLevel": 86,
+      "factory": {
+        "facilities": [
+          { "type": "wind-tunnel", "quality": 5 },
+          { "type": "cad", "quality": 4 },
+          { "type": "cam", "quality": 4 },
+          { "type": "supercomputer", "quality": 4 },
+          { "type": "workshop", "quality": 4 },
+          { "type": "test-rig", "quality": 4 }
+        ],
+        "limits": {
+          "staffLimit": 138,
+          "departmentLimit": 45,
+          "facilityLimit": 6
+        }
+      },
       "initialEngineManufacturerId": "ferrari-pu",
       "initialSponsorIds": ["shell", "richard-mille", "ups"],
       "initialStaffCounts": {
@@ -95,7 +151,21 @@
       "description": "A legendary constructor with 9 Constructors' Championships, Williams has fallen on hard times since their dominant 1990s era. Under new Team Principal James Vowles, the Grove-based team is embarking on a long-term rebuild to return to the front.",
       "logoUrl": "https://media.formula1.com/content/dam/fom-website/teams/2024/williams-logo.png",
       "budget": 120000000,
-      "factoryLevel": 65,
+      "factory": {
+        "facilities": [
+          { "type": "wind-tunnel", "quality": 3 },
+          { "type": "cad", "quality": 3 },
+          { "type": "cam", "quality": 2 },
+          { "type": "supercomputer", "quality": 2 },
+          { "type": "workshop", "quality": 2 },
+          { "type": "test-rig", "quality": 3 }
+        ],
+        "limits": {
+          "staffLimit": 100,
+          "departmentLimit": 35,
+          "facilityLimit": 6
+        }
+      },
       "initialEngineManufacturerId": "mercedes-hpe",
       "initialSponsorIds": ["hp", "dhl"],
       "initialStaffCounts": {
@@ -116,7 +186,21 @@
       "description": "Red Bull's junior team, formerly known as AlphaTauri and Toro Rosso, serves as a development pathway for young talent. Based in Faenza, Italy, the team occasionally punches above its weight with innovative designs and hungry young drivers.",
       "logoUrl": "https://media.formula1.com/content/dam/fom-website/teams/2024/rb-logo.png",
       "budget": 100000000,
-      "factoryLevel": 55,
+      "factory": {
+        "facilities": [
+          { "type": "wind-tunnel", "quality": 2 },
+          { "type": "cad", "quality": 3 },
+          { "type": "cam", "quality": 2 },
+          { "type": "supercomputer", "quality": 2 },
+          { "type": "workshop", "quality": 2 },
+          { "type": "test-rig", "quality": 2 }
+        ],
+        "limits": {
+          "staffLimit": 88,
+          "departmentLimit": 30,
+          "facilityLimit": 6
+        }
+      },
       "initialEngineManufacturerId": "honda-rbpt",
       "initialSponsorIds": ["dell", "cisco"],
       "initialStaffCounts": {
@@ -137,7 +221,21 @@
       "description": "Backed by billionaire Lawrence Stroll, Aston Martin has invested heavily in a new state-of-the-art factory and recruited top talent from rival teams. The British racing green livery represents their ambition to become a championship-winning constructor.",
       "logoUrl": "https://media.formula1.com/content/dam/fom-website/teams/2024/aston-martin-logo.png",
       "budget": 95000000,
-      "factoryLevel": 52,
+      "factory": {
+        "facilities": [
+          { "type": "wind-tunnel", "quality": 3 },
+          { "type": "cad", "quality": 3 },
+          { "type": "cam", "quality": 2 },
+          { "type": "supercomputer", "quality": 2 },
+          { "type": "workshop", "quality": 2 },
+          { "type": "test-rig", "quality": 2 }
+        ],
+        "limits": {
+          "staffLimit": 85,
+          "departmentLimit": 28,
+          "facilityLimit": 6
+        }
+      },
       "initialEngineManufacturerId": "mercedes-hpe",
       "initialSponsorIds": ["amd", "castrol"],
       "initialStaffCounts": {
@@ -158,7 +256,21 @@
       "description": "The only American team on the grid, Haas F1 entered the sport in 2016 with a unique partnership model leveraging Ferrari technology. Despite limited resources, the team has shown flashes of potential and remains committed to establishing America in F1.",
       "logoUrl": "https://media.formula1.com/content/dam/fom-website/teams/2024/haas-logo.png",
       "budget": 90000000,
-      "factoryLevel": 48,
+      "factory": {
+        "facilities": [
+          { "type": "wind-tunnel", "quality": 2 },
+          { "type": "cad", "quality": 2 },
+          { "type": "cam", "quality": 1 },
+          { "type": "supercomputer", "quality": 1 },
+          { "type": "workshop", "quality": 1 },
+          { "type": "test-rig", "quality": 2 }
+        ],
+        "limits": {
+          "staffLimit": 70,
+          "departmentLimit": 22,
+          "facilityLimit": 6
+        }
+      },
       "initialEngineManufacturerId": "ferrari-pu",
       "initialSponsorIds": ["fedex", "visa"],
       "initialStaffCounts": {
@@ -179,7 +291,21 @@
       "description": "The Swiss team has been a fixture in Formula One since 1993, known for developing young talent and operating efficiently on modest budgets. With Audi set to take over in 2026, the team is in transition while preparing for a new manufacturer era.",
       "logoUrl": "https://media.formula1.com/content/dam/fom-website/teams/2024/kick-sauber-logo.png",
       "budget": 75000000,
-      "factoryLevel": 40,
+      "factory": {
+        "facilities": [
+          { "type": "wind-tunnel", "quality": 2 },
+          { "type": "cad", "quality": 2 },
+          { "type": "cam", "quality": 1 },
+          { "type": "supercomputer", "quality": 1 },
+          { "type": "workshop", "quality": 1 },
+          { "type": "test-rig", "quality": 1 }
+        ],
+        "limits": {
+          "staffLimit": 65,
+          "departmentLimit": 20,
+          "facilityLimit": 5
+        }
+      },
       "initialEngineManufacturerId": "ferrari-pu",
       "initialSponsorIds": ["coca-cola", "allianz"],
       "initialStaffCounts": {
@@ -200,7 +326,21 @@
       "description": "The French national team, backed by Renault, carries the legacy of the manufacturer's Formula One involvement. Despite significant investment, results have been inconsistent, with frequent management changes hindering progress toward the front of the grid.",
       "logoUrl": "https://media.formula1.com/content/dam/fom-website/teams/2024/alpine-logo.png",
       "budget": 60000000,
-      "factoryLevel": 32,
+      "factory": {
+        "facilities": [
+          { "type": "wind-tunnel", "quality": 2 },
+          { "type": "cad", "quality": 2 },
+          { "type": "cam", "quality": 1 },
+          { "type": "supercomputer", "quality": 0 },
+          { "type": "workshop", "quality": 1 },
+          { "type": "test-rig", "quality": 1 }
+        ],
+        "limits": {
+          "staffLimit": 56,
+          "departmentLimit": 18,
+          "facilityLimit": 5
+        }
+      },
       "initialEngineManufacturerId": "renault-sport",
       "initialSponsorIds": ["axa", "pirelli"],
       "initialStaffCounts": {

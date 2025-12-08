@@ -63,6 +63,51 @@ export enum ManufacturerDealType {
 }
 
 // =============================================================================
+// FACTORY TYPES
+// =============================================================================
+
+/**
+ * FacilityType - Types of facilities in the factory
+ * Each facility has quality levels 0-5 (0 = not owned)
+ */
+export enum FacilityType {
+  WindTunnel = 'wind-tunnel', // Required for chassis design stage 4
+  CAD = 'cad', // Computer-Aided Design - speeds chassis/upgrade design
+  CAM = 'cam', // Computer-Aided Manufacturing - speeds chassis/upgrade design
+  Supercomputer = 'supercomputer', // Speeds chassis/upgrade design
+  Workshop = 'workshop', // Speeds technology and driving aid design
+  TestRig = 'test-rig', // Speeds all testing (quality 1-5)
+}
+
+/**
+ * Facility - A single facility in the factory
+ * Quality 0 = not owned, 1-5 = quality level
+ */
+export interface Facility {
+  type: FacilityType;
+  quality: number; // 0-5 (0 = not owned)
+}
+
+/**
+ * FactoryLimits - Capacity constraints for the factory
+ * Expanding the factory increases these limits
+ */
+export interface FactoryLimits {
+  staffLimit: number; // Max total staff (excluding chiefs and drivers)
+  departmentLimit: number; // Max staff per department
+  facilityLimit: number; // Max number of facilities
+}
+
+/**
+ * Factory - Complete factory state for a team
+ * Contains facilities and capacity limits
+ */
+export interface Factory {
+  facilities: Facility[];
+  limits: FactoryLimits;
+}
+
+// =============================================================================
 // CORE TYPES
 // =============================================================================
 
@@ -92,7 +137,7 @@ export interface Team {
   description: string; // 2-4 sentence team bio/history for team selection screen
   logoUrl: string | null; // URL to team logo image, null = use color swatches as fallback
   budget: number; // current balance in dollars
-  factoryLevel: number; // 0-100, affects staff/facility limits
+  factory: Factory; // Factory facilities and limits
   initialEngineManufacturerId: string; // engine supplier at game start
   initialSponsorIds: string[]; // sponsor IDs for game start
   initialStaffCounts: DepartmentStaffCounts; // staff counts at game start

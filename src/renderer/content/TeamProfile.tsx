@@ -280,7 +280,7 @@ export function TeamProfile() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard label="Budget" value={formatCurrency(playerTeam.budget)} accent />
         <StatCard label="Headquarters" value={playerTeam.headquarters} />
-        <StatCard label="Factory Level" value={`${playerTeam.factoryLevel}/100`} />
+        <StatCard label="Facilities" value={`${playerTeam.factory.facilities.filter(f => f.quality > 0).length}/${playerTeam.factory.facilities.length}`} />
         <StatCard label="Setup Points" value={teamState?.setupPoints ?? 0} />
       </div>
 
