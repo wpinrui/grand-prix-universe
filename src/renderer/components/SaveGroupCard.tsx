@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Download, Trash2, Loader2, ChevronDown, ChevronUp, Clock } from 'lucide-react';
 import { TeamBadge } from './TeamBadge';
-import { formatDateTime } from '../utils/format';
+import { formatDateTime, formatSeasonWeek } from '../utils/format';
 import {
   ICON_BUTTON_SUCCESS_CLASSES,
   ICON_BUTTON_DANGER_CLASSES,
@@ -13,6 +13,7 @@ import type { Team } from '../../shared/domain';
 
 /** Width class for badge column - used for badge and history row alignment */
 const BADGE_COLUMN_WIDTH = 'w-14';
+const BADGE_HEIGHT = 'h-12';
 
 function AutosaveLabel() {
   return <span className="ml-2 text-amber-400">(autosave)</span>;
@@ -79,9 +80,9 @@ export function SaveGroupCard({
         {/* Team badge */}
         <div className="shrink-0">
           {team ? (
-            <TeamBadge team={team} className={`${BADGE_COLUMN_WIDTH} h-12`} />
+            <TeamBadge team={team} className={`${BADGE_COLUMN_WIDTH} ${BADGE_HEIGHT}`} />
           ) : (
-            <div className={`${BADGE_COLUMN_WIDTH} h-12 rounded surface-inset flex items-center justify-center`}>
+            <div className={`${BADGE_COLUMN_WIDTH} ${BADGE_HEIGHT} rounded surface-inset flex items-center justify-center`}>
               <span className="text-xs text-muted">?</span>
             </div>
           )}
@@ -92,8 +93,7 @@ export function SaveGroupCard({
           <div className="font-bold text-primary truncate">{primary.teamName}</div>
           <div className="text-sm text-secondary">{primary.playerName}</div>
           <div className="text-xs text-muted mt-1">
-            Season {primary.seasonNumber}, Week {primary.weekNumber} ·{' '}
-            {formatDateTime(primary.savedAt)}
+            {formatSeasonWeek(primary)} · {formatDateTime(primary.savedAt)}
             {primary.isAutosave && <AutosaveLabel />}
           </div>
         </div>
@@ -145,7 +145,7 @@ export function SaveGroupCard({
                 {/* Save info */}
                 <div className="flex-1 min-w-0">
                   <div className="text-sm text-secondary">
-                    Season {save.seasonNumber}, Week {save.weekNumber}
+                    {formatSeasonWeek(save)}
                     {save.isAutosave && <AutosaveLabel />}
                   </div>
                   <div className="text-xs text-muted">

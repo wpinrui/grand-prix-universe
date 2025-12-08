@@ -77,6 +77,13 @@ export function getSaveDisplayName(save: SaveSlotInfo): string {
   return `${save.teamName} - ${save.playerName}`;
 }
 
+/**
+ * Format season and week (e.g., "Season 1, Week 12")
+ */
+export function formatSeasonWeek(save: SaveSlotInfo): string {
+  return `Season ${save.seasonNumber}, Week ${save.weekNumber}`;
+}
+
 // ===========================================
 // SAVE GROUPING
 // ===========================================
