@@ -21,6 +21,7 @@ import {
   News,
   Mail,
   Finance,
+  Staff,
   SavedGames,
   GameOptions,
   ActionScreen,
@@ -156,6 +157,10 @@ export function MainLayout() {
 
     if (selectedSectionId === 'team' && selectedSubItemId === 'finance') {
       return <Finance />;
+    }
+
+    if (selectedSectionId === 'team' && selectedSubItemId === 'staff') {
+      return <Staff />;
     }
 
     if (selectedSectionId === 'fia' && selectedSubItemId === 'championship') {
