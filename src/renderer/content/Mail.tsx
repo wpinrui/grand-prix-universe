@@ -7,14 +7,14 @@ import { getFilteredCalendarEvents } from '../utils/calendar-event-utils';
 // CONSTANTS
 // ===========================================
 
-const MAX_NEWS_ITEMS = 20;
+const MAX_MAIL_ITEMS = 50;
 
 function EmptyState() {
   return (
     <div className="py-12 text-center">
-      <p className="text-secondary">No news yet.</p>
+      <p className="text-secondary">No messages yet.</p>
       <p className="text-muted text-sm mt-1">
-        News headlines will appear here as the season progresses.
+        Messages from departments and staff will appear here.
       </p>
     </div>
   );
@@ -24,34 +24,34 @@ function EmptyState() {
 // MAIN COMPONENT
 // ===========================================
 
-export function News() {
+export function Mail() {
   const { gameState } = useDerivedGameState();
 
   if (!gameState) {
     return (
       <div className="flex items-center justify-center h-full">
-        <p className="text-secondary">Loading news...</p>
+        <p className="text-secondary">Loading mail...</p>
       </div>
     );
   }
 
-  const newsItems = getFilteredCalendarEvents(
+  const mailItems = getFilteredCalendarEvents(
     gameState.calendarEvents,
     gameState.currentDate,
-    CalendarEventType.Headline,
-    MAX_NEWS_ITEMS
+    CalendarEventType.Email,
+    MAX_MAIL_ITEMS
   );
 
   return (
     <div className="max-w-3xl">
-      <SectionHeading>News</SectionHeading>
+      <SectionHeading>Mail</SectionHeading>
       <div className="card">
-        {newsItems.length === 0 ? (
+        {mailItems.length === 0 ? (
           <EmptyState />
         ) : (
           <div className="px-4">
-            {newsItems.map((item) => (
-              <CalendarEventRow key={item.id} item={item} />
+            {mailItems.map((item) => (
+              <CalendarEventRow key={item.id} item={item} showCriticalBadge />
             ))}
           </div>
         )}
