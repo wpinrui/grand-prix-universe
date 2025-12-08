@@ -22,6 +22,7 @@ import {
   Mail,
   Finance,
   Staff,
+  Cars,
   SavedGames,
   GameOptions,
   ActionScreen,
@@ -161,6 +162,10 @@ export function MainLayout() {
 
     if (selectedSectionId === 'team' && selectedSubItemId === 'staff') {
       return <Staff />;
+    }
+
+    if (selectedSectionId === 'engineering' && selectedSubItemId === 'cars') {
+      return <Cars />;
     }
 
     if (selectedSectionId === 'fia' && selectedSubItemId === 'championship') {

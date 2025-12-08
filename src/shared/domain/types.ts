@@ -697,6 +697,7 @@ export interface GameState {
   sponsors: Sponsor[]; // Available sponsors (not all have deals)
   manufacturers: Manufacturer[];
   circuits: Circuit[];
+  cars: Car[]; // Team cars (2 per team in modern F1)
 
   // Runtime State (keyed by entity ID)
   driverStates: Record<string, DriverRuntimeState>;

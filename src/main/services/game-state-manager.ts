@@ -56,6 +56,7 @@ import type {
   Manufacturer,
   Circuit,
   Chief,
+  Car,
   GameRules,
   SeasonRegulations,
   NewGameParams,
@@ -98,6 +99,12 @@ const INITIAL_SPONSOR_SATISFACTION = 60;
 
 /** Initial bonus level for new contracts (0 = no bonus) */
 const INITIAL_BONUS_LEVEL = 0;
+
+/** Initial car condition for new cars (0-100, 100 = perfect) */
+const INITIAL_CAR_CONDITION = 100;
+
+/** Number of cars per team (modern F1) */
+const CARS_PER_TEAM = 2;
 
 /** First race typically in March (week 11) */
 const FIRST_RACE_WEEK = 11;
@@ -294,6 +301,30 @@ function createAllTeamStates(teams: Team[]): Record<string, TeamRuntimeState> {
 }
 
 /**
+ * Creates initial cars for all teams (2 race cars per team)
+ * Uses team's engine manufacturer from initialEngineManufacturerId
+ */
+function createInitialCars(teams: Team[]): Car[] {
+  const cars: Car[] = [];
+
+  for (const team of teams) {
+    for (let i = 1; i <= CARS_PER_TEAM; i++) {
+      cars.push({
+        id: `${team.id}-car-${i}`,
+        teamId: team.id,
+        chassisId: `${team.id}-chassis-s1`, // Season 1 chassis placeholder
+        engineId: team.initialEngineManufacturerId,
+        condition: INITIAL_CAR_CONDITION,
+        mileage: 0,
+        isRaceCar: true,
+      });
+    }
+  }
+
+  return cars;
+}
+
+/**
  * Creates initial driver standings (all zeros, positions assigned by array order)
  * Only includes drivers with race seats (excludes test drivers and free agents)
  */
@@ -473,6 +504,9 @@ function buildGameState(params: BuildGameStateParams): GameState {
     seasonNumber
   );
 
+  // Create initial cars (2 per team)
+  const cars = createInitialCars(teams);
+
   // Create player info and date
   const player: PlayerInfo = {
     name: playerName,
@@ -505,6 +539,7 @@ function buildGameState(params: BuildGameStateParams): GameState {
     sponsors,
     manufacturers,
     circuits,
+    cars,
 
     driverStates,
     teamStates,
