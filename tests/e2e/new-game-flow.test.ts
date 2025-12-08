@@ -40,15 +40,14 @@ async function runTest() {
   // Step 4: Enter name and submit
   await verifyStep(page, 'Enter player name and click OK', async () => {
     await page.fill('input[placeholder="Enter your name"]', 'Test Player');
-    await page.click('text=OK');
+    // Wait for button to be enabled (React needs to re-render after input change)
+    await page.waitForSelector('button:has-text("OK"):not([disabled])');
+    await page.click('button:has-text("OK")');
   });
 
   // Step 5: Team Select Screen
   await verifyStep(page, 'Team Select screen loaded', async () => {
-    // Wait for team select to load - adjust selector based on actual UI
-    await page.waitForSelector('.team-select-screen', { timeout: 5000 }).catch(() => {
-      console.log('  (team-select-screen class not found, checking for other indicators...)');
-    });
+    await page.waitForSelector('text=Select Team');
   });
 
   console.log('\n=== TEST COMPLETE ===');
