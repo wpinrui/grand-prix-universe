@@ -18,6 +18,9 @@ interface CareerStartedData {
   teamId: string;
 }
 
+/** Minimal team info needed for display */
+type TeamInfo = { id: string; name: string };
+
 /** Readable labels for event types */
 const EVENT_TYPE_LABELS: Record<string, string> = {
   CAREER_STARTED: 'Career Started',
@@ -77,7 +80,7 @@ function getEventTypeLabel(type: string): string {
 /**
  * Generate a description for an event based on its type and data
  */
-function getEventDescription(event: GameEvent, teams: { id: string; name: string }[]): string {
+function getEventDescription(event: GameEvent, teams: TeamInfo[]): string {
   const getTeamName = (teamId: string) => teams.find((t) => t.id === teamId)?.name ?? teamId;
 
   switch (event.type) {
@@ -212,16 +215,17 @@ function CareerStats({
 
 interface TimelineEventProps {
   event: GameEvent;
-  teams: { id: string; name: string }[];
+  teams: TeamInfo[];
+  isLast: boolean;
 }
 
-function TimelineEvent({ event, teams }: TimelineEventProps) {
+function TimelineEvent({ event, teams, isLast }: TimelineEventProps) {
   const description = getEventDescription(event, teams);
 
   return (
-    <div className="relative pl-6 pb-6 last:pb-0">
-      {/* Timeline connector line */}
-      <div className="absolute left-[7px] top-3 bottom-0 w-px bg-neutral-700 last:hidden" />
+    <div className={`relative pl-6 ${isLast ? '' : 'pb-6'}`}>
+      {/* Timeline connector line - hidden on last event */}
+      {!isLast && <div className="absolute left-[7px] top-3 bottom-0 w-px bg-neutral-700" />}
 
       {/* Timeline dot */}
       <div
@@ -245,7 +249,7 @@ function TimelineEvent({ event, teams }: TimelineEventProps) {
 
 interface CareerTimelineProps {
   events: GameEvent[];
-  teams: { id: string; name: string }[];
+  teams: TeamInfo[];
 }
 
 function CareerTimeline({ events, teams }: CareerTimelineProps) {
@@ -261,8 +265,13 @@ function CareerTimeline({ events, teams }: CareerTimelineProps) {
 
   return (
     <div className="space-y-0">
-      {events.map((event) => (
-        <TimelineEvent key={event.id} event={event} teams={teams} />
+      {events.map((event, index) => (
+        <TimelineEvent
+          key={event.id}
+          event={event}
+          teams={teams}
+          isLast={index === events.length - 1}
+        />
       ))}
     </div>
   );
