@@ -315,7 +315,7 @@ export function TeamSelectScreen() {
           {/* Left: Team info */}
           <div className="space-y-4">
             <LabeledField label="Principal">{selectedTeam.principal}</LabeledField>
-            <LabeledField label="Facilities">{selectedTeam.factory.facilities.filter(f => f.quality > 0).length}/6</LabeledField>
+            <LabeledField label="Facilities">{selectedTeam.factory.facilities.filter(f => f.quality > 0).length}/{selectedTeam.factory.facilities.length}</LabeledField>
             <LabeledField label="About" variant="description">{selectedTeam.description}</LabeledField>
           </div>
 
