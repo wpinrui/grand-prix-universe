@@ -1,12 +1,9 @@
 import { useDerivedGameState } from '../hooks';
-import { SectionHeading, SummaryStat, DetailRow, ProgressBar } from '../components';
-import { ACCENT_CARD_STYLE } from '../utils/theme-styles';
+import { SummaryStat, DetailRow, ProgressBar, CarViewer3D } from '../components';
 import {
   ManufacturerType,
   ManufacturerDealType,
   type Car,
-  type Manufacturer,
-  type ActiveManufacturerContract,
 } from '../../shared/domain';
 
 // ===========================================
@@ -44,94 +41,27 @@ function getCarNumber(carId: string): string {
 }
 
 // ===========================================
-// CAR CARD COMPONENT
+// OVERLAY PANEL COMPONENTS
 // ===========================================
 
-interface CarCardProps {
+interface CarStatCardProps {
   car: Car;
   engineName: string;
 }
 
-function CarCard({ car, engineName }: CarCardProps) {
+function CarStatCard({ car, engineName }: CarStatCardProps) {
   return (
-    <div className="card p-4">
-      <div className="flex items-start justify-between mb-3">
-        <div>
-          <div className="text-xs font-medium text-muted uppercase tracking-wider mb-1">
-            Race Car
-          </div>
-          <div className="text-lg font-semibold text-primary">
-            Car {getCarNumber(car.id)}
-          </div>
-        </div>
-        <div className="text-right">
-          <div className="text-xs text-muted">Condition</div>
-          <ProgressBar value={car.condition} />
-        </div>
+    <div className="card p-3 backdrop-blur-sm bg-surface/80">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-sm font-semibold text-primary">Car {getCarNumber(car.id)}</span>
+        <ProgressBar value={car.condition} />
       </div>
-
-      <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+      <div className="space-y-1 text-xs">
         <DetailRow label="Status" value={getConditionLabel(car.condition)} />
         <DetailRow label="Mileage" value={<span className="font-mono">{formatMileage(car.mileage)}</span>} />
         <DetailRow label="Engine" value={engineName} />
       </div>
     </div>
-  );
-}
-
-// ===========================================
-// CARS LIST SECTION
-// ===========================================
-
-interface CarsListProps {
-  cars: Car[];
-  engineName: string;
-}
-
-function CarsList({ cars, engineName }: CarsListProps) {
-  return (
-    <section>
-      <SectionHeading>Team Cars</SectionHeading>
-      {cars.length === 0 ? (
-        <p className="text-muted">No cars available</p>
-      ) : (
-        <div className="grid grid-cols-2 gap-4">
-          {cars.map((car) => (
-            <CarCard key={car.id} car={car} engineName={engineName} />
-          ))}
-        </div>
-      )}
-    </section>
-  );
-}
-
-// ===========================================
-// ENGINE INFO SECTION
-// ===========================================
-
-interface EngineInfoProps {
-  manufacturer: Manufacturer;
-  contract: ActiveManufacturerContract;
-}
-
-function EngineInfo({ manufacturer, contract }: EngineInfoProps) {
-  return (
-    <section>
-      <SectionHeading>Engine Supplier</SectionHeading>
-      <div className="card p-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="text-lg font-semibold text-primary">{manufacturer.name}</div>
-          <div className="text-sm font-medium text-accent">
-            {DEAL_TYPE_LABELS[contract.dealType]}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-          <DetailRow label="Quality Rating" value={`${manufacturer.quality}/100`} />
-          <DetailRow label="Contract Until" value={`Season ${contract.endSeason}`} />
-        </div>
-      </div>
-    </section>
   );
 }
 
@@ -170,25 +100,43 @@ export function Cars() {
   const totalMileage = teamCars.reduce((sum, c) => sum + c.mileage, 0);
 
   const engineName = engineManufacturer?.name ?? 'Unknown';
+  const dealType = engineContract ? DEAL_TYPE_LABELS[engineContract.dealType] : 'None';
 
   return (
-    <div className="space-y-8 max-w-4xl">
-      {/* Summary Card */}
-      <div className="card p-6" style={ACCENT_CARD_STYLE}>
-        <div className="grid grid-cols-3 gap-8">
+    <div className="relative w-full h-full overflow-hidden">
+      {/* 3D Car Viewer - fills entire content area */}
+      <CarViewer3D
+        primaryColor={playerTeam.primaryColor}
+        className="absolute inset-0"
+      />
+
+      {/* Top-left: Summary stats overlay */}
+      <div className="absolute top-4 left-4 card p-4 backdrop-blur-sm bg-surface/80 min-w-[200px]">
+        <div className="space-y-3">
           <SummaryStat label="Race Cars" value={teamCars.length} />
           <SummaryStat label="Avg Condition" value={`${avgCondition}%`} />
           <SummaryStat label="Total Mileage" value={formatMileage(totalMileage)} />
         </div>
       </div>
 
-      {/* Cars List */}
-      <CarsList cars={teamCars} engineName={engineName} />
+      {/* Bottom-left: Engine supplier overlay */}
+      <div className="absolute bottom-4 left-4 card p-3 backdrop-blur-sm bg-surface/80 min-w-[200px]">
+        <div className="text-xs text-muted uppercase tracking-wider mb-1">Engine</div>
+        <div className="text-sm font-semibold text-primary">{engineName}</div>
+        <div className="text-xs text-accent">{dealType}</div>
+      </div>
 
-      {/* Engine Info */}
-      {engineManufacturer && engineContract && (
-        <EngineInfo manufacturer={engineManufacturer} contract={engineContract} />
-      )}
+      {/* Right side: Car cards stacked */}
+      <div className="absolute top-4 right-4 space-y-3 max-w-[220px]">
+        {teamCars.map((car) => (
+          <CarStatCard key={car.id} car={car} engineName={engineName} />
+        ))}
+      </div>
+
+      {/* Drag hint */}
+      <div className="absolute bottom-4 right-4 text-xs text-muted/60">
+        Drag to rotate • Scroll to zoom
+      </div>
     </div>
   );
 }
