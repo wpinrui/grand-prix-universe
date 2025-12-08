@@ -3,51 +3,21 @@ import { useDerivedGameState } from '../hooks';
 import { TeamBadge } from '../components/TeamBadge';
 import { SectionHeading } from '../components';
 import { ACCENT_CARD_STYLE, ACCENT_TEXT_STYLE } from '../utils/theme-styles';
-import { formatCurrency, formatAnnualSalary, DRIVER_ROLE_LABELS } from '../utils/format';
+import {
+  formatCurrency,
+  formatAnnualSalary,
+  DRIVER_ROLE_LABELS,
+  DEPARTMENT_LABELS,
+  CHIEF_ROLE_LABELS,
+  STAFF_QUALITY_LABELS,
+  DEPARTMENT_ORDER,
+  STAFF_QUALITY_ORDER,
+} from '../utils/format';
 import type {
   Driver,
   Chief,
   TeamRuntimeState,
-  Department,
-  StaffQuality,
-  ChiefRole,
 } from '../../shared/domain';
-
-// ===========================================
-// CONSTANTS
-// ===========================================
-
-const STAFF_QUALITY_ORDER: StaffQuality[] = [
-  'excellent',
-  'very-good',
-  'good',
-  'average',
-  'trainee',
-];
-
-const DEPARTMENT_LABELS: Record<Department, string> = {
-  commercial: 'Commercial',
-  design: 'Design',
-  engineering: 'Engineering',
-  mechanics: 'Mechanics',
-};
-
-const DEPARTMENTS = Object.keys(DEPARTMENT_LABELS) as Department[];
-
-const CHIEF_ROLE_LABELS: Record<ChiefRole, string> = {
-  designer: 'Chief Designer',
-  engineer: 'Chief Engineer',
-  mechanic: 'Chief Mechanic',
-  commercial: 'Commercial Director',
-};
-
-const STAFF_QUALITY_LABELS: Record<StaffQuality, string> = {
-  excellent: 'Excellent',
-  'very-good': 'Very Good',
-  good: 'Good',
-  average: 'Average',
-  trainee: 'Trainee',
-};
 
 const MORALE_THRESHOLDS = {
   EXCELLENT: 80,
@@ -217,7 +187,7 @@ interface StaffSummaryProps {
 function StaffSummary({ teamState }: StaffSummaryProps) {
   return (
     <div className="space-y-3">
-      {DEPARTMENTS.map((dept) => {
+      {DEPARTMENT_ORDER.map((dept) => {
         const counts = teamState.staffCounts[dept];
         const total = STAFF_QUALITY_ORDER.reduce(
           (sum, quality) => sum + (counts[quality] || 0),
@@ -347,7 +317,7 @@ export function TeamProfile() {
         <section>
           <SectionHeading>Department Morale</SectionHeading>
           <div className="card p-5 space-y-3">
-            {DEPARTMENTS.map((dept) => (
+            {DEPARTMENT_ORDER.map((dept) => (
               <MoraleBar
                 key={dept}
                 label={DEPARTMENT_LABELS[dept]}

@@ -2,12 +2,17 @@
  * Shared formatting utilities
  */
 
-import type { DriverRole } from '../../shared/domain';
+import {
+  type DriverRole,
+  Department,
+  StaffQuality,
+  ChiefRole,
+} from '../../shared/domain';
 import { compareSavesByNewest, type SaveSlotInfo } from '../../shared/ipc';
 import { formatGameDate } from '../../shared/utils/date-utils';
 
 // ===========================================
-// DRIVER ROLE LABELS
+// ROLE & LABEL CONSTANTS
 // ===========================================
 
 export const DRIVER_ROLE_LABELS: Record<DriverRole, string> = {
@@ -15,6 +20,65 @@ export const DRIVER_ROLE_LABELS: Record<DriverRole, string> = {
   second: '2nd Driver',
   equal: 'Driver',
   test: 'Test Driver',
+};
+
+export const DEPARTMENT_LABELS: Record<Department, string> = {
+  [Department.Commercial]: 'Commercial',
+  [Department.Design]: 'Design',
+  [Department.Engineering]: 'Engineering',
+  [Department.Mechanics]: 'Mechanics',
+};
+
+export const CHIEF_ROLE_LABELS: Record<ChiefRole, string> = {
+  [ChiefRole.Commercial]: 'Commercial Manager',
+  [ChiefRole.Designer]: 'Chief Designer',
+  [ChiefRole.Engineer]: 'Chief Engineer',
+  [ChiefRole.Mechanic]: 'Chief Mechanic',
+};
+
+export const STAFF_QUALITY_LABELS: Record<StaffQuality, string> = {
+  [StaffQuality.Excellent]: 'Excellent',
+  [StaffQuality.VeryGood]: 'Very Good',
+  [StaffQuality.Good]: 'Good',
+  [StaffQuality.Average]: 'Average',
+  [StaffQuality.Trainee]: 'Trainee',
+};
+
+// ===========================================
+// DISPLAY ORDER ARRAYS
+// ===========================================
+
+/** Display order for departments (Design first as most important) */
+export const DEPARTMENT_ORDER: Department[] = [
+  Department.Design,
+  Department.Engineering,
+  Department.Mechanics,
+  Department.Commercial,
+];
+
+/** Display order for staff quality (best to worst) */
+export const STAFF_QUALITY_ORDER: StaffQuality[] = [
+  StaffQuality.Excellent,
+  StaffQuality.VeryGood,
+  StaffQuality.Good,
+  StaffQuality.Average,
+  StaffQuality.Trainee,
+];
+
+/** Display order for chief roles */
+export const CHIEF_ROLE_ORDER: ChiefRole[] = [
+  ChiefRole.Designer,
+  ChiefRole.Engineer,
+  ChiefRole.Mechanic,
+  ChiefRole.Commercial,
+];
+
+/** Maps ChiefRole to its corresponding Department */
+export const ROLE_TO_DEPARTMENT: Record<ChiefRole, Department> = {
+  [ChiefRole.Commercial]: Department.Commercial,
+  [ChiefRole.Designer]: Department.Design,
+  [ChiefRole.Engineer]: Department.Engineering,
+  [ChiefRole.Mechanic]: Department.Mechanics,
 };
 
 // ===========================================

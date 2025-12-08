@@ -1,74 +1,23 @@
 import { useDerivedGameState } from '../hooks';
 import { SectionHeading } from '../components';
-import { formatCurrency } from '../utils/format';
+import {
+  formatCurrency,
+  DEPARTMENT_LABELS,
+  CHIEF_ROLE_LABELS,
+  STAFF_QUALITY_LABELS,
+  DEPARTMENT_ORDER,
+  STAFF_QUALITY_ORDER,
+  CHIEF_ROLE_ORDER,
+  ROLE_TO_DEPARTMENT,
+} from '../utils/format';
 import { ACCENT_CARD_STYLE, ACCENT_TEXT_STYLE } from '../utils/theme-styles';
 import {
   Department,
   StaffQuality,
-  ChiefRole,
   type Chief,
   type StaffCounts,
   type DepartmentMorale,
 } from '../../shared/domain';
-
-// ===========================================
-// CONSTANTS
-// ===========================================
-
-const DEPARTMENT_LABELS: Record<Department, string> = {
-  [Department.Commercial]: 'Commercial',
-  [Department.Design]: 'Design',
-  [Department.Engineering]: 'Engineering',
-  [Department.Mechanics]: 'Mechanics',
-};
-
-const CHIEF_ROLE_LABELS: Record<ChiefRole, string> = {
-  [ChiefRole.Commercial]: 'Commercial Manager',
-  [ChiefRole.Designer]: 'Chief Designer',
-  [ChiefRole.Engineer]: 'Chief Engineer',
-  [ChiefRole.Mechanic]: 'Chief Mechanic',
-};
-
-const STAFF_QUALITY_LABELS: Record<StaffQuality, string> = {
-  [StaffQuality.Excellent]: 'Excellent',
-  [StaffQuality.VeryGood]: 'Very Good',
-  [StaffQuality.Good]: 'Good',
-  [StaffQuality.Average]: 'Average',
-  [StaffQuality.Trainee]: 'Trainee',
-};
-
-/** Order for display (best to worst) */
-const QUALITY_ORDER: StaffQuality[] = [
-  StaffQuality.Excellent,
-  StaffQuality.VeryGood,
-  StaffQuality.Good,
-  StaffQuality.Average,
-  StaffQuality.Trainee,
-];
-
-/** Maps ChiefRole to Department */
-const ROLE_TO_DEPARTMENT: Record<ChiefRole, Department> = {
-  [ChiefRole.Commercial]: Department.Commercial,
-  [ChiefRole.Designer]: Department.Design,
-  [ChiefRole.Engineer]: Department.Engineering,
-  [ChiefRole.Mechanic]: Department.Mechanics,
-};
-
-/** Display order for chiefs (matches department importance) */
-const CHIEF_ROLE_ORDER: ChiefRole[] = [
-  ChiefRole.Designer,
-  ChiefRole.Engineer,
-  ChiefRole.Mechanic,
-  ChiefRole.Commercial,
-];
-
-/** Display order for departments */
-const DEPARTMENT_ORDER: Department[] = [
-  Department.Design,
-  Department.Engineering,
-  Department.Mechanics,
-  Department.Commercial,
-];
 
 // ===========================================
 // HELPER FUNCTIONS
@@ -251,7 +200,7 @@ function DepartmentCard({ department, staffCounts, morale }: DepartmentCardProps
       </div>
 
       <div className="space-y-1 mb-3">
-        {QUALITY_ORDER.map((quality) => (
+        {STAFF_QUALITY_ORDER.map((quality) => (
           <StaffRow key={quality} quality={quality} count={staffCounts[quality]} />
         ))}
       </div>
