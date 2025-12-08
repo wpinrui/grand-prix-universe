@@ -22,6 +22,7 @@ import {
   Mail,
   Finance,
   Staff,
+  PlayerWiki,
   Cars,
   SavedGames,
   GameOptions,
@@ -162,6 +163,10 @@ export function MainLayout() {
 
     if (selectedSectionId === 'team' && selectedSubItemId === 'staff') {
       return <Staff />;
+    }
+
+    if (selectedSectionId === 'team' && selectedSubItemId === 'wiki') {
+      return <PlayerWiki />;
     }
 
     if (selectedSectionId === 'engineering' && selectedSubItemId === 'cars') {
