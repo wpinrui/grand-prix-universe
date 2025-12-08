@@ -3,7 +3,7 @@
     {
       "id": "mclaren",
       "name": "McLaren",
-      "shortName": "MCL",
+      "shortName": "McLaren",
       "primaryColor": "#FF8000",
       "secondaryColor": "#0057B8",
       "headquarters": "United Kingdom",
@@ -24,7 +24,7 @@
     {
       "id": "mercedes",
       "name": "Mercedes-AMG Petronas F1 Team",
-      "shortName": "MER",
+      "shortName": "Mercedes",
       "primaryColor": "#27F4D2",
       "secondaryColor": "#000000",
       "headquarters": "United Kingdom",
@@ -45,7 +45,7 @@
     {
       "id": "red-bull-racing",
       "name": "Oracle Red Bull Racing",
-      "shortName": "RBR",
+      "shortName": "Red Bull",
       "primaryColor": "#3671C6",
       "secondaryColor": "#FFD700",
       "headquarters": "United Kingdom",
@@ -66,7 +66,7 @@
     {
       "id": "ferrari",
       "name": "Scuderia Ferrari",
-      "shortName": "FER",
+      "shortName": "Ferrari",
       "primaryColor": "#E80020",
       "secondaryColor": "#FBBF24",
       "headquarters": "Italy",
@@ -87,7 +87,7 @@
     {
       "id": "williams",
       "name": "Williams Racing",
-      "shortName": "WIL",
+      "shortName": "Williams",
       "primaryColor": "#64C4FF",
       "secondaryColor": "#000000",
       "headquarters": "United Kingdom",
@@ -108,7 +108,7 @@
     {
       "id": "racing-bulls",
       "name": "Visa Cash App RB",
-      "shortName": "RB",
+      "shortName": "Racing Bulls",
       "primaryColor": "#6692FF",
       "secondaryColor": "#FFFFFF",
       "headquarters": "Italy",
@@ -129,7 +129,7 @@
     {
       "id": "aston-martin",
       "name": "Aston Martin Aramco F1 Team",
-      "shortName": "AMR",
+      "shortName": "Aston Martin",
       "primaryColor": "#229971",
       "secondaryColor": "#CEDC00",
       "headquarters": "United Kingdom",
@@ -150,7 +150,7 @@
     {
       "id": "haas",
       "name": "MoneyGram Haas F1 Team",
-      "shortName": "HAA",
+      "shortName": "Haas",
       "primaryColor": "#B6BABD",
       "secondaryColor": "#E10600",
       "headquarters": "United States",
@@ -171,7 +171,7 @@
     {
       "id": "kick-sauber",
       "name": "Stake F1 Team Kick Sauber",
-      "shortName": "KIC",
+      "shortName": "Sauber",
       "primaryColor": "#52E252",
       "secondaryColor": "#000000",
       "headquarters": "Switzerland",
@@ -192,7 +192,7 @@
     {
       "id": "alpine",
       "name": "BWT Alpine F1 Team",
-      "shortName": "ALP",
+      "shortName": "Alpine",
       "primaryColor": "#FF87BC",
       "secondaryColor": "#0090FF",
       "headquarters": "France",

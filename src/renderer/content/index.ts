@@ -4,4 +4,5 @@ export { GameOptions } from './GameOptions';
 export { ActionScreen, ACTION_CONFIGS, isActionType, type ActionType } from './ActionScreen';
 export { Championship } from './Championship';
 export { Races } from './Races';
+export { Results } from './Results';
 export { RaceWeekend } from './RaceWeekend';
