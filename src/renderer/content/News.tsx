@@ -15,9 +15,10 @@ const MAX_NEWS_ITEMS = 20;
 
 /**
  * Sort news items by date (newest first)
+ * daysBetween returns positive if b > a, so negate for descending order
  */
 function sortByDateDescending(a: CalendarEvent, b: CalendarEvent): number {
-  return daysBetween(a.date, b.date);
+  return daysBetween(b.date, a.date);
 }
 
 /**
