@@ -9,6 +9,7 @@
     "start:debug": "electron-forge start -- --remote-debugging-port=9222",
     "codegen": "npx cross-env PWDEBUG=1 npx ts-node tests/e2e/codegen.ts",
     "test:e2e": "npx ts-node",
+    "test:e2e:all": "npx ts-node tests/e2e/run-all.ts",
     "test:e2e:debug": "npx cross-env PWDEBUG=1 npx ts-node",
     "package": "electron-forge package",
     "make": "electron-forge make",
