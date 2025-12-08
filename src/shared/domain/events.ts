@@ -14,8 +14,14 @@ import type {
   EventImportance,
   EntityRef,
   GameDate,
-  EntityType,
 } from './types';
+import { EntityType } from './types';
+
+/**
+ * Fixed ID for the player manager entity.
+ * There's only one player per game, so this ID is constant.
+ */
+export const PLAYER_MANAGER_ID = 'player';
 
 /**
  * Parameters for creating a new game event
@@ -45,10 +51,7 @@ export interface CreateEventParams {
  * const event = createEvent({
  *   type: 'CAREER_STARTED',
  *   date: { year: 2025, month: 1, day: 1 },
- *   involvedEntities: [
- *     { type: EntityType.Manager, id: 'player' },
- *     { type: EntityType.Team, id: 'ferrari' },
- *   ],
+ *   involvedEntities: [managerRef(), teamRef('ferrari')],
  *   data: { playerName: 'John Doe', teamId: 'ferrari' },
  *   importance: 'high',
  * });
@@ -70,14 +73,14 @@ export function createEvent(params: CreateEventParams): GameEvent {
  * Helper to create an EntityRef for a driver
  */
 export function driverRef(driverId: string): EntityRef {
-  return { type: 'driver' as EntityType, id: driverId };
+  return { type: EntityType.Driver, id: driverId };
 }
 
 /**
  * Helper to create an EntityRef for a team
  */
 export function teamRef(teamId: string): EntityRef {
-  return { type: 'team' as EntityType, id: teamId };
+  return { type: EntityType.Team, id: teamId };
 }
 
 /**
@@ -85,26 +88,26 @@ export function teamRef(teamId: string): EntityRef {
  * Uses a fixed ID since there's only one player per game
  */
 export function managerRef(): EntityRef {
-  return { type: 'manager' as EntityType, id: 'player' };
+  return { type: EntityType.Manager, id: PLAYER_MANAGER_ID };
 }
 
 /**
  * Helper to create an EntityRef for a circuit
  */
 export function circuitRef(circuitId: string): EntityRef {
-  return { type: 'circuit' as EntityType, id: circuitId };
+  return { type: EntityType.Circuit, id: circuitId };
 }
 
 /**
  * Helper to create an EntityRef for a sponsor
  */
 export function sponsorRef(sponsorId: string): EntityRef {
-  return { type: 'sponsor' as EntityType, id: sponsorId };
+  return { type: EntityType.Sponsor, id: sponsorId };
 }
 
 /**
  * Helper to create an EntityRef for a staff member (chief)
  */
 export function staffRef(staffId: string): EntityRef {
-  return { type: 'staff' as EntityType, id: staffId };
+  return { type: EntityType.Staff, id: staffId };
 }
