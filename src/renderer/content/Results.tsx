@@ -166,6 +166,33 @@ function DetailHeader({ flagCountry, title, subtitle }: DetailHeaderProps) {
   );
 }
 
+interface ClickableDriverNameProps {
+  driver: Driver | undefined;
+  fallbackId: string;
+  onClick: () => void;
+  nameStyle?: React.CSSProperties;
+  className?: string;
+}
+
+function ClickableDriverName({
+  driver,
+  fallbackId,
+  onClick,
+  nameStyle,
+  className = '',
+}: ClickableDriverNameProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`hover:underline font-semibold ${className}`}
+      style={nameStyle}
+    >
+      {formatDriverName(driver, fallbackId)}
+    </button>
+  );
+}
+
 // ===========================================
 // SEASON RESULTS GRID
 // ===========================================
@@ -245,7 +272,6 @@ function DriverRow({
   onRaceClick,
 }: DriverRowProps) {
   const styles = getHighlightedRowStyles(isPlayerTeam);
-  const driverName = formatDriverName(driver, standing.driverId);
 
   const resultsByRace = useMemo(() => {
     const map = new Map<number, DriverRaceResult>();
@@ -266,14 +292,13 @@ function DriverRow({
         {standing.position}
       </td>
       <td className="w-40 px-3 py-2 whitespace-nowrap">
-        <button
-          type="button"
+        <ClickableDriverName
+          driver={driver}
+          fallbackId={standing.driverId}
           onClick={onDriverClick}
-          className="text-left hover:underline font-semibold text-primary"
-          style={styles.nameStyle}
-        >
-          {driverName}
-        </button>
+          nameStyle={styles.nameStyle}
+          className="text-left text-primary"
+        />
       </td>
       <td className="w-28 px-2 py-2 text-secondary text-sm whitespace-nowrap">
         {team?.shortName ?? standing.teamId}
@@ -417,14 +442,12 @@ function RaceDetailView({
                         {q.gridPosition}
                       </td>
                       <td className={TABLE_CELL_BASE}>
-                        <button
-                          type="button"
+                        <ClickableDriverName
+                          driver={driver}
+                          fallbackId={q.driverId}
                           onClick={() => onDriverClick(q.driverId)}
-                          className="hover:underline font-semibold"
-                          style={rowStyles.nameStyle}
-                        >
-                          {formatDriverName(driver, q.driverId)}
-                        </button>
+                          nameStyle={rowStyles.nameStyle}
+                        />
                       </td>
                       <td className={`${TABLE_CELL_BASE} text-secondary`}>
                         {team?.name ?? q.teamId}
@@ -472,14 +495,12 @@ function RaceDetailView({
                         {formatPosition(r.finishPosition, r.status)}
                       </td>
                       <td className={TABLE_CELL_BASE}>
-                        <button
-                          type="button"
+                        <ClickableDriverName
+                          driver={driver}
+                          fallbackId={r.driverId}
                           onClick={() => onDriverClick(r.driverId)}
-                          className="hover:underline font-semibold"
-                          style={rowStyles.nameStyle}
-                        >
-                          {formatDriverName(driver, r.driverId)}
-                        </button>
+                          nameStyle={rowStyles.nameStyle}
+                        />
                       </td>
                       <td className={`${TABLE_CELL_BASE} text-secondary`}>
                         {team?.name ?? r.teamId}
