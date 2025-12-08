@@ -7,6 +7,7 @@ import {
   TABLE_HEADER_ROW_CLASS,
   TABLE_BODY_CLASS,
   getHighlightedRowStyles,
+  GHOST_BUTTON_CLASSES,
 } from '../utils/theme-styles';
 import { getRaceSunday, formatGameDate, daysBetween } from '../../shared/utils/date-utils';
 import type { CalendarEntry, Circuit, GameDate } from '../../shared/domain';
@@ -54,9 +55,10 @@ interface RaceRowProps {
   raceDate: GameDate;
   currentDate: GameDate;
   status: RaceStatus;
+  onViewReport?: (raceNumber: number) => void;
 }
 
-function RaceRow({ entry, circuit, raceDate, currentDate, status }: RaceRowProps) {
+function RaceRow({ entry, circuit, raceDate, currentDate, status, onViewReport }: RaceRowProps) {
   const isNext = status === 'next';
   const styles = getHighlightedRowStyles(isNext);
   const daysUntil = status !== 'completed' ? getDaysUntilText(raceDate, currentDate) : '';
@@ -104,6 +106,19 @@ function RaceRow({ entry, circuit, raceDate, currentDate, status }: RaceRowProps
       <td className={`${TABLE_CELL_BASE} text-center w-28`}>
         <StatusBadge status={status} />
       </td>
+
+      {/* Actions */}
+      <td className={`${TABLE_CELL_BASE} text-center w-24`}>
+        {status === 'completed' && onViewReport && (
+          <button
+            type="button"
+            onClick={() => onViewReport(entry.raceNumber)}
+            className={`${GHOST_BUTTON_CLASSES} text-xs py-1 px-2`}
+          >
+            Report
+          </button>
+        )}
+      </td>
     </tr>
   );
 }
@@ -112,7 +127,11 @@ function RaceRow({ entry, circuit, raceDate, currentDate, status }: RaceRowProps
 // MAIN COMPONENT
 // ===========================================
 
-export function Races() {
+interface RacesProps {
+  onViewRaceReport?: (raceNumber: number) => void;
+}
+
+export function Races({ onViewRaceReport }: RacesProps) {
   const { gameState, nextRace } = useDerivedGameState();
 
   if (!gameState) {
@@ -143,6 +162,7 @@ export function Races() {
                 <HeaderCell align="left">Date</HeaderCell>
                 <HeaderCell className="whitespace-nowrap">In</HeaderCell>
                 <HeaderCell className="w-28">Status</HeaderCell>
+                <HeaderCell className="w-24"></HeaderCell>
               </tr>
             </thead>
             <tbody className={TABLE_BODY_CLASS}>
@@ -159,6 +179,7 @@ export function Races() {
                     raceDate={raceDate}
                     currentDate={currentDate}
                     status={status}
+                    onViewReport={onViewRaceReport}
                   />
                 );
               })}

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useDerivedGameState } from '../hooks';
 import { SectionHeading, HeaderCell } from '../components';
 import { FlagIcon } from '../components/FlagIcon';
@@ -625,9 +625,22 @@ function DriverCareerView({
 // MAIN COMPONENT
 // ===========================================
 
-export function Results() {
+interface ResultsProps {
+  initialRaceNumber?: number | null;
+  onRaceViewed?: () => void;
+}
+
+export function Results({ initialRaceNumber, onRaceViewed }: ResultsProps) {
   const { gameState, playerTeam } = useDerivedGameState();
   const [view, setView] = useState<ViewState>({ type: 'grid' });
+
+  // Navigate to specific race when initialRaceNumber is provided
+  useEffect(() => {
+    if (initialRaceNumber !== null && initialRaceNumber !== undefined) {
+      setView({ type: 'race', raceNumber: initialRaceNumber });
+      onRaceViewed?.();
+    }
+  }, [initialRaceNumber, onRaceViewed]);
 
   const goToGrid = () => setView({ type: 'grid' });
   const goToRace = (raceNumber: number) => setView({ type: 'race', raceNumber });

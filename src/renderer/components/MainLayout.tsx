@@ -40,6 +40,7 @@ export function MainLayout() {
   const [activeDialog, setActiveDialog] = useState<ActiveDialog>(null);
   const [showAutoSaveToast, setShowAutoSaveToast] = useState(false);
   const [isCalendarPreviewOpen, setIsCalendarPreviewOpen] = useState(false);
+  const [targetRaceNumber, setTargetRaceNumber] = useState<number | null>(null);
 
   const navigate = useNavigate();
   const clearGameState = useClearGameState();
@@ -63,9 +64,13 @@ export function MainLayout() {
   const handleSectionClick = (section: Section) => {
     setSelectedSectionId(section.id);
     setSelectedSubItemId(section.subItems[0].id);
+    setTargetRaceNumber(null);
   };
 
   const handleSubItemClick = (subItemId: string) => {
+    if (subItemId !== 'results') {
+      setTargetRaceNumber(null);
+    }
     setSelectedSubItemId(subItemId);
   };
 
@@ -73,6 +78,12 @@ export function MainLayout() {
   const navigateToProfile = () => {
     setSelectedSectionId('team');
     setSelectedSubItemId('profile');
+  };
+
+  const navigateToRaceReport = (raceNumber: number) => {
+    setTargetRaceNumber(raceNumber);
+    setSelectedSectionId('fia');
+    setSelectedSubItemId('results');
   };
 
   // Dialog handlers
@@ -137,11 +148,16 @@ export function MainLayout() {
     }
 
     if (selectedSectionId === 'fia' && selectedSubItemId === 'races') {
-      return <Races />;
+      return <Races onViewRaceReport={navigateToRaceReport} />;
     }
 
     if (selectedSectionId === 'fia' && selectedSubItemId === 'results') {
-      return <Results />;
+      return (
+        <Results
+          initialRaceNumber={targetRaceNumber}
+          onRaceViewed={() => setTargetRaceNumber(null)}
+        />
+      );
     }
 
     if (isOptionsScreen) {
