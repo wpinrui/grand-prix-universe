@@ -396,6 +396,13 @@ export function offsetDate(date: GameDate, days: number): GameDate {
 }
 
 /**
+ * Create a lookup key from a GameDate (for Map keys, React keys, etc.)
+ */
+export function dateKey(date: GameDate): string {
+  return `${date.year}-${date.month}-${date.day}`;
+}
+
+/**
  * Get array of days for calendar strip with custom center date
  * Returns 9 days: 1 before center, center, 7 after
  */
