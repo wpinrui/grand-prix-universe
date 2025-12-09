@@ -317,7 +317,7 @@ export interface TechnologyBreakthrough {
   attribute: TechnologyAttribute;
 
   /** How much the stat will increase when complete (e.g., +8) */
-  payoff: number;
+  statIncrease: number;
 
   /** Total work units needed to complete development */
   workUnitsRequired: number;
