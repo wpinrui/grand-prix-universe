@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useDerivedGameState, queryKeys } from '../hooks';
+import { useDerivedGameState, useRegulationsBySeason, queryKeys } from '../hooks';
 import { SectionHeading, ProgressBar, TabBar } from '../components';
 import type { Tab } from '../components';
 import { GHOST_BORDERED_BUTTON_CLASSES } from '../utils/theme-styles';
@@ -404,10 +404,31 @@ function AllocationControl({ value, maxValue, onChange }: AllocationControlProps
   );
 }
 
+interface RegulationsBadgeProps {
+  year: number;
+  available: boolean;
+}
+
+function RegulationsBadge({ year, available }: RegulationsBadgeProps) {
+  if (available) {
+    return (
+      <span className="px-2 py-1 text-xs font-medium rounded bg-emerald-900/50 text-emerald-400 border border-emerald-700">
+        {year} Regulations
+      </span>
+    );
+  }
+  return (
+    <span className="px-2 py-1 text-xs font-medium rounded bg-amber-900/50 text-amber-400 border border-amber-700">
+      Awaiting {year} Regulations
+    </span>
+  );
+}
+
 interface NextYearChassisTabProps {
   chassis: ChassisDesign | null;
   currentYear: number;
   designState: DesignState;
+  regulationsAvailable: boolean;
   onStartWork: () => void;
   onAllocationChange: (allocation: number) => void;
 }
@@ -416,6 +437,7 @@ function NextYearChassisTab({
   chassis,
   currentYear,
   designState,
+  regulationsAvailable,
   onStartWork,
   onAllocationChange,
 }: NextYearChassisTabProps) {
@@ -425,6 +447,7 @@ function NextYearChassisTab({
 
   const chassisLabel = `${currentYear + 1} Chassis`;
   const chassisName = `Chassis ${currentYear + 1}-A`;
+  const nextYear = currentYear + 1;
 
   // Not started state
   if (!chassis) {
@@ -443,20 +466,28 @@ function NextYearChassisTab({
         <div className="card p-4">
           <div className="flex items-center justify-between mb-4">
             <SectionHeading>{chassisLabel} Design</SectionHeading>
-            <span className="text-sm text-muted">0%</span>
+            <RegulationsBadge year={nextYear} available={regulationsAvailable} />
           </div>
 
           <div className="text-center py-8">
-            <p className="text-muted mb-4">
-              No chassis design in progress for {currentYear + 1} season.
-            </p>
-            <button
-              type="button"
-              onClick={onStartWork}
-              className={`btn px-4 py-2 text-sm font-medium rounded-lg border cursor-pointer ${GHOST_BORDERED_BUTTON_CLASSES}`}
-            >
-              Start Work
-            </button>
+            {regulationsAvailable ? (
+              <>
+                <p className="text-muted mb-4">
+                  No chassis design in progress for {nextYear} season.
+                </p>
+                <button
+                  type="button"
+                  onClick={onStartWork}
+                  className={`btn px-4 py-2 text-sm font-medium rounded-lg border cursor-pointer ${GHOST_BORDERED_BUTTON_CLASSES}`}
+                >
+                  Start Work
+                </button>
+              </>
+            ) : (
+              <p className="text-muted">
+                Waiting for FIA to publish {nextYear} regulations before design work can begin.
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -486,7 +517,10 @@ function NextYearChassisTab({
 
       <div className="card p-4">
         <div className="flex items-center justify-between mb-4">
-          <SectionHeading>{chassisLabel} Design</SectionHeading>
+          <div className="flex items-center gap-3">
+            <SectionHeading>{chassisLabel} Design</SectionHeading>
+            <RegulationsBadge year={nextYear} available={regulationsAvailable} />
+          </div>
           <span className="text-sm text-muted">{overallProgress}%</span>
         </div>
 
@@ -757,6 +791,11 @@ export function Design() {
   const { gameState, playerTeam } = useDerivedGameState();
   const queryClient = useQueryClient();
 
+  // Query next year's regulations (hook enabled only when we know the year)
+  const nextYear = gameState?.currentDate.year ? gameState.currentDate.year + 1 : 0;
+  const { data: nextYearRegulations } = useRegulationsBySeason(nextYear);
+  const regulationsAvailable = nextYearRegulations !== null && nextYearRegulations !== undefined;
+
   const handleStartNextYearChassis = useCallback(async () => {
     const newState = await window.electronAPI.invoke(IpcChannels.DESIGN_START_NEXT_YEAR);
     queryClient.setQueryData<GameState | null>(queryKeys.gameState, newState);
@@ -797,6 +836,7 @@ export function Design() {
           chassis={designState.nextYearChassis}
           currentYear={currentYear}
           designState={designState}
+          regulationsAvailable={regulationsAvailable}
           onStartWork={handleStartNextYearChassis}
           onAllocationChange={handleSetNextYearAllocation}
         />
