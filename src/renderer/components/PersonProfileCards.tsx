@@ -3,10 +3,12 @@
  * Used by WorldDrivers and WorldStaff pages.
  * Modular design allows reuse across different person types.
  */
-import { useRef, useEffect, type CSSProperties } from 'react';
+import { useState, useRef, useEffect, type CSSProperties } from 'react';
 import { FlagIcon } from './FlagIcon';
 import { ACCENT_TEXT_STYLE, ACCENT_CARD_STYLE } from '../utils/theme-styles';
 import { generateFace, type TeamColors } from '../utils/face-generator';
+import { seasonToYear } from '../../shared/utils/date-utils';
+import { formatAnnualSalary } from '../utils/format';
 
 // ===========================================
 // ATTRIBUTE BAR COMPONENT
@@ -78,6 +80,12 @@ interface PersonHeaderProps {
   onSelect?: (id: string) => void;
 }
 
+/** Returns class names for person dropdown option based on selection state */
+const getPersonOptionClasses = (isSelected: boolean) =>
+  `px-4 py-2 cursor-pointer transition-colors hover:bg-[var(--neutral-700)] ${
+    isSelected ? 'text-[var(--accent-400)]' : 'text-primary'
+  }`;
+
 export function PersonHeader({
   name,
   nationality,
@@ -92,8 +100,22 @@ export function PersonHeader({
   selectedId,
   onSelect,
 }: PersonHeaderProps) {
-  const showDropdown = allOptions && allOptions.length > 0 && onSelect;
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const faceContainerRef = useRef<HTMLDivElement>(null);
+
+  const showDropdown = allOptions && allOptions.length > 0 && onSelect;
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Generate face when no photo URL but faces.js props are provided
   useEffect(() => {
@@ -103,6 +125,13 @@ export function PersonHeader({
       generateFace(faceContainerRef.current, personId, nationality, teamColors, 128);
     }
   }, [photoUrl, personId, nationality, teamColors]);
+
+  const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
+
+  const handleOptionClick = (optionId: string) => {
+    setIsDropdownOpen(false);
+    onSelect?.(optionId);
+  };
 
   const showFacejs = !photoUrl && personId && teamColors;
 
@@ -126,21 +155,46 @@ export function PersonHeader({
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-3">
-          {showDropdown ? (
-            <select
-              value={selectedId}
-              onChange={(e) => onSelect(e.target.value)}
-              className="text-2xl font-bold text-primary bg-transparent border-none cursor-pointer hover:text-[var(--accent-400)] transition-colors focus:outline-none"
-            >
-              {allOptions.map((opt) => (
-                <option key={opt.id} value={opt.id} className="bg-[var(--neutral-800)]">
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <h1 className="text-2xl font-bold text-primary">{name}</h1>
+        <div className="relative inline-flex items-center gap-3" ref={dropdownRef}>
+          <h1
+            className={`text-2xl font-bold text-primary ${
+              showDropdown ? 'cursor-pointer hover:text-[var(--accent-400)] transition-colors' : ''
+            }`}
+            onClick={showDropdown ? toggleDropdown : undefined}
+          >
+            {name}
+          </h1>
+          {showDropdown && (
+            <>
+              <button
+                type="button"
+                onClick={toggleDropdown}
+                className="p-1 text-muted hover:text-primary cursor-pointer transition-colors"
+                title="Select person"
+              >
+                <svg
+                  className={`w-5 h-5 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {isDropdownOpen && (
+                <ul className="absolute top-full left-0 mt-1 z-50 min-w-64 max-h-80 overflow-auto surface-primary border border-subtle rounded-lg shadow-lg py-1">
+                  {allOptions.map((opt) => (
+                    <li
+                      key={opt.id}
+                      onClick={() => handleOptionClick(opt.id)}
+                      className={getPersonOptionClasses(opt.id === selectedId)}
+                    >
+                      {opt.label}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
           )}
           <FlagIcon country={nationality} size="md" />
         </div>
@@ -223,6 +277,13 @@ interface ContractPanelProps {
   relationship: ContractRelationship;
 }
 
+/** Button text based on contract relationship */
+const CONTRACT_BUTTON_TEXT: Record<ContractRelationship, string> = {
+  'own-team': 'Renegotiate Contract',
+  'other-team': 'Approach Driver',
+  'free-agent': 'Offer Contract',
+};
+
 export function ContractPanel({
   salary,
   contractEndSeason,
@@ -233,28 +294,7 @@ export function ContractPanel({
   const yearsRemaining = contractEndSeason - currentSeason;
   const isExpiring = yearsRemaining <= 1;
   const isFreeAgent = relationship === 'free-agent';
-
-  // Convert season number to year (season 1 = 2025, etc.)
-  const contractEndYear = 2024 + contractEndSeason;
-
-  // Format salary
-  const formatSalary = (amount: number): string => {
-    if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}M/yr`;
-    if (amount >= 1_000) return `$${(amount / 1_000).toFixed(0)}K/yr`;
-    return amount === 0 ? 'Free Agent' : `$${amount}/yr`;
-  };
-
-  // Button text based on relationship
-  const getButtonText = (): string => {
-    switch (relationship) {
-      case 'own-team':
-        return 'Renegotiate Contract';
-      case 'other-team':
-        return 'Approach Driver';
-      case 'free-agent':
-        return 'Offer Contract';
-    }
-  };
+  const contractEndYear = seasonToYear(contractEndSeason);
 
   return (
     <StatPanel title="Contract" accent={isExpiring && !isFreeAgent}>
@@ -262,7 +302,7 @@ export function ContractPanel({
         <div className="text-amber-400 font-medium">Free Agent</div>
       ) : (
         <div className="space-y-2">
-          <StatRow label="Salary" value={formatSalary(salary)} />
+          <StatRow label="Salary" value={formatAnnualSalary(salary)} />
           <StatRow label="Expires" value={`End of ${contractEndYear}`} />
           <StatRow
             label="Years Left"
@@ -280,7 +320,7 @@ export function ContractPanel({
           onClick={onEnterTalks}
           className="mt-4 w-full py-2 px-4 rounded-lg font-medium bg-[var(--accent-600)] text-[var(--accent-contrast)] hover:brightness-110 transition cursor-pointer"
         >
-          {getButtonText()}
+          {CONTRACT_BUTTON_TEXT[relationship]}
         </button>
       )}
     </StatPanel>

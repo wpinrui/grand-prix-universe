@@ -121,6 +121,23 @@ function SeasonStatsPanel({ standing }: SeasonStatsPanelProps) {
 }
 
 // ===========================================
+// COLOR UTILITIES
+// ===========================================
+
+/**
+ * Get color class for percentage values.
+ * Higher values are better by default. Pass inverted=true for values where lower is better (e.g., fatigue).
+ */
+function getPercentageColor(value: number, inverted = false): string {
+  const effectiveValue = inverted ? 100 - value : value;
+  if (effectiveValue >= 80) return 'text-emerald-400';
+  if (effectiveValue >= 60) return 'text-lime-400';
+  if (effectiveValue >= 40) return 'text-amber-400';
+  if (effectiveValue >= 20) return 'text-orange-400';
+  return 'text-red-400';
+}
+
+// ===========================================
 // DRIVER STATE PANEL
 // ===========================================
 
@@ -137,45 +154,23 @@ function DriverStatePanel({ driverState }: DriverStatePanelProps) {
     );
   }
 
-  const getMoraleColor = (value: number): string => {
-    if (value >= 80) return 'text-emerald-400';
-    if (value >= 60) return 'text-lime-400';
-    if (value >= 40) return 'text-amber-400';
-    if (value >= 20) return 'text-orange-400';
-    return 'text-red-400';
-  };
-
-  const getFitnessColor = (value: number): string => {
-    if (value >= 80) return 'text-emerald-400';
-    if (value >= 60) return 'text-lime-400';
-    if (value >= 40) return 'text-amber-400';
-    return 'text-red-400';
-  };
-
-  const getFatigueColor = (value: number): string => {
-    if (value <= 20) return 'text-emerald-400';
-    if (value <= 40) return 'text-lime-400';
-    if (value <= 60) return 'text-amber-400';
-    return 'text-red-400';
-  };
-
   return (
     <StatPanel title="Driver Status">
       <div className="space-y-2">
         <StatRow
           label="Morale"
-          value={<span className={getMoraleColor(driverState.morale)}>{driverState.morale}%</span>}
+          value={<span className={getPercentageColor(driverState.morale)}>{driverState.morale}%</span>}
         />
         <StatRow
           label="Fitness"
           value={
-            <span className={getFitnessColor(driverState.fitness)}>{driverState.fitness}%</span>
+            <span className={getPercentageColor(driverState.fitness)}>{driverState.fitness}%</span>
           }
         />
         <StatRow
           label="Fatigue"
           value={
-            <span className={getFatigueColor(driverState.fatigue)}>{driverState.fatigue}%</span>
+            <span className={getPercentageColor(driverState.fatigue, true)}>{driverState.fatigue}%</span>
           }
         />
 
