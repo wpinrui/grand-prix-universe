@@ -28,6 +28,13 @@ import type {
   ConstructorStanding,
   RaceWeekendResult,
   DriverAttributes,
+  DesignState,
+  DepartmentStaffCounts,
+  Facility,
+  TechnologyComponent,
+  TechnologyAttribute,
+  ChassisDesignStage,
+  HandlingProblem,
 } from './types';
 
 // =============================================================================
@@ -45,9 +52,7 @@ export type QualifyingResult = Placeholder;
 export type RaceInput = Placeholder;
 export type RaceResult = Placeholder;
 
-// Design Engine Types
-export type DesignInput = Placeholder;
-export type DesignResult = Placeholder;
+// Design Engine Types - See IDesignEngine interface for documentation
 
 // Construction Engine Types
 export type ConstructionInput = Placeholder;
@@ -273,6 +278,111 @@ export interface SeasonEndResult extends ProgressionChanges {
 }
 
 // =============================================================================
+// DESIGN ENGINE TYPES
+// =============================================================================
+
+/**
+ * DesignProcessingInput - All data needed to process a day of design work
+ * Called once per team per day during time simulation
+ */
+export interface DesignProcessingInput {
+  /** Team being processed */
+  teamId: string;
+
+  /** Current design state (chassis, technology, projects) */
+  designState: DesignState;
+
+  /** Staff counts by department and quality (for work capacity calculation) */
+  staffCounts: DepartmentStaffCounts;
+
+  /** Chief Designer (null if position vacant) - provides ability bonus */
+  chiefDesigner: Chief | null;
+
+  /** Factory facilities (for multipliers and stage unlocks) */
+  facilities: Facility[];
+
+  /** Current game date */
+  currentDate: GameDate;
+}
+
+/**
+ * TechnologyBreakthrough - A technology breakthrough discovered during processing
+ * Emitted when a project transitions from Discovery to Development phase
+ */
+export interface TechnologyBreakthrough {
+  /** Which technology component */
+  component: TechnologyComponent;
+
+  /** Which attribute (performance or reliability) */
+  attribute: TechnologyAttribute;
+
+  /** How much the stat will increase when complete (e.g., +8) */
+  payoff: number;
+
+  /** Total work units needed to complete development */
+  workUnitsRequired: number;
+
+  /** Estimated completion date based on current allocation */
+  estimatedCompletionDate: GameDate;
+}
+
+/**
+ * DesignCompletionType - What type of design work was completed
+ */
+export type DesignCompletionType = 'technology' | 'handling-solution';
+
+/**
+ * DesignCompletion - A design project completed during processing
+ * Emitted when development work finishes (ready for construction)
+ */
+export interface DesignCompletion {
+  /** What type of completion */
+  type: DesignCompletionType;
+
+  /** Technology component (for technology completions) */
+  component?: TechnologyComponent;
+
+  /** Technology attribute (for technology completions) */
+  attribute?: TechnologyAttribute;
+
+  /** Handling problem (for handling-solution completions) */
+  problem?: HandlingProblem;
+
+  /** How much the stat will increase */
+  statIncrease: number;
+}
+
+/**
+ * ChassisStageCompletion - A chassis design stage completed during processing
+ * Emitted when a stage reaches 10/10 progress
+ */
+export interface ChassisStageCompletion {
+  /** Which stage was completed */
+  stage: ChassisDesignStage;
+
+  /** Updated efficiency rating after stage completion */
+  newEfficiencyRating: number;
+}
+
+/**
+ * DesignProcessingResult - Result of processing a day of design work
+ * Contains updated state and events that occurred
+ */
+export interface DesignProcessingResult {
+  /** Updated design state (caller merges into team state) */
+  updatedDesignState: DesignState;
+
+  /** Breakthroughs discovered this day (Discovery → Development transitions) */
+  breakthroughs: TechnologyBreakthrough[];
+
+  /** Projects completed this day (Development complete, ready for construction) */
+  completions: DesignCompletion[];
+
+  /** Chassis stages completed this day */
+  chassisStageCompletions: ChassisStageCompletion[];
+}
+
+// =============================================================================
 // ENGINE INTERFACES
 // =============================================================================
 
@@ -315,10 +425,24 @@ export interface IRaceEngine {
 
 /**
  * IDesignEngine - Handles chassis and technology design progress
- * Responsible for R&D advancement, design completion timelines
+ *
+ * Responsible for:
+ * - Technology breakthrough discovery (daily probability checks)
+ * - Technology development progress (work unit accumulation)
+ * - Next year chassis progression (4-stage design process)
+ * - Current year chassis improvements (handling problem solutions)
+ *
+ * Called once per team per day during time simulation.
+ * Returns updated design state and any events that occurred.
  */
 export interface IDesignEngine {
-  processDesign(input: DesignInput): DesignResult;
+  /**
+   * Process a single day of design work for one team
+   *
+   * @param input - Team's design state, staff, facilities, and current date
+   * @returns Updated design state and events (breakthroughs, completions)
+   */
+  processDay(input: DesignProcessingInput): DesignProcessingResult;
 }
 
 /**
