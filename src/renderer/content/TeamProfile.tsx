@@ -15,6 +15,22 @@ import type {
   Chief,
   DriverStanding,
 } from '../../shared/domain';
+import { seasonToYear } from '../../shared/utils/date-utils';
+
+// ===========================================
+// FORMATTERS
+// ===========================================
+
+function formatOrdinal(n: number): string {
+  const suffixes = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
+}
+
+function formatContractEnd(seasonNumber: number): string {
+  const year = seasonToYear(seasonNumber);
+  return `31 Dec ${year}`;
+}
 
 // ===========================================
 // SHARED COMPONENTS
@@ -93,13 +109,13 @@ function DriverCard({ driver, standing }: DriverCardProps) {
         </div>
         {/* Championship Stats */}
         <div className="flex gap-4 mt-2 text-xs">
-          <MiniStat value={standing?.position ?? '-'} label="Pos" />
+          <MiniStat value={standing ? formatOrdinal(standing.position) : '-'} label="" />
           <MiniStat value={standing?.points ?? 0} label="Pts" />
           <MiniStat value={standing?.wins ?? 0} label="Wins" />
         </div>
         {/* Contract Info */}
         <div className="text-xs text-muted mt-1">
-          {formatAnnualSalary(driver.salary)} · Contract ends S{driver.contractEnd}
+          {formatAnnualSalary(driver.salary)} · Contract ends {formatContractEnd(driver.contractEnd)}
         </div>
       </div>
     </div>
@@ -108,17 +124,9 @@ function DriverCard({ driver, standing }: DriverCardProps) {
 
 interface ChiefCardProps {
   chief: Chief;
-  seasonNumber: number;
 }
 
-function ChiefCard({ chief, seasonNumber }: ChiefCardProps) {
-  const contractYearsLeft = chief.contractEnd - seasonNumber;
-  const contractLabel = contractYearsLeft <= 0
-    ? 'Expired'
-    : contractYearsLeft === 1
-      ? '1 year left'
-      : `${contractYearsLeft} years left`;
-
+function ChiefCard({ chief }: ChiefCardProps) {
   return (
     <div className="card p-3">
       <div className="text-xs font-medium text-muted uppercase tracking-wider mb-1">
@@ -129,7 +137,7 @@ function ChiefCard({ chief, seasonNumber }: ChiefCardProps) {
       </div>
       <div className="text-xs text-muted mt-2 space-y-0.5">
         <div>Ability: {chief.ability}</div>
-        <div>{formatAnnualSalary(chief.salary)} · {contractLabel}</div>
+        <div>{formatAnnualSalary(chief.salary)} · Contract ends {formatContractEnd(chief.contractEnd)}</div>
       </div>
     </div>
   );
@@ -170,9 +178,6 @@ export function TeamProfile() {
           <h1 className="text-2xl font-bold text-primary tracking-tight">
             {playerTeam.name}
           </h1>
-          <div className="text-secondary font-medium mt-1">
-            Principal: {playerTeam.principal}
-          </div>
           <p className="text-sm text-muted mt-2 max-w-2xl leading-relaxed">
             {playerTeam.description}
           </p>
@@ -216,11 +221,7 @@ export function TeamProfile() {
         {teamChiefs.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {teamChiefs.map((chief) => (
-              <ChiefCard
-                key={chief.id}
-                chief={chief}
-                seasonNumber={gameState.currentSeason.seasonNumber}
-              />
+              <ChiefCard key={chief.id} chief={chief} />
             ))}
           </div>
         ) : (
