@@ -178,6 +178,11 @@ export function TeamHeader({ team, allTeams, onTeamSelect }: TeamHeaderProps) {
 
   const showDropdown = allTeams && allTeams.length > 0 && onTeamSelect;
 
+  const getTeamOptionClasses = (isSelected: boolean) =>
+    `px-4 py-2 cursor-pointer transition-colors hover:bg-[var(--neutral-700)] ${
+      isSelected ? 'text-[var(--accent-400)]' : 'text-primary'
+    }`;
+
   return (
     <div className="flex items-start gap-6">
       <TeamBadge team={team} className="w-24 h-20" />
@@ -207,11 +212,7 @@ export function TeamHeader({ team, allTeams, onTeamSelect }: TeamHeaderProps) {
                     <li
                       key={t.id}
                       onClick={() => handleTeamClick(t.id)}
-                      className={`px-4 py-2 cursor-pointer transition-colors ${
-                        t.id === team.id
-                          ? 'text-[var(--accent-400)] hover:bg-[var(--neutral-700)]'
-                          : 'text-primary hover:bg-[var(--neutral-700)]'
-                      }`}
+                      className={getTeamOptionClasses(t.id === team.id)}
                     >
                       {t.name}
                     </li>
