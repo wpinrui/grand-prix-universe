@@ -65,6 +65,8 @@ const TIME_SCALE_OPTIONS: TimeScaleOption[] = [
   { value: 'race', label: 'Per Race' },
 ];
 
+const CONTROL_LABEL_CLASSES = 'block text-xs font-semibold text-muted uppercase tracking-wider mb-2';
+
 // ===========================================
 // HELPERS
 // ===========================================
@@ -281,7 +283,7 @@ function StatsTable({ seasons, teams, selectedTeamIds, stat }: StatsTableProps) 
       <table className="w-full">
         <thead className="surface-inset border-b border-[var(--neutral-600)]">
           <tr className="text-xs font-semibold text-muted uppercase tracking-wider">
-            <th className="px-4 py-3 text-left">Season</th>
+            <th className="px-4 py-3 text-left">Year</th>
             {selectedTeams.map((team) => (
               <th key={team.id} className="px-4 py-3 text-right">
                 <span className="flex items-center justify-end gap-2">
@@ -299,7 +301,7 @@ function StatsTable({ seasons, teams, selectedTeamIds, stat }: StatsTableProps) 
           {seasons.map((season) => (
             <tr key={season.seasonNumber} className="hover:bg-[var(--neutral-800)]/50">
               <td className="px-4 py-3 text-primary font-medium">
-                Season {season.seasonNumber}
+                {seasonToYear(season.seasonNumber)}
               </td>
               {selectedTeams.map((team) => {
                 const standing = season.constructorStandings.find((s) => s.teamId === team.id);
@@ -334,7 +336,7 @@ interface TooltipPayload {
 interface CustomTooltipProps {
   active?: boolean;
   payload?: TooltipPayload[];
-  label?: number;
+  label?: string;
   teamById: Map<string, Team>;
   stat: StatCategory;
 }
@@ -343,9 +345,9 @@ function CustomTooltip({ active, payload, label, teamById, stat }: CustomTooltip
   if (!active || !payload || !payload.length) return null;
 
   // Format the label for display (label is already year or "year Rn")
-  const displayLabel = typeof label === 'string' && label.includes('R')
+  const displayLabel = label?.includes('R')
     ? label.replace(/(\d+) R(\d+)/, '$1 Race $2')
-    : String(label);
+    : label ?? '';
 
   return (
     <div className="surface-primary border border-subtle rounded-lg p-3 shadow-lg">
@@ -578,9 +580,7 @@ export function WorldStats() {
       {/* Controls row */}
       <div className="flex flex-wrap items-end gap-4">
         <div>
-          <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
-            Statistic
-          </label>
+          <label className={CONTROL_LABEL_CLASSES}>Statistic</label>
           <Dropdown
             options={STAT_OPTIONS}
             value={selectedStat}
@@ -589,9 +589,7 @@ export function WorldStats() {
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
-            Scale
-          </label>
+          <label className={CONTROL_LABEL_CLASSES}>Scale</label>
           <Dropdown
             options={TIME_SCALE_OPTIONS}
             value={timeScale}
@@ -600,9 +598,7 @@ export function WorldStats() {
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
-            From
-          </label>
+          <label className={CONTROL_LABEL_CLASSES}>From</label>
           <Dropdown
             options={seasonOptions}
             value={fromSeason !== null ? String(fromSeason) : ''}
@@ -611,9 +607,7 @@ export function WorldStats() {
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
-            To
-          </label>
+          <label className={CONTROL_LABEL_CLASSES}>To</label>
           <Dropdown
             options={seasonOptions}
             value={toSeason !== null ? String(toSeason) : ''}
@@ -622,9 +616,7 @@ export function WorldStats() {
           />
         </div>
         <div className="ml-auto">
-          <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
-            View
-          </label>
+          <label className={CONTROL_LABEL_CLASSES}>View</label>
           <TabBar tabs={TAB_OPTIONS} activeTab={activeView} onTabChange={setActiveView} />
         </div>
       </div>
