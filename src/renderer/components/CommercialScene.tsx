@@ -1,13 +1,28 @@
-import { Suspense, useRef, useEffect, useCallback } from 'react';
+import { Suspense, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, useGLTF, Environment } from '@react-three/drei';
+import { useGLTF, Environment } from '@react-three/drei';
 import * as THREE from 'three';
-import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
 const OFFICE_MODEL_PATH = 'data/models/mersus_office.glb';
 
-// Enable camera position logging for exploration
-const DEBUG_LOG_CAMERA = true;
+// Animation duration in seconds (one way)
+const ANIMATION_DURATION = 12;
+
+// Camera positions for animation
+const CAMERA_START = {
+  position: new THREE.Vector3(-2.65, 1.47, 6.64),
+  target: new THREE.Vector3(-1.51, 0.08, 2.57),
+};
+
+const CAMERA_END = {
+  position: new THREE.Vector3(3.11, 1.84, 5.53),
+  target: new THREE.Vector3(0.45, 0.16, 1.74),
+};
+
+// Bezier ease-in-out function
+function easeInOutCubic(t: number): number {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
 
 // ===========================================
 // OFFICE MODEL COMPONENT
@@ -15,73 +30,44 @@ const DEBUG_LOG_CAMERA = true;
 
 function OfficeModel() {
   const { scene } = useGLTF(OFFICE_MODEL_PATH);
-
-  useEffect(() => {
-    // Log materials for debugging if needed
-    const materials = new Set<string>();
-    scene.traverse((child) => {
-      if (child instanceof THREE.Mesh && child.material) {
-        const mats = Array.isArray(child.material) ? child.material : [child.material];
-        mats.forEach((m) => materials.add(m.name));
-      }
-    });
-    console.log('Office model materials:', Array.from(materials));
-  }, [scene]);
-
   return <primitive object={scene} />;
 }
 
 // ===========================================
-// CAMERA LOGGER COMPONENT
+// ANIMATED CAMERA COMPONENT
 // ===========================================
 
-function CameraLogger() {
+function AnimatedCamera() {
   const { camera } = useThree();
-  const controlsRef = useRef<OrbitControlsImpl | null>(null);
-  const lastLogRef = useRef({ pos: '', target: '' });
+  const timeRef = useRef(0);
+  const directionRef = useRef(1); // 1 = forward, -1 = backward
 
-  // Log camera info when it changes
-  const logCamera = useCallback(() => {
-    if (!DEBUG_LOG_CAMERA) return;
+  useFrame((_, delta) => {
+    // Update time
+    timeRef.current += delta * directionRef.current;
 
-    const pos = camera.position;
-    const posStr = `[${pos.x.toFixed(2)}, ${pos.y.toFixed(2)}, ${pos.z.toFixed(2)}]`;
-
-    // Get target from controls if available
-    let targetStr = 'N/A';
-    if (controlsRef.current) {
-      const target = controlsRef.current.target;
-      targetStr = `[${target.x.toFixed(2)}, ${target.y.toFixed(2)}, ${target.z.toFixed(2)}]`;
+    // Clamp and reverse direction at boundaries
+    if (timeRef.current >= ANIMATION_DURATION) {
+      timeRef.current = ANIMATION_DURATION;
+      directionRef.current = -1;
+    } else if (timeRef.current <= 0) {
+      timeRef.current = 0;
+      directionRef.current = 1;
     }
 
-    // Only log if changed
-    if (posStr !== lastLogRef.current.pos || targetStr !== lastLogRef.current.target) {
-      lastLogRef.current = { pos: posStr, target: targetStr };
-      console.log(`Camera: position=${posStr}, target=${targetStr}`);
-    }
-  }, [camera]);
+    // Calculate progress (0 to 1)
+    const linearProgress = timeRef.current / ANIMATION_DURATION;
+    const easedProgress = easeInOutCubic(linearProgress);
 
-  useFrame(() => {
-    logCamera();
+    // Interpolate position
+    camera.position.lerpVectors(CAMERA_START.position, CAMERA_END.position, easedProgress);
+
+    // Interpolate target and look at it
+    const target = new THREE.Vector3().lerpVectors(CAMERA_START.target, CAMERA_END.target, easedProgress);
+    camera.lookAt(target);
   });
 
-  return (
-    <OrbitControls
-      ref={controlsRef}
-      enablePan={true}
-      enableZoom={true}
-      enableRotate={true}
-      // Pan with right mouse button
-      mouseButtons={{
-        LEFT: THREE.MOUSE.ROTATE,
-        MIDDLE: THREE.MOUSE.DOLLY,
-        RIGHT: THREE.MOUSE.PAN,
-      }}
-      // No restrictions for exploration
-      minDistance={0.1}
-      maxDistance={100}
-    />
-  );
+  return null;
 }
 
 // ===========================================
@@ -113,7 +99,7 @@ export function CommercialScene({ className = '', blurred = false }: CommercialS
       {/* 3D Canvas */}
       <Canvas
         camera={{
-          position: [5, 5, 5],
+          position: [CAMERA_START.position.x, CAMERA_START.position.y, CAMERA_START.position.z],
           fov: 50,
           near: 0.1,
           far: 1000,
@@ -131,8 +117,8 @@ export function CommercialScene({ className = '', blurred = false }: CommercialS
           <OfficeModel />
         </Suspense>
 
-        {/* Camera Controls with logging */}
-        <CameraLogger />
+        {/* Animated Camera */}
+        <AnimatedCamera />
       </Canvas>
 
       {/* Blur overlay for subpages */}
