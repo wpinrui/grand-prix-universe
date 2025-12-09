@@ -288,11 +288,11 @@ function CurrentYearChassisSection({ chassisState }: CurrentYearChassisSectionPr
           </div>
           <DetailRow
             label="Problems Found"
-            value={<span className="font-mono">{discoveredCount}/8</span>}
+            value={<span className="font-mono">{discoveredCount}/{PROBLEM_ORDER.length}</span>}
           />
           <DetailRow
             label="Problems Fixed"
-            value={<span className="font-mono">{fixedCount}/8</span>}
+            value={<span className="font-mono">{fixedCount}/{PROBLEM_ORDER.length}</span>}
           />
         </div>
       </div>
