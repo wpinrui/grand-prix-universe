@@ -95,6 +95,12 @@ export const STAGE_FACILITY_REQUIREMENTS: Record<ChassisDesignStage, FacilityTyp
   [ChassisDesignStage.WindTunnel]: FacilityType.WindTunnel,
 };
 
+/**
+ * Maximum efficiency bonus points from chief designer (additive to base efficiency)
+ * A 100-ability chief adds up to this many points to the efficiency rating
+ */
+export const CHIEF_DESIGNER_MAX_EFFICIENCY_BONUS = 20;
+
 // =============================================================================
 // CALCULATION FUNCTIONS
 // =============================================================================
@@ -276,8 +282,10 @@ export function calculateChassisEfficiency(
   const maxProgress = CHASSIS_STAGE_ORDER.length * MAX_STAGE_PROGRESS; // 40
   const baseEfficiency = (totalProgress / maxProgress) * 100;
 
-  // Chief bonus: up to +20% for a 100-ability chief
-  const chiefBonus = chiefDesigner ? (chiefDesigner.ability / 100) * 20 : 0;
+  // Chief bonus: scaled by ability (100 ability = max bonus)
+  const chiefBonus = chiefDesigner
+    ? (chiefDesigner.ability / 100) * CHIEF_DESIGNER_MAX_EFFICIENCY_BONUS
+    : 0;
 
   return Math.min(100, Math.round(baseEfficiency + chiefBonus));
 }
