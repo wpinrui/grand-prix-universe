@@ -6,9 +6,9 @@
       "lastName": "Newey",
       "role": "designer",
       "ability": 98,
-      "teamId": null,
+      "teamId": "aston-martin",
       "salary": 12000000,
-      "contractEnd": 0
+      "contractEnd": 4
     },
     {
       "id": "james-allison",
@@ -16,9 +16,9 @@
       "lastName": "Allison",
       "role": "designer",
       "ability": 92,
-      "teamId": null,
+      "teamId": "mercedes",
       "salary": 8000000,
-      "contractEnd": 0
+      "contractEnd": 3
     },
     {
       "id": "rory-byrne",
@@ -56,9 +56,9 @@
       "lastName": "Fry",
       "role": "designer",
       "ability": 82,
-      "teamId": null,
+      "teamId": "mclaren",
       "salary": 3500000,
-      "contractEnd": 0
+      "contractEnd": 2
     },
     {
       "id": "aldo-costa",
@@ -76,9 +76,9 @@
       "lastName": "Elliott",
       "role": "designer",
       "ability": 85,
-      "teamId": null,
+      "teamId": "williams",
       "salary": 4000000,
-      "contractEnd": 0
+      "contractEnd": 3
     },
     {
       "id": "andrew-green",
@@ -86,9 +86,9 @@
       "lastName": "Green",
       "role": "designer",
       "ability": 80,
-      "teamId": null,
+      "teamId": "alpine",
       "salary": 3000000,
-      "contractEnd": 0
+      "contractEnd": 2
     },
     {
       "id": "dan-fallows",
@@ -96,9 +96,9 @@
       "lastName": "Fallows",
       "role": "designer",
       "ability": 78,
-      "teamId": null,
+      "teamId": "red-bull-racing",
       "salary": 2800000,
-      "contractEnd": 0
+      "contractEnd": 4
     },
     {
       "id": "enrique-scalabroni",
@@ -116,9 +116,9 @@
       "lastName": "Resta",
       "role": "designer",
       "ability": 72,
-      "teamId": null,
+      "teamId": "haas",
       "salary": 2000000,
-      "contractEnd": 0
+      "contractEnd": 1
     },
     {
       "id": "jan-monchaux",
@@ -126,9 +126,9 @@
       "lastName": "Monchaux",
       "role": "designer",
       "ability": 70,
-      "teamId": null,
+      "teamId": "kick-sauber",
       "salary": 1800000,
-      "contractEnd": 0
+      "contractEnd": 2
     },
     {
       "id": "david-sanchez",
@@ -136,9 +136,9 @@
       "lastName": "Sanchez",
       "role": "designer",
       "ability": 76,
-      "teamId": null,
+      "teamId": "ferrari",
       "salary": 2400000,
-      "contractEnd": 0
+      "contractEnd": 3
     },
     {
       "id": "rob-taylor",
@@ -146,9 +146,9 @@
       "lastName": "Taylor",
       "role": "designer",
       "ability": 68,
-      "teamId": null,
+      "teamId": "racing-bulls",
       "salary": 1500000,
-      "contractEnd": 0
+      "contractEnd": 2
     },
     {
       "id": "james-key",
@@ -156,9 +156,9 @@
       "lastName": "Key",
       "role": "engineer",
       "ability": 85,
-      "teamId": null,
+      "teamId": "mclaren",
       "salary": 4500000,
-      "contractEnd": 0
+      "contractEnd": 2
     },
     {
       "id": "paddy-lowe",
@@ -166,9 +166,9 @@
       "lastName": "Lowe",
       "role": "engineer",
       "ability": 88,
-      "teamId": null,
+      "teamId": "mercedes",
       "salary": 5500000,
-      "contractEnd": 0
+      "contractEnd": 3
     },
     {
       "id": "pierre-wache",
@@ -176,9 +176,9 @@
       "lastName": "Waché",
       "role": "engineer",
       "ability": 90,
-      "teamId": null,
+      "teamId": "red-bull-racing",
       "salary": 6000000,
-      "contractEnd": 0
+      "contractEnd": 4
     },
     {
       "id": "bob-bell",
@@ -186,9 +186,9 @@
       "lastName": "Bell",
       "role": "engineer",
       "ability": 82,
-      "teamId": null,
+      "teamId": "aston-martin",
       "salary": 4000000,
-      "contractEnd": 0
+      "contractEnd": 2
     },
     {
       "id": "andrea-stella",
@@ -226,9 +226,9 @@
       "lastName": "Furbatto",
       "role": "engineer",
       "ability": 74,
-      "teamId": null,
+      "teamId": "kick-sauber",
       "salary": 2600000,
-      "contractEnd": 0
+      "contractEnd": 1
     },
     {
       "id": "jody-egginton",
@@ -246,9 +246,9 @@
       "lastName": "Monaghan",
       "role": "engineer",
       "ability": 80,
-      "teamId": null,
+      "teamId": "ferrari",
       "salary": 3500000,
-      "contractEnd": 0
+      "contractEnd": 3
     },
     {
       "id": "rob-smedley",
@@ -256,9 +256,9 @@
       "lastName": "Smedley",
       "role": "engineer",
       "ability": 76,
-      "teamId": null,
+      "teamId": "williams",
       "salary": 2900000,
-      "contractEnd": 0
+      "contractEnd": 2
     },
     {
       "id": "alan-permane",
@@ -266,9 +266,9 @@
       "lastName": "Permane",
       "role": "engineer",
       "ability": 73,
-      "teamId": null,
+      "teamId": "alpine",
       "salary": 2400000,
-      "contractEnd": 0
+      "contractEnd": 3
     },
     {
       "id": "matt-morris",
@@ -276,9 +276,9 @@
       "lastName": "Morris",
       "role": "engineer",
       "ability": 77,
-      "teamId": null,
+      "teamId": "haas",
       "salary": 3000000,
-      "contractEnd": 0
+      "contractEnd": 2
     },
     {
       "id": "guillaume-rocquelin",
@@ -286,9 +286,9 @@
       "lastName": "Rocquelin",
       "role": "engineer",
       "ability": 79,
-      "teamId": null,
+      "teamId": "racing-bulls",
       "salary": 3300000,
-      "contractEnd": 0
+      "contractEnd": 3
     },
     {
       "id": "giampaolo-dallara",
@@ -306,9 +306,9 @@
       "lastName": "Handkammer",
       "role": "mechanic",
       "ability": 92,
-      "teamId": null,
+      "teamId": "red-bull-racing",
       "salary": 800000,
-      "contractEnd": 0
+      "contractEnd": 4
     },
     {
       "id": "lee-stevenson",
@@ -316,9 +316,9 @@
       "lastName": "Stevenson",
       "role": "mechanic",
       "ability": 88,
-      "teamId": null,
+      "teamId": "mclaren",
       "salary": 700000,
-      "contractEnd": 0
+      "contractEnd": 3
     },
     {
       "id": "matthew-deane",
@@ -326,9 +326,9 @@
       "lastName": "Deane",
       "role": "mechanic",
       "ability": 90,
-      "teamId": null,
+      "teamId": "mercedes",
       "salary": 750000,
-      "contractEnd": 0
+      "contractEnd": 2
     },
     {
       "id": "gary-holland",
@@ -336,9 +336,9 @@
       "lastName": "Holland",
       "role": "mechanic",
       "ability": 85,
-      "teamId": null,
+      "teamId": "aston-martin",
       "salary": 650000,
-      "contractEnd": 0
+      "contractEnd": 3
     },
     {
       "id": "carl-gaden",
@@ -346,9 +346,9 @@
       "lastName": "Gaden",
       "role": "mechanic",
       "ability": 78,
-      "teamId": null,
+      "teamId": "haas",
       "salary": 550000,
-      "contractEnd": 0
+      "contractEnd": 1
     },
     {
       "id": "tom-mayns",
@@ -356,9 +356,9 @@
       "lastName": "Mayns",
       "role": "mechanic",
       "ability": 76,
-      "teamId": null,
+      "teamId": "kick-sauber",
       "salary": 520000,
-      "contractEnd": 0
+      "contractEnd": 2
     },
     {
       "id": "paul-james",
@@ -366,9 +366,9 @@
       "lastName": "James",
       "role": "mechanic",
       "ability": 82,
-      "teamId": null,
+      "teamId": "alpine",
       "salary": 600000,
-      "contractEnd": 0
+      "contractEnd": 4
     },
     {
       "id": "francesco-ugozzoni",
@@ -376,9 +376,9 @@
       "lastName": "Ugozzoni",
       "role": "mechanic",
       "ability": 84,
-      "teamId": null,
+      "teamId": "ferrari",
       "salary": 620000,
-      "contractEnd": 0
+      "contractEnd": 3
     },
     {
       "id": "diego-ioverno",
@@ -386,9 +386,9 @@
       "lastName": "Ioverno",
       "role": "mechanic",
       "ability": 80,
-      "teamId": null,
+      "teamId": "williams",
       "salary": 580000,
-      "contractEnd": 0
+      "contractEnd": 2
     },
     {
       "id": "gary-foote",
@@ -416,9 +416,9 @@
       "lastName": "Ross",
       "role": "mechanic",
       "ability": 75,
-      "teamId": null,
+      "teamId": "racing-bulls",
       "salary": 500000,
-      "contractEnd": 0
+      "contractEnd": 1
     },
     {
       "id": "dave-greenwood",
@@ -456,9 +456,9 @@
       "lastName": "Brown",
       "role": "commercial",
       "ability": 95,
-      "teamId": null,
+      "teamId": "mclaren",
       "salary": 5000000,
-      "contractEnd": 0
+      "contractEnd": 4
     },
     {
       "id": "jonathan-neale",
@@ -466,9 +466,9 @@
       "lastName": "Neale",
       "role": "commercial",
       "ability": 85,
-      "teamId": null,
+      "teamId": "mercedes",
       "salary": 3500000,
-      "contractEnd": 0
+      "contractEnd": 3
     },
     {
       "id": "claire-williams",
@@ -476,9 +476,9 @@
       "lastName": "Williams",
       "role": "commercial",
       "ability": 78,
-      "teamId": null,
+      "teamId": "williams",
       "salary": 2500000,
-      "contractEnd": 0
+      "contractEnd": 2
     },
     {
       "id": "otmar-szafnauer",
@@ -486,9 +486,9 @@
       "lastName": "Szafnauer",
       "role": "commercial",
       "ability": 82,
-      "teamId": null,
+      "teamId": "aston-martin",
       "salary": 3000000,
-      "contractEnd": 0
+      "contractEnd": 3
     },
     {
       "id": "graeme-lowdon",
@@ -506,9 +506,9 @@
       "lastName": "Mattiacci",
       "role": "commercial",
       "ability": 75,
-      "teamId": null,
+      "teamId": "ferrari",
       "salary": 2200000,
-      "contractEnd": 0
+      "contractEnd": 2
     },
     {
       "id": "richard-sanders",
@@ -516,9 +516,9 @@
       "lastName": "Sanders",
       "role": "commercial",
       "ability": 80,
-      "teamId": null,
+      "teamId": "red-bull-racing",
       "salary": 2800000,
-      "contractEnd": 0
+      "contractEnd": 4
     },
     {
       "id": "alejandro-agag",
@@ -536,9 +536,9 @@
       "lastName": "Nielsen",
       "role": "commercial",
       "ability": 76,
-      "teamId": null,
+      "teamId": "haas",
       "salary": 2400000,
-      "contractEnd": 0
+      "contractEnd": 1
     },
     {
       "id": "bernie-collins",
@@ -546,9 +546,9 @@
       "lastName": "Collins",
       "role": "commercial",
       "ability": 74,
-      "teamId": null,
+      "teamId": "kick-sauber",
       "salary": 2100000,
-      "contractEnd": 0
+      "contractEnd": 3
     },
     {
       "id": "james-vowles",
@@ -576,9 +576,9 @@
       "lastName": "Rossi",
       "role": "commercial",
       "ability": 77,
-      "teamId": null,
+      "teamId": "alpine",
       "salary": 2500000,
-      "contractEnd": 0
+      "contractEnd": 2
     },
     {
       "id": "frederic-vasseur",
@@ -596,9 +596,9 @@
       "lastName": "Tost",
       "role": "commercial",
       "ability": 71,
-      "teamId": null,
+      "teamId": "racing-bulls",
       "salary": 1700000,
-      "contractEnd": 0
+      "contractEnd": 1
     }
   ]
 }
