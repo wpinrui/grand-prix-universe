@@ -134,12 +134,12 @@ const SIM_WARMUP_DAYS = 7;      // Days at 1x speed before acceleration starts
 const SIM_ACCEL_DAYS = 15;      // Days over which we accelerate from 1x to 3x (day 8 to day 22)
 const SIM_MAX_SPEED = 3.0;      // Maximum speed multiplier (333ms per tick)
 
-/** Initial technology attribute level (1-5 scale, 3 = average) */
-const INITIAL_TECH_LEVEL = 3;
+/** Initial technology attribute level (0-100 scale, 35 = midpoint of 10-60 normalized range) */
+const INITIAL_TECH_LEVEL = 35;
 
 /**
  * Creates initial technology levels for all 7 components
- * All components start at average (3) for both performance and reliability
+ * All components start at midpoint (35) for both performance and reliability
  */
 function createInitialTechnologyLevels(): TechnologyLevel[] {
   return Object.values(TechnologyComponent).map((component) => ({
@@ -178,7 +178,7 @@ function createInitialDesignState(): DesignState {
   return {
     nextYearChassis: null,
     technologyLevels: createInitialTechnologyLevels(),
-    activeTechnologyProject: null,
+    activeTechnologyProjects: [],
     currentYearChassis,
   };
 }
