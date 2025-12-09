@@ -80,7 +80,7 @@ export enum ChassisDesignStage {
 
 /**
  * TechnologyComponent - The 7 internal car components that can be improved
- * Each has Performance and Reliability attributes (1-5 scale)
+ * Each has Performance and Reliability attributes (0-100 scale)
  */
 export enum TechnologyComponent {
   Brakes = 'brakes',
@@ -140,25 +140,43 @@ export interface ChassisDesign {
 
 /**
  * TechnologyLevel - Current level of a technology component
- * Both attributes range 1-5 (1 = basic, 5 = cutting edge)
+ * Both attributes range 0-100 (10 = worst on grid, 60 = best on grid after normalization)
  */
 export interface TechnologyLevel {
   component: TechnologyComponent;
-  performance: number; // 1-5
-  reliability: number; // 1-5
+  performance: number; // 0-100
+  reliability: number; // 0-100
+}
+
+/**
+ * TechnologyProjectPhase - Phase of a technology improvement project
+ * Discovery: Waiting for breakthrough (daily probability check)
+ * Development: Working toward completion (known payoff/timeframe)
+ */
+export enum TechnologyProjectPhase {
+  Discovery = 'discovery',
+  Development = 'development',
 }
 
 /**
  * TechnologyDesignProject - An in-progress technology improvement
- * Only one can be active at a time per team
+ * Multiple projects can be active simultaneously per team
+ *
+ * Phase flow:
+ * 1. Discovery: Designers assigned, daily probability check for breakthrough
+ * 2. Development: Breakthrough discovered, working toward completion with known payoff/timeframe
  */
 export interface TechnologyDesignProject {
   component: TechnologyComponent;
   attribute: TechnologyAttribute;
-  targetLevel: number; // What level we're designing to (current + 1)
-  progress: number; // 0-10
-  designersAssigned: number;
+  phase: TechnologyProjectPhase;
+  designersAssigned: number; // Percentage of designer capacity (0-100)
   startedAt: GameDate;
+
+  // Development phase fields (set when breakthrough is discovered)
+  payoff: number | null; // How much the stat will increase (e.g., +8)
+  workUnitsRequired: number | null; // Total work units needed to complete
+  workUnitsCompleted: number; // Progress toward workUnitsRequired
 }
 
 /**
@@ -192,11 +210,11 @@ export interface DesignState {
   /** Next year's chassis design (null if not started) */
   nextYearChassis: ChassisDesign | null;
 
-  /** Current technology levels for all 7 components */
+  /** Current technology levels for all 7 components (0-100 scale) */
   technologyLevels: TechnologyLevel[];
 
-  /** Active technology design project (null if none) */
-  activeTechnologyProject: TechnologyDesignProject | null;
+  /** Active technology design projects (multiple can run in parallel) */
+  activeTechnologyProjects: TechnologyDesignProject[];
 
   /** Current year chassis state (handling problems/solutions) */
   currentYearChassis: CurrentYearChassisState;

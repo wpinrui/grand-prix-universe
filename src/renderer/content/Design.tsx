@@ -70,10 +70,10 @@ const TECH_ORDER: TechnologyComponent[] = [
 ];
 
 const MAX_STAGE_PROGRESS = 10;
-const MAX_TECH_LEVEL = 5;
+const MAX_TECH_LEVEL = 100;
 const MAX_SOLUTION_PROGRESS = 10;
-const LEVEL_INDICES = [1, 2, 3, 4, 5] as const;
-const HANDLING_REVEALED_PER_TEST_LEVEL = 20; // Each test level reveals 20% handling
+const LEVEL_BAR_BOXES = 10; // Number of boxes in LevelBar visualization
+const LEVEL_BAR_STEP = MAX_TECH_LEVEL / LEVEL_BAR_BOXES; // 10 points per box
 const ALLOCATION_STEP = 10; // Increment/decrement step for designer allocation
 
 const PROBLEM_LABELS: Record<HandlingProblem, string> = {
@@ -118,7 +118,10 @@ interface AllocationBreakdown {
 function calculateAllocationBreakdown(designState: DesignState): AllocationBreakdown {
   const nextYear = designState.nextYearChassis?.designersAssigned ?? 0;
   const currentYear = designState.currentYearChassis.designersAssigned;
-  const technology = designState.activeTechnologyProject?.designersAssigned ?? 0;
+  const technology = designState.activeTechnologyProjects.reduce(
+    (sum, project) => sum + project.designersAssigned,
+    0
+  );
   const available = 100 - nextYear - currentYear - technology;
   return { nextYear, currentYear, technology, available };
 }
@@ -132,14 +135,21 @@ interface LevelBarProps {
   compact?: boolean;
 }
 
+/**
+ * Visual bar showing a 0-100 value as 10 discrete boxes
+ * Each box represents 10 points. Value 0 shows no boxes filled.
+ */
 function LevelBar({ value, compact = false }: LevelBarProps) {
+  // Convert 0-100 value to 0-10 filled boxes
+  const filledBoxes = Math.min(LEVEL_BAR_BOXES, Math.ceil(value / LEVEL_BAR_STEP));
+
   return (
     <div className={`flex ${compact ? 'gap-0.5' : 'gap-1'}`}>
-      {LEVEL_INDICES.map((i) => (
+      {Array.from({ length: LEVEL_BAR_BOXES }, (_, i) => (
         <div
           key={i}
           className={`${compact ? 'w-3 h-3' : 'w-4 h-4'} ${
-            i <= value ? 'bg-amber-500' : 'bg-gray-700'
+            i < filledBoxes ? 'bg-amber-500' : 'bg-gray-700'
           }`}
         />
       ))}
@@ -220,12 +230,12 @@ function SummaryTab({ designState, currentYear }: SummaryTabProps) {
                     <td className="py-1.5 text-secondary">{TECH_LABELS[component]}</td>
                     <td className="py-1.5">
                       <div className="flex justify-center">
-                        <LevelBar value={level?.performance ?? 1} compact />
+                        <LevelBar value={level?.performance ?? 0} compact />
                       </div>
                     </td>
                     <td className="py-1.5">
                       <div className="flex justify-center">
-                        <LevelBar value={level?.reliability ?? 1} compact />
+                        <LevelBar value={level?.reliability ?? 0} compact />
                       </div>
                     </td>
                   </tr>
@@ -624,7 +634,7 @@ function CurrentYearChassisTab({ chassisState, currentYear, designState }: Curre
           <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted">Tests</span>
-              <LevelBar value={Math.ceil(chassisState.handlingRevealed / HANDLING_REVEALED_PER_TEST_LEVEL)} />
+              <LevelBar value={chassisState.handlingRevealed} />
             </div>
             <div className="flex justify-between">
               <span className="text-muted">Handling</span>
@@ -751,8 +761,8 @@ function TechnologyTab({ levels }: TechnologyTabProps) {
     <div className="grid grid-cols-4 gap-4">
       {TECH_ORDER.map((component) => {
         const level = levelMap.get(component);
-        const perf = level?.performance ?? 1;
-        const rel = level?.reliability ?? 1;
+        const perf = level?.performance ?? 0;
+        const rel = level?.reliability ?? 0;
 
         return (
           <div key={component} className="card p-4">
