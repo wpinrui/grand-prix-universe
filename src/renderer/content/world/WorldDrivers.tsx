@@ -8,9 +8,10 @@ import {
   DriverProfileContent,
   extractRecentResults,
   extractCareerHistory,
+  getContractRelationship,
 } from '../../components';
-import type { ContractRelationship } from '../../components';
 import type { DriverStanding } from '../../../shared/domain';
+import { FREE_AGENT_COLORS } from '../../utils/face-generator';
 
 interface WorldDriversProps {
   initialDriverId?: string | null;
@@ -95,7 +96,7 @@ export function WorldDrivers({ initialDriverId }: WorldDriversProps) {
   // Build team colors for faces.js
   const teamColors = driverTeam
     ? { primary: driverTeam.primaryColor, secondary: driverTeam.secondaryColor }
-    : { primary: '#555555', secondary: '#333333' }; // Default gray for free agents
+    : FREE_AGENT_COLORS;
 
   // Get driver standing
   const driverStanding = driverStandingsMap.get(selectedDriver.id);
@@ -113,13 +114,6 @@ export function WorldDrivers({ initialDriverId }: WorldDriversProps) {
     gameState.teams
   );
 
-  // Determine contract relationship
-  const getContractRelationship = (): ContractRelationship => {
-    if (selectedDriver.teamId === null) return 'free-agent';
-    if (selectedDriver.teamId === playerTeam.id) return 'own-team';
-    return 'other-team';
-  };
-
   // Handle contract talks (placeholder for now)
   const handleEnterContractTalks = () => {
     // TODO: Navigate to contract negotiation screen
@@ -136,7 +130,7 @@ export function WorldDrivers({ initialDriverId }: WorldDriversProps) {
         currentSeason={gameState.currentSeason.seasonNumber}
         recentResults={recentResults}
         careerHistory={careerHistory}
-        contractRelationship={getContractRelationship()}
+        contractRelationship={getContractRelationship(selectedDriver.teamId, playerTeam.id)}
         teamColors={teamColors}
         onEnterContractTalks={handleEnterContractTalks}
         allDrivers={sortedDrivers}

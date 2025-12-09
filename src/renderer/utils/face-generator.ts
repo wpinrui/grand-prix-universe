@@ -149,6 +149,12 @@ export interface TeamColors {
   secondary: string;
 }
 
+/** Default colors for free agents without a team */
+export const FREE_AGENT_COLORS: TeamColors = {
+  primary: '#555555',
+  secondary: '#333333',
+};
+
 /**
  * Generates a face into the provided container element.
  * Uses deterministic seeding based on the provided ID for consistent results.
