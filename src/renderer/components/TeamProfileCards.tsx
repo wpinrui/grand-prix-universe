@@ -162,9 +162,13 @@ interface TeamHeaderProps {
   onTeamSelect?: (teamId: string) => void;
   /** Override principal name (e.g., player's name for their own team) */
   principalName?: string;
+  /** Whether this is the player's team (links to player wiki instead of principal profile) */
+  isPlayerTeam?: boolean;
+  /** Principal ID for linking to their profile (for non-player teams) */
+  principalId?: string;
 }
 
-export function TeamHeader({ team, allTeams, onTeamSelect, principalName }: TeamHeaderProps) {
+export function TeamHeader({ team, allTeams, onTeamSelect, principalName, isPlayerTeam, principalId }: TeamHeaderProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -235,7 +239,20 @@ export function TeamHeader({ team, allTeams, onTeamSelect, principalName }: Team
           )}
         </div>
         {(principalName || team.principal) && (
-          <p className="text-sm text-secondary mt-1">Principal: {principalName ?? team.principal}</p>
+          <p className="text-sm text-secondary mt-1">
+            Principal:{' '}
+            {isPlayerTeam ? (
+              <EntityLink type="player-wiki" id="" className="text-sm">
+                {principalName}
+              </EntityLink>
+            ) : principalId ? (
+              <EntityLink type="principal" id={principalId} className="text-sm">
+                {principalName ?? team.principal}
+              </EntityLink>
+            ) : (
+              principalName ?? team.principal
+            )}
+          </p>
         )}
         <p className="text-sm text-muted mt-2 max-w-2xl leading-relaxed">{team.description}</p>
       </div>
@@ -263,6 +280,10 @@ interface TeamProfileContentProps {
   onTeamSelect?: (teamId: string) => void;
   /** Override principal name (e.g., player's name for their own team) */
   principalName?: string;
+  /** Whether this is the player's team (links to player wiki instead of principal profile) */
+  isPlayerTeam?: boolean;
+  /** Principal ID for linking to their profile (for non-player teams) */
+  principalId?: string;
 }
 
 export function TeamProfileContent({
@@ -274,10 +295,19 @@ export function TeamProfileContent({
   allTeams,
   onTeamSelect,
   principalName,
+  isPlayerTeam,
+  principalId,
 }: TeamProfileContentProps) {
   return (
     <div className="space-y-8">
-      <TeamHeader team={team} allTeams={allTeams} onTeamSelect={onTeamSelect} principalName={principalName} />
+      <TeamHeader
+        team={team}
+        allTeams={allTeams}
+        onTeamSelect={onTeamSelect}
+        principalName={principalName}
+        isPlayerTeam={isPlayerTeam}
+        principalId={principalId}
+      />
 
       <TeamStatsGrid budget={team.budget} standing={constructorStanding} />
 

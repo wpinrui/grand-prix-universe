@@ -39,7 +39,7 @@ export function WorldTeams({ initialTeamId }: WorldTeamsProps) {
     );
   }
 
-  const { teams, drivers, chiefs } = gameState;
+  const { teams, drivers, chiefs, principals } = gameState;
 
   // Build lookup maps for O(1) access
   const constructorStandingsMap = new Map<string, ConstructorStanding>(
@@ -61,6 +61,10 @@ export function WorldTeams({ initialTeamId }: WorldTeamsProps) {
   const teamChiefs = chiefs.filter((c) => c.teamId === selectedTeam.id);
   const constructorStanding = constructorStandingsMap.get(selectedTeam.id);
 
+  // Check if viewing player's team and get principal info
+  const isViewingPlayerTeam = selectedTeam.id === playerTeam.id;
+  const teamPrincipal = principals.find((p) => p.teamId === selectedTeam.id);
+
   return (
     <div className="max-w-6xl">
       <TeamProfileContent
@@ -71,6 +75,9 @@ export function WorldTeams({ initialTeamId }: WorldTeamsProps) {
         driverStandingsMap={driverStandingsMap}
         allTeams={sortedTeams}
         onTeamSelect={setSelectedTeamId}
+        isPlayerTeam={isViewingPlayerTeam}
+        principalName={isViewingPlayerTeam ? gameState.player.name : undefined}
+        principalId={teamPrincipal?.id}
       />
     </div>
   );

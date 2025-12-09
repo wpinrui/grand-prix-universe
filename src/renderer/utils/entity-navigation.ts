@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react';
 import type { SectionId } from '../navigation';
 
-export type EntityType = 'team' | 'driver' | 'chief' | 'principal' | 'circuit' | 'race';
+export type EntityType = 'team' | 'driver' | 'chief' | 'principal' | 'circuit' | 'race' | 'player-wiki';
 
 export interface EntityRoute {
   section: SectionId;
@@ -27,6 +27,9 @@ export function getEntityRoute(type: EntityType, id: string): EntityRoute {
     case 'race':
       // For races, id is the race number as string
       return { section: 'fia', subItem: 'results', entityId: id };
+    case 'player-wiki':
+      // Navigate to player wiki page (id is ignored)
+      return { section: 'team', subItem: 'wiki', entityId: '' };
   }
 }
 
