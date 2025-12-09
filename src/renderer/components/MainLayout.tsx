@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   sections,
@@ -95,12 +95,11 @@ export function MainLayout() {
   // Search modal state
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-  // Navigation history for back/forward
-  const [history, setHistory] = useState<HistoryEntry[]>([
-    { sectionId: defaultSection, subItemId: defaultSubItem },
-  ]);
-  const [historyIndex, setHistoryIndex] = useState(0);
-  const isNavigatingRef = useRef(false); // Prevents adding to history during back/forward
+  // Navigation history for back/forward (combined to avoid stale closure issues)
+  const [navHistory, setNavHistory] = useState<{ entries: HistoryEntry[]; index: number }>({
+    entries: [{ sectionId: defaultSection, subItemId: defaultSubItem }],
+    index: 0,
+  });
 
   const navigate = useNavigate();
   const clearGameState = useClearGameState();
@@ -151,41 +150,46 @@ export function MainLayout() {
 
   // Push a new entry to navigation history
   const pushHistory = useCallback((entry: HistoryEntry) => {
-    if (isNavigatingRef.current) {
-      isNavigatingRef.current = false;
-      return;
-    }
+    setNavHistory((prev) => ({
+      entries: [...prev.entries.slice(0, prev.index + 1), entry],
+      index: prev.index + 1,
+    }));
+  }, []);
 
-    setHistory((prev) => {
-      // Truncate forward history if we're not at the end
-      const truncated = prev.slice(0, historyIndex + 1);
-      return [...truncated, entry];
-    });
-    setHistoryIndex((prev) => prev + 1);
-  }, [historyIndex]);
+  // Clear navigation history when simulation starts (advance time)
+  const isSimulating = gameState?.simulation?.isSimulating ?? false;
+  useEffect(() => {
+    if (isSimulating) {
+      // Reset to single entry with current page
+      setNavHistory((prev) => ({
+        entries: [prev.entries[prev.index] ?? { sectionId: defaultSection, subItemId: defaultSubItem }],
+        index: 0,
+      }));
+    }
+  }, [isSimulating]);
 
   // Navigate back in history
   const handleBack = useCallback(() => {
-    if (historyIndex <= 0) return;
-
-    isNavigatingRef.current = true;
-    const newIndex = historyIndex - 1;
-    setHistoryIndex(newIndex);
-    applyHistoryEntry(history[newIndex]);
-  }, [history, historyIndex, applyHistoryEntry]);
+    setNavHistory((prev) => {
+      if (prev.index <= 0) return prev;
+      const newIndex = prev.index - 1;
+      applyHistoryEntry(prev.entries[newIndex]);
+      return { ...prev, index: newIndex };
+    });
+  }, [applyHistoryEntry]);
 
   // Navigate forward in history
   const handleForward = useCallback(() => {
-    if (historyIndex >= history.length - 1) return;
+    setNavHistory((prev) => {
+      if (prev.index >= prev.entries.length - 1) return prev;
+      const newIndex = prev.index + 1;
+      applyHistoryEntry(prev.entries[newIndex]);
+      return { ...prev, index: newIndex };
+    });
+  }, [applyHistoryEntry]);
 
-    isNavigatingRef.current = true;
-    const newIndex = historyIndex + 1;
-    setHistoryIndex(newIndex);
-    applyHistoryEntry(history[newIndex]);
-  }, [history, historyIndex, applyHistoryEntry]);
-
-  const canGoBack = historyIndex > 0;
-  const canGoForward = historyIndex < history.length - 1;
+  const canGoBack = navHistory.index > 0;
+  const canGoForward = navHistory.index < navHistory.entries.length - 1;
 
   // Safe: selectedSectionId always matches a valid section (defaults to 'team')
   const selectedSection = sections.find((s) => s.id === selectedSectionId) ?? sections[0];
