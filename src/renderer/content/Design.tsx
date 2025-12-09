@@ -72,7 +72,7 @@ const TECH_ORDER: TechnologyComponent[] = [
 const MAX_STAGE_PROGRESS = 10;
 const MAX_TECH_LEVEL = 100;
 const MAX_SOLUTION_PROGRESS = 10;
-const LEVEL_BAR_BOXES = 5; // Number of boxes in LevelBar visualization
+const LEVEL_BAR_BOXES = 10; // Number of boxes in LevelBar visualization
 const LEVEL_BAR_STEP = MAX_TECH_LEVEL / LEVEL_BAR_BOXES; // 20 points per box
 const ALLOCATION_STEP = 10; // Increment/decrement step for designer allocation
 

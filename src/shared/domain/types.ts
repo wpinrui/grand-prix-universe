@@ -80,7 +80,7 @@ export enum ChassisDesignStage {
 
 /**
  * TechnologyComponent - The 7 internal car components that can be improved
- * Each has Performance and Reliability attributes (1-5 scale)
+ * Each has Performance and Reliability attributes (0-100 scale)
  */
 export enum TechnologyComponent {
   Brakes = 'brakes',
