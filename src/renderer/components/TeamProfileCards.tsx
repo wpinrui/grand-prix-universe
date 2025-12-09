@@ -6,6 +6,7 @@ import type { CSSProperties } from 'react';
 import { FlagIcon } from './FlagIcon';
 import { TeamBadge } from './TeamBadge';
 import { SectionHeading } from './SectionHeading';
+import { EntityLink } from './EntityLink';
 import { ACCENT_CARD_STYLE, ACCENT_TEXT_STYLE } from '../utils/theme-styles';
 import {
   formatCurrency,
@@ -101,9 +102,9 @@ export function DriverCard({ driver, standing }: DriverCardProps) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="font-bold text-primary">
+          <EntityLink type="driver" id={driver.id} className="font-bold">
             {driver.firstName} {driver.lastName}
-          </span>
+          </EntityLink>
           <FlagIcon country={driver.nationality} size="sm" />
         </div>
         <div className="text-sm font-medium text-secondary">
@@ -132,9 +133,9 @@ export function ChiefCard({ chief }: ChiefCardProps) {
       <div className="text-xs font-medium text-muted uppercase tracking-wider mb-1">
         {CHIEF_ROLE_LABELS[chief.role] ?? chief.role}
       </div>
-      <div className="font-bold text-primary">
+      <EntityLink type="chief" id={chief.id} className="font-bold block">
         {chief.firstName} {chief.lastName}
-      </div>
+      </EntityLink>
       <div className="text-xs text-muted mt-2 space-y-0.5">
         <div>Ability: {chief.ability}</div>
         <div>{formatContractLine(chief.salary, chief.contractEnd)}</div>
@@ -149,14 +150,33 @@ export function ChiefCard({ chief }: ChiefCardProps) {
 
 interface TeamHeaderProps {
   team: Team;
+  /** If provided, shows a chevron button that navigates to World > Teams */
+  onNavigateToTeam?: () => void;
 }
 
-export function TeamHeader({ team }: TeamHeaderProps) {
+export function TeamHeader({ team, onNavigateToTeam }: TeamHeaderProps) {
   return (
     <div className="flex items-start gap-6">
       <TeamBadge team={team} className="w-24 h-20" />
       <div className="flex-1">
-        <h1 className="text-2xl font-bold text-primary tracking-tight">{team.name}</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-primary tracking-tight">{team.name}</h1>
+          {onNavigateToTeam && (
+            <button
+              type="button"
+              onClick={onNavigateToTeam}
+              className="p-1 text-muted hover:text-primary cursor-pointer transition-colors"
+              title="View in World Teams"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          )}
+        </div>
+        {team.principal && (
+          <p className="text-sm text-secondary mt-1">Principal: {team.principal}</p>
+        )}
         <p className="text-sm text-muted mt-2 max-w-2xl leading-relaxed">{team.description}</p>
       </div>
       <div className="flex items-center gap-2 text-secondary">
@@ -177,6 +197,8 @@ interface TeamProfileContentProps {
   chiefs: Chief[];
   constructorStanding: ConstructorStanding | undefined;
   driverStandingsMap: Map<string, DriverStanding>;
+  /** If provided, shows a chevron button that navigates to World > Teams */
+  onNavigateToTeam?: () => void;
 }
 
 export function TeamProfileContent({
@@ -185,10 +207,11 @@ export function TeamProfileContent({
   chiefs,
   constructorStanding,
   driverStandingsMap,
+  onNavigateToTeam,
 }: TeamProfileContentProps) {
   return (
     <div className="space-y-8">
-      <TeamHeader team={team} />
+      <TeamHeader team={team} onNavigateToTeam={onNavigateToTeam} />
 
       <TeamStatsGrid budget={team.budget} standing={constructorStanding} />
 
