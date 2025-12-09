@@ -102,7 +102,6 @@ function getCurrentStageName(chassis: ChassisDesign): string {
   return 'Complete';
 }
 
-
 // ===========================================
 // SHARED COMPONENTS
 // ===========================================
