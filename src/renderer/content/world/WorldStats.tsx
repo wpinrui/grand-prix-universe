@@ -438,7 +438,7 @@ function StatsChart({ chartData, selectedTeamIds, teamById, stat, invertYAxis }:
 // MAIN COMPONENT
 // ===========================================
 
-const INITIAL_TEAM_COUNT = 5;
+// Select ALL teams by default
 
 export function WorldStats() {
   const { gameState } = useDerivedGameState();
@@ -490,21 +490,14 @@ export function WorldStats() {
   // Memoized team lookup map for O(1) access
   const teamById = useMemo(() => new Map(teams.map((t) => [t.id, t])), [teams]);
 
-  // Initialize selected teams to top N on first load only
+  // Initialize selected teams to ALL teams on first load
   useEffect(() => {
     if (hasInitializedTeams.current) return;
-    if (!gameState?.currentSeason.constructorStandings) return;
+    if (teams.length === 0) return;
 
-    const topTeamIds = new Set(
-      gameState.currentSeason.constructorStandings
-        .slice(0, INITIAL_TEAM_COUNT)
-        .map((s) => s.teamId)
-    );
-    if (topTeamIds.size > 0) {
-      setSelectedTeamIds(topTeamIds);
-      hasInitializedTeams.current = true;
-    }
-  }, [gameState?.currentSeason.constructorStandings]);
+    setSelectedTeamIds(new Set(teams.map((t) => t.id)));
+    hasInitializedTeams.current = true;
+  }, [teams]);
 
   // Build chart data from filtered seasons
   const chartData = useMemo(() => {
@@ -595,7 +588,7 @@ export function WorldStats() {
             options={TIME_SCALE_OPTIONS}
             value={timeScale}
             onChange={setTimeScale}
-            className="w-36"
+            className="w-40"
           />
         </div>
         <div>
