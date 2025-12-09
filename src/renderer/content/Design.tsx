@@ -23,12 +23,14 @@ type DesignTab = 'summary' | 'next-year' | 'current-year' | 'technology';
 // CONSTANTS
 // ===========================================
 
-const TABS: Tab<DesignTab>[] = [
-  { id: 'summary', label: 'Summary' },
-  { id: 'next-year', label: 'Next Year Chassis' },
-  { id: 'current-year', label: 'Current Year Chassis' },
-  { id: 'technology', label: 'Technology' },
-];
+function getTabs(currentYear: number): Tab<DesignTab>[] {
+  return [
+    { id: 'summary', label: 'Summary' },
+    { id: 'next-year', label: `${currentYear + 1} Chassis` },
+    { id: 'current-year', label: `${currentYear} Chassis` },
+    { id: 'technology', label: 'Technology' },
+  ];
+}
 
 const STAGE_LABELS: Record<ChassisDesignStage, string> = {
   [ChassisDesignStage.Design]: 'Design',
@@ -130,115 +132,150 @@ function LevelBar({ value, compact = false }: LevelBarProps) {
 // TAB VIEWS
 // ===========================================
 
-interface SummaryTabProps {
-  designState: DesignState;
-  currentSeason: number;
+// ===========================================
+// SUMMARY TAB COMPONENTS
+// ===========================================
+
+interface AllocationRowProps {
+  label: string;
+  value: number;
+  isHighlighted?: boolean;
 }
 
-function SummaryTab({ designState, currentSeason }: SummaryTabProps) {
+function AllocationRow({ label, value, isHighlighted = false }: AllocationRowProps) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className={`text-sm ${isHighlighted ? 'text-amber-400' : 'text-secondary'}`}>
+        {label}
+      </span>
+      <span className="text-sm font-mono text-primary">{value}%</span>
+    </div>
+  );
+}
+
+interface SummaryTabProps {
+  designState: DesignState;
+  currentYear: number;
+}
+
+function SummaryTab({ designState, currentYear }: SummaryTabProps) {
   const levelMap = new Map(designState.technologyLevels.map((l) => [l.component, l]));
   const discoveredCount = designState.currentYearChassis.problems.filter((p) => p.discovered).length;
   const nextYearProgress = designState.nextYearChassis
     ? getChassisOverallProgress(designState.nextYearChassis)
     : 0;
 
+  // Calculate staff allocation percentages
+  const nextYearAllocation = designState.nextYearChassis?.designersAssigned ?? 0;
+  const currentYearAllocation = designState.currentYearChassis.designersAssigned;
+  const technologyAllocation = designState.activeTechnologyProject?.designersAssigned ?? 0;
+  const availableAllocation = 100 - nextYearAllocation - currentYearAllocation - technologyAllocation;
+
   return (
     <div className="grid grid-cols-2 gap-6">
-      {/* Left: Chassis Overview */}
+      {/* Left Column: Designer Allocation + Technology Grid */}
       <div className="space-y-4">
-        {/* Current Year */}
+        {/* Designer Allocation Panel */}
         <div className="card p-4">
-          <div className="flex items-center justify-between mb-3">
-            <SectionHeading>{currentSeason} Chassis</SectionHeading>
-            <span className="text-sm font-mono text-primary">SA{currentSeason}-A</span>
-          </div>
-          <div className="grid grid-cols-3 gap-4 text-sm">
-            <div>
-              <span className="text-muted">Handling</span>
-              <div className="text-primary font-mono">
-                {designState.currentYearChassis.handlingRevealed > 0
-                  ? `${designState.currentYearChassis.handlingRevealed}%`
-                  : '?'}
-              </div>
-            </div>
-            <div>
-              <span className="text-muted">Problems</span>
-              <div className="text-primary font-mono">{discoveredCount} found</div>
-            </div>
-            <div>
-              <span className="text-muted">Designers</span>
-              <div className="text-primary font-mono">{designState.currentYearChassis.designersAssigned}%</div>
-            </div>
+          <SectionHeading>Designer Allocation</SectionHeading>
+          <div className="mt-4 space-y-2">
+            <AllocationRow label="Available" value={availableAllocation} isHighlighted />
+            <AllocationRow label={`${currentYear + 1} Chassis`} value={nextYearAllocation} />
+            <AllocationRow label={`${currentYear} Chassis`} value={currentYearAllocation} />
+            <AllocationRow label="Technology" value={technologyAllocation} />
           </div>
         </div>
 
-        {/* Next Year */}
+        {/* Technology Grid */}
         <div className="card p-4">
-          <div className="flex items-center justify-between mb-3">
-            <SectionHeading>{currentSeason + 1} Chassis</SectionHeading>
-            <span className="text-sm font-mono text-primary">SA{currentSeason + 1}-A</span>
-          </div>
-          <div className="grid grid-cols-3 gap-4 text-sm mb-3">
-            <div>
-              <span className="text-muted">Stage</span>
-              <div className="text-primary">
-                {designState.nextYearChassis
-                  ? getCurrentStageName(designState.nextYearChassis)
-                  : 'Not Started'}
-              </div>
-            </div>
-            <div>
-              <span className="text-muted">Progress</span>
-              <div className="text-primary font-mono">{nextYearProgress}%</div>
-            </div>
-            <div>
-              <span className="text-muted">Designers</span>
-              <div className="text-primary font-mono">{designState.nextYearChassis?.designersAssigned ?? 0}%</div>
-            </div>
-          </div>
-          {designState.nextYearChassis && (
-            <ProgressBar value={nextYearProgress} />
-          )}
+          <SectionHeading>Technology</SectionHeading>
+          <table className="w-full text-sm mt-4">
+            <thead>
+              <tr className="text-muted text-xs">
+                <th className="text-left py-1"></th>
+                <th className="text-center py-1">Performance</th>
+                <th className="text-center py-1">Reliability</th>
+              </tr>
+            </thead>
+            <tbody>
+              {TECH_ORDER.map((component) => {
+                const level = levelMap.get(component);
+                return (
+                  <tr key={component}>
+                    <td className="py-1.5 text-secondary">{TECH_LABELS[component]}</td>
+                    <td className="py-1.5">
+                      <div className="flex justify-center">
+                        <LevelBar value={level?.performance ?? 1} compact />
+                      </div>
+                    </td>
+                    <td className="py-1.5">
+                      <div className="flex justify-center">
+                        <LevelBar value={level?.reliability ?? 1} compact />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      {/* Right: Technology Grid */}
-      <div className="card p-4">
-        <div className="flex items-center justify-between mb-3">
-          <SectionHeading>Technology</SectionHeading>
-          <span className="text-sm text-muted">
-            {designState.activeTechnologyProject?.designersAssigned ?? 0}% designers
-          </span>
+      {/* Right Column: Chassis Info Panels */}
+      <div className="space-y-4">
+        {/* Current Year Chassis */}
+        <div className="card p-4">
+          <SectionHeading>{currentYear} Chassis</SectionHeading>
+          <table className="w-full text-sm mt-4">
+            <thead>
+              <tr className="text-muted text-xs">
+                <th className="text-left py-1">Name</th>
+                <th className="text-center py-1">Handling</th>
+                <th className="text-center py-1">Project</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="py-1.5 text-secondary">SA{currentYear}-A</td>
+                <td className="py-1.5 text-center font-mono text-primary">
+                  {designState.currentYearChassis.handlingRevealed > 0
+                    ? `${designState.currentYearChassis.handlingRevealed}%`
+                    : '?'}
+                </td>
+                <td className="py-1.5 text-center text-secondary">
+                  {discoveredCount > 0 ? `${discoveredCount} problems` : '---'}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-muted text-xs border-b border-subtle">
-              <th className="text-left py-2">Component</th>
-              <th className="text-center py-2">Performance</th>
-              <th className="text-center py-2">Reliability</th>
-            </tr>
-          </thead>
-          <tbody>
-            {TECH_ORDER.map((component) => {
-              const level = levelMap.get(component);
-              return (
-                <tr key={component} className="border-b border-subtle last:border-0">
-                  <td className="py-2 text-secondary">{TECH_LABELS[component]}</td>
-                  <td className="py-2">
-                    <div className="flex justify-center">
-                      <LevelBar value={level?.performance ?? 1} compact />
-                    </div>
-                  </td>
-                  <td className="py-2">
-                    <div className="flex justify-center">
-                      <LevelBar value={level?.reliability ?? 1} compact />
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+
+        {/* Next Year Chassis */}
+        <div className="card p-4">
+          <SectionHeading>{currentYear + 1} Chassis</SectionHeading>
+          <table className="w-full text-sm mt-4">
+            <thead>
+              <tr className="text-muted text-xs">
+                <th className="text-left py-1">Name</th>
+                <th className="text-center py-1">Stage</th>
+                <th className="text-center py-1">Efficiency</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="py-1.5 text-secondary">SA{currentYear + 1}-A</td>
+                <td className="py-1.5 text-center text-secondary">
+                  {designState.nextYearChassis
+                    ? getCurrentStageName(designState.nextYearChassis)
+                    : 'Not started'}
+                </td>
+                <td className="py-1.5 text-center font-mono text-primary">
+                  {designState.nextYearChassis ? `${nextYearProgress}%` : '0%'}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
@@ -246,14 +283,14 @@ function SummaryTab({ designState, currentSeason }: SummaryTabProps) {
 
 interface NextYearChassisTabProps {
   chassis: ChassisDesign | null;
-  currentSeason: number;
+  currentYear: number;
 }
 
-function NextYearChassisTab({ chassis, currentSeason }: NextYearChassisTabProps) {
+function NextYearChassisTab({ chassis, currentYear }: NextYearChassisTabProps) {
   if (!chassis) {
     return (
       <div className="card p-8 text-center">
-        <p className="text-muted">No chassis design in progress for {currentSeason + 1} season.</p>
+        <p className="text-muted">No chassis design in progress for {currentYear + 1} season.</p>
       </div>
     );
   }
@@ -265,8 +302,8 @@ function NextYearChassisTab({ chassis, currentSeason }: NextYearChassisTabProps)
     <div className="card p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <SectionHeading>{currentSeason + 1} Chassis Design</SectionHeading>
-          <p className="text-sm text-muted mt-1">SA{currentSeason + 1}-A</p>
+          <SectionHeading>{currentYear + 1} Chassis Design</SectionHeading>
+          <p className="text-sm text-muted mt-1">SA{currentYear + 1}-A</p>
         </div>
         <div className="text-right">
           <div className="text-2xl font-bold text-primary">{overallProgress}%</div>
@@ -315,10 +352,10 @@ function NextYearChassisTab({ chassis, currentSeason }: NextYearChassisTabProps)
 
 interface CurrentYearChassisTabProps {
   chassisState: CurrentYearChassisState;
-  currentSeason: number;
+  currentYear: number;
 }
 
-function CurrentYearChassisTab({ chassisState, currentSeason }: CurrentYearChassisTabProps) {
+function CurrentYearChassisTab({ chassisState, currentYear }: CurrentYearChassisTabProps) {
   const problemMap = new Map(chassisState.problems.map((p) => [p.problem, p]));
 
   // Find the active problem being worked on, or first discovered unsolved problem
@@ -356,7 +393,7 @@ function CurrentYearChassisTab({ chassisState, currentSeason }: CurrentYearChass
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-secondary">{currentSeason} Chassis</span>
+              <span className="text-sm text-secondary">{currentYear} Chassis</span>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-mono text-primary">
                   {chassisState.designersAssigned}%
@@ -374,7 +411,7 @@ function CurrentYearChassisTab({ chassisState, currentSeason }: CurrentYearChass
 
         {/* Chassis Info Panel */}
         <div className="card p-4">
-          <SectionHeading>Chassis {currentSeason}-A</SectionHeading>
+          <SectionHeading>Chassis {currentYear}-A</SectionHeading>
           <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted">Tests</span>
@@ -401,7 +438,7 @@ function CurrentYearChassisTab({ chassisState, currentSeason }: CurrentYearChass
       {/* Improvement Project Section */}
       <div className="card p-4">
         <div className="flex items-center justify-between mb-4">
-          <SectionHeading>{currentSeason} Chassis</SectionHeading>
+          <SectionHeading>{currentYear} Chassis</SectionHeading>
           <span className="text-sm text-muted">
             {activeProblem ? `Fixing: ${PROBLEM_LABELS[activeProblem]}` : 'No Project'}
           </span>
@@ -572,22 +609,22 @@ export function Design() {
 
   const teamState = gameState.teamStates[playerTeam.id];
   const designState = teamState.designState;
-  const currentSeason = gameState.currentSeason.seasonNumber;
+  const currentYear = gameState.currentDate.year;
 
   return (
     <div>
-      <TabBar tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} />
+      <TabBar tabs={getTabs(currentYear)} activeTab={activeTab} onTabChange={setActiveTab} />
 
       {activeTab === 'summary' && (
-        <SummaryTab designState={designState} currentSeason={currentSeason} />
+        <SummaryTab designState={designState} currentYear={currentYear} />
       )}
       {activeTab === 'next-year' && (
-        <NextYearChassisTab chassis={designState.nextYearChassis} currentSeason={currentSeason} />
+        <NextYearChassisTab chassis={designState.nextYearChassis} currentYear={currentYear} />
       )}
       {activeTab === 'current-year' && (
         <CurrentYearChassisTab
           chassisState={designState.currentYearChassis}
-          currentSeason={currentSeason}
+          currentYear={currentYear}
         />
       )}
       {activeTab === 'technology' && <TechnologyTab levels={designState.technologyLevels} />}
