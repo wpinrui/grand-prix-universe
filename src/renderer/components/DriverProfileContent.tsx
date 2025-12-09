@@ -216,7 +216,7 @@ function DriverStatePanel({ driverState }: DriverStatePanelProps) {
 // FORM PANEL (RECENT RESULTS)
 // ===========================================
 
-interface RecentRaceResult {
+export interface RecentRaceResult {
   raceNumber: number;
   circuitId: string;
   position: number | null;
@@ -287,7 +287,7 @@ function FormPanel({ recentResults }: FormPanelProps) {
 // CAREER HISTORY PANEL
 // ===========================================
 
-interface SeasonSummary {
+export interface SeasonSummary {
   seasonNumber: number;
   teamName: string;
   position: number;

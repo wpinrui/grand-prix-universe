@@ -13,3 +13,4 @@ export { StatCard, MiniStat, TeamStatsGrid, DriverCard, ChiefCard, TeamHeader, T
 export { PersonHeader, AttributeBar, StatPanel, StatRow, ContractPanel } from './PersonProfileCards';
 export type { ContractRelationship } from './PersonProfileCards';
 export { DriverProfileContent, extractRecentResults, extractCareerHistory } from './DriverProfileContent';
+export type { RecentRaceResult, SeasonSummary } from './DriverProfileContent';
