@@ -327,30 +327,33 @@ export interface TechnologyBreakthrough {
 }
 
 /**
- * DesignCompletionType - What type of design work was completed
+ * TechnologyCompletion - A technology design project completed
+ * Emitted when technology development finishes (ready for construction)
  */
-export type DesignCompletionType = 'technology' | 'handling-solution';
-
-/**
- * DesignCompletion - A design project completed during processing
- * Emitted when development work finishes (ready for construction)
- */
-export interface DesignCompletion {
-  /** What type of completion */
-  type: DesignCompletionType;
-
-  /** Technology component (for technology completions) */
-  component?: TechnologyComponent;
-
-  /** Technology attribute (for technology completions) */
-  attribute?: TechnologyAttribute;
-
-  /** Handling problem (for handling-solution completions) */
-  problem?: HandlingProblem;
-
+export interface TechnologyCompletion {
+  type: 'technology';
+  component: TechnologyComponent;
+  attribute: TechnologyAttribute;
   /** How much the stat will increase */
   statIncrease: number;
 }
+
+/**
+ * HandlingSolutionCompletion - A handling problem solution completed
+ * Emitted when handling solution design finishes (ready for construction)
+ */
+export interface HandlingSolutionCompletion {
+  type: 'handling-solution';
+  problem: HandlingProblem;
+  /** How much handling will improve */
+  statIncrease: number;
+}
+
+/**
+ * DesignCompletion - A design project completed during processing
+ * Discriminated union ensures type-safe access to completion-specific fields
+ */
+export type DesignCompletion = TechnologyCompletion | HandlingSolutionCompletion;
 
 /**
  * ChassisStageCompletion - A chassis design stage completed during processing
