@@ -32,6 +32,10 @@ function formatContractEnd(seasonNumber: number): string {
   return `31 Dec ${year}`;
 }
 
+function formatContractLine(salary: number, contractEnd: number): string {
+  return `${formatAnnualSalary(salary)} · Contract ends ${formatContractEnd(contractEnd)}`;
+}
+
 // ===========================================
 // SHARED COMPONENTS
 // ===========================================
@@ -68,11 +72,11 @@ function StatCard({ label, value, accent = false }: StatCardProps) {
 // DRIVER & CHIEF CARDS
 // ===========================================
 
-function MiniStat({ value, label }: { value: React.ReactNode; label: string }) {
+function MiniStat({ value, label }: { value: React.ReactNode; label?: string }) {
   return (
     <div className="text-muted">
       <span className="font-medium text-secondary">{value}</span>
-      <span className="ml-1">{label}</span>
+      {label && <span className="ml-1">{label}</span>}
     </div>
   );
 }
@@ -109,13 +113,13 @@ function DriverCard({ driver, standing }: DriverCardProps) {
         </div>
         {/* Championship Stats */}
         <div className="flex gap-4 mt-2 text-xs">
-          <MiniStat value={standing ? formatOrdinal(standing.position) : '-'} label="" />
+          <MiniStat value={standing ? formatOrdinal(standing.position) : '-'} />
           <MiniStat value={standing?.points ?? 0} label="Pts" />
           <MiniStat value={standing?.wins ?? 0} label="Wins" />
         </div>
         {/* Contract Info */}
         <div className="text-xs text-muted mt-1">
-          {formatAnnualSalary(driver.salary)} · Contract ends {formatContractEnd(driver.contractEnd)}
+          {formatContractLine(driver.salary, driver.contractEnd)}
         </div>
       </div>
     </div>
@@ -137,7 +141,7 @@ function ChiefCard({ chief }: ChiefCardProps) {
       </div>
       <div className="text-xs text-muted mt-2 space-y-0.5">
         <div>Ability: {chief.ability}</div>
-        <div>{formatAnnualSalary(chief.salary)} · Contract ends {formatContractEnd(chief.contractEnd)}</div>
+        <div>{formatContractLine(chief.salary, chief.contractEnd)}</div>
       </div>
     </div>
   );
