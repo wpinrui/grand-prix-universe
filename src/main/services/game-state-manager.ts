@@ -1447,6 +1447,7 @@ export const GameStateManager = {
       efficiencyRating: 0,
       isLegal: true,
       startedAt: { ...state.currentDate },
+      accumulatedWorkUnits: 0,
     };
 
     return state;
