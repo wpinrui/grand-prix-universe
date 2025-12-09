@@ -97,18 +97,19 @@ function buildSeasonChartData(
 
 function buildRaceChartData(
   seasons: SeasonData[],
-  teamIds: string[],
-  stat: StatCategory
+  selectedTeamIds: string[],
+  stat: StatCategory,
+  allTeamIds: string[]
 ): ChartDataPoint[] {
   const dataPoints: ChartDataPoint[] = [];
 
   seasons.forEach((season) => {
-    // Track cumulative stats per team for this season
+    // Track cumulative stats for ALL teams (needed for accurate position calculation)
     const cumulativeStats: Record<string, Record<StatCategory, number>> = {};
-    teamIds.forEach((teamId) => {
+    allTeamIds.forEach((teamId) => {
       cumulativeStats[teamId] = {
         points: 0,
-        position: 0, // Will be calculated at end
+        position: 0,
         wins: 0,
         podiums: 0,
         polePositions: 0,
@@ -120,8 +121,8 @@ function buildRaceChartData(
     completedRaces.forEach((race) => {
       const result = race.result!;
 
-      // Update cumulative stats from race results
-      teamIds.forEach((teamId) => {
+      // Update cumulative stats from race results for ALL teams
+      allTeamIds.forEach((teamId) => {
         const teamRaceResults = result.race.filter((r) => r.teamId === teamId);
         const teamQualiResults = result.qualifying.filter((r) => r.teamId === teamId);
 
@@ -136,17 +137,17 @@ function buildRaceChartData(
         });
       });
 
-      // Create data point for this race
+      // Create data point for this race (only for selected teams)
       const dataPoint: ChartDataPoint = {
         season: season.seasonNumber,
         race: race.raceNumber,
         label: `S${season.seasonNumber}R${race.raceNumber}`,
       };
 
-      teamIds.forEach((teamId) => {
-        // For position, we need to calculate based on points ranking
+      selectedTeamIds.forEach((teamId) => {
         if (stat === 'position') {
-          const sortedTeams = [...teamIds].sort(
+          // Calculate position based on ALL teams, not just selected
+          const sortedTeams = [...allTeamIds].sort(
             (a, b) => cumulativeStats[b].points - cumulativeStats[a].points
           );
           dataPoint[teamId] = sortedTeams.indexOf(teamId) + 1;
@@ -164,14 +165,15 @@ function buildRaceChartData(
 
 function buildChartData(
   seasons: SeasonData[],
-  teamIds: string[],
+  selectedTeamIds: string[],
   stat: StatCategory,
-  timeScale: TimeScale
+  timeScale: TimeScale,
+  allTeamIds: string[]
 ): ChartDataPoint[] {
   if (timeScale === 'race') {
-    return buildRaceChartData(seasons, teamIds, stat);
+    return buildRaceChartData(seasons, selectedTeamIds, stat, allTeamIds);
   }
-  return buildSeasonChartData(seasons, teamIds, stat);
+  return buildSeasonChartData(seasons, selectedTeamIds, stat);
 }
 
 // ===========================================
@@ -499,10 +501,13 @@ export function WorldStats() {
     hasInitializedTeams.current = true;
   }, [teams]);
 
+  // All team IDs for accurate position calculation
+  const allTeamIds = useMemo(() => teams.map((t) => t.id), [teams]);
+
   // Build chart data from filtered seasons
   const chartData = useMemo(() => {
-    return buildChartData(filteredSeasons, Array.from(selectedTeamIds), selectedStat, timeScale);
-  }, [filteredSeasons, selectedTeamIds, selectedStat, timeScale]);
+    return buildChartData(filteredSeasons, Array.from(selectedTeamIds), selectedStat, timeScale, allTeamIds);
+  }, [filteredSeasons, selectedTeamIds, selectedStat, timeScale, allTeamIds]);
 
   // Get stat option for Y-axis config
   const statOption = STAT_OPTIONS.find((o) => o.value === selectedStat);
