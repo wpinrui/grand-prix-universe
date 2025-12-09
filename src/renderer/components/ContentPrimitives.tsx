@@ -101,3 +101,43 @@ export function CenteredMessage({ children }: CenteredMessageProps) {
     </div>
   );
 }
+
+// ===========================================
+// TAB BAR
+// ===========================================
+
+export interface Tab<T extends string> {
+  id: T;
+  label: string;
+}
+
+interface TabBarProps<T extends string> {
+  tabs: Tab<T>[];
+  activeTab: T;
+  onTabChange: (tab: T) => void;
+}
+
+/** Horizontal tab bar with underline indicator */
+export function TabBar<T extends string>({ tabs, activeTab, onTabChange }: TabBarProps<T>) {
+  return (
+    <div className="flex border-b border-subtle mb-6">
+      {tabs.map((tab) => (
+        <button
+          key={tab.id}
+          type="button"
+          onClick={() => onTabChange(tab.id)}
+          className={`px-6 py-3 text-sm font-medium cursor-pointer transition-colors relative ${
+            activeTab === tab.id
+              ? 'text-accent'
+              : 'text-secondary hover:text-primary'
+          }`}
+        >
+          {tab.label}
+          {activeTab === tab.id && (
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent" />
+          )}
+        </button>
+      ))}
+    </div>
+  );
+}

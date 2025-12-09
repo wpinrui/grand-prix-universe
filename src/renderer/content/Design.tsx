@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useDerivedGameState } from '../hooks';
-import { SectionHeading, DetailRow, ProgressBar } from '../components';
+import { SectionHeading, ProgressBar, TabBar } from '../components';
+import type { Tab } from '../components';
 import {
   ChassisDesignStage,
   TechnologyComponent,
@@ -22,7 +23,7 @@ type DesignTab = 'summary' | 'next-year' | 'current-year' | 'technology';
 // CONSTANTS
 // ===========================================
 
-const TABS: { id: DesignTab; label: string }[] = [
+const TABS: Tab<DesignTab>[] = [
   { id: 'summary', label: 'Summary' },
   { id: 'next-year', label: 'Next Year Chassis' },
   { id: 'current-year', label: 'Current Year Chassis' },
@@ -156,11 +157,11 @@ interface LevelBarProps {
 
 function LevelBar({ value, compact = false }: LevelBarProps) {
   return (
-    <div className={`flex ${compact ? 'justify-center gap-0.5' : 'gap-1'}`}>
+    <div className={`flex ${compact ? 'gap-0.5' : 'gap-1'}`}>
       {LEVEL_INDICES.map((i) => (
         <div
           key={i}
-          className={`${compact ? 'w-3 h-3' : 'flex-1 h-4'} ${
+          className={`${compact ? 'w-3 h-3' : 'w-4 h-4'} ${
             i <= value ? 'bg-amber-500' : 'bg-gray-700'
           }`}
         />
@@ -181,49 +182,84 @@ interface SummaryTabProps {
 function SummaryTab({ designState, currentSeason }: SummaryTabProps) {
   const levelMap = new Map(designState.technologyLevels.map((l) => [l.component, l]));
   const discoveredCount = designState.currentYearChassis.problems.filter((p) => p.discovered).length;
+  const nextYearProgress = designState.nextYearChassis
+    ? getChassisOverallProgress(designState.nextYearChassis)
+    : 0;
 
   return (
-    <div className="grid grid-cols-3 gap-6">
-      {/* Left Column: Designers */}
-      <div className="card p-4">
-        <SectionHeading>Designers</SectionHeading>
-        <table className="w-full text-sm mt-3">
-          <tbody>
-            <tr className="border-b border-subtle">
-              <td className="py-2 text-green-400">Available</td>
-              <td className="py-2 text-right font-mono">100%</td>
-            </tr>
-            <tr className="border-b border-subtle">
-              <td className="py-2 text-secondary">Next Year Chassis</td>
-              <td className="py-2 text-right font-mono">
-                {designState.nextYearChassis?.designersAssigned ?? 0}%
-              </td>
-            </tr>
-            <tr className="border-b border-subtle">
-              <td className="py-2 text-secondary">Current Year Chassis</td>
-              <td className="py-2 text-right font-mono">
-                {designState.currentYearChassis.designersAssigned}%
-              </td>
-            </tr>
-            <tr>
-              <td className="py-2 text-secondary">Technology</td>
-              <td className="py-2 text-right font-mono">
-                {designState.activeTechProject?.designersAssigned ?? 0}%
-              </td>
-            </tr>
-          </tbody>
-        </table>
+    <div className="grid grid-cols-2 gap-6">
+      {/* Left: Chassis Overview */}
+      <div className="space-y-4">
+        {/* Current Year */}
+        <div className="card p-4">
+          <div className="flex items-center justify-between mb-3">
+            <SectionHeading>{currentSeason} Chassis</SectionHeading>
+            <span className="text-sm font-mono text-primary">SA{currentSeason}-A</span>
+          </div>
+          <div className="grid grid-cols-3 gap-4 text-sm">
+            <div>
+              <span className="text-muted">Handling</span>
+              <div className="text-primary font-mono">
+                {designState.currentYearChassis.handlingRevealed > 0
+                  ? `${designState.currentYearChassis.handlingRevealed}%`
+                  : '?'}
+              </div>
+            </div>
+            <div>
+              <span className="text-muted">Problems</span>
+              <div className="text-primary font-mono">{discoveredCount} found</div>
+            </div>
+            <div>
+              <span className="text-muted">Designers</span>
+              <div className="text-primary font-mono">{designState.currentYearChassis.designersAssigned}%</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Next Year */}
+        <div className="card p-4">
+          <div className="flex items-center justify-between mb-3">
+            <SectionHeading>{currentSeason + 1} Chassis</SectionHeading>
+            <span className="text-sm font-mono text-primary">SA{currentSeason + 1}-A</span>
+          </div>
+          <div className="grid grid-cols-3 gap-4 text-sm mb-3">
+            <div>
+              <span className="text-muted">Stage</span>
+              <div className="text-primary">
+                {designState.nextYearChassis
+                  ? getCurrentStageName(designState.nextYearChassis)
+                  : 'Not Started'}
+              </div>
+            </div>
+            <div>
+              <span className="text-muted">Progress</span>
+              <div className="text-primary font-mono">{nextYearProgress}%</div>
+            </div>
+            <div>
+              <span className="text-muted">Designers</span>
+              <div className="text-primary font-mono">{designState.nextYearChassis?.designersAssigned ?? 0}%</div>
+            </div>
+          </div>
+          {designState.nextYearChassis && (
+            <ProgressBar value={nextYearProgress} />
+          )}
+        </div>
       </div>
 
-      {/* Middle Column: Technology Overview */}
+      {/* Right: Technology Grid */}
       <div className="card p-4">
-        <SectionHeading>Technology</SectionHeading>
-        <table className="w-full text-sm mt-3">
+        <div className="flex items-center justify-between mb-3">
+          <SectionHeading>Technology</SectionHeading>
+          <span className="text-sm text-muted">
+            {designState.activeTechProject?.designersAssigned ?? 0}% designers
+          </span>
+        </div>
+        <table className="w-full text-sm">
           <thead>
-            <tr className="text-muted text-xs">
-              <th className="text-left pb-2"></th>
-              <th className="text-center pb-2">Perf</th>
-              <th className="text-center pb-2">Rel</th>
+            <tr className="text-muted text-xs border-b border-subtle">
+              <th className="text-left py-2">Component</th>
+              <th className="text-center py-2">Performance</th>
+              <th className="text-center py-2">Reliability</th>
             </tr>
           </thead>
           <tbody>
@@ -231,77 +267,22 @@ function SummaryTab({ designState, currentSeason }: SummaryTabProps) {
               const level = levelMap.get(component);
               return (
                 <tr key={component} className="border-b border-subtle last:border-0">
-                  <td className="py-1.5 text-secondary">{TECH_LABELS[component]}</td>
-                  <td className="py-1.5">
-                    <LevelBar value={level?.performance ?? 1} compact />
+                  <td className="py-2 text-secondary">{TECH_LABELS[component]}</td>
+                  <td className="py-2">
+                    <div className="flex justify-center">
+                      <LevelBar value={level?.performance ?? 1} compact />
+                    </div>
                   </td>
-                  <td className="py-1.5">
-                    <LevelBar value={level?.reliability ?? 1} compact />
+                  <td className="py-2">
+                    <div className="flex justify-center">
+                      <LevelBar value={level?.reliability ?? 1} compact />
+                    </div>
                   </td>
                 </tr>
               );
             })}
           </tbody>
         </table>
-      </div>
-
-      {/* Right Column: Chassis Info */}
-      <div className="space-y-4">
-        {/* Current Year Chassis */}
-        <div className="card p-4">
-          <SectionHeading>{currentSeason} Chassis</SectionHeading>
-          <table className="w-full text-sm mt-3">
-            <thead>
-              <tr className="text-muted text-xs">
-                <th className="text-left pb-2">Name</th>
-                <th className="text-left pb-2">Handling</th>
-                <th className="text-left pb-2">Project</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td className="py-1 text-primary">SA{currentSeason}-A</td>
-                <td className="py-1 text-primary">
-                  {designState.currentYearChassis.handlingRevealed > 0
-                    ? `${designState.currentYearChassis.handlingRevealed}%`
-                    : '?'}
-                </td>
-                <td className="py-1 text-primary">
-                  {discoveredCount > 0 ? `${discoveredCount} found` : 'None'}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        {/* Next Year Chassis */}
-        <div className="card p-4">
-          <SectionHeading>{currentSeason + 1} Chassis</SectionHeading>
-          <table className="w-full text-sm mt-3">
-            <thead>
-              <tr className="text-muted text-xs">
-                <th className="text-left pb-2">Name</th>
-                <th className="text-left pb-2">Stage</th>
-                <th className="text-left pb-2">Efficiency</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td className="py-1 text-primary">SA{currentSeason + 1}-A</td>
-                <td className="py-1 text-primary">
-                  {designState.nextYearChassis
-                    ? getCurrentStageName(designState.nextYearChassis)
-                    : 'Not Started'}
-                </td>
-                <td className="py-1 text-primary">
-                  {designState.nextYearChassis
-                    ? `${getChassisOverallProgress(designState.nextYearChassis)}%`
-                    : '0%'}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
       </div>
     </div>
   );
@@ -325,50 +306,52 @@ function NextYearChassisTab({ chassis, currentSeason }: NextYearChassisTabProps)
   const stageMap = new Map(chassis.stages.map((s) => [s.stage, s]));
 
   return (
-    <div className="space-y-6">
-      <div className="card p-4">
-        <div className="flex items-center justify-between mb-4">
+    <div className="card p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div>
           <SectionHeading>{currentSeason + 1} Chassis Design</SectionHeading>
-          <span className="text-sm text-muted">
+          <p className="text-sm text-muted mt-1">SA{currentSeason + 1}-A</p>
+        </div>
+        <div className="text-right">
+          <div className="text-2xl font-bold text-primary">{overallProgress}%</div>
+          <p className="text-sm text-muted">
             {chassis.designersAssigned} designer{chassis.designersAssigned !== 1 ? 's' : ''} assigned
-          </span>
+          </p>
         </div>
+      </div>
 
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-secondary">Overall Progress</span>
-          <span className="text-sm font-medium text-primary">{overallProgress}%</span>
-        </div>
+      <div className="mb-4">
         <ProgressBar value={overallProgress} />
+      </div>
 
-        <div className="grid grid-cols-4 gap-4 mt-6">
-          {STAGE_ORDER.map((stage, index) => {
-            const stageProgress = stageMap.get(stage);
-            const progress = stageProgress?.progress ?? 0;
-            const completed = stageProgress?.completed ?? false;
-            const isActive =
-              !completed &&
-              STAGE_ORDER.slice(0, index).every((s) => stageMap.get(s)?.completed);
+      <div className="grid grid-cols-4 gap-4">
+        {STAGE_ORDER.map((stage, index) => {
+          const stageProgress = stageMap.get(stage);
+          const progress = stageProgress?.progress ?? 0;
+          const completed = stageProgress?.completed ?? false;
+          const isActive =
+            !completed &&
+            STAGE_ORDER.slice(0, index).every((s) => stageMap.get(s)?.completed);
 
-            return (
-              <div
-                key={stage}
-                className={`p-4 rounded border ${
-                  isActive
-                    ? 'border-accent bg-accent/10'
-                    : completed
-                      ? 'border-green-600 bg-green-900/20'
-                      : 'border-subtle'
-                }`}
-              >
-                <div className="text-xs text-secondary mb-2">{STAGE_LABELS[stage]}</div>
-                <div className="text-lg font-medium text-primary mb-2">
-                  {completed ? 'Complete' : `${progress}/${MAX_STAGE_PROGRESS}`}
-                </div>
-                <ProgressBar value={(progress / MAX_STAGE_PROGRESS) * 100} />
+          return (
+            <div
+              key={stage}
+              className={`p-4 rounded border ${
+                isActive
+                  ? 'border-accent bg-accent/10'
+                  : completed
+                    ? 'border-green-600 bg-green-900/20'
+                    : 'border-subtle'
+              }`}
+            >
+              <div className="text-xs text-secondary mb-2">{STAGE_LABELS[stage]}</div>
+              <div className="text-xl font-bold text-primary mb-2">
+                {completed ? '✓' : `${progress}/${MAX_STAGE_PROGRESS}`}
               </div>
-            );
-          })}
-        </div>
+              <ProgressBar value={(progress / MAX_STAGE_PROGRESS) * 100} />
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -386,66 +369,60 @@ function CurrentYearChassisTab({ chassisState, currentSeason }: CurrentYearChass
 
   return (
     <div className="space-y-6">
-      {/* Summary Stats */}
+      {/* Stats Bar */}
       <div className="card p-4">
-        <SectionHeading>{currentSeason} Chassis</SectionHeading>
-        <div className="grid grid-cols-3 gap-6 mt-4">
+        <div className="flex items-center gap-8">
           <div>
-            <DetailRow
-              label="Handling Revealed"
-              value={<span className="font-mono">{chassisState.handlingRevealed}%</span>}
-            />
-            <div className="mt-2">
-              <ProgressBar value={chassisState.handlingRevealed} />
-            </div>
+            <SectionHeading>{currentSeason} Chassis</SectionHeading>
+            <p className="text-sm text-muted">SA{currentSeason}-A</p>
           </div>
-          <DetailRow
-            label="Problems Found"
-            value={<span className="font-mono">{discoveredCount}/{PROBLEM_ORDER.length}</span>}
-          />
-          <DetailRow
-            label="Problems Fixed"
-            value={<span className="font-mono">{fixedCount}/{PROBLEM_ORDER.length}</span>}
-          />
+          <div className="flex-1 max-w-xs">
+            <div className="flex justify-between text-sm mb-1">
+              <span className="text-muted">Handling Revealed</span>
+              <span className="text-primary font-mono">{chassisState.handlingRevealed}%</span>
+            </div>
+            <ProgressBar value={chassisState.handlingRevealed} />
+          </div>
+          <div className="text-center px-4">
+            <div className="text-2xl font-bold text-primary">{discoveredCount}/{PROBLEM_ORDER.length}</div>
+            <div className="text-xs text-muted">Problems Found</div>
+          </div>
+          <div className="text-center px-4">
+            <div className="text-2xl font-bold text-green-400">{fixedCount}/{PROBLEM_ORDER.length}</div>
+            <div className="text-xs text-muted">Problems Fixed</div>
+          </div>
         </div>
       </div>
 
       {/* Handling Problems Grid */}
-      <div className="card p-4">
-        <SectionHeading>Handling Problems</SectionHeading>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
-          {PROBLEM_ORDER.map((problem) => {
-            const state = problemMap.get(problem);
-            const status = getProblemStatus(state, chassisState.activeDesignProblem, problem);
-            const isDiscovered = state?.discovered ?? false;
+      <div className="grid grid-cols-4 gap-4">
+        {PROBLEM_ORDER.map((problem) => {
+          const state = problemMap.get(problem);
+          const status = getProblemStatus(state, chassisState.activeDesignProblem, problem);
+          const isDiscovered = state?.discovered ?? false;
 
-            return (
-              <div
-                key={problem}
-                className={`p-3 rounded border border-subtle ${isDiscovered ? '' : 'opacity-60'}`}
-              >
-                <div className="flex items-start justify-between mb-1">
-                  <span className="text-sm font-medium text-primary">
-                    {PROBLEM_LABELS[problem]}
-                  </span>
-                  <span className={`text-xs font-medium ${status.className}`}>
-                    {status.label}
-                  </span>
-                </div>
-                <p className="text-xs text-muted">
-                  {isDiscovered ? PROBLEM_DESCRIPTIONS[problem] : 'Not yet discovered'}
-                </p>
-                {isDiscovered && state && !state.solutionInstalled && state.solutionProgress > 0 && (
-                  <div className="mt-2">
-                    <ProgressBar
-                      value={(state.solutionProgress / MAX_SOLUTION_PROGRESS) * 100}
-                    />
-                  </div>
-                )}
+          return (
+            <div
+              key={problem}
+              className={`card p-4 ${isDiscovered ? '' : 'opacity-50'}`}
+            >
+              <div className="flex items-start justify-between mb-2">
+                <span className="text-sm font-medium text-primary">
+                  {PROBLEM_LABELS[problem]}
+                </span>
+                <span className={`text-xs font-medium ${status.className}`}>
+                  {status.label}
+                </span>
               </div>
-            );
-          })}
-        </div>
+              <p className="text-xs text-muted mb-2">
+                {isDiscovered ? PROBLEM_DESCRIPTIONS[problem] : 'Not yet discovered'}
+              </p>
+              {isDiscovered && state && !state.solutionInstalled && state.solutionProgress > 0 && (
+                <ProgressBar value={(state.solutionProgress / MAX_SOLUTION_PROGRESS) * 100} />
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -459,39 +436,36 @@ function TechnologyTab({ levels }: TechnologyTabProps) {
   const levelMap = new Map(levels.map((l) => [l.component, l]));
 
   return (
-    <div className="card p-4">
-      <SectionHeading>Technology Components</SectionHeading>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-        {TECH_ORDER.map((component) => {
-          const level = levelMap.get(component);
-          const perf = level?.performance ?? 1;
-          const rel = level?.reliability ?? 1;
+    <div className="grid grid-cols-4 gap-4">
+      {TECH_ORDER.map((component) => {
+        const level = levelMap.get(component);
+        const perf = level?.performance ?? 1;
+        const rel = level?.reliability ?? 1;
 
-          return (
-            <div key={component} className="p-4 rounded border border-subtle">
-              <div className="text-sm font-semibold text-primary mb-3">
-                {TECH_LABELS[component]}
+        return (
+          <div key={component} className="card p-4">
+            <div className="text-sm font-semibold text-primary mb-4">
+              {TECH_LABELS[component]}
+            </div>
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between text-xs text-muted mb-2">
+                  <span>Performance</span>
+                  <span className="font-mono">{perf}/{MAX_TECH_LEVEL}</span>
+                </div>
+                <LevelBar value={perf} />
               </div>
-              <div className="space-y-3">
-                <div>
-                  <div className="flex justify-between text-xs text-secondary mb-1">
-                    <span>Performance</span>
-                    <span className="font-mono">{perf}/{MAX_TECH_LEVEL}</span>
-                  </div>
-                  <LevelBar value={perf} />
+              <div>
+                <div className="flex justify-between text-xs text-muted mb-2">
+                  <span>Reliability</span>
+                  <span className="font-mono">{rel}/{MAX_TECH_LEVEL}</span>
                 </div>
-                <div>
-                  <div className="flex justify-between text-xs text-secondary mb-1">
-                    <span>Reliability</span>
-                    <span className="font-mono">{rel}/{MAX_TECH_LEVEL}</span>
-                  </div>
-                  <LevelBar value={rel} />
-                </div>
+                <LevelBar value={rel} />
               </div>
             </div>
-          );
-        })}
-      </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -517,43 +491,22 @@ export function Design() {
   const currentSeason = gameState.currentSeason.seasonNumber;
 
   return (
-    <div className="flex gap-6 h-full">
-      {/* Vertical Tab Bar */}
-      <div className="w-48 flex-shrink-0">
-        <div className="card p-2">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={`w-full text-left px-4 py-3 text-sm cursor-pointer transition-colors ${
-                activeTab === tab.id
-                  ? 'bg-accent/20 text-accent border-l-2 border-accent'
-                  : 'text-secondary hover:text-primary hover:bg-white/5'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
+    <div>
+      <TabBar tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {/* Tab Content */}
-      <div className="flex-1 min-w-0">
-        {activeTab === 'summary' && (
-          <SummaryTab designState={designState} currentSeason={currentSeason} />
-        )}
-        {activeTab === 'next-year' && (
-          <NextYearChassisTab chassis={designState.nextYearChassis} currentSeason={currentSeason} />
-        )}
-        {activeTab === 'current-year' && (
-          <CurrentYearChassisTab
-            chassisState={designState.currentYearChassis}
-            currentSeason={currentSeason}
-          />
-        )}
-        {activeTab === 'technology' && <TechnologyTab levels={designState.technologyLevels} />}
-      </div>
+      {activeTab === 'summary' && (
+        <SummaryTab designState={designState} currentSeason={currentSeason} />
+      )}
+      {activeTab === 'next-year' && (
+        <NextYearChassisTab chassis={designState.nextYearChassis} currentSeason={currentSeason} />
+      )}
+      {activeTab === 'current-year' && (
+        <CurrentYearChassisTab
+          chassisState={designState.currentYearChassis}
+          currentSeason={currentSeason}
+        />
+      )}
+      {activeTab === 'technology' && <TechnologyTab levels={designState.technologyLevels} />}
     </div>
   );
 }
