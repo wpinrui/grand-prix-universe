@@ -126,7 +126,7 @@ export function TabBar<T extends string>({ tabs, activeTab, onTabChange }: TabBa
           key={tab.id}
           type="button"
           onClick={() => onTabChange(tab.id)}
-          className={`px-5 py-2.5 text-sm font-medium cursor-pointer transition-colors rounded ${
+          className={`px-5 py-2.5 text-sm font-medium cursor-pointer transition-colors rounded-lg ${
             activeTab === tab.id
               ? 'bg-amber-500 text-black'
               : 'text-secondary hover:text-primary hover:bg-white/10'
