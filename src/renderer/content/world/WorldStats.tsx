@@ -2,7 +2,7 @@
  * World Stats page - Historical stats with line charts
  * Compare team performance across seasons
  */
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   LineChart,
   Line,
@@ -58,6 +58,10 @@ const TAB_OPTIONS = [
 function getTeamStat(standing: ConstructorStanding | undefined, stat: StatCategory): number {
   if (!standing) return 0;
   return standing[stat];
+}
+
+function formatStatValue(value: number, stat: StatCategory): string | number {
+  return stat === 'position' ? `P${value}` : value;
 }
 
 function buildChartData(
@@ -200,10 +204,9 @@ function StatsTable({ seasons, teams, selectedTeamIds, stat }: StatsTableProps) 
               {selectedTeams.map((team) => {
                 const standing = season.constructorStandings.find((s) => s.teamId === team.id);
                 const value = getTeamStat(standing, stat);
-                const displayValue = stat === 'position' ? `P${value}` : value;
                 return (
                   <td key={team.id} className="px-4 py-3 text-right text-secondary">
-                    {displayValue}
+                    {formatStatValue(value, stat)}
                   </td>
                 );
               })}
@@ -232,11 +235,11 @@ interface CustomTooltipProps {
   active?: boolean;
   payload?: TooltipPayload[];
   label?: number;
-  teams: Team[];
+  teamById: Map<string, Team>;
   stat: StatCategory;
 }
 
-function CustomTooltip({ active, payload, label, teams, stat }: CustomTooltipProps) {
+function CustomTooltip({ active, payload, label, teamById, stat }: CustomTooltipProps) {
   if (!active || !payload || !payload.length) return null;
 
   return (
@@ -244,8 +247,7 @@ function CustomTooltip({ active, payload, label, teams, stat }: CustomTooltipPro
       <p className="text-sm font-semibold text-primary mb-2">Season {label}</p>
       <div className="space-y-1">
         {payload.map((entry) => {
-          const team = teams.find((t) => t.id === entry.dataKey);
-          const displayValue = stat === 'position' ? `P${entry.value}` : entry.value;
+          const team = teamById.get(entry.dataKey);
           return (
             <div key={entry.dataKey} className="flex items-center gap-2 text-sm">
               <span
@@ -253,7 +255,7 @@ function CustomTooltip({ active, payload, label, teams, stat }: CustomTooltipPro
                 style={{ backgroundColor: entry.color }}
               />
               <span className="text-secondary">{team?.shortName ?? entry.dataKey}:</span>
-              <span className="text-primary font-medium">{displayValue}</span>
+              <span className="text-primary font-medium">{formatStatValue(entry.value, stat)}</span>
             </div>
           );
         })}
@@ -280,19 +282,24 @@ export function WorldStats() {
     );
   }, [gameState]);
 
-  // Initialize selected teams to all teams on first load
   const teams = gameState?.teams ?? [];
-  if (selectedTeamIds.size === 0 && teams.length > 0) {
-    // Select top 5 teams by default (by current standings position)
-    const topTeamIds = new Set(
-      gameState?.currentSeason.constructorStandings
-        .slice(0, 5)
-        .map((s) => s.teamId) ?? []
-    );
-    if (topTeamIds.size > 0) {
-      setSelectedTeamIds(topTeamIds);
+
+  // Memoized team lookup map for O(1) access
+  const teamById = useMemo(() => new Map(teams.map((t) => [t.id, t])), [teams]);
+
+  // Initialize selected teams to top 5 on first load
+  useEffect(() => {
+    if (selectedTeamIds.size === 0 && gameState?.currentSeason.constructorStandings) {
+      const topTeamIds = new Set(
+        gameState.currentSeason.constructorStandings
+          .slice(0, 5)
+          .map((s) => s.teamId)
+      );
+      if (topTeamIds.size > 0) {
+        setSelectedTeamIds(topTeamIds);
+      }
     }
-  }
+  }, [gameState?.currentSeason.constructorStandings, selectedTeamIds.size]);
 
   // Build chart data
   const chartData = useMemo(() => {
@@ -404,16 +411,16 @@ export function WorldStats() {
                       domain={statOption?.invertYAxis ? [1, 'auto'] : [0, 'auto']}
                     />
                     <Tooltip
-                      content={<CustomTooltip teams={teams} stat={selectedStat} />}
+                      content={<CustomTooltip teamById={teamById} stat={selectedStat} />}
                     />
                     <Legend
                       formatter={(value: string) => {
-                        const team = teams.find((t) => t.id === value);
+                        const team = teamById.get(value);
                         return team?.shortName ?? value;
                       }}
                     />
                     {Array.from(selectedTeamIds).map((teamId) => {
-                      const team = teams.find((t) => t.id === teamId);
+                      const team = teamById.get(teamId);
                       return (
                         <Line
                           key={teamId}
