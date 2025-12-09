@@ -157,7 +157,7 @@ export function Dropdown<T extends string>({
           id={listboxId}
           role="listbox"
           aria-activedescendant={
-            highlightedIndex >= 0 ? `${id}-option-${highlightedIndex}` : undefined
+            id && highlightedIndex >= 0 ? `${id}-option-${highlightedIndex}` : undefined
           }
           className="absolute z-50 mt-1 w-full max-h-60 overflow-auto surface-primary border border-subtle rounded-lg shadow-lg py-1"
         >
@@ -168,7 +168,7 @@ export function Dropdown<T extends string>({
             return (
               <li
                 key={option.value}
-                id={`${id}-option-${index}`}
+                id={id ? `${id}-option-${index}` : undefined}
                 role="option"
                 aria-selected={isSelected}
                 onClick={() => handleSelect(option.value)}
