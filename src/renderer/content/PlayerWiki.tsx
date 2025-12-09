@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useDerivedGameState } from '../hooks';
-import { SectionHeading, SummaryStat, DetailRow, CenteredMessage } from '../components';
+import { SectionHeading, SummaryStat, DetailRow, CenteredMessage, TabBar, Tab } from '../components';
 import { ACCENT_CARD_STYLE } from '../utils/theme-styles';
 import { formatGameDate } from '../../shared/utils/date-utils';
 import { PLAYER_MANAGER_ID } from '../../shared/domain/events';
@@ -197,41 +197,11 @@ function StatRow({ label, value }: StatRowProps) {
   );
 }
 
-const WIKI_TABS: { id: WikiTab; label: string }[] = [
+const WIKI_TABS: Tab<WikiTab>[] = [
   { id: 'stats', label: 'Stats' },
   { id: 'timeline', label: 'Timeline' },
   { id: 'biography', label: 'Biography' },
 ];
-
-interface WikiTabBarProps {
-  activeTab: WikiTab;
-  onTabChange: (tab: WikiTab) => void;
-}
-
-function WikiTabBar({ activeTab, onTabChange }: WikiTabBarProps) {
-  return (
-    <div className="flex gap-2 mb-6">
-      {WIKI_TABS.map((tab) => {
-        const isActive = activeTab === tab.id;
-        return (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => onTabChange(tab.id)}
-            className={`px-5 py-2 text-sm font-medium rounded-lg transition-all cursor-pointer ${
-              isActive
-                ? 'bg-accent-600 text-white shadow-md'
-                : 'bg-neutral-800 text-muted hover:bg-neutral-700 hover:text-secondary'
-            }`}
-            style={isActive ? { boxShadow: '0 0 12px var(--accent-600)' } : undefined}
-          >
-            {tab.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
 
 /** Shared props for career view components (Stats, Biography) */
 interface CareerViewProps {
@@ -527,7 +497,7 @@ export function PlayerWiki() {
 
   return (
     <div className="max-w-4xl">
-      <WikiTabBar activeTab={activeTab} onTabChange={setActiveTab} />
+      <TabBar tabs={WIKI_TABS} activeTab={activeTab} onTabChange={setActiveTab} />
       {renderTabContent()}
     </div>
   );
