@@ -396,8 +396,6 @@ export function MainLayout() {
         {/* Main Area */}
         <div className="relative flex flex-col flex-1 min-w-0">
           <TopBar
-            sectionLabel={selectedSection.label}
-            subItemLabel={selectedSubItem.label}
             currentDate={gameState?.currentDate ?? null}
             playerTeam={playerTeam}
             onCalendarClick={toggleCalendarPreview}

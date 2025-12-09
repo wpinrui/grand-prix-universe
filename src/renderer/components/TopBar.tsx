@@ -5,8 +5,6 @@ import { AdvanceWeekButton } from './AdvanceWeekButton';
 import { formatGameDate } from '../../shared/utils/date-utils';
 
 interface TopBarProps {
-  sectionLabel: string;
-  subItemLabel: string;
   currentDate: GameDate | null;
   playerTeam: Team | null;
   onCalendarClick?: () => void;
@@ -18,8 +16,6 @@ interface TopBarProps {
 }
 
 export function TopBar({
-  sectionLabel,
-  subItemLabel,
   currentDate,
   playerTeam,
   onCalendarClick,
@@ -31,8 +27,8 @@ export function TopBar({
 }: TopBarProps) {
   return (
     <header className="top-bar flex items-center justify-between h-16 px-6 surface-primary border-b border-subtle">
-      {/* Back/Forward + Breadcrumb + Search */}
-      <div className="flex items-center gap-4">
+      {/* Back/Forward + Search */}
+      <div className="flex items-center gap-3">
         {/* Navigation buttons */}
         <div className="flex items-center gap-1">
           <button
@@ -53,17 +49,6 @@ export function TopBar({
           >
             <ChevronRight size={20} />
           </button>
-        </div>
-
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2">
-          <h1 className="text-lg font-bold tracking-tight text-primary">
-            {sectionLabel}
-          </h1>
-          <span className="text-secondary">/</span>
-          <span className="text-base font-medium text-secondary">
-            {subItemLabel}
-          </span>
         </div>
 
         {/* Search trigger */}
