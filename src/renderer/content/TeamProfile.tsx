@@ -52,6 +52,15 @@ function StatCard({ label, value, accent = false }: StatCardProps) {
 // DRIVER & CHIEF CARDS
 // ===========================================
 
+function MiniStat({ value, label }: { value: React.ReactNode; label: string }) {
+  return (
+    <div className="text-muted">
+      <span className="font-medium text-secondary">{value}</span>
+      <span className="ml-1">{label}</span>
+    </div>
+  );
+}
+
 interface DriverCardProps {
   driver: Driver;
   standing: DriverStanding | undefined;
@@ -84,18 +93,9 @@ function DriverCard({ driver, standing }: DriverCardProps) {
         </div>
         {/* Championship Stats */}
         <div className="flex gap-4 mt-2 text-xs">
-          <div className="text-muted">
-            <span className="font-medium text-secondary">{standing?.position ?? '-'}</span>
-            <span className="ml-1">Pos</span>
-          </div>
-          <div className="text-muted">
-            <span className="font-medium text-secondary">{standing?.points ?? 0}</span>
-            <span className="ml-1">Pts</span>
-          </div>
-          <div className="text-muted">
-            <span className="font-medium text-secondary">{standing?.wins ?? 0}</span>
-            <span className="ml-1">Wins</span>
-          </div>
+          <MiniStat value={standing?.position ?? '-'} label="Pos" />
+          <MiniStat value={standing?.points ?? 0} label="Pts" />
+          <MiniStat value={standing?.wins ?? 0} label="Wins" />
         </div>
         {/* Contract Info */}
         <div className="text-xs text-muted mt-1">
