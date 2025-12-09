@@ -148,6 +148,12 @@ export function ChiefCard({ chief }: ChiefCardProps) {
 // TEAM HEADER
 // ===========================================
 
+/** Returns class names for team dropdown option based on selection state */
+const getTeamOptionClasses = (isSelected: boolean) =>
+  `px-4 py-2 cursor-pointer transition-colors hover:bg-[var(--neutral-700)] ${
+    isSelected ? 'text-[var(--accent-400)]' : 'text-primary'
+  }`;
+
 interface TeamHeaderProps {
   team: Team;
   /** All teams available for selection in the dropdown */
@@ -181,11 +187,6 @@ export function TeamHeader({ team, allTeams, onTeamSelect, principalName }: Team
   };
 
   const showDropdown = allTeams && allTeams.length > 0 && onTeamSelect;
-
-  const getTeamOptionClasses = (isSelected: boolean) =>
-    `px-4 py-2 cursor-pointer transition-colors hover:bg-[var(--neutral-700)] ${
-      isSelected ? 'text-[var(--accent-400)]' : 'text-primary'
-    }`;
 
   return (
     <div className="flex items-start gap-6">
