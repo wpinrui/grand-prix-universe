@@ -147,7 +147,8 @@ export function MainLayout() {
     // entityId will be used by World pages when they're implemented
     // For now, just navigate to the section/subItem
     if (type === 'race') {
-      setTargetRaceNumber(parseInt(id, 10));
+      const raceNum = parseInt(id, 10);
+      setTargetRaceNumber(Number.isNaN(raceNum) ? null : raceNum);
     }
   }, []);
 
