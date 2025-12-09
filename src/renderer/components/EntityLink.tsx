@@ -1,5 +1,6 @@
 import type { ReactNode, CSSProperties } from 'react';
 import { useEntityNavigation, type EntityType } from '../utils/entity-navigation';
+import { ACCENT_TEXT_STYLE } from '../utils/theme-styles';
 
 interface EntityLinkProps {
   type: EntityType;
@@ -20,19 +21,12 @@ interface EntityLinkProps {
 export function EntityLink({ type, id, children, className = '', style }: EntityLinkProps) {
   const navigateToEntity = useEntityNavigation();
 
-  const handleClick = () => {
-    navigateToEntity(type, id);
-  };
-
   return (
     <button
       type="button"
-      onClick={handleClick}
+      onClick={() => navigateToEntity(type, id)}
       className={`entity-link cursor-pointer hover:underline ${className}`}
-      style={{
-        color: 'var(--accent-400)',
-        ...style,
-      }}
+      style={{ ...ACCENT_TEXT_STYLE, ...style }}
     >
       {children}
     </button>
