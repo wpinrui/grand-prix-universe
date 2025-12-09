@@ -66,6 +66,7 @@ const TECH_ORDER: TechnologyComponent[] = [
 const MAX_STAGE_PROGRESS = 10;
 const MAX_TECH_LEVEL = 5;
 const MAX_SOLUTION_PROGRESS = 10;
+const LEVEL_INDICES = [1, 2, 3, 4, 5] as const;
 
 const PROBLEM_LABELS: Record<HandlingProblem, string> = {
   [HandlingProblem.OversteerFast]: 'Oversteer (Fast)',
@@ -145,6 +146,30 @@ function getProblemStatus(
 }
 
 // ===========================================
+// SHARED COMPONENTS
+// ===========================================
+
+interface LevelBarProps {
+  value: number;
+  compact?: boolean;
+}
+
+function LevelBar({ value, compact = false }: LevelBarProps) {
+  return (
+    <div className={`flex ${compact ? 'justify-center gap-0.5' : 'gap-1'}`}>
+      {LEVEL_INDICES.map((i) => (
+        <div
+          key={i}
+          className={`${compact ? 'w-3 h-3' : 'flex-1 h-4'} ${
+            i <= value ? 'bg-amber-500' : 'bg-gray-700'
+          }`}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ===========================================
 // TAB VIEWS
 // ===========================================
 
@@ -208,28 +233,10 @@ function SummaryTab({ designState, currentSeason }: SummaryTabProps) {
                 <tr key={component} className="border-b border-subtle last:border-0">
                   <td className="py-1.5 text-secondary">{TECH_LABELS[component]}</td>
                   <td className="py-1.5">
-                    <div className="flex justify-center gap-0.5">
-                      {[1, 2, 3, 4, 5].map((i) => (
-                        <div
-                          key={i}
-                          className={`w-3 h-3 ${
-                            i <= (level?.performance ?? 1) ? 'bg-amber-500' : 'bg-gray-700'
-                          }`}
-                        />
-                      ))}
-                    </div>
+                    <LevelBar value={level?.performance ?? 1} compact />
                   </td>
                   <td className="py-1.5">
-                    <div className="flex justify-center gap-0.5">
-                      {[1, 2, 3, 4, 5].map((i) => (
-                        <div
-                          key={i}
-                          className={`w-3 h-3 ${
-                            i <= (level?.reliability ?? 1) ? 'bg-amber-500' : 'bg-gray-700'
-                          }`}
-                        />
-                      ))}
-                    </div>
+                    <LevelBar value={level?.reliability ?? 1} compact />
                   </td>
                 </tr>
               );
@@ -471,28 +478,14 @@ function TechnologyTab({ levels }: TechnologyTabProps) {
                     <span>Performance</span>
                     <span className="font-mono">{perf}/{MAX_TECH_LEVEL}</span>
                   </div>
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <div
-                        key={i}
-                        className={`flex-1 h-4 ${i <= perf ? 'bg-amber-500' : 'bg-gray-700'}`}
-                      />
-                    ))}
-                  </div>
+                  <LevelBar value={perf} />
                 </div>
                 <div>
                   <div className="flex justify-between text-xs text-secondary mb-1">
                     <span>Reliability</span>
                     <span className="font-mono">{rel}/{MAX_TECH_LEVEL}</span>
                   </div>
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <div
-                        key={i}
-                        className={`flex-1 h-4 ${i <= rel ? 'bg-amber-500' : 'bg-gray-700'}`}
-                      />
-                    ))}
-                  </div>
+                  <LevelBar value={rel} />
                 </div>
               </div>
             </div>
