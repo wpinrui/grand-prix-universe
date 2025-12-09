@@ -151,7 +151,7 @@ export function MainLayout() {
       return <TeamProfile />;
     }
 
-    if (selectedSectionId === 'team' && selectedSubItemId === 'news') {
+    if (selectedSectionId === 'world' && selectedSubItemId === 'news') {
       return <News />;
     }
 

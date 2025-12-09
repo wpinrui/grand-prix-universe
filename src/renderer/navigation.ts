@@ -29,10 +29,13 @@ import {
   Settings,
   RotateCcw,
   LogOut,
+  Globe,
+  User,
+  LineChart,
   type LucideIcon,
 } from 'lucide-react';
 
-export type SectionId = 'team' | 'engineering' | 'commercial' | 'racing' | 'fia' | 'options';
+export type SectionId = 'team' | 'world' | 'engineering' | 'commercial' | 'racing' | 'fia' | 'options';
 
 export interface SubItem {
   id: string;
@@ -54,11 +57,22 @@ export const sections: Section[] = [
     icon: Users,
     subItems: [
       { id: 'profile', label: 'Profile', icon: Users },
-      { id: 'news', label: 'News', icon: Newspaper },
       { id: 'mail', label: 'Mail', icon: Mail },
       { id: 'finance', label: 'Finance', icon: DollarSign },
       { id: 'staff', label: 'Staff', icon: UserCog },
       { id: 'wiki', label: 'Player Wiki', icon: BookUser },
+    ],
+  },
+  {
+    id: 'world',
+    label: 'WORLD',
+    icon: Globe,
+    subItems: [
+      { id: 'news', label: 'News', icon: Newspaper },
+      { id: 'teams', label: 'Teams', icon: Users },
+      { id: 'drivers', label: 'Drivers', icon: User },
+      { id: 'staff', label: 'Staff', icon: UserCog },
+      { id: 'stats', label: 'Stats', icon: LineChart },
     ],
   },
   {
