@@ -67,6 +67,7 @@ const MAX_STAGE_PROGRESS = 10;
 const MAX_TECH_LEVEL = 5;
 const MAX_SOLUTION_PROGRESS = 10;
 const LEVEL_INDICES = [1, 2, 3, 4, 5] as const;
+const HANDLING_REVEALED_PER_TEST_LEVEL = 20; // Each test level reveals 20% handling
 
 const PROBLEM_LABELS: Record<HandlingProblem, string> = {
   [HandlingProblem.OversteerFast]: 'Oversteer (Fast)',
@@ -207,7 +208,7 @@ function SummaryTab({ designState, currentSeason }: SummaryTabProps) {
         <div className="flex items-center justify-between mb-3">
           <SectionHeading>Technology</SectionHeading>
           <span className="text-sm text-muted">
-            {designState.activeTechProject?.designersAssigned ?? 0}% designers
+            {designState.activeTechnologyProject?.designersAssigned ?? 0}% designers
           </span>
         </div>
         <table className="w-full text-sm">
@@ -294,7 +295,7 @@ function NextYearChassisTab({ chassis, currentSeason }: NextYearChassisTabProps)
               key={stage}
               className={`p-4 rounded border ${
                 isActive
-                  ? 'border-accent bg-accent/10'
+                  ? 'border-[var(--accent-500)] bg-[var(--accent-900)]/30'
                   : completed
                     ? 'border-green-600 bg-green-900/20'
                     : 'border-subtle'
@@ -378,7 +379,7 @@ function CurrentYearChassisTab({ chassisState, currentSeason }: CurrentYearChass
           <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted">Tests</span>
-              <LevelBar value={Math.ceil(chassisState.handlingRevealed / 20)} />
+              <LevelBar value={Math.ceil(chassisState.handlingRevealed / HANDLING_REVEALED_PER_TEST_LEVEL)} />
             </div>
             <div className="flex justify-between">
               <span className="text-muted">Handling</span>
