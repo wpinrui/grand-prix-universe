@@ -4,9 +4,11 @@ import { ACCENT_CARD_STYLE } from '../utils/theme-styles';
 import {
   ChassisDesignStage,
   TechnologyComponent,
+  HandlingProblem,
   type ChassisDesign,
   type TechnologyLevel,
   type CurrentYearChassisState,
+  type HandlingProblemState,
 } from '../../shared/domain';
 
 // ===========================================
@@ -49,6 +51,40 @@ const TECH_ORDER: TechnologyComponent[] = [
 
 const MAX_STAGE_PROGRESS = 10;
 const MAX_TECH_LEVEL = 5;
+const MAX_SOLUTION_PROGRESS = 10;
+
+const PROBLEM_LABELS: Record<HandlingProblem, string> = {
+  [HandlingProblem.OversteerFast]: 'Oversteer (Fast)',
+  [HandlingProblem.OversteerSlow]: 'Oversteer (Slow)',
+  [HandlingProblem.UndersteerFast]: 'Understeer (Fast)',
+  [HandlingProblem.UndersteerSlow]: 'Understeer (Slow)',
+  [HandlingProblem.HighDrag]: 'High Drag',
+  [HandlingProblem.PoorBalance]: 'Poor Balance',
+  [HandlingProblem.LowDownforce]: 'Low Downforce',
+  [HandlingProblem.HighPitchSensitivity]: 'High Pitch Sensitivity',
+};
+
+const PROBLEM_DESCRIPTIONS: Record<HandlingProblem, string> = {
+  [HandlingProblem.OversteerFast]: 'Less grip on high-speed circuits',
+  [HandlingProblem.OversteerSlow]: 'Less grip on low-speed circuits',
+  [HandlingProblem.UndersteerFast]: 'Increased tyre wear on high-speed circuits',
+  [HandlingProblem.UndersteerSlow]: 'Increased tyre wear on low-speed circuits',
+  [HandlingProblem.HighDrag]: 'Increased fuel consumption and engine heat',
+  [HandlingProblem.PoorBalance]: 'Increased brake wear, harder to control',
+  [HandlingProblem.LowDownforce]: 'Less grip overall',
+  [HandlingProblem.HighPitchSensitivity]: 'Less grip in wind, suspension wear',
+};
+
+const PROBLEM_ORDER: HandlingProblem[] = [
+  HandlingProblem.OversteerFast,
+  HandlingProblem.OversteerSlow,
+  HandlingProblem.UndersteerFast,
+  HandlingProblem.UndersteerSlow,
+  HandlingProblem.HighDrag,
+  HandlingProblem.PoorBalance,
+  HandlingProblem.LowDownforce,
+  HandlingProblem.HighPitchSensitivity,
+];
 
 // ===========================================
 // HELPER FUNCTIONS
@@ -206,14 +242,40 @@ interface CurrentYearChassisSectionProps {
   chassisState: CurrentYearChassisState;
 }
 
+function getProblemStatus(
+  state: HandlingProblemState | undefined,
+  activeDesignProblem: HandlingProblem | null,
+  problem: HandlingProblem
+): { label: string; className: string } {
+  if (!state || !state.discovered) {
+    return { label: 'Unknown', className: 'text-muted' };
+  }
+  if (state.solutionInstalled) {
+    return { label: 'Fixed', className: 'text-green-400' };
+  }
+  if (state.solutionDesigned) {
+    return { label: 'Ready to Build', className: 'text-blue-400' };
+  }
+  if (activeDesignProblem === problem) {
+    return { label: 'Designing...', className: 'text-amber-400' };
+  }
+  if (state.solutionProgress > 0) {
+    return { label: `${state.solutionProgress}/${MAX_SOLUTION_PROGRESS}`, className: 'text-amber-400' };
+  }
+  return { label: 'Needs Fix', className: 'text-red-400' };
+}
+
 function CurrentYearChassisSection({ chassisState }: CurrentYearChassisSectionProps) {
-  const discoveredProblems = chassisState.problems.filter((p) => p.discovered);
-  const solvedProblems = chassisState.problems.filter((p) => p.solutionInstalled);
+  const problemMap = new Map(chassisState.problems.map((p) => [p.problem, p]));
+  const discoveredCount = chassisState.problems.filter((p) => p.discovered).length;
+  const fixedCount = chassisState.problems.filter((p) => p.solutionInstalled).length;
 
   return (
     <section>
       <SectionHeading>Current Year Chassis</SectionHeading>
-      <div className="card p-4">
+
+      {/* Summary Stats */}
+      <div className="card p-4 mb-4">
         <div className="grid grid-cols-3 gap-6">
           <div>
             <DetailRow
@@ -225,14 +287,49 @@ function CurrentYearChassisSection({ chassisState }: CurrentYearChassisSectionPr
             </div>
           </div>
           <DetailRow
-            label="Problems Discovered"
-            value={<span className="font-mono">{discoveredProblems.length}</span>}
+            label="Problems Found"
+            value={<span className="font-mono">{discoveredCount}/8</span>}
           />
           <DetailRow
-            label="Solutions Installed"
-            value={<span className="font-mono">{solvedProblems.length}</span>}
+            label="Problems Fixed"
+            value={<span className="font-mono">{fixedCount}/8</span>}
           />
         </div>
+      </div>
+
+      {/* Handling Problems Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {PROBLEM_ORDER.map((problem) => {
+          const state = problemMap.get(problem);
+          const status = getProblemStatus(state, chassisState.activeDesignProblem, problem);
+          const isDiscovered = state?.discovered ?? false;
+
+          return (
+            <div
+              key={problem}
+              className={`card p-3 ${isDiscovered ? '' : 'opacity-60'}`}
+            >
+              <div className="flex items-start justify-between mb-1">
+                <span className="text-sm font-medium text-primary">
+                  {PROBLEM_LABELS[problem]}
+                </span>
+                <span className={`text-xs font-medium ${status.className}`}>
+                  {status.label}
+                </span>
+              </div>
+              <p className="text-xs text-muted">
+                {isDiscovered ? PROBLEM_DESCRIPTIONS[problem] : 'Not yet discovered'}
+              </p>
+              {isDiscovered && state && !state.solutionInstalled && state.solutionProgress > 0 && (
+                <div className="mt-2">
+                  <ProgressBar
+                    value={(state.solutionProgress / MAX_SOLUTION_PROGRESS) * 100}
+                  />
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </section>
   );
