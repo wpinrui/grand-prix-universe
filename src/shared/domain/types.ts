@@ -306,6 +306,7 @@ export interface Driver {
   nationality: string; // country code, e.g. "GB", "DE"
   dateOfBirth: string; // ISO date string
   photoUrl: string | null; // URL to driver photo, null = use faces.js procedural generation
+  raceNumber?: number; // Car number (e.g., 1, 44, 33), optional for free agents
   teamId: string | null; // null if free agent
   role: DriverRole;
   attributes: DriverAttributes;

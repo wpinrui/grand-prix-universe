@@ -6,6 +6,7 @@
       "lastName": "Verstappen",
       "nationality": "NL",
       "dateOfBirth": "1997-09-30",
+      "raceNumber": 1,
       "teamId": "red-bull-racing",
       "role": "first",
       "attributes": {
@@ -28,6 +29,7 @@
       "lastName": "Leclerc",
       "nationality": "MC",
       "dateOfBirth": "1997-10-16",
+      "raceNumber": 16,
       "teamId": "ferrari",
       "role": "equal",
       "attributes": {
@@ -50,6 +52,7 @@
       "lastName": "Norris",
       "nationality": "GB",
       "dateOfBirth": "1999-11-13",
+      "raceNumber": 4,
       "teamId": "mclaren",
       "role": "equal",
       "attributes": {
@@ -72,6 +75,7 @@
       "lastName": "Russell",
       "nationality": "GB",
       "dateOfBirth": "1998-02-15",
+      "raceNumber": 63,
       "teamId": "mercedes",
       "role": "first",
       "attributes": {
@@ -94,6 +98,7 @@
       "lastName": "Piastri",
       "nationality": "AU",
       "dateOfBirth": "2001-04-06",
+      "raceNumber": 81,
       "teamId": "mclaren",
       "role": "equal",
       "attributes": {
@@ -116,6 +121,7 @@
       "lastName": "Hamilton",
       "nationality": "GB",
       "dateOfBirth": "1985-01-07",
+      "raceNumber": 44,
       "teamId": "ferrari",
       "role": "equal",
       "attributes": {
@@ -138,6 +144,7 @@
       "lastName": "Sainz",
       "nationality": "ES",
       "dateOfBirth": "1994-09-01",
+      "raceNumber": 55,
       "teamId": "williams",
       "role": "equal",
       "attributes": {
@@ -160,6 +167,7 @@
       "lastName": "Alonso",
       "nationality": "ES",
       "dateOfBirth": "1981-07-29",
+      "raceNumber": 14,
       "teamId": "aston-martin",
       "role": "first",
       "attributes": {
@@ -182,6 +190,7 @@
       "lastName": "Hulkenberg",
       "nationality": "DE",
       "dateOfBirth": "1987-08-19",
+      "raceNumber": 27,
       "teamId": "kick-sauber",
       "role": "equal",
       "attributes": {
@@ -204,6 +213,7 @@
       "lastName": "Albon",
       "nationality": "TH",
       "dateOfBirth": "1996-03-23",
+      "raceNumber": 23,
       "teamId": "williams",
       "role": "equal",
       "attributes": {
@@ -226,6 +236,7 @@
       "lastName": "Antonelli",
       "nationality": "IT",
       "dateOfBirth": "2006-08-25",
+      "raceNumber": 12,
       "teamId": "mercedes",
       "role": "second",
       "attributes": {
@@ -248,6 +259,7 @@
       "lastName": "Gasly",
       "nationality": "FR",
       "dateOfBirth": "1996-02-07",
+      "raceNumber": 10,
       "teamId": "alpine",
       "role": "equal",
       "attributes": {
@@ -292,6 +304,7 @@
       "lastName": "Bearman",
       "nationality": "GB",
       "dateOfBirth": "2005-05-08",
+      "raceNumber": 87,
       "teamId": "haas",
       "role": "equal",
       "attributes": {
@@ -314,6 +327,7 @@
       "lastName": "Ocon",
       "nationality": "FR",
       "dateOfBirth": "1996-09-17",
+      "raceNumber": 31,
       "teamId": "haas",
       "role": "equal",
       "attributes": {
@@ -336,6 +350,7 @@
       "lastName": "Hadjar",
       "nationality": "FR",
       "dateOfBirth": "2004-09-28",
+      "raceNumber": 6,
       "teamId": "racing-bulls",
       "role": "equal",
       "attributes": {
@@ -380,6 +395,7 @@
       "lastName": "Tsunoda",
       "nationality": "JP",
       "dateOfBirth": "2000-05-11",
+      "raceNumber": 22,
       "teamId": "red-bull-racing",
       "role": "second",
       "attributes": {
@@ -402,6 +418,7 @@
       "lastName": "Lawson",
       "nationality": "NZ",
       "dateOfBirth": "2002-02-11",
+      "raceNumber": 30,
       "teamId": "racing-bulls",
       "role": "equal",
       "attributes": {
@@ -424,6 +441,7 @@
       "lastName": "Bortoleto",
       "nationality": "BR",
       "dateOfBirth": "2004-10-14",
+      "raceNumber": 5,
       "teamId": "kick-sauber",
       "role": "equal",
       "attributes": {
@@ -446,6 +464,7 @@
       "lastName": "Stroll",
       "nationality": "CA",
       "dateOfBirth": "1998-10-29",
+      "raceNumber": 18,
       "teamId": "aston-martin",
       "role": "second",
       "attributes": {
@@ -468,6 +487,7 @@
       "lastName": "Doohan",
       "nationality": "AU",
       "dateOfBirth": "2003-01-20",
+      "raceNumber": 7,
       "teamId": "alpine",
       "role": "equal",
       "attributes": {

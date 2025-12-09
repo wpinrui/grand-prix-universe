@@ -94,6 +94,14 @@ export function formatOrdinal(n: number): string {
   return n + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
 }
 
+/**
+ * Pluralize a word based on count (e.g., "1 week", "2 weeks")
+ */
+export function pluralize(count: number, singular: string, plural?: string): string {
+  const word = count === 1 ? singular : (plural ?? `${singular}s`);
+  return `${count} ${word}`;
+}
+
 // ===========================================
 // CURRENCY FORMATTERS
 // ===========================================
