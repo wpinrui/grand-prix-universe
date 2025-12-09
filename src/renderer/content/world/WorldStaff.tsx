@@ -12,7 +12,7 @@ import {
   TabBar,
   getContractRelationship,
 } from '../../components';
-import type { Chief, ChiefRole } from '../../../shared/domain';
+import type { Chief, ChiefRole, TeamPrincipal } from '../../../shared/domain';
 import { FREE_AGENT_COLORS } from '../../utils/face-generator';
 
 // ===========================================
@@ -82,7 +82,6 @@ export function WorldStaff({ initialStaffId }: WorldStaffProps) {
     const teams = new Map(gameState.teams.map((t) => [t.id, t]));
 
     // Convert chiefs to StaffMember
-    // TODO: Add principals when they're added to gameState
     const chiefsAsStaff: StaffMember[] = gameState.chiefs.map((c: Chief) => ({
       id: c.id,
       firstName: c.firstName,
@@ -92,11 +91,24 @@ export function WorldStaff({ initialStaffId }: WorldStaffProps) {
       teamId: c.teamId,
       salary: c.salary,
       contractEnd: c.contractEnd,
-      // Chiefs don't have nationality
     }));
 
-    // Sort by ability descending
-    const sorted = chiefsAsStaff.sort((a, b) => b.ability - a.ability);
+    // Convert principals to StaffMember
+    const principalsAsStaff: StaffMember[] = gameState.principals.map((p: TeamPrincipal) => ({
+      id: p.id,
+      firstName: p.firstName,
+      lastName: p.lastName,
+      role: 'principal' as const,
+      ability: p.ability,
+      teamId: p.teamId,
+      salary: p.salary,
+      contractEnd: p.contractEnd,
+      nationality: p.nationality,
+    }));
+
+    // Combine and sort by ability descending
+    const combined = [...chiefsAsStaff, ...principalsAsStaff];
+    const sorted = combined.sort((a, b) => b.ability - a.ability);
 
     return { allStaff: sorted, teamMap: teams };
   }, [gameState]);

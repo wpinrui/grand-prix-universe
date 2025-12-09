@@ -56,6 +56,7 @@ import type {
   Manufacturer,
   Circuit,
   Chief,
+  TeamPrincipal,
   Car,
   GameRules,
   SeasonRegulations,
@@ -263,6 +264,7 @@ interface LoadedEntities {
   teams: Team[];
   drivers: Driver[];
   chiefs: Chief[];
+  principals: TeamPrincipal[];
   sponsors: Sponsor[];
   manufacturers: Manufacturer[];
   circuits: Circuit[];
@@ -309,6 +311,7 @@ function loadAndCloneEntities(): LoadedEntities {
   const teams = ConfigLoader.getTeams();
   const drivers = ConfigLoader.getDrivers();
   const chiefs = ConfigLoader.getChiefs();
+  const principals = ConfigLoader.getPrincipals();
   const sponsors = ConfigLoader.getSponsors();
   const manufacturers = ConfigLoader.getManufacturers();
   const circuits = ConfigLoader.getCircuits();
@@ -319,11 +322,13 @@ function loadAndCloneEntities(): LoadedEntities {
   assertNonEmpty(sponsors, 'sponsors');
   assertNonEmpty(manufacturers, 'manufacturers');
   assertNonEmpty(chiefs, 'chiefs');
+  assertNonEmpty(principals, 'principals');
 
   return {
     teams: cloneDeep(teams),
     drivers: cloneDeep(drivers),
     chiefs: cloneDeep(chiefs),
+    principals: cloneDeep(principals),
     sponsors: cloneDeep(sponsors),
     manufacturers: cloneDeep(manufacturers),
     circuits: cloneDeep(circuits),
@@ -536,7 +541,7 @@ interface BuildGameStateParams {
  */
 function buildGameState(params: BuildGameStateParams): GameState {
   const { playerName, teamId, seasonNumber, entities, rules, regulations } = params;
-  const { teams, drivers, chiefs, sponsors, manufacturers, circuits } = entities;
+  const { teams, drivers, chiefs, principals, sponsors, manufacturers, circuits } = entities;
 
   // Create runtime states
   const driverStates = createAllDriverStates(drivers);
@@ -591,6 +596,7 @@ function buildGameState(params: BuildGameStateParams): GameState {
     teams,
     drivers,
     chiefs,
+    principals,
     sponsors,
     manufacturers,
     circuits,

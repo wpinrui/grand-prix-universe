@@ -1026,6 +1026,7 @@ export interface GameState {
   teams: Team[];
   drivers: Driver[];
   chiefs: Chief[];
+  principals: TeamPrincipal[];
   sponsors: Sponsor[]; // Available sponsors (not all have deals)
   manufacturers: Manufacturer[];
   circuits: Circuit[];

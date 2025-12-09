@@ -36,6 +36,7 @@ export function TeamProfile() {
         allTeams={gameState.teams}
         onTeamSelect={(teamId) => navigateToEntity('team', teamId)}
         principalName={gameState.player.name}
+        isPlayerTeam
       />
     </div>
   );
