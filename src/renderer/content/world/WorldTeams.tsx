@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useDerivedGameState } from '../../hooks';
 import { TeamProfileContent } from '../../components';
 import type { DriverStanding, ConstructorStanding } from '../../../shared/domain';
@@ -13,10 +13,12 @@ interface WorldTeamsProps {
 export function WorldTeams({ initialTeamId }: WorldTeamsProps) {
   const { gameState, playerTeam } = useDerivedGameState();
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  const appliedInitialRef = useRef<string | null>(null);
 
-  // Set initial team when available
+  // Set initial team only once per navigation (don't override user selections)
   useEffect(() => {
-    if (initialTeamId) {
+    if (initialTeamId && initialTeamId !== appliedInitialRef.current) {
+      appliedInitialRef.current = initialTeamId;
       setSelectedTeamId(initialTeamId);
     } else if (selectedTeamId === null && playerTeam) {
       setSelectedTeamId(playerTeam.id);
