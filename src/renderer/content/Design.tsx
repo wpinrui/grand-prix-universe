@@ -153,10 +153,10 @@ function AllocationRow({ label, value, isHighlighted = false }: AllocationRowPro
 
 interface SummaryTabProps {
   designState: DesignState;
-  currentSeason: number;
+  currentYear: number;
 }
 
-function SummaryTab({ designState, currentSeason }: SummaryTabProps) {
+function SummaryTab({ designState, currentYear }: SummaryTabProps) {
   const levelMap = new Map(designState.technologyLevels.map((l) => [l.component, l]));
   const discoveredCount = designState.currentYearChassis.problems.filter((p) => p.discovered).length;
   const nextYearProgress = designState.nextYearChassis
@@ -223,7 +223,7 @@ function SummaryTab({ designState, currentSeason }: SummaryTabProps) {
       <div className="space-y-4">
         {/* Current Year Chassis */}
         <div className="card p-4">
-          <SectionHeading>{currentSeason} Chassis</SectionHeading>
+          <SectionHeading>{currentYear} Chassis</SectionHeading>
           <table className="w-full text-sm mt-4">
             <thead>
               <tr className="text-muted text-xs">
@@ -234,7 +234,7 @@ function SummaryTab({ designState, currentSeason }: SummaryTabProps) {
             </thead>
             <tbody>
               <tr>
-                <td className="py-1.5 text-secondary">SA{currentSeason}-A</td>
+                <td className="py-1.5 text-secondary">SA{currentYear}-A</td>
                 <td className="py-1.5 text-center font-mono text-primary">
                   {designState.currentYearChassis.handlingRevealed > 0
                     ? `${designState.currentYearChassis.handlingRevealed}%`
@@ -250,7 +250,7 @@ function SummaryTab({ designState, currentSeason }: SummaryTabProps) {
 
         {/* Next Year Chassis */}
         <div className="card p-4">
-          <SectionHeading>{currentSeason + 1} Chassis</SectionHeading>
+          <SectionHeading>{currentYear + 1} Chassis</SectionHeading>
           <table className="w-full text-sm mt-4">
             <thead>
               <tr className="text-muted text-xs">
@@ -261,7 +261,7 @@ function SummaryTab({ designState, currentSeason }: SummaryTabProps) {
             </thead>
             <tbody>
               <tr>
-                <td className="py-1.5 text-secondary">SA{currentSeason + 1}-A</td>
+                <td className="py-1.5 text-secondary">SA{currentYear + 1}-A</td>
                 <td className="py-1.5 text-center text-secondary">
                   {designState.nextYearChassis
                     ? getCurrentStageName(designState.nextYearChassis)
@@ -281,14 +281,14 @@ function SummaryTab({ designState, currentSeason }: SummaryTabProps) {
 
 interface NextYearChassisTabProps {
   chassis: ChassisDesign | null;
-  currentSeason: number;
+  currentYear: number;
 }
 
-function NextYearChassisTab({ chassis, currentSeason }: NextYearChassisTabProps) {
+function NextYearChassisTab({ chassis, currentYear }: NextYearChassisTabProps) {
   if (!chassis) {
     return (
       <div className="card p-8 text-center">
-        <p className="text-muted">No chassis design in progress for {currentSeason + 1} season.</p>
+        <p className="text-muted">No chassis design in progress for {currentYear + 1} season.</p>
       </div>
     );
   }
@@ -300,8 +300,8 @@ function NextYearChassisTab({ chassis, currentSeason }: NextYearChassisTabProps)
     <div className="card p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <SectionHeading>{currentSeason + 1} Chassis Design</SectionHeading>
-          <p className="text-sm text-muted mt-1">SA{currentSeason + 1}-A</p>
+          <SectionHeading>{currentYear + 1} Chassis Design</SectionHeading>
+          <p className="text-sm text-muted mt-1">SA{currentYear + 1}-A</p>
         </div>
         <div className="text-right">
           <div className="text-2xl font-bold text-primary">{overallProgress}%</div>
@@ -350,10 +350,10 @@ function NextYearChassisTab({ chassis, currentSeason }: NextYearChassisTabProps)
 
 interface CurrentYearChassisTabProps {
   chassisState: CurrentYearChassisState;
-  currentSeason: number;
+  currentYear: number;
 }
 
-function CurrentYearChassisTab({ chassisState, currentSeason }: CurrentYearChassisTabProps) {
+function CurrentYearChassisTab({ chassisState, currentYear }: CurrentYearChassisTabProps) {
   const problemMap = new Map(chassisState.problems.map((p) => [p.problem, p]));
 
   // Find the active problem being worked on, or first discovered unsolved problem
@@ -391,7 +391,7 @@ function CurrentYearChassisTab({ chassisState, currentSeason }: CurrentYearChass
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-secondary">{currentSeason} Chassis</span>
+              <span className="text-sm text-secondary">{currentYear} Chassis</span>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-mono text-primary">
                   {chassisState.designersAssigned}%
@@ -409,7 +409,7 @@ function CurrentYearChassisTab({ chassisState, currentSeason }: CurrentYearChass
 
         {/* Chassis Info Panel */}
         <div className="card p-4">
-          <SectionHeading>Chassis {currentSeason}-A</SectionHeading>
+          <SectionHeading>Chassis {currentYear}-A</SectionHeading>
           <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted">Tests</span>
@@ -436,7 +436,7 @@ function CurrentYearChassisTab({ chassisState, currentSeason }: CurrentYearChass
       {/* Improvement Project Section */}
       <div className="card p-4">
         <div className="flex items-center justify-between mb-4">
-          <SectionHeading>{currentSeason} Chassis</SectionHeading>
+          <SectionHeading>{currentYear} Chassis</SectionHeading>
           <span className="text-sm text-muted">
             {activeProblem ? `Fixing: ${PROBLEM_LABELS[activeProblem]}` : 'No Project'}
           </span>
@@ -607,22 +607,22 @@ export function Design() {
 
   const teamState = gameState.teamStates[playerTeam.id];
   const designState = teamState.designState;
-  const currentSeason = gameState.currentSeason.seasonNumber;
+  const currentYear = gameState.currentDate.year;
 
   return (
     <div>
       <TabBar tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} />
 
       {activeTab === 'summary' && (
-        <SummaryTab designState={designState} currentSeason={currentSeason} />
+        <SummaryTab designState={designState} currentYear={currentYear} />
       )}
       {activeTab === 'next-year' && (
-        <NextYearChassisTab chassis={designState.nextYearChassis} currentSeason={currentSeason} />
+        <NextYearChassisTab chassis={designState.nextYearChassis} currentYear={currentYear} />
       )}
       {activeTab === 'current-year' && (
         <CurrentYearChassisTab
           chassisState={designState.currentYearChassis}
-          currentSeason={currentSeason}
+          currentYear={currentYear}
         />
       )}
       {activeTab === 'technology' && <TechnologyTab levels={designState.technologyLevels} />}
