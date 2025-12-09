@@ -11,6 +11,7 @@ import {
 } from '../../components';
 import type { ContractRelationship } from '../../components';
 import type { DriverStanding } from '../../../shared/domain';
+import { FREE_AGENT_COLORS } from '../../utils/face-generator';
 
 interface WorldDriversProps {
   initialDriverId?: string | null;
@@ -95,7 +96,7 @@ export function WorldDrivers({ initialDriverId }: WorldDriversProps) {
   // Build team colors for faces.js
   const teamColors = driverTeam
     ? { primary: driverTeam.primaryColor, secondary: driverTeam.secondaryColor }
-    : { primary: '#555555', secondary: '#333333' }; // Default gray for free agents
+    : FREE_AGENT_COLORS;
 
   // Get driver standing
   const driverStanding = driverStandingsMap.get(selectedDriver.id);

@@ -13,6 +13,7 @@ import {
 } from '../../components';
 import type { ContractRelationship } from '../../components';
 import type { Chief, ChiefRole } from '../../../shared/domain';
+import { FREE_AGENT_COLORS } from '../../utils/face-generator';
 
 // ===========================================
 // TYPES
@@ -142,7 +143,7 @@ export function WorldStaff({ initialStaffId }: WorldStaffProps) {
   const staffTeam = selectedStaff?.teamId ? teamMap.get(selectedStaff.teamId) ?? null : null;
   const teamColors = staffTeam
     ? { primary: staffTeam.primaryColor, secondary: staffTeam.secondaryColor }
-    : { primary: '#555555', secondary: '#333333' };
+    : FREE_AGENT_COLORS;
 
   // Determine contract relationship
   const getContractRelationship = (): ContractRelationship => {
