@@ -42,6 +42,7 @@ import {
   WorldTeams,
   WorldDrivers,
   WorldStaff,
+  WorldStats,
 } from '../content';
 import { GamePhase } from '../../shared/domain';
 import { RoutePaths } from '../routes';
@@ -67,6 +68,7 @@ const ROUTE_COMPONENTS: Partial<Record<SectionId, Record<string, React.Component
   },
   world: {
     news: News,
+    stats: WorldStats,
   },
   engineering: {
     cars: Cars,
