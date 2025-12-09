@@ -12,8 +12,8 @@ import {
   type ContractRelationship,
 } from './PersonProfileCards';
 import { SectionHeading } from './SectionHeading';
-import { EntityLink } from './EntityLink';
 import { DRIVER_ROLE_LABELS, formatOrdinal, pluralize } from '../utils/format';
+import { seasonToYear } from '../../shared/utils/date-utils';
 import type { TeamColors } from '../utils/face-generator';
 import type {
   Driver,
@@ -42,15 +42,10 @@ const ATTRIBUTE_LABELS: Record<keyof Driver['attributes'], string> = {
 // HELPER FUNCTIONS
 // ===========================================
 
-function calculateAge(dateOfBirth: string): number {
-  const today = new Date();
-  const birth = new Date(dateOfBirth);
-  let age = today.getFullYear() - birth.getFullYear();
-  const monthDiff = today.getMonth() - birth.getMonth();
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-    age--;
-  }
-  return age;
+function calculateAge(dateOfBirth: string, currentSeason: number): number {
+  const birthYear = new Date(dateOfBirth).getFullYear();
+  const currentYear = seasonToYear(currentSeason);
+  return currentYear - birthYear;
 }
 
 function formatDateOfBirth(dateOfBirth: string): string {
@@ -399,7 +394,7 @@ export function DriverProfileContent({
   allDrivers,
   onDriverSelect,
 }: DriverProfileContentProps) {
-  const age = calculateAge(driver.dateOfBirth);
+  const age = calculateAge(driver.dateOfBirth, currentSeason);
   const fullName = `${driver.firstName} ${driver.lastName}`;
 
   // Build dropdown options if provided
@@ -416,6 +411,7 @@ export function DriverProfileContent({
         nationality={driver.nationality}
         photoUrl={driver.photoUrl}
         teamName={team?.name ?? null}
+        teamId={team?.id ?? null}
         roleText={team ? DRIVER_ROLE_LABELS[driver.role] : 'Free Agent'}
         subtitle={`${age} years old · Born ${formatDateOfBirth(driver.dateOfBirth)}`}
         raceNumber={driver.raceNumber}
@@ -425,16 +421,6 @@ export function DriverProfileContent({
         selectedId={driver.id}
         onSelect={onDriverSelect}
       />
-
-      {/* Team Link (if has team) */}
-      {team && (
-        <div className="flex items-center gap-2 text-sm">
-          <span className="text-muted">Current Team:</span>
-          <EntityLink type="team" id={team.id} className="text-[var(--accent-400)] hover:underline">
-            {team.name}
-          </EntityLink>
-        </div>
-      )}
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

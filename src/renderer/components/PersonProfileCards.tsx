@@ -5,6 +5,7 @@
  */
 import { useState, useRef, useEffect, type CSSProperties } from 'react';
 import { FlagIcon } from './FlagIcon';
+import { EntityLink } from './EntityLink';
 import { ACCENT_TEXT_STYLE, ACCENT_CARD_STYLE } from '../utils/theme-styles';
 import { generateFace, type TeamColors } from '../utils/face-generator';
 import { seasonToYear } from '../../shared/utils/date-utils';
@@ -54,6 +55,8 @@ interface PersonHeaderProps {
   photoUrl: string | null;
   /** Current team name or null for free agent */
   teamName: string | null;
+  /** Team ID for EntityLink (required if teamName is provided) */
+  teamId?: string | null;
   /** Role/position text (e.g., "1st Driver", "Chief Designer") */
   roleText: string;
   /** Optional subtitle (e.g., age) */
@@ -83,6 +86,7 @@ export function PersonHeader({
   nationality,
   photoUrl,
   teamName,
+  teamId,
   roleText,
   subtitle,
   raceNumber,
@@ -198,7 +202,13 @@ export function PersonHeader({
           {teamName && (
             <>
               <span className="text-muted">·</span>
-              <span className="text-secondary">{teamName}</span>
+              {teamId ? (
+                <EntityLink type="team" id={teamId} className="text-[var(--accent-400)] hover:underline">
+                  {teamName}
+                </EntityLink>
+              ) : (
+                <span className="text-secondary">{teamName}</span>
+              )}
             </>
           )}
         </div>
