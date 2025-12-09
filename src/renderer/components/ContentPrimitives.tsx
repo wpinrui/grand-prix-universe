@@ -128,8 +128,8 @@ export function TabBar<T extends string>({ tabs, activeTab, onTabChange }: TabBa
           onClick={() => onTabChange(tab.id)}
           className={`px-6 py-3 text-sm font-medium cursor-pointer transition-colors relative ${
             activeTab === tab.id
-              ? 'text-accent'
-              : 'text-secondary hover:text-primary'
+              ? 'text-accent bg-accent/10'
+              : 'text-secondary hover:text-primary hover:bg-white/5'
           }`}
         >
           {tab.label}
