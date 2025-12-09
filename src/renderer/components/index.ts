@@ -14,3 +14,4 @@ export { PersonHeader, AttributeBar, StatPanel, StatRow, ContractPanel, getContr
 export type { ContractRelationship } from './PersonProfileCards';
 export { DriverProfileContent, extractRecentResults, extractCareerHistory } from './DriverProfileContent';
 export type { RecentRaceResult, SeasonSummary } from './DriverProfileContent';
+export { GlobalSearch, parsePageId } from './GlobalSearch';
