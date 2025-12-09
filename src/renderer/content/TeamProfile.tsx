@@ -35,6 +35,7 @@ export function TeamProfile() {
         driverStandingsMap={driverStandingsMap}
         allTeams={gameState.teams}
         onTeamSelect={(teamId) => navigateToEntity('team', teamId)}
+        principalName={gameState.player.name}
       />
     </div>
   );

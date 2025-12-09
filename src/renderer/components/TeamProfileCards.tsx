@@ -154,9 +154,11 @@ interface TeamHeaderProps {
   allTeams?: Team[];
   /** Called when a team is selected from the dropdown */
   onTeamSelect?: (teamId: string) => void;
+  /** Override principal name (e.g., player's name for their own team) */
+  principalName?: string;
 }
 
-export function TeamHeader({ team, allTeams, onTeamSelect }: TeamHeaderProps) {
+export function TeamHeader({ team, allTeams, onTeamSelect, principalName }: TeamHeaderProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -222,8 +224,8 @@ export function TeamHeader({ team, allTeams, onTeamSelect }: TeamHeaderProps) {
             </>
           )}
         </div>
-        {team.principal && (
-          <p className="text-sm text-secondary mt-1">Principal: {team.principal}</p>
+        {(principalName || team.principal) && (
+          <p className="text-sm text-secondary mt-1">Principal: {principalName ?? team.principal}</p>
         )}
         <p className="text-sm text-muted mt-2 max-w-2xl leading-relaxed">{team.description}</p>
       </div>
@@ -249,6 +251,8 @@ interface TeamProfileContentProps {
   allTeams?: Team[];
   /** Called when a team is selected from the dropdown */
   onTeamSelect?: (teamId: string) => void;
+  /** Override principal name (e.g., player's name for their own team) */
+  principalName?: string;
 }
 
 export function TeamProfileContent({
@@ -259,10 +263,11 @@ export function TeamProfileContent({
   driverStandingsMap,
   allTeams,
   onTeamSelect,
+  principalName,
 }: TeamProfileContentProps) {
   return (
     <div className="space-y-8">
-      <TeamHeader team={team} allTeams={allTeams} onTeamSelect={onTeamSelect} />
+      <TeamHeader team={team} allTeams={allTeams} onTeamSelect={onTeamSelect} principalName={principalName} />
 
       <TeamStatsGrid budget={team.budget} standing={constructorStanding} />
 
