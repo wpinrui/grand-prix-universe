@@ -423,8 +423,6 @@ export function WorldStats() {
     );
   }
 
-  const dropdownOptions = STAT_OPTIONS.map((o) => ({ value: o.value, label: o.label }));
-
   return (
     <div className="max-w-6xl space-y-6">
       {/* Controls row */}
@@ -434,7 +432,7 @@ export function WorldStats() {
             Statistic
           </label>
           <Dropdown
-            options={dropdownOptions}
+            options={STAT_OPTIONS}
             value={selectedStat}
             onChange={setSelectedStat}
             className="w-64"
