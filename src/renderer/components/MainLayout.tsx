@@ -129,6 +129,26 @@ export function MainLayout() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Clear all entity target states
+  const clearAllTargets = useCallback(() => {
+    setTargetRaceNumber(null);
+    setTargetTeamId(null);
+    setTargetDriverId(null);
+    setTargetStaffId(null);
+  }, []);
+
+  // Apply a history entry to navigation state
+  const applyHistoryEntry = useCallback((entry: HistoryEntry) => {
+    setSelectedSectionId(entry.sectionId);
+    setSelectedSubItemId(entry.subItemId);
+
+    // Restore entity-specific navigation based on entry type
+    setTargetRaceNumber(entry.entityType === 'race' && entry.entityId ? parseInt(entry.entityId, 10) : null);
+    setTargetTeamId(entry.entityType === 'team' ? entry.entityId ?? null : null);
+    setTargetDriverId(entry.entityType === 'driver' ? entry.entityId ?? null : null);
+    setTargetStaffId(entry.entityType === 'chief' || entry.entityType === 'principal' ? entry.entityId ?? null : null);
+  }, []);
+
   // Push a new entry to navigation history
   const pushHistory = useCallback((entry: HistoryEntry) => {
     if (isNavigatingRef.current) {
@@ -150,18 +170,9 @@ export function MainLayout() {
 
     isNavigatingRef.current = true;
     const newIndex = historyIndex - 1;
-    const entry = history[newIndex];
-
     setHistoryIndex(newIndex);
-    setSelectedSectionId(entry.sectionId);
-    setSelectedSubItemId(entry.subItemId);
-
-    // Restore entity-specific navigation
-    setTargetRaceNumber(entry.entityType === 'race' && entry.entityId ? parseInt(entry.entityId, 10) : null);
-    setTargetTeamId(entry.entityType === 'team' ? entry.entityId ?? null : null);
-    setTargetDriverId(entry.entityType === 'driver' ? entry.entityId ?? null : null);
-    setTargetStaffId(entry.entityType === 'chief' || entry.entityType === 'principal' ? entry.entityId ?? null : null);
-  }, [history, historyIndex]);
+    applyHistoryEntry(history[newIndex]);
+  }, [history, historyIndex, applyHistoryEntry]);
 
   // Navigate forward in history
   const handleForward = useCallback(() => {
@@ -169,18 +180,9 @@ export function MainLayout() {
 
     isNavigatingRef.current = true;
     const newIndex = historyIndex + 1;
-    const entry = history[newIndex];
-
     setHistoryIndex(newIndex);
-    setSelectedSectionId(entry.sectionId);
-    setSelectedSubItemId(entry.subItemId);
-
-    // Restore entity-specific navigation
-    setTargetRaceNumber(entry.entityType === 'race' && entry.entityId ? parseInt(entry.entityId, 10) : null);
-    setTargetTeamId(entry.entityType === 'team' ? entry.entityId ?? null : null);
-    setTargetDriverId(entry.entityType === 'driver' ? entry.entityId ?? null : null);
-    setTargetStaffId(entry.entityType === 'chief' || entry.entityType === 'principal' ? entry.entityId ?? null : null);
-  }, [history, historyIndex]);
+    applyHistoryEntry(history[newIndex]);
+  }, [history, historyIndex, applyHistoryEntry]);
 
   const canGoBack = historyIndex > 0;
   const canGoForward = historyIndex < history.length - 1;
@@ -193,10 +195,7 @@ export function MainLayout() {
   const handleSectionClick = (section: Section) => {
     setSelectedSectionId(section.id);
     setSelectedSubItemId(section.subItems[0].id);
-    setTargetRaceNumber(null);
-    setTargetTeamId(null);
-    setTargetDriverId(null);
-    setTargetStaffId(null);
+    clearAllTargets();
     pushHistory({ sectionId: section.id, subItemId: section.subItems[0].id });
   };
 
@@ -254,49 +253,6 @@ export function MainLayout() {
   const openSearch = useCallback(() => setIsSearchOpen(true), []);
   const closeSearch = useCallback(() => setIsSearchOpen(false), []);
 
-  const handleSearchSelect = useCallback((type: SearchResultType, id: string) => {
-    if (type === 'page') {
-      const parsed = parsePageId(id);
-      if (parsed) {
-        setSelectedSectionId(parsed.section);
-        setSelectedSubItemId(parsed.subItem);
-        setTargetRaceNumber(null);
-        setTargetTeamId(null);
-        setTargetDriverId(null);
-        setTargetStaffId(null);
-        pushHistory({ sectionId: parsed.section, subItemId: parsed.subItem });
-      }
-    } else {
-      // Entity types - use navigateToEntity
-      const route = getEntityRoute(type as EntityType, id);
-      setSelectedSectionId(route.section);
-      setSelectedSubItemId(route.subItem);
-      if (type === 'team') {
-        setTargetTeamId(id);
-        setTargetDriverId(null);
-        setTargetStaffId(null);
-        setTargetRaceNumber(null);
-      } else if (type === 'driver') {
-        setTargetDriverId(id);
-        setTargetTeamId(null);
-        setTargetStaffId(null);
-        setTargetRaceNumber(null);
-      } else if (type === 'chief' || type === 'principal') {
-        setTargetStaffId(id);
-        setTargetTeamId(null);
-        setTargetDriverId(null);
-        setTargetRaceNumber(null);
-      } else if (type === 'circuit') {
-        // Navigate to races page - circuit doesn't have a dedicated profile yet
-        setTargetRaceNumber(null);
-        setTargetTeamId(null);
-        setTargetDriverId(null);
-        setTargetStaffId(null);
-      }
-      pushHistory({ sectionId: route.section, subItemId: route.subItem, entityType: type as EntityType, entityId: id });
-    }
-  }, [pushHistory]);
-
   // Entity navigation for Football Manager-style linking
   const navigateToEntity = useCallback((type: EntityType, id: string) => {
     const route = getEntityRoute(type, id);
@@ -315,6 +271,21 @@ export function MainLayout() {
     }
     pushHistory({ sectionId: route.section, subItemId: route.subItem, entityType: type, entityId: id });
   }, [pushHistory]);
+
+  const handleSearchSelect = useCallback((type: SearchResultType, id: string) => {
+    if (type === 'page') {
+      const parsed = parsePageId(id);
+      if (parsed) {
+        setSelectedSectionId(parsed.section);
+        setSelectedSubItemId(parsed.subItem);
+        clearAllTargets();
+        pushHistory({ sectionId: parsed.section, subItemId: parsed.subItem });
+      }
+    } else {
+      // Entity types - delegate to navigateToEntity
+      navigateToEntity(type as EntityType, id);
+    }
+  }, [pushHistory, clearAllTargets, navigateToEntity]);
 
   const entityNavigationValue = useMemo(
     () => ({ navigateToEntity }),
