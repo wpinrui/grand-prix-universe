@@ -650,7 +650,6 @@ function CurrentYearChassisTab({ chassisState, currentYear, designState }: Curre
           <thead>
             <tr className="text-muted text-xs border-b border-subtle">
               <th className="text-left py-2 w-32">Stage</th>
-              <th className="text-center py-2 w-24">Allocation</th>
               <th className="text-center py-2">Progress</th>
               <th className="text-center py-2 w-16">Done</th>
             </tr>
@@ -669,23 +668,6 @@ function CurrentYearChassisTab({ chassisState, currentYear, designState }: Curre
               return (
                 <tr key={stage} className="border-b border-subtle last:border-0">
                   <td className="py-3 text-secondary">{STAGE_LABELS[stage]}</td>
-                  <td className="py-3">
-                    <div className="flex items-center justify-center gap-2">
-                      <button
-                        type="button"
-                        className="w-6 h-6 rounded bg-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-600)] cursor-pointer"
-                      >
-                        −
-                      </button>
-                      <span className="font-mono text-primary w-8 text-center">0%</span>
-                      <button
-                        type="button"
-                        className="w-6 h-6 rounded bg-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-600)] cursor-pointer"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </td>
                   <td className="py-3 px-4">
                     <div className="w-full h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
                       <div
