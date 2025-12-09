@@ -77,7 +77,7 @@ export function WorldTeams({ initialTeamId }: WorldTeamsProps) {
         onTeamSelect={setSelectedTeamId}
         isPlayerTeam={isViewingPlayerTeam}
         principalName={isViewingPlayerTeam ? gameState.player.name : undefined}
-        principalId={isViewingPlayerTeam ? undefined : teamPrincipal?.id}
+        principalId={teamPrincipal?.id}
       />
     </div>
   );
