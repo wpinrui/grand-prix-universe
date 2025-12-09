@@ -74,6 +74,7 @@ const MAX_TECH_LEVEL = 5;
 const MAX_SOLUTION_PROGRESS = 10;
 const LEVEL_INDICES = [1, 2, 3, 4, 5] as const;
 const HANDLING_REVEALED_PER_TEST_LEVEL = 20; // Each test level reveals 20% handling
+const ALLOCATION_STEP = 10; // Increment/decrement step for designer allocation
 
 const PROBLEM_LABELS: Record<HandlingProblem, string> = {
   [HandlingProblem.OversteerFast]: 'Oversteer (Fast)',
@@ -284,6 +285,100 @@ function SummaryTab({ designState, currentYear }: SummaryTabProps) {
   );
 }
 
+// ===========================================
+// NEXT YEAR CHASSIS TAB COMPONENTS
+// ===========================================
+
+interface DesignerAllocationPanelProps {
+  availableAllocation: number;
+  chassisAllocation: number;
+  label: string;
+}
+
+function DesignerAllocationPanel({
+  availableAllocation,
+  chassisAllocation,
+  label,
+}: DesignerAllocationPanelProps) {
+  return (
+    <div className="card p-4">
+      <SectionHeading>Designer</SectionHeading>
+      <div className="mt-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-amber-400">Available</span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-mono text-primary">{availableAllocation}%</span>
+            <div className="w-24 h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
+              <div className="h-full bg-amber-500" style={{ width: `${availableAllocation}%` }} />
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-secondary">{label}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-mono text-primary">{chassisAllocation}%</span>
+            <div className="w-24 h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
+              <div className="h-full bg-blue-500" style={{ width: `${chassisAllocation}%` }} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface ChassisInfoPanelProps {
+  chassisName: string;
+  stageName: string;
+  efficiency: number;
+}
+
+function ChassisInfoPanel({ chassisName, stageName, efficiency }: ChassisInfoPanelProps) {
+  return (
+    <div className="card p-4">
+      <SectionHeading>{chassisName}</SectionHeading>
+      <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+        <div className="flex justify-between">
+          <span className="text-muted">Stage</span>
+          <span className="text-secondary">{stageName}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted">Efficiency</span>
+          <span className="text-primary font-mono">{efficiency}%</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface AllocationControlProps {
+  value: number;
+  maxValue: number;
+  onChange: (newValue: number) => void;
+}
+
+function AllocationControl({ value, maxValue, onChange }: AllocationControlProps) {
+  return (
+    <div className="flex items-center justify-center gap-2">
+      <button
+        type="button"
+        onClick={() => onChange(Math.max(0, value - ALLOCATION_STEP))}
+        className="w-6 h-6 rounded bg-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-600)] cursor-pointer"
+      >
+        −
+      </button>
+      <span className="font-mono text-primary w-8 text-center">{value}%</span>
+      <button
+        type="button"
+        onClick={() => onChange(Math.min(maxValue, value + ALLOCATION_STEP))}
+        className="w-6 h-6 rounded bg-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-600)] cursor-pointer"
+      >
+        +
+      </button>
+    </div>
+  );
+}
+
 interface NextYearChassisTabProps {
   chassis: ChassisDesign | null;
   currentYear: number;
@@ -304,63 +399,27 @@ function NextYearChassisTab({
   const technologyAllocation = designState.activeTechnologyProject?.designersAssigned ?? 0;
   const nextYearAllocation = chassis?.designersAssigned ?? 0;
   const availableAllocation = 100 - currentYearAllocation - technologyAllocation - nextYearAllocation;
+  const maxNextYearAllocation = 100 - currentYearAllocation - technologyAllocation;
+
+  const chassisLabel = `${currentYear + 1} Chassis`;
+  const chassisName = `Chassis ${currentYear + 1}-A`;
 
   // Not started state
   if (!chassis) {
     return (
       <div className="space-y-6">
-        {/* Top Section: Designer Allocation + Chassis Info */}
         <div className="grid grid-cols-2 gap-6">
-          {/* Designer Allocation Panel */}
-          <div className="card p-4">
-            <SectionHeading>Designer</SectionHeading>
-            <div className="mt-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-amber-400">Available</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-mono text-primary">
-                    {availableAllocation}%
-                  </span>
-                  <div className="w-24 h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-amber-500"
-                      style={{ width: `${availableAllocation}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-secondary">{currentYear + 1} Chassis</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-mono text-primary">0%</span>
-                  <div className="w-24 h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-500" style={{ width: '0%' }} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Chassis Info Panel */}
-          <div className="card p-4">
-            <SectionHeading>Chassis {currentYear + 1}-A</SectionHeading>
-            <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted">Stage</span>
-                <span className="text-secondary">Not Started</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted">Efficiency</span>
-                <span className="text-primary font-mono">0%</span>
-              </div>
-            </div>
-          </div>
+          <DesignerAllocationPanel
+            availableAllocation={availableAllocation}
+            chassisAllocation={0}
+            label={chassisLabel}
+          />
+          <ChassisInfoPanel chassisName={chassisName} stageName="Not Started" efficiency={0} />
         </div>
 
-        {/* Start Work Section */}
         <div className="card p-4">
           <div className="flex items-center justify-between mb-4">
-            <SectionHeading>{currentYear + 1} Chassis Design</SectionHeading>
+            <SectionHeading>{chassisLabel} Design</SectionHeading>
             <span className="text-sm text-muted">0%</span>
           </div>
 
@@ -387,72 +446,29 @@ function NextYearChassisTab({
 
   return (
     <div className="space-y-6">
-      {/* Top Section: Designer Allocation + Chassis Info */}
       <div className="grid grid-cols-2 gap-6">
-        {/* Designer Allocation Panel */}
-        <div className="card p-4">
-          <SectionHeading>Designer</SectionHeading>
-          <div className="mt-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-amber-400">Available</span>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-mono text-primary">
-                  {availableAllocation}%
-                </span>
-                <div className="w-24 h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-amber-500"
-                    style={{ width: `${availableAllocation}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-secondary">{currentYear + 1} Chassis</span>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-mono text-primary">
-                  {nextYearAllocation}%
-                </span>
-                <div className="w-24 h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-blue-500"
-                    style={{ width: `${nextYearAllocation}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Chassis Info Panel */}
-        <div className="card p-4">
-          <SectionHeading>Chassis {currentYear + 1}-A</SectionHeading>
-          <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted">Stage</span>
-              <span className="text-secondary">{currentStageName}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted">Efficiency</span>
-              <span className="text-primary font-mono">{chassis.efficiencyRating}%</span>
-            </div>
-          </div>
-        </div>
+        <DesignerAllocationPanel
+          availableAllocation={availableAllocation}
+          chassisAllocation={nextYearAllocation}
+          label={chassisLabel}
+        />
+        <ChassisInfoPanel
+          chassisName={chassisName}
+          stageName={currentStageName}
+          efficiency={chassis.efficiencyRating}
+        />
       </div>
 
-      {/* Design Progress Section */}
       <div className="card p-4">
         <div className="flex items-center justify-between mb-4">
-          <SectionHeading>{currentYear + 1} Chassis Design</SectionHeading>
+          <SectionHeading>{chassisLabel} Design</SectionHeading>
           <span className="text-sm text-muted">{overallProgress}%</span>
         </div>
 
-        {/* Overall Progress Bar */}
         <div className="mb-4">
           <ProgressBar value={overallProgress} />
         </div>
 
-        {/* 4-Stage Table */}
         <table className="w-full text-sm">
           <thead>
             <tr className="text-muted text-xs border-b border-subtle">
@@ -473,29 +489,11 @@ function NextYearChassisTab({
                 <tr key={stage} className="border-b border-subtle last:border-0">
                   <td className="py-3 text-secondary">{STAGE_LABELS[stage]}</td>
                   <td className="py-3">
-                    <div className="flex items-center justify-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => onAllocationChange(Math.max(0, nextYearAllocation - 10))}
-                        className="w-6 h-6 rounded bg-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-600)] cursor-pointer"
-                      >
-                        −
-                      </button>
-                      <span className="font-mono text-primary w-8 text-center">
-                        {nextYearAllocation}%
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          onAllocationChange(
-                            Math.min(100 - currentYearAllocation - technologyAllocation, nextYearAllocation + 10)
-                          )
-                        }
-                        className="w-6 h-6 rounded bg-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-600)] cursor-pointer"
-                      >
-                        +
-                      </button>
-                    </div>
+                    <AllocationControl
+                      value={nextYearAllocation}
+                      maxValue={maxNextYearAllocation}
+                      onChange={onAllocationChange}
+                    />
                   </td>
                   <td className="py-3 px-4">
                     <div className="w-full h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
@@ -518,7 +516,6 @@ function NextYearChassisTab({
           </tbody>
         </table>
 
-        {/* Build Chassis Button */}
         <div className="flex justify-end mt-4">
           <button
             type="button"
