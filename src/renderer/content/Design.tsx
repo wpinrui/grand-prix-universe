@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useDerivedGameState } from '../hooks';
 import { SectionHeading, ProgressBar, TabBar } from '../components';
 import type { Tab } from '../components';
+import { GHOST_BORDERED_BUTTON_CLASSES } from '../utils/theme-styles';
 import {
   ChassisDesignStage,
   TechnologyComponent,
@@ -79,7 +80,6 @@ const PROBLEM_LABELS: Record<HandlingProblem, string> = {
   [HandlingProblem.LowDownforce]: 'Low Downforce',
   [HandlingProblem.HighPitchSensitivity]: 'High Pitch Sensitivity',
 };
-
 
 // ===========================================
 // HELPER FUNCTIONS
@@ -425,7 +425,7 @@ function CurrentYearChassisTab({ chassisState, currentSeason }: CurrentYearChass
           <div className="flex items-center gap-4 mb-4">
             <button
               type="button"
-              className="btn px-4 py-2 text-sm font-medium rounded-lg border bg-[var(--neutral-800)] border-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-750)] cursor-pointer"
+              className={`btn px-4 py-2 text-sm font-medium rounded-lg border cursor-pointer ${GHOST_BORDERED_BUTTON_CLASSES}`}
             >
               Start Work
             </button>
@@ -445,10 +445,9 @@ function CurrentYearChassisTab({ chassisState, currentSeason }: CurrentYearChass
             </tr>
           </thead>
           <tbody>
-            {STAGE_ORDER.map((stage) => {
+            {STAGE_ORDER.map((stage, stageIndex) => {
               // For current year chassis improvements, we track via solutionProgress
               // Each stage is 0-10 progress (similar to next year chassis)
-              const stageIndex = STAGE_ORDER.indexOf(stage);
               const progressPerStage = MAX_SOLUTION_PROGRESS / STAGE_ORDER.length;
               const stageProgress = activeProblemState
                 ? Math.max(0, Math.min(progressPerStage, activeProblemState.solutionProgress - stageIndex * progressPerStage))
@@ -501,7 +500,7 @@ function CurrentYearChassisTab({ chassisState, currentSeason }: CurrentYearChass
         <div className="flex justify-end mt-4">
           <button
             type="button"
-            className="btn px-4 py-2 text-sm font-medium rounded-lg border bg-[var(--neutral-800)] border-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-750)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`btn px-4 py-2 text-sm font-medium rounded-lg border cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${GHOST_BORDERED_BUTTON_CLASSES}`}
             disabled={!activeProblemState?.solutionDesigned}
           >
             Build Component
