@@ -70,15 +70,11 @@ export function WorldTeams({ initialTeamId }: WorldTeamsProps) {
           onChange={(e) => setSelectedTeamId(e.target.value)}
           className="surface-primary border border-subtle rounded-lg px-4 py-2 text-primary cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent-500)]"
         >
-          {sortedTeams.map((team) => {
-            const standing = constructorStandingsMap.get(team.id);
-            const isPlayer = team.id === playerTeam.id;
-            return (
-              <option key={team.id} value={team.id}>
-                {standing ? `P${standing.position} - ` : ''}{team.name}{isPlayer ? ' (You)' : ''}
-              </option>
-            );
-          })}
+          {sortedTeams.map((team) => (
+            <option key={team.id} value={team.id}>
+              {team.name}{team.id === playerTeam.id ? ' (You)' : ''}
+            </option>
+          ))}
         </select>
       </div>
 
