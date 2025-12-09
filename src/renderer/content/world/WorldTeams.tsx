@@ -12,18 +12,24 @@ interface WorldTeamsProps {
 
 export function WorldTeams({ initialTeamId }: WorldTeamsProps) {
   const { gameState, playerTeam } = useDerivedGameState();
-  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
-  const appliedInitialRef = useRef<string | null>(null);
+  // Initialize with initialTeamId so first render uses correct team
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(initialTeamId ?? null);
+  const lastAppliedInitialRef = useRef<string | null>(initialTeamId ?? null);
 
-  // Set initial team only once per navigation (don't override user selections)
+  // Update selection when navigating with a NEW initialTeamId
   useEffect(() => {
-    if (initialTeamId && initialTeamId !== appliedInitialRef.current) {
-      appliedInitialRef.current = initialTeamId;
+    if (initialTeamId && initialTeamId !== lastAppliedInitialRef.current) {
+      lastAppliedInitialRef.current = initialTeamId;
       setSelectedTeamId(initialTeamId);
-    } else if (selectedTeamId === null && playerTeam) {
+    }
+  }, [initialTeamId]);
+
+  // Default to player team only if nothing is selected
+  useEffect(() => {
+    if (selectedTeamId === null && playerTeam) {
       setSelectedTeamId(playerTeam.id);
     }
-  }, [initialTeamId, playerTeam, selectedTeamId]);
+  }, [selectedTeamId, playerTeam]);
 
   if (!gameState || !playerTeam) {
     return (
