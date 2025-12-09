@@ -136,6 +136,7 @@ export interface ChassisDesign {
   efficiencyRating: number; // 0-100, calculated from stage progress + chief ability
   isLegal: boolean; // Meets FIA regulations (can become illegal if regs change)
   startedAt: GameDate | null; // When design work began
+  accumulatedWorkUnits: number; // Partial progress toward next stage point
 }
 
 /**

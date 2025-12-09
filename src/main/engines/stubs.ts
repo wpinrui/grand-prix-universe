@@ -23,8 +23,8 @@ import type {
   QualifyingResult,
   RaceInput,
   RaceResult,
-  DesignInput,
-  DesignResult,
+  DesignProcessingInput,
+  DesignProcessingResult,
   ConstructionInput,
   ConstructionResult,
   DevelopmentInput,
@@ -54,6 +54,7 @@ import type {
   ChiefChange,
   TeamStateChange,
   ChampionshipStandings,
+  ChassisStageCompletion,
 } from '../../shared/domain/engines';
 
 import type {
@@ -85,6 +86,10 @@ import {
   seasonToYear,
   isFriday,
 } from '../../shared/utils/date-utils';
+import {
+  calculateDailyWorkUnits,
+  processChassisDay,
+} from '../../shared/domain/design-utils';
 
 export class StubRaceEngine implements IRaceEngine {
   simulateQualifying(_input: QualifyingInput): QualifyingResult {
@@ -97,8 +102,49 @@ export class StubRaceEngine implements IRaceEngine {
 }
 
 export class StubDesignEngine implements IDesignEngine {
-  processDesign(_input: DesignInput): DesignResult {
-    return {};
+  processDay(input: DesignProcessingInput): DesignProcessingResult {
+    const { designState, staffCounts, chiefDesigner, facilities } = input;
+
+    // Start with unchanged state
+    let updatedDesignState = { ...designState };
+    const chassisStageCompletions: ChassisStageCompletion[] = [];
+
+    // Process next year chassis if exists and has designers assigned
+    if (designState.nextYearChassis && designState.nextYearChassis.designersAssigned > 0) {
+      const workUnits = calculateDailyWorkUnits({
+        staffCounts: staffCounts.design,
+        facilities,
+        chiefDesigner,
+        percentAllocated: designState.nextYearChassis.designersAssigned,
+      });
+
+      const chassisResult = processChassisDay(
+        designState.nextYearChassis,
+        workUnits,
+        facilities,
+        chiefDesigner
+      );
+
+      updatedDesignState = {
+        ...updatedDesignState,
+        nextYearChassis: chassisResult.updatedChassis,
+      };
+
+      // Record stage completion if one occurred
+      if (chassisResult.completedStage) {
+        chassisStageCompletions.push({
+          stage: chassisResult.completedStage,
+          newEfficiencyRating: chassisResult.updatedChassis.efficiencyRating,
+        });
+      }
+    }
+
+    return {
+      updatedDesignState,
+      breakthroughs: [], // Technology breakthroughs - future PR
+      completions: [], // Technology completions - future PR
+      chassisStageCompletions,
+    };
   }
 }
 
