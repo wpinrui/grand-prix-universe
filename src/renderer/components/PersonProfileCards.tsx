@@ -138,13 +138,18 @@ export function PersonHeader({
   return (
     <div className="flex gap-6">
       {/* Photo */}
-      <div className="w-32 h-40 rounded-lg overflow-hidden shrink-0 surface-inset flex items-center justify-center relative">
+      <div className="w-32 h-40 rounded-lg overflow-hidden shrink-0 surface-inset relative">
         {photoUrl ? (
           <img src={photoUrl} alt={name} className="w-full h-full object-cover" />
         ) : showFacejs ? (
-          <div ref={faceContainerRef} className="w-full h-full flex items-center justify-center" />
+          <div
+            ref={faceContainerRef}
+            className="absolute inset-0 flex items-center justify-center"
+          />
         ) : (
-          <span className="text-muted text-sm">No Photo</span>
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-muted text-sm">No Photo</span>
+          </div>
         )}
         {raceNumber !== undefined && (
           <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/70 text-white font-bold text-sm">
