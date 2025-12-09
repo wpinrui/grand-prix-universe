@@ -194,10 +194,11 @@ function TeamSelector({
   onClearAll,
 }: TeamSelectorProps) {
   return (
-    <div className="card p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-secondary uppercase tracking-wider">Teams</h3>
-        <div className="flex gap-2">
+    <div className="card p-4">
+      <div className="flex flex-wrap items-center gap-3">
+        {/* Header inline with team chips */}
+        <div className="flex items-center gap-2 mr-2">
+          <h3 className="text-sm font-semibold text-secondary uppercase tracking-wider">Teams</h3>
           <button
             type="button"
             onClick={onSelectAll}
@@ -214,15 +215,14 @@ function TeamSelector({
             None
           </button>
         </div>
-      </div>
-      <div className="grid grid-cols-2 gap-2">
+        {/* Team chips in a horizontal row */}
         {teams.map((team) => {
           const isSelected = selectedTeamIds.has(team.id);
           return (
             <label
               key={team.id}
               className={`
-                flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors
+                flex items-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer transition-colors
                 ${isSelected ? 'bg-[var(--neutral-700)]' : 'hover:bg-[var(--neutral-800)]'}
               `}
             >
@@ -239,7 +239,7 @@ function TeamSelector({
                   borderColor: team.primaryColor,
                 }}
               />
-              <span className="text-sm text-primary truncate">{team.shortName}</span>
+              <span className="text-sm text-primary">{team.shortName}</span>
             </label>
           );
         })}
@@ -621,39 +621,32 @@ export function WorldStats() {
         </div>
       </div>
 
-      {/* Main content grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Team selector - sidebar */}
-        <div className="lg:col-span-1">
-          <TeamSelector
-            teams={teams}
-            selectedTeamIds={selectedTeamIds}
-            onToggleTeam={handleToggleTeam}
-            onSelectAll={handleSelectAll}
-            onClearAll={handleClearAll}
-          />
-        </div>
+      {/* Chart or Table - full width */}
+      {activeView === 'chart' ? (
+        <StatsChart
+          chartData={chartData}
+          selectedTeamIds={selectedTeamIds}
+          teamById={teamById}
+          stat={selectedStat}
+          invertYAxis={statOption?.invertYAxis}
+        />
+      ) : (
+        <StatsTable
+          seasons={filteredSeasons}
+          teams={teams}
+          selectedTeamIds={selectedTeamIds}
+          stat={selectedStat}
+        />
+      )}
 
-        {/* Chart or Table - main area */}
-        <div className="lg:col-span-3">
-          {activeView === 'chart' ? (
-            <StatsChart
-              chartData={chartData}
-              selectedTeamIds={selectedTeamIds}
-              teamById={teamById}
-              stat={selectedStat}
-              invertYAxis={statOption?.invertYAxis}
-            />
-          ) : (
-            <StatsTable
-              seasons={filteredSeasons}
-              teams={teams}
-              selectedTeamIds={selectedTeamIds}
-              stat={selectedStat}
-            />
-          )}
-        </div>
-      </div>
+      {/* Team selector - horizontal row below chart */}
+      <TeamSelector
+        teams={teams}
+        selectedTeamIds={selectedTeamIds}
+        onToggleTeam={handleToggleTeam}
+        onSelectAll={handleSelectAll}
+        onClearAll={handleClearAll}
+      />
 
       {/* Info footer */}
       <div className="text-xs text-muted">
