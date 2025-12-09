@@ -1,0 +1,530 @@
+/**
+ * Driver profile content component.
+ * Displays comprehensive driver information in FM24-inspired layout.
+ * Used by WorldDrivers page.
+ */
+import {
+  PersonHeader,
+  AttributeBar,
+  StatPanel,
+  StatRow,
+  ContractPanel,
+} from './PersonProfileCards';
+import { SectionHeading } from './SectionHeading';
+import { EntityLink } from './EntityLink';
+import { DRIVER_ROLE_LABELS, formatOrdinal } from '../utils/format';
+import type {
+  Driver,
+  DriverStanding,
+  Team,
+  DriverRuntimeState,
+  SeasonData,
+  RaceFinishStatus,
+} from '../../shared/domain';
+
+// ===========================================
+// ATTRIBUTE LABELS
+// ===========================================
+
+const ATTRIBUTE_LABELS: Record<keyof Driver['attributes'], string> = {
+  pace: 'Pace',
+  consistency: 'Consistency',
+  focus: 'Focus',
+  overtaking: 'Overtaking',
+  wetWeather: 'Wet Weather',
+  smoothness: 'Smoothness',
+  defending: 'Defending',
+};
+
+// ===========================================
+// HELPER FUNCTIONS
+// ===========================================
+
+function calculateAge(dateOfBirth: string): number {
+  const today = new Date();
+  const birth = new Date(dateOfBirth);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age;
+}
+
+function formatDateOfBirth(dateOfBirth: string): string {
+  const date = new Date(dateOfBirth);
+  return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+}
+
+// ===========================================
+// DRIVER ATTRIBUTES PANEL
+// ===========================================
+
+interface DriverAttributesPanelProps {
+  attributes: Driver['attributes'];
+}
+
+function DriverAttributesPanel({ attributes }: DriverAttributesPanelProps) {
+  const attributeEntries = Object.entries(attributes) as [keyof Driver['attributes'], number][];
+
+  // Calculate overall rating (average)
+  const overall = Math.round(
+    attributeEntries.reduce((sum, [, val]) => sum + val, 0) / attributeEntries.length
+  );
+
+  return (
+    <StatPanel title="Attributes">
+      <div className="space-y-3">
+        {attributeEntries.map(([key, value]) => (
+          <AttributeBar key={key} label={ATTRIBUTE_LABELS[key]} value={value} />
+        ))}
+        <div className="border-t border-[var(--neutral-700)] pt-3 mt-3">
+          <AttributeBar label="Overall" value={overall} />
+        </div>
+      </div>
+    </StatPanel>
+  );
+}
+
+// ===========================================
+// SEASON STATS PANEL
+// ===========================================
+
+interface SeasonStatsPanelProps {
+  standing: DriverStanding | undefined;
+}
+
+function SeasonStatsPanel({ standing }: SeasonStatsPanelProps) {
+  if (!standing) {
+    return (
+      <StatPanel title="Season Stats">
+        <p className="text-muted text-sm">No championship data available</p>
+      </StatPanel>
+    );
+  }
+
+  return (
+    <StatPanel title="Season Stats">
+      <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+        <StatRow label="Position" value={formatOrdinal(standing.position)} />
+        <StatRow label="Points" value={standing.points} />
+        <StatRow label="Wins" value={standing.wins} />
+        <StatRow label="Podiums" value={standing.podiums} />
+        <StatRow label="Poles" value={standing.polePositions} />
+        <StatRow label="Fastest Laps" value={standing.fastestLaps} />
+        <StatRow label="DNFs" value={standing.dnfs} />
+      </div>
+    </StatPanel>
+  );
+}
+
+// ===========================================
+// DRIVER STATE PANEL
+// ===========================================
+
+interface DriverStatePanelProps {
+  driverState: DriverRuntimeState | undefined;
+}
+
+function DriverStatePanel({ driverState }: DriverStatePanelProps) {
+  if (!driverState) {
+    return (
+      <StatPanel title="Driver Status">
+        <p className="text-muted text-sm">No status data available</p>
+      </StatPanel>
+    );
+  }
+
+  const getMoraleColor = (value: number): string => {
+    if (value >= 80) return 'text-emerald-400';
+    if (value >= 60) return 'text-lime-400';
+    if (value >= 40) return 'text-amber-400';
+    if (value >= 20) return 'text-orange-400';
+    return 'text-red-400';
+  };
+
+  const getFitnessColor = (value: number): string => {
+    if (value >= 80) return 'text-emerald-400';
+    if (value >= 60) return 'text-lime-400';
+    if (value >= 40) return 'text-amber-400';
+    return 'text-red-400';
+  };
+
+  const getFatigueColor = (value: number): string => {
+    if (value <= 20) return 'text-emerald-400';
+    if (value <= 40) return 'text-lime-400';
+    if (value <= 60) return 'text-amber-400';
+    return 'text-red-400';
+  };
+
+  return (
+    <StatPanel title="Driver Status">
+      <div className="space-y-2">
+        <StatRow
+          label="Morale"
+          value={<span className={getMoraleColor(driverState.morale)}>{driverState.morale}%</span>}
+        />
+        <StatRow
+          label="Fitness"
+          value={
+            <span className={getFitnessColor(driverState.fitness)}>{driverState.fitness}%</span>
+          }
+        />
+        <StatRow
+          label="Fatigue"
+          value={
+            <span className={getFatigueColor(driverState.fatigue)}>{driverState.fatigue}%</span>
+          }
+        />
+
+        {/* Injury Status */}
+        {driverState.injuryWeeksRemaining > 0 ? (
+          <StatRow
+            label="Injury"
+            value={
+              <span className="text-red-400">
+                {driverState.injuryWeeksRemaining} {driverState.injuryWeeksRemaining === 1 ? 'week' : 'weeks'} out
+              </span>
+            }
+          />
+        ) : (
+          <StatRow label="Injury" value={<span className="text-emerald-400">Healthy</span>} />
+        )}
+
+        {/* Ban Status */}
+        {driverState.banRacesRemaining > 0 ? (
+          <StatRow
+            label="Ban"
+            value={
+              <span className="text-red-400">
+                {driverState.banRacesRemaining} {driverState.banRacesRemaining === 1 ? 'race' : 'races'} remaining
+              </span>
+            }
+          />
+        ) : (
+          <StatRow label="Ban" value={<span className="text-emerald-400">None</span>} />
+        )}
+
+        {/* Angry Status */}
+        {driverState.isAngry && (
+          <StatRow label="Mood" value={<span className="text-red-400">Angry (refuses testing)</span>} />
+        )}
+
+        {/* Technical Penalties */}
+        <div className="border-t border-[var(--neutral-700)] pt-2 mt-2">
+          <StatRow label="Engine Units Used" value={driverState.engineUnitsUsed} />
+          <StatRow label="Gearbox Race Count" value={driverState.gearboxRaceCount} />
+        </div>
+      </div>
+    </StatPanel>
+  );
+}
+
+// ===========================================
+// FORM PANEL (RECENT RESULTS)
+// ===========================================
+
+interface RecentRaceResult {
+  raceNumber: number;
+  circuitId: string;
+  position: number | null;
+  status: RaceFinishStatus;
+  points: number;
+}
+
+interface FormPanelProps {
+  recentResults: RecentRaceResult[];
+}
+
+function FormPanel({ recentResults }: FormPanelProps) {
+  if (recentResults.length === 0) {
+    return (
+      <StatPanel title="Recent Form">
+        <p className="text-muted text-sm">No race results yet this season</p>
+      </StatPanel>
+    );
+  }
+
+  const getPositionColor = (pos: number | null, status: RaceFinishStatus): string => {
+    if (status !== 'finished' && status !== 'lapped') return 'text-red-400';
+    if (pos === null) return 'text-muted';
+    if (pos === 1) return 'text-amber-400';
+    if (pos <= 3) return 'text-emerald-400';
+    if (pos <= 10) return 'text-lime-400';
+    return 'text-secondary';
+  };
+
+  const formatPosition = (pos: number | null, status: RaceFinishStatus): string => {
+    if (status === 'retired') return 'DNF';
+    if (status === 'disqualified') return 'DSQ';
+    if (status === 'dns') return 'DNS';
+    if (status === 'dnq') return 'DNQ';
+    if (pos === null) return '-';
+    return `P${pos}`;
+  };
+
+  // Show last 5 results
+  const displayResults = recentResults.slice(-5).reverse();
+
+  return (
+    <StatPanel title="Recent Form">
+      <div className="flex gap-2">
+        {displayResults.map((result, idx) => (
+          <div
+            key={idx}
+            className="flex-1 text-center py-2 px-1 rounded bg-[var(--neutral-800)]"
+            title={`Race ${result.raceNumber}: ${result.points} pts`}
+          >
+            <div className={`font-bold ${getPositionColor(result.position, result.status)}`}>
+              {formatPosition(result.position, result.status)}
+            </div>
+            <div className="text-xs text-muted mt-1">{result.points} pts</div>
+          </div>
+        ))}
+      </div>
+      {recentResults.length > 5 && (
+        <p className="text-xs text-muted mt-2 text-center">
+          Showing last 5 of {recentResults.length} races
+        </p>
+      )}
+    </StatPanel>
+  );
+}
+
+// ===========================================
+// CAREER HISTORY PANEL
+// ===========================================
+
+interface SeasonSummary {
+  seasonNumber: number;
+  teamName: string;
+  position: number;
+  points: number;
+  wins: number;
+}
+
+interface CareerHistoryPanelProps {
+  seasonHistory: SeasonSummary[];
+}
+
+function CareerHistoryPanel({ seasonHistory }: CareerHistoryPanelProps) {
+  if (seasonHistory.length === 0) {
+    return (
+      <StatPanel title="Career History">
+        <p className="text-muted text-sm">No career history available</p>
+      </StatPanel>
+    );
+  }
+
+  // Calculate career totals
+  const careerWins = seasonHistory.reduce((sum, s) => sum + s.wins, 0);
+  const careerPoints = seasonHistory.reduce((sum, s) => sum + s.points, 0);
+  const bestPosition = Math.min(...seasonHistory.map((s) => s.position));
+
+  return (
+    <StatPanel title="Career History">
+      {/* Career Totals */}
+      <div className="grid grid-cols-3 gap-4 mb-4 pb-4 border-b border-[var(--neutral-700)]">
+        <div className="text-center">
+          <div className="text-lg font-bold text-primary">{careerWins}</div>
+          <div className="text-xs text-muted">Career Wins</div>
+        </div>
+        <div className="text-center">
+          <div className="text-lg font-bold text-primary">{careerPoints}</div>
+          <div className="text-xs text-muted">Career Points</div>
+        </div>
+        <div className="text-center">
+          <div className="text-lg font-bold text-primary">{formatOrdinal(bestPosition)}</div>
+          <div className="text-xs text-muted">Best Finish</div>
+        </div>
+      </div>
+
+      {/* Season by Season */}
+      <div className="space-y-2 max-h-48 overflow-y-auto">
+        {seasonHistory.map((season) => (
+          <div
+            key={season.seasonNumber}
+            className="flex items-center justify-between py-1 text-sm"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-muted w-16">Season {season.seasonNumber}</span>
+              <span className="text-secondary">{season.teamName}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-primary font-medium">{formatOrdinal(season.position)}</span>
+              <span className="text-muted">{season.points} pts</span>
+              {season.wins > 0 && <span className="text-amber-400">{season.wins}W</span>}
+            </div>
+          </div>
+        ))}
+      </div>
+    </StatPanel>
+  );
+}
+
+// ===========================================
+// MAIN DRIVER PROFILE CONTENT
+// ===========================================
+
+interface DriverProfileContentProps {
+  driver: Driver;
+  team: Team | null;
+  standing: DriverStanding | undefined;
+  driverState: DriverRuntimeState | undefined;
+  currentSeason: number;
+  /** Recent race results for form display */
+  recentResults: RecentRaceResult[];
+  /** Past season summaries for career history */
+  careerHistory: SeasonSummary[];
+  /** Whether this is a driver on the player's team */
+  isPlayerTeamDriver?: boolean;
+  /** Called when "Enter Contract Talks" is clicked */
+  onEnterContractTalks?: () => void;
+  /** All drivers for dropdown selector */
+  allDrivers?: Driver[];
+  /** Called when driver selection changes */
+  onDriverSelect?: (driverId: string) => void;
+}
+
+export function DriverProfileContent({
+  driver,
+  team,
+  standing,
+  driverState,
+  currentSeason,
+  recentResults,
+  careerHistory,
+  isPlayerTeamDriver = false,
+  onEnterContractTalks,
+  allDrivers,
+  onDriverSelect,
+}: DriverProfileContentProps) {
+  const age = calculateAge(driver.dateOfBirth);
+  const fullName = `${driver.firstName} ${driver.lastName}`;
+
+  // Build dropdown options if provided
+  const dropdownOptions = allDrivers?.map((d) => ({
+    id: d.id,
+    label: `${d.firstName} ${d.lastName}`,
+  }));
+
+  return (
+    <div className="space-y-6">
+      {/* Header Section */}
+      <PersonHeader
+        name={fullName}
+        nationality={driver.nationality}
+        photoUrl={driver.photoUrl}
+        teamName={team?.name ?? null}
+        roleText={team ? DRIVER_ROLE_LABELS[driver.role] : 'Free Agent'}
+        subtitle={`${age} years old · Born ${formatDateOfBirth(driver.dateOfBirth)}`}
+        raceNumber={driver.raceNumber}
+        allOptions={dropdownOptions}
+        selectedId={driver.id}
+        onSelect={onDriverSelect}
+      />
+
+      {/* Team Link (if has team) */}
+      {team && (
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-muted">Current Team:</span>
+          <EntityLink type="team" id={team.id} className="text-[var(--accent-400)] hover:underline">
+            {team.name}
+          </EntityLink>
+        </div>
+      )}
+
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - Attributes */}
+        <div className="lg:col-span-2 space-y-6">
+          <DriverAttributesPanel attributes={driver.attributes} />
+        </div>
+
+        {/* Right Column - Stats & Contract */}
+        <div className="space-y-6">
+          <ContractPanel
+            salary={driver.salary}
+            contractEndSeason={driver.contractEnd}
+            currentSeason={currentSeason}
+            canEnterTalks={isPlayerTeamDriver}
+            onEnterTalks={onEnterContractTalks}
+          />
+
+          <SeasonStatsPanel standing={standing} />
+        </div>
+      </div>
+
+      {/* Status & History Section */}
+      <SectionHeading>Status & History</SectionHeading>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <DriverStatePanel driverState={driverState} />
+        <FormPanel recentResults={recentResults} />
+        <CareerHistoryPanel seasonHistory={careerHistory} />
+      </div>
+    </div>
+  );
+}
+
+// ===========================================
+// HELPER: EXTRACT DRIVER DATA FROM GAME STATE
+// ===========================================
+
+/**
+ * Extract recent race results for a driver from season data
+ */
+export function extractRecentResults(
+  driverId: string,
+  seasonData: SeasonData
+): RecentRaceResult[] {
+  const results: RecentRaceResult[] = [];
+
+  for (const entry of seasonData.calendar) {
+    if (entry.completed && entry.result) {
+      const driverResult = entry.result.race.find((r) => r.driverId === driverId);
+      if (driverResult) {
+        results.push({
+          raceNumber: entry.raceNumber,
+          circuitId: entry.circuitId,
+          position: driverResult.finishPosition,
+          status: driverResult.status,
+          points: driverResult.points,
+        });
+      }
+    }
+  }
+
+  return results;
+}
+
+/**
+ * Extract career history for a driver from past seasons
+ */
+export function extractCareerHistory(
+  driverId: string,
+  pastSeasons: SeasonData[],
+  teams: Team[]
+): SeasonSummary[] {
+  const history: SeasonSummary[] = [];
+
+  // Build team lookup
+  const teamMap = new Map(teams.map((t) => [t.id, t.name]));
+
+  for (const season of pastSeasons) {
+    const standing = season.driverStandings.find((s) => s.driverId === driverId);
+    if (standing) {
+      history.push({
+        seasonNumber: season.seasonNumber,
+        teamName: teamMap.get(standing.teamId) ?? 'Unknown',
+        position: standing.position,
+        points: standing.points,
+        wins: standing.wins,
+      });
+    }
+  }
+
+  // Sort by season number (oldest first)
+  history.sort((a, b) => a.seasonNumber - b.seasonNumber);
+
+  return history;
+}
