@@ -368,7 +368,7 @@ function CustomTooltip({ active, payload, label, teamById, stat }: CustomTooltip
 // STATS CHART COMPONENT
 // ===========================================
 
-const CHART_HEIGHT = 400;
+const CHART_HEIGHT = 600;
 const CHART_MARGINS = { top: 20, right: 30, left: 20, bottom: 20 };
 
 interface StatsChartProps {
@@ -573,7 +573,7 @@ export function WorldStats() {
   };
 
   return (
-    <div className="max-w-6xl space-y-6">
+    <div className="space-y-6">
       {/* Controls row */}
       <div className="flex flex-wrap items-end gap-4">
         <div>
@@ -584,7 +584,7 @@ export function WorldStats() {
             options={STAT_OPTIONS}
             value={selectedStat}
             onChange={setSelectedStat}
-            className="w-48"
+            className="w-56"
           />
         </div>
         <div>
@@ -595,7 +595,7 @@ export function WorldStats() {
             options={TIME_SCALE_OPTIONS}
             value={timeScale}
             onChange={setTimeScale}
-            className="w-32"
+            className="w-36"
           />
         </div>
         <div>
@@ -606,7 +606,7 @@ export function WorldStats() {
             options={seasonOptions}
             value={fromSeason !== null ? String(fromSeason) : ''}
             onChange={handleFromSeasonChange}
-            className="w-32"
+            className="w-36"
           />
         </div>
         <div>
@@ -617,7 +617,7 @@ export function WorldStats() {
             options={seasonOptions}
             value={toSeason !== null ? String(toSeason) : ''}
             onChange={handleToSeasonChange}
-            className="w-32"
+            className="w-36"
           />
         </div>
         <div className="ml-auto">
