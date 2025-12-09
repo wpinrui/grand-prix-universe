@@ -123,12 +123,6 @@ export function PersonHeader({
       // Clear previous content
       faceContainerRef.current.innerHTML = '';
       generateFace(faceContainerRef.current, personId, nationality, teamColors, 128);
-      // Center the generated SVG
-      const svg = faceContainerRef.current.querySelector('svg');
-      if (svg) {
-        svg.style.display = 'block';
-        svg.style.margin = 'auto';
-      }
     }
   }, [photoUrl, personId, nationality, teamColors]);
 
@@ -148,10 +142,7 @@ export function PersonHeader({
         {photoUrl ? (
           <img src={photoUrl} alt={name} className="w-full h-full object-cover" />
         ) : showFacejs ? (
-          <div
-            ref={faceContainerRef}
-            className="absolute inset-0 grid place-items-center"
-          />
+          <div ref={faceContainerRef} className="w-full h-full" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <span className="text-muted text-sm">No Photo</span>
