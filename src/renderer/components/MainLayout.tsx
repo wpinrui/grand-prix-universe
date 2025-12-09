@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   sections,
@@ -17,6 +17,8 @@ import { CalendarPreviewPanel } from './CalendarPreviewPanel';
 import { ConfirmDialog } from './ConfirmDialog';
 import { AutoSaveToast } from './AutoSaveToast';
 import { BackgroundLayer } from './BackgroundLayer';
+import { GlobalSearch, parsePageId } from './GlobalSearch';
+import type { SearchResultType } from '../hooks/useGlobalSearch';
 import {
   TeamProfile,
   News,
@@ -45,6 +47,14 @@ import { GamePhase } from '../../shared/domain';
 import { RoutePaths } from '../routes';
 
 type ActiveDialog = ActionType | null;
+
+// Navigation history entry
+interface HistoryEntry {
+  sectionId: SectionId;
+  subItemId: string;
+  entityId?: string;
+  entityType?: EntityType | 'race';
+}
 
 // Route map for simple components (no props needed)
 const ROUTE_COMPONENTS: Partial<Record<SectionId, Record<string, React.ComponentType>>> = {
@@ -82,6 +92,15 @@ export function MainLayout() {
   const [targetDriverId, setTargetDriverId] = useState<string | null>(null);
   const [targetStaffId, setTargetStaffId] = useState<string | null>(null);
 
+  // Search modal state
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  // Navigation history for back/forward (combined to avoid stale closure issues)
+  const [navHistory, setNavHistory] = useState<{ entries: HistoryEntry[]; index: number }>({
+    entries: [{ sectionId: defaultSection, subItemId: defaultSubItem }],
+    index: 0,
+  });
+
   const navigate = useNavigate();
   const clearGameState = useClearGameState();
   const quitApp = useQuitApp();
@@ -96,6 +115,82 @@ export function MainLayout() {
   // Apply team-based theming (CSS variables on :root)
   useTeamTheme(playerTeam?.primaryColor ?? null);
 
+  // Keyboard shortcut for search (Ctrl+K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Clear all entity target states
+  const clearAllTargets = useCallback(() => {
+    setTargetRaceNumber(null);
+    setTargetTeamId(null);
+    setTargetDriverId(null);
+    setTargetStaffId(null);
+  }, []);
+
+  // Apply a history entry to navigation state
+  const applyHistoryEntry = useCallback((entry: HistoryEntry) => {
+    setSelectedSectionId(entry.sectionId);
+    setSelectedSubItemId(entry.subItemId);
+
+    // Restore entity-specific navigation based on entry type
+    setTargetRaceNumber(entry.entityType === 'race' && entry.entityId ? parseInt(entry.entityId, 10) : null);
+    setTargetTeamId(entry.entityType === 'team' ? entry.entityId ?? null : null);
+    setTargetDriverId(entry.entityType === 'driver' ? entry.entityId ?? null : null);
+    setTargetStaffId(entry.entityType === 'chief' || entry.entityType === 'principal' ? entry.entityId ?? null : null);
+  }, []);
+
+  // Push a new entry to navigation history
+  const pushHistory = useCallback((entry: HistoryEntry) => {
+    setNavHistory((prev) => ({
+      entries: [...prev.entries.slice(0, prev.index + 1), entry],
+      index: prev.index + 1,
+    }));
+  }, []);
+
+  // Clear navigation history when simulation starts (advance time)
+  const isSimulating = gameState?.simulation?.isSimulating ?? false;
+  useEffect(() => {
+    if (isSimulating) {
+      // Reset to single entry with current page
+      setNavHistory((prev) => ({
+        entries: [prev.entries[prev.index] ?? { sectionId: defaultSection, subItemId: defaultSubItem }],
+        index: 0,
+      }));
+    }
+  }, [isSimulating]);
+
+  // Navigate back in history
+  const handleBack = useCallback(() => {
+    setNavHistory((prev) => {
+      if (prev.index <= 0) return prev;
+      const newIndex = prev.index - 1;
+      applyHistoryEntry(prev.entries[newIndex]);
+      return { ...prev, index: newIndex };
+    });
+  }, [applyHistoryEntry]);
+
+  // Navigate forward in history
+  const handleForward = useCallback(() => {
+    setNavHistory((prev) => {
+      if (prev.index >= prev.entries.length - 1) return prev;
+      const newIndex = prev.index + 1;
+      applyHistoryEntry(prev.entries[newIndex]);
+      return { ...prev, index: newIndex };
+    });
+  }, [applyHistoryEntry]);
+
+  const canGoBack = navHistory.index > 0;
+  const canGoForward = navHistory.index < navHistory.entries.length - 1;
+
   // Safe: selectedSectionId always matches a valid section (defaults to 'team')
   const selectedSection = sections.find((s) => s.id === selectedSectionId) ?? sections[0];
   const selectedSubItem =
@@ -104,10 +199,8 @@ export function MainLayout() {
   const handleSectionClick = (section: Section) => {
     setSelectedSectionId(section.id);
     setSelectedSubItemId(section.subItems[0].id);
-    setTargetRaceNumber(null);
-    setTargetTeamId(null);
-    setTargetDriverId(null);
-    setTargetStaffId(null);
+    clearAllTargets();
+    pushHistory({ sectionId: section.id, subItemId: section.subItems[0].id });
   };
 
   const handleSubItemClick = (subItemId: string) => {
@@ -124,18 +217,21 @@ export function MainLayout() {
       setTargetStaffId(null);
     }
     setSelectedSubItemId(subItemId);
+    pushHistory({ sectionId: selectedSectionId, subItemId });
   };
 
   // Navigation helper for content components
   const navigateToProfile = () => {
     setSelectedSectionId('team');
     setSelectedSubItemId('profile');
+    pushHistory({ sectionId: 'team', subItemId: 'profile' });
   };
 
   const navigateToRaceReport = (raceNumber: number) => {
     setTargetRaceNumber(raceNumber);
     setSelectedSectionId('fia');
     setSelectedSubItemId('results');
+    pushHistory({ sectionId: 'fia', subItemId: 'results', entityType: 'race', entityId: String(raceNumber) });
   };
 
   // Dialog handlers
@@ -157,6 +253,10 @@ export function MainLayout() {
     setIsCalendarPreviewOpen(false);
   }, []);
 
+  // Search handlers
+  const openSearch = useCallback(() => setIsSearchOpen(true), []);
+  const closeSearch = useCallback(() => setIsSearchOpen(false), []);
+
   // Entity navigation for Football Manager-style linking
   const navigateToEntity = useCallback((type: EntityType, id: string) => {
     const route = getEntityRoute(type, id);
@@ -173,7 +273,23 @@ export function MainLayout() {
     } else if (type === 'chief' || type === 'principal') {
       setTargetStaffId(id);
     }
-  }, []);
+    pushHistory({ sectionId: route.section, subItemId: route.subItem, entityType: type, entityId: id });
+  }, [pushHistory]);
+
+  const handleSearchSelect = useCallback((type: SearchResultType, id: string) => {
+    if (type === 'page') {
+      const parsed = parsePageId(id);
+      if (parsed) {
+        setSelectedSectionId(parsed.section);
+        setSelectedSubItemId(parsed.subItem);
+        clearAllTargets();
+        pushHistory({ sectionId: parsed.section, subItemId: parsed.subItem });
+      }
+    } else {
+      // Entity types - delegate to navigateToEntity
+      navigateToEntity(type as EntityType, id);
+    }
+  }, [pushHistory, clearAllTargets, navigateToEntity]);
 
   const entityNavigationValue = useMemo(
     () => ({ navigateToEntity }),
@@ -284,11 +400,14 @@ export function MainLayout() {
         {/* Main Area */}
         <div className="relative flex flex-col flex-1 min-w-0">
           <TopBar
-            sectionLabel={selectedSection.label}
-            subItemLabel={selectedSubItem.label}
             currentDate={gameState?.currentDate ?? null}
             playerTeam={playerTeam}
             onCalendarClick={toggleCalendarPreview}
+            onSearchClick={openSearch}
+            canGoBack={canGoBack}
+            canGoForward={canGoForward}
+            onBack={handleBack}
+            onForward={handleForward}
           />
 
           {/* Calendar Preview Panel */}
@@ -355,6 +474,13 @@ export function MainLayout() {
             playerTeam={playerTeam}
           />
         )}
+
+        {/* Global Search Modal */}
+        <GlobalSearch
+          isOpen={isSearchOpen}
+          onClose={closeSearch}
+          onSelect={handleSearchSelect}
+        />
       </div>
     </EntityNavigationContext.Provider>
   );
