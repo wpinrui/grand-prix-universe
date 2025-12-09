@@ -119,11 +119,9 @@ interface AllocationBreakdown {
 function calculateAllocationBreakdown(designState: DesignState): AllocationBreakdown {
   const nextYear = designState.nextYearChassis?.designersAssigned ?? 0;
   const currentYear = designState.currentYearChassis.designersAssigned;
-  // Sum allocation across all active technology projects
-  const technology = designState.activeTechnologyProjects.reduce(
-    (sum, project) => sum + project.designersAssigned,
-    0
-  );
+  // Sum allocation across all active technology projects (fallback for old saves)
+  const projects = designState.activeTechnologyProjects ?? [];
+  const technology = projects.reduce((sum, project) => sum + project.designersAssigned, 0);
   const available = 100 - nextYear - currentYear - technology;
   return { nextYear, currentYear, technology, available };
 }
@@ -139,7 +137,8 @@ interface LevelBarProps {
 
 /**
  * Visual bar showing a 0-100 value as 5 discrete boxes
- * 0-20 = 1 box, 20-40 = 2 boxes, etc.
+ * 1-20 = 1 box, 21-40 = 2 boxes, 41-60 = 3 boxes, 61-80 = 4 boxes, 81-100 = 5 boxes
+ * Value 0 shows no boxes filled.
  */
 function LevelBar({ value, compact = false }: LevelBarProps) {
   // Convert 0-100 value to 0-5 filled boxes
