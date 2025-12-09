@@ -271,6 +271,18 @@ export function StatRow({ label, value, muted = false }: StatRowProps) {
 
 export type ContractRelationship = 'own-team' | 'other-team' | 'free-agent';
 
+/**
+ * Determines the contract relationship between a person and the player's team.
+ */
+export function getContractRelationship(
+  personTeamId: string | null,
+  playerTeamId: string
+): ContractRelationship {
+  if (personTeamId === null) return 'free-agent';
+  if (personTeamId === playerTeamId) return 'own-team';
+  return 'other-team';
+}
+
 interface ContractPanelProps {
   salary: number;
   contractEndSeason: number;

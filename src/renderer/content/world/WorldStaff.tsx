@@ -10,8 +10,8 @@ import {
   StatRow,
   ContractPanel,
   TabBar,
+  getContractRelationship,
 } from '../../components';
-import type { ContractRelationship } from '../../components';
 import type { Chief, ChiefRole } from '../../../shared/domain';
 import { FREE_AGENT_COLORS } from '../../utils/face-generator';
 
@@ -143,14 +143,6 @@ export function WorldStaff({ initialStaffId }: WorldStaffProps) {
     ? { primary: staffTeam.primaryColor, secondary: staffTeam.secondaryColor }
     : FREE_AGENT_COLORS;
 
-  // Determine contract relationship
-  const getContractRelationship = (): ContractRelationship => {
-    if (!selectedStaff) return 'free-agent';
-    if (selectedStaff.teamId === null) return 'free-agent';
-    if (selectedStaff.teamId === playerTeam.id) return 'own-team';
-    return 'other-team';
-  };
-
   // Handle contract talks (placeholder)
   const handleEnterContractTalks = () => {
     console.log('Enter contract talks with:', selectedStaff?.id);
@@ -208,7 +200,7 @@ export function WorldStaff({ initialStaffId }: WorldStaffProps) {
               salary={selectedStaff.salary}
               contractEndSeason={selectedStaff.contractEnd}
               currentSeason={gameState.currentSeason.seasonNumber}
-              relationship={getContractRelationship()}
+              relationship={getContractRelationship(selectedStaff.teamId, playerTeam.id)}
               onEnterTalks={handleEnterContractTalks}
             />
           </div>
