@@ -38,6 +38,8 @@ import {
   Results,
   RaceWeekend,
   WorldTeams,
+  WorldDrivers,
+  WorldStaff,
 } from '../content';
 import { GamePhase } from '../../shared/domain';
 import { RoutePaths } from '../routes';
@@ -77,6 +79,8 @@ export function MainLayout() {
   const [isCalendarPreviewOpen, setIsCalendarPreviewOpen] = useState(false);
   const [targetRaceNumber, setTargetRaceNumber] = useState<number | null>(null);
   const [targetTeamId, setTargetTeamId] = useState<string | null>(null);
+  const [targetDriverId, setTargetDriverId] = useState<string | null>(null);
+  const [targetStaffId, setTargetStaffId] = useState<string | null>(null);
 
   const navigate = useNavigate();
   const clearGameState = useClearGameState();
@@ -102,6 +106,8 @@ export function MainLayout() {
     setSelectedSubItemId(section.subItems[0].id);
     setTargetRaceNumber(null);
     setTargetTeamId(null);
+    setTargetDriverId(null);
+    setTargetStaffId(null);
   };
 
   const handleSubItemClick = (subItemId: string) => {
@@ -110,6 +116,12 @@ export function MainLayout() {
     }
     if (subItemId !== 'teams') {
       setTargetTeamId(null);
+    }
+    if (subItemId !== 'drivers') {
+      setTargetDriverId(null);
+    }
+    if (subItemId !== 'staff') {
+      setTargetStaffId(null);
     }
     setSelectedSubItemId(subItemId);
   };
@@ -156,6 +168,10 @@ export function MainLayout() {
       setTargetRaceNumber(Number.isNaN(raceNum) ? null : raceNum);
     } else if (type === 'team') {
       setTargetTeamId(id);
+    } else if (type === 'driver') {
+      setTargetDriverId(id);
+    } else if (type === 'chief' || type === 'principal') {
+      setTargetStaffId(id);
     }
   }, []);
 
@@ -198,11 +214,13 @@ export function MainLayout() {
   const renderContent = () => {
     // Routes with props - handle explicitly
     if (selectedSectionId === 'world' && selectedSubItemId === 'teams') {
-      return (
-        <WorldTeams
-          initialTeamId={targetTeamId}
-        />
-      );
+      return <WorldTeams initialTeamId={targetTeamId} />;
+    }
+    if (selectedSectionId === 'world' && selectedSubItemId === 'drivers') {
+      return <WorldDrivers initialDriverId={targetDriverId} />;
+    }
+    if (selectedSectionId === 'world' && selectedSubItemId === 'staff') {
+      return <WorldStaff initialStaffId={targetStaffId} />;
     }
     if (selectedSectionId === 'fia' && selectedSubItemId === 'races') {
       return <Races onViewRaceReport={navigateToRaceReport} />;

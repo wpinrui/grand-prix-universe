@@ -1,15 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useDerivedGameState } from '../../hooks';
-import { TeamProfileContent, Dropdown } from '../../components';
-import type { DropdownOption } from '../../components';
+import { TeamProfileContent } from '../../components';
 import type { DriverStanding, ConstructorStanding } from '../../../shared/domain';
 
 /** Used for sorting teams without standings to the end */
 const NO_STANDING_POSITION = 999;
-
-// ===========================================
-// MAIN COMPONENT
-// ===========================================
 
 interface WorldTeamsProps {
   initialTeamId?: string | null;
@@ -17,16 +12,24 @@ interface WorldTeamsProps {
 
 export function WorldTeams({ initialTeamId }: WorldTeamsProps) {
   const { gameState, playerTeam } = useDerivedGameState();
-  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  // Initialize with initialTeamId so first render uses correct team
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(initialTeamId ?? null);
+  const lastAppliedInitialRef = useRef<string | null>(initialTeamId ?? null);
 
-  // Set initial team when available
+  // Update selection when navigating with a NEW initialTeamId
   useEffect(() => {
-    if (initialTeamId) {
+    if (initialTeamId && initialTeamId !== lastAppliedInitialRef.current) {
+      lastAppliedInitialRef.current = initialTeamId;
       setSelectedTeamId(initialTeamId);
-    } else if (selectedTeamId === null && playerTeam) {
+    }
+  }, [initialTeamId]);
+
+  // Default to player team only if nothing is selected
+  useEffect(() => {
+    if (selectedTeamId === null && playerTeam) {
       setSelectedTeamId(playerTeam.id);
     }
-  }, [initialTeamId, playerTeam, selectedTeamId]);
+  }, [selectedTeamId, playerTeam]);
 
   if (!gameState || !playerTeam) {
     return (
@@ -58,38 +61,16 @@ export function WorldTeams({ initialTeamId }: WorldTeamsProps) {
   const teamChiefs = chiefs.filter((c) => c.teamId === selectedTeam.id);
   const constructorStanding = constructorStandingsMap.get(selectedTeam.id);
 
-  // Memoize dropdown options to avoid recreation on every render
-  const teamOptions: DropdownOption<string>[] = useMemo(
-    () =>
-      sortedTeams.map((team) => ({
-        value: team.id,
-        label: `${team.name}${team.id === playerTeam.id ? ' (You)' : ''}`,
-      })),
-    [sortedTeams, playerTeam.id]
-  );
-
   return (
-    <div className="space-y-6 max-w-6xl">
-      {/* Team Selector */}
-      <div className="flex items-center gap-4">
-        <label htmlFor="team-select" className="text-sm font-medium text-secondary">
-          Select Team:
-        </label>
-        <Dropdown
-          id="team-select"
-          options={teamOptions}
-          value={selectedTeam.id}
-          onChange={setSelectedTeamId}
-        />
-      </div>
-
-      {/* Team Profile */}
+    <div className="max-w-6xl">
       <TeamProfileContent
         team={selectedTeam}
         drivers={teamDrivers}
         chiefs={teamChiefs}
         constructorStanding={constructorStanding}
         driverStandingsMap={driverStandingsMap}
+        allTeams={sortedTeams}
+        onTeamSelect={setSelectedTeamId}
       />
     </div>
   );

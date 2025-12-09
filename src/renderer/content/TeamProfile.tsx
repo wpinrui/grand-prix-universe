@@ -1,9 +1,11 @@
 import { useDerivedGameState } from '../hooks';
 import { TeamProfileContent } from '../components';
+import { useEntityNavigation } from '../utils/entity-navigation';
 import type { DriverStanding } from '../../shared/domain';
 
 export function TeamProfile() {
   const { gameState, playerTeam } = useDerivedGameState();
+  const navigateToEntity = useEntityNavigation();
 
   if (!gameState || !playerTeam) {
     return (
@@ -31,6 +33,9 @@ export function TeamProfile() {
         chiefs={teamChiefs}
         constructorStanding={constructorStanding}
         driverStandingsMap={driverStandingsMap}
+        allTeams={gameState.teams}
+        onTeamSelect={(teamId) => navigateToEntity('team', teamId)}
+        principalName={gameState.player.name}
       />
     </div>
   );
