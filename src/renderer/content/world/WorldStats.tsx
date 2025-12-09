@@ -419,7 +419,7 @@ function StatsChart({ chartData, selectedTeamIds, teamById, stat, invertYAxis }:
             return (
               <Line
                 key={teamId}
-                type="monotone"
+                type="linear"
                 dataKey={teamId}
                 stroke={team?.primaryColor ?? '#888'}
                 strokeWidth={2}
