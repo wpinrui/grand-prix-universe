@@ -15,6 +15,7 @@ import {
 } from 'recharts';
 import { useDerivedGameState } from '../../hooks';
 import { Dropdown, TabBar } from '../../components';
+import { seasonToYear } from '../../../shared/utils/date-utils';
 import type { SeasonData, ConstructorStanding, Team } from '../../../shared/domain';
 
 // ===========================================
@@ -83,9 +84,10 @@ function buildSeasonChartData(
   stat: StatCategory
 ): ChartDataPoint[] {
   return seasons.map((season) => {
+    const year = seasonToYear(season.seasonNumber);
     const dataPoint: ChartDataPoint = {
       season: season.seasonNumber,
-      label: `S${season.seasonNumber}`,
+      label: String(year),
     };
     teamIds.forEach((teamId) => {
       const standing = season.constructorStandings.find((s) => s.teamId === teamId);
@@ -138,10 +140,11 @@ function buildRaceChartData(
       });
 
       // Create data point for this race (only for selected teams)
+      const year = seasonToYear(season.seasonNumber);
       const dataPoint: ChartDataPoint = {
         season: season.seasonNumber,
         race: race.raceNumber,
-        label: `S${season.seasonNumber}R${race.raceNumber}`,
+        label: `${year} R${race.raceNumber}`,
       };
 
       selectedTeamIds.forEach((teamId) => {
@@ -339,10 +342,10 @@ interface CustomTooltipProps {
 function CustomTooltip({ active, payload, label, teamById, stat }: CustomTooltipProps) {
   if (!active || !payload || !payload.length) return null;
 
-  // Format the label for display
+  // Format the label for display (label is already year or "year Rn")
   const displayLabel = typeof label === 'string' && label.includes('R')
-    ? label.replace(/S(\d+)R(\d+)/, 'Season $1 Race $2')
-    : `Season ${label}`;
+    ? label.replace(/(\d+) R(\d+)/, '$1 Race $2')
+    : String(label);
 
   return (
     <div className="surface-primary border border-subtle rounded-lg p-3 shadow-lg">
@@ -447,7 +450,7 @@ export function WorldStats() {
   const [selectedStat, setSelectedStat] = useState<StatCategory>('points');
   const [selectedTeamIds, setSelectedTeamIds] = useState<Set<string>>(new Set());
   const [activeView, setActiveView] = useState<'chart' | 'table'>('chart');
-  const [timeScale, setTimeScale] = useState<TimeScale>('season');
+  const [timeScale, setTimeScale] = useState<TimeScale>('race');
   const [fromSeason, setFromSeason] = useState<number | null>(null);
   const [toSeason, setToSeason] = useState<number | null>(null);
   const hasInitializedTeams = useRef(false);
@@ -479,11 +482,11 @@ export function WorldStats() {
     );
   }, [allSeasons, fromSeason, toSeason]);
 
-  // Build season options for dropdowns
+  // Build season options for dropdowns (using years)
   const seasonOptions = useMemo(() => {
     return allSeasons.map((s) => ({
       value: String(s.seasonNumber),
-      label: `Season ${s.seasonNumber}`,
+      label: String(seasonToYear(s.seasonNumber)),
     }));
   }, [allSeasons]);
 
@@ -656,8 +659,9 @@ export function WorldStats() {
       {/* Info footer */}
       <div className="text-xs text-muted">
         Showing {filteredSeasons.length} season{filteredSeasons.length !== 1 ? 's' : ''}{' '}
-        {timeScale === 'race' ? `(${chartData.length} data points)` : ''} — Season{' '}
-        {fromSeason} to Season {toSeason}
+        {timeScale === 'race' ? `(${chartData.length} data points)` : ''} —{' '}
+        {fromSeason !== null ? seasonToYear(fromSeason) : ''} to{' '}
+        {toSeason !== null ? seasonToYear(toSeason) : ''}
       </div>
     </div>
   );
