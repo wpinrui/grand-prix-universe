@@ -8,7 +8,7 @@
       "ability": 82,
       "teamId": "mclaren",
       "salary": 4500000,
-      "contractEnd": 2027
+      "contractEnd": 3
     },
     {
       "id": "toto-wolff",
@@ -18,7 +18,7 @@
       "ability": 92,
       "teamId": "mercedes",
       "salary": 8000000,
-      "contractEnd": 2028
+      "contractEnd": 4
     },
     {
       "id": "christian-horner",
@@ -28,7 +28,7 @@
       "ability": 90,
       "teamId": "red-bull-racing",
       "salary": 7500000,
-      "contractEnd": 2028
+      "contractEnd": 4
     },
     {
       "id": "frederic-vasseur",
@@ -38,7 +38,7 @@
       "ability": 80,
       "teamId": "ferrari",
       "salary": 5000000,
-      "contractEnd": 2026
+      "contractEnd": 2
     },
     {
       "id": "james-vowles",
@@ -48,7 +48,7 @@
       "ability": 75,
       "teamId": "williams",
       "salary": 2500000,
-      "contractEnd": 2027
+      "contractEnd": 3
     },
     {
       "id": "laurent-mekies",
@@ -58,7 +58,7 @@
       "ability": 70,
       "teamId": "racing-bulls",
       "salary": 1800000,
-      "contractEnd": 2026
+      "contractEnd": 2
     },
     {
       "id": "mike-krack",
@@ -68,7 +68,7 @@
       "ability": 72,
       "teamId": "aston-martin",
       "salary": 2200000,
-      "contractEnd": 2026
+      "contractEnd": 2
     },
     {
       "id": "ayao-komatsu",
@@ -78,7 +78,7 @@
       "ability": 68,
       "teamId": "haas",
       "salary": 1500000,
-      "contractEnd": 2026
+      "contractEnd": 2
     },
     {
       "id": "alessandro-alunni-bravi",
@@ -88,7 +88,7 @@
       "ability": 65,
       "teamId": "kick-sauber",
       "salary": 1200000,
-      "contractEnd": 2025
+      "contractEnd": 1
     },
     {
       "id": "oliver-oakes",
@@ -98,7 +98,7 @@
       "ability": 67,
       "teamId": "alpine",
       "salary": 1400000,
-      "contractEnd": 2026
+      "contractEnd": 2
     }
   ]
 }
