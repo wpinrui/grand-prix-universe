@@ -267,7 +267,7 @@ export function getCurrentStage(stages: ChassisStageProgress[]): ChassisStagePro
 
 /**
  * Calculate chassis efficiency rating from stage progress
- * Efficiency = (total stage points / 40) * 100 * chief bonus
+ * Efficiency = (total stage points / 40) * 100 + chief bonus
  * Capped at 100
  *
  * @param stages - Array of stage progress
