@@ -120,22 +120,19 @@ interface TabBarProps<T extends string> {
 /** Horizontal tab bar with underline indicator */
 export function TabBar<T extends string>({ tabs, activeTab, onTabChange }: TabBarProps<T>) {
   return (
-    <div className="flex border-b border-subtle mb-6">
+    <div className="flex gap-1 mb-6">
       {tabs.map((tab) => (
         <button
           key={tab.id}
           type="button"
           onClick={() => onTabChange(tab.id)}
-          className={`px-6 py-3 text-sm font-medium cursor-pointer transition-colors relative ${
+          className={`px-5 py-2.5 text-sm font-medium cursor-pointer transition-colors rounded ${
             activeTab === tab.id
-              ? 'text-accent bg-accent/10'
-              : 'text-secondary hover:text-primary hover:bg-white/5'
+              ? 'bg-accent text-black'
+              : 'text-secondary hover:text-primary hover:bg-white/10'
           }`}
         >
           {tab.label}
-          {activeTab === tab.id && (
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent" />
-          )}
         </button>
       ))}
     </div>
