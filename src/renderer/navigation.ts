@@ -32,6 +32,7 @@ import {
   Globe,
   User,
   LineChart,
+  LayoutDashboard,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -93,6 +94,7 @@ export const sections: Section[] = [
     label: 'COMMERCIAL',
     icon: Handshake,
     subItems: [
+      { id: 'overview', label: 'Overview', icon: LayoutDashboard },
       { id: 'sponsors', label: 'Sponsors', icon: BadgeDollarSign },
       { id: 'deals', label: 'Deals', icon: Handshake },
       { id: 'hospitality', label: 'Hospitality', icon: UtensilsCrossed },

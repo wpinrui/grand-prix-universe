@@ -17,6 +17,7 @@ import { CalendarPreviewPanel } from './CalendarPreviewPanel';
 import { ConfirmDialog } from './ConfirmDialog';
 import { AutoSaveToast } from './AutoSaveToast';
 import { BackgroundLayer } from './BackgroundLayer';
+import { CommercialScene } from './CommercialScene';
 import {
   TeamProfile,
   News,
@@ -302,14 +303,22 @@ export function MainLayout() {
 
           {/* Content Area - with background image, blur, and team tint */}
           <main className="content relative flex-1 overflow-hidden">
-            {playerTeam && (
-              <BackgroundLayer
-                teamId={playerTeam.id}
-                tintColor="var(--accent-900)"
-                position="absolute"
-                tintOpacity={75}
-                baseOpacity={92}
+            {/* Commercial section uses 3D scene as background */}
+            {selectedSectionId === 'commercial' ? (
+              <CommercialScene
+                className="absolute inset-0"
+                blurred={selectedSubItemId !== 'overview'}
               />
+            ) : (
+              playerTeam && (
+                <BackgroundLayer
+                  teamId={playerTeam.id}
+                  tintColor="var(--accent-900)"
+                  position="absolute"
+                  tintOpacity={75}
+                  baseOpacity={92}
+                />
+              )
             )}
 
             {/* Content layer */}
