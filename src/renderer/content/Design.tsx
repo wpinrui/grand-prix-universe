@@ -9,7 +9,6 @@ import {
   type ChassisDesign,
   type TechnologyLevel,
   type CurrentYearChassisState,
-  type HandlingProblemState,
   type DesignState,
 } from '../../shared/domain';
 
@@ -80,27 +79,6 @@ const PROBLEM_LABELS: Record<HandlingProblem, string> = {
   [HandlingProblem.HighPitchSensitivity]: 'High Pitch Sensitivity',
 };
 
-const PROBLEM_DESCRIPTIONS: Record<HandlingProblem, string> = {
-  [HandlingProblem.OversteerFast]: 'Less grip on high-speed circuits',
-  [HandlingProblem.OversteerSlow]: 'Less grip on low-speed circuits',
-  [HandlingProblem.UndersteerFast]: 'Increased tyre wear on high-speed circuits',
-  [HandlingProblem.UndersteerSlow]: 'Increased tyre wear on low-speed circuits',
-  [HandlingProblem.HighDrag]: 'Increased fuel consumption and engine heat',
-  [HandlingProblem.PoorBalance]: 'Increased brake wear, harder to control',
-  [HandlingProblem.LowDownforce]: 'Less grip overall',
-  [HandlingProblem.HighPitchSensitivity]: 'Less grip in wind, suspension wear',
-};
-
-const PROBLEM_ORDER: HandlingProblem[] = [
-  HandlingProblem.OversteerFast,
-  HandlingProblem.OversteerSlow,
-  HandlingProblem.UndersteerFast,
-  HandlingProblem.UndersteerSlow,
-  HandlingProblem.HighDrag,
-  HandlingProblem.PoorBalance,
-  HandlingProblem.LowDownforce,
-  HandlingProblem.HighPitchSensitivity,
-];
 
 // ===========================================
 // HELPER FUNCTIONS
@@ -123,28 +101,6 @@ function getCurrentStageName(chassis: ChassisDesign): string {
   return 'Complete';
 }
 
-function getProblemStatus(
-  state: HandlingProblemState | undefined,
-  activeDesignProblem: HandlingProblem | null,
-  problem: HandlingProblem
-): { label: string; className: string } {
-  if (!state || !state.discovered) {
-    return { label: 'Unknown', className: 'text-muted' };
-  }
-  if (state.solutionInstalled) {
-    return { label: 'Fixed', className: 'text-green-400' };
-  }
-  if (state.solutionDesigned) {
-    return { label: 'Ready to Build', className: 'text-blue-400' };
-  }
-  if (activeDesignProblem === problem) {
-    return { label: 'Designing...', className: 'text-amber-400' };
-  }
-  if (state.solutionProgress > 0) {
-    return { label: `${state.solutionProgress}/${MAX_SOLUTION_PROGRESS}`, className: 'text-amber-400' };
-  }
-  return { label: 'Needs Fix', className: 'text-red-400' };
-}
 
 // ===========================================
 // SHARED COMPONENTS
@@ -364,65 +320,194 @@ interface CurrentYearChassisTabProps {
 
 function CurrentYearChassisTab({ chassisState, currentSeason }: CurrentYearChassisTabProps) {
   const problemMap = new Map(chassisState.problems.map((p) => [p.problem, p]));
-  const discoveredCount = chassisState.problems.filter((p) => p.discovered).length;
-  const fixedCount = chassisState.problems.filter((p) => p.solutionInstalled).length;
+
+  // Find the active problem being worked on, or first discovered unsolved problem
+  const activeProblem = chassisState.activeDesignProblem;
+  const activeProblemState = activeProblem ? problemMap.get(activeProblem) : undefined;
+
+  // Determine problem/solution display text
+  const problemText = activeProblem ? PROBLEM_LABELS[activeProblem] : 'Unknown';
+  const solutionText = activeProblemState?.solutionDesigned
+    ? 'Ready to Build'
+    : activeProblemState?.solutionProgress
+      ? `${activeProblemState.solutionProgress}/${MAX_SOLUTION_PROGRESS}`
+      : '---';
 
   return (
     <div className="space-y-6">
-      {/* Stats Bar */}
-      <div className="card p-4">
-        <div className="flex items-center gap-8">
-          <div>
-            <SectionHeading>{currentSeason} Chassis</SectionHeading>
-            <p className="text-sm text-muted">SA{currentSeason}-A</p>
-          </div>
-          <div className="flex-1 max-w-xs">
-            <div className="flex justify-between text-sm mb-1">
-              <span className="text-muted">Handling Revealed</span>
-              <span className="text-primary font-mono">{chassisState.handlingRevealed}%</span>
+      {/* Top Section: Designer Allocation + Chassis Info */}
+      <div className="grid grid-cols-2 gap-6">
+        {/* Designer Allocation Panel */}
+        <div className="card p-4">
+          <SectionHeading>Designer</SectionHeading>
+          <div className="mt-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-amber-400">Available</span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-mono text-primary">
+                  {100 - chassisState.designersAssigned}%
+                </span>
+                <div className="w-24 h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-amber-500"
+                    style={{ width: `${100 - chassisState.designersAssigned}%` }}
+                  />
+                </div>
+              </div>
             </div>
-            <ProgressBar value={chassisState.handlingRevealed} />
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-secondary">{currentSeason} Chassis</span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-mono text-primary">
+                  {chassisState.designersAssigned}%
+                </span>
+                <div className="w-24 h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-blue-500"
+                    style={{ width: `${chassisState.designersAssigned}%` }}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="text-center px-4">
-            <div className="text-2xl font-bold text-primary">{discoveredCount}/{PROBLEM_ORDER.length}</div>
-            <div className="text-xs text-muted">Problems Found</div>
-          </div>
-          <div className="text-center px-4">
-            <div className="text-2xl font-bold text-green-400">{fixedCount}/{PROBLEM_ORDER.length}</div>
-            <div className="text-xs text-muted">Problems Fixed</div>
+        </div>
+
+        {/* Chassis Info Panel */}
+        <div className="card p-4">
+          <SectionHeading>Chassis {currentSeason}-A</SectionHeading>
+          <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted">Tests</span>
+              <LevelBar value={Math.ceil(chassisState.handlingRevealed / 20)} />
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted">Handling</span>
+              <span className="text-primary font-mono">
+                {chassisState.handlingRevealed > 0 ? `${chassisState.handlingRevealed}%` : '?'}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted">Problem</span>
+              <span className="text-secondary">{problemText}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted">Solution</span>
+              <span className="text-secondary">{solutionText}</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Handling Problems Grid */}
-      <div className="grid grid-cols-4 gap-4">
-        {PROBLEM_ORDER.map((problem) => {
-          const state = problemMap.get(problem);
-          const status = getProblemStatus(state, chassisState.activeDesignProblem, problem);
-          const isDiscovered = state?.discovered ?? false;
+      {/* Improvement Project Section */}
+      <div className="card p-4">
+        <div className="flex items-center justify-between mb-4">
+          <SectionHeading>{currentSeason} Chassis</SectionHeading>
+          <span className="text-sm text-muted">
+            {activeProblem ? `Fixing: ${PROBLEM_LABELS[activeProblem]}` : 'No Project'}
+          </span>
+        </div>
 
-          return (
-            <div
-              key={problem}
-              className={`card p-4 ${isDiscovered ? '' : 'opacity-50'}`}
+        {/* No Problem Discovered - Redirect to Testing */}
+        {!activeProblem && (
+          <div className="text-center py-8">
+            <p className="text-muted mb-4">
+              No handling problems discovered yet. Run development tests to find issues with the chassis.
+            </p>
+            <p className="text-sm text-secondary">
+              Go to <span className="text-amber-400">Testing</span> → Development Testing to discover problems.
+            </p>
+          </div>
+        )}
+
+        {/* Start Work Button - only show when problem exists */}
+        {activeProblem && (
+          <div className="flex items-center gap-4 mb-4">
+            <button
+              type="button"
+              className="btn px-4 py-2 text-sm font-medium rounded-lg border bg-[var(--neutral-800)] border-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-750)] cursor-pointer"
             >
-              <div className="flex items-start justify-between mb-2">
-                <span className="text-sm font-medium text-primary">
-                  {PROBLEM_LABELS[problem]}
-                </span>
-                <span className={`text-xs font-medium ${status.className}`}>
-                  {status.label}
-                </span>
-              </div>
-              <p className="text-xs text-muted mb-2">
-                {isDiscovered ? PROBLEM_DESCRIPTIONS[problem] : 'Not yet discovered'}
-              </p>
-              {isDiscovered && state && !state.solutionInstalled && state.solutionProgress > 0 && (
-                <ProgressBar value={(state.solutionProgress / MAX_SOLUTION_PROGRESS) * 100} />
-              )}
-            </div>
-          );
-        })}
+              Start Work
+            </button>
+          </div>
+        )}
+
+        {/* 4-Stage Table - only show when problem exists */}
+        {activeProblem && (
+        <>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-muted text-xs border-b border-subtle">
+              <th className="text-left py-2 w-32">Stage</th>
+              <th className="text-center py-2 w-24">Allocation</th>
+              <th className="text-center py-2">Progress</th>
+              <th className="text-center py-2 w-16">Done</th>
+            </tr>
+          </thead>
+          <tbody>
+            {STAGE_ORDER.map((stage) => {
+              // For current year chassis improvements, we track via solutionProgress
+              // Each stage is 0-10 progress (similar to next year chassis)
+              const stageIndex = STAGE_ORDER.indexOf(stage);
+              const progressPerStage = MAX_SOLUTION_PROGRESS / STAGE_ORDER.length;
+              const stageProgress = activeProblemState
+                ? Math.max(0, Math.min(progressPerStage, activeProblemState.solutionProgress - stageIndex * progressPerStage))
+                : 0;
+              const stageComplete = stageProgress >= progressPerStage;
+              const stagePercent = (stageProgress / progressPerStage) * 100;
+
+              return (
+                <tr key={stage} className="border-b border-subtle last:border-0">
+                  <td className="py-3 text-secondary">{STAGE_LABELS[stage]}</td>
+                  <td className="py-3">
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        type="button"
+                        className="w-6 h-6 rounded bg-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-600)] cursor-pointer"
+                      >
+                        −
+                      </button>
+                      <span className="font-mono text-primary w-8 text-center">0%</span>
+                      <button
+                        type="button"
+                        className="w-6 h-6 rounded bg-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-600)] cursor-pointer"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </td>
+                  <td className="py-3 px-4">
+                    <div className="w-full h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
+                      <div
+                        className={`h-full ${stageComplete ? 'bg-green-500' : 'bg-amber-500'} transition-all`}
+                        style={{ width: `${stagePercent}%` }}
+                      />
+                    </div>
+                  </td>
+                  <td className="py-3 text-center">
+                    {stageComplete ? (
+                      <span className="text-green-400">✓</span>
+                    ) : (
+                      <span className="text-muted">○</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+
+        {/* Build Component Button */}
+        <div className="flex justify-end mt-4">
+          <button
+            type="button"
+            className="btn px-4 py-2 text-sm font-medium rounded-lg border bg-[var(--neutral-800)] border-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-750)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!activeProblemState?.solutionDesigned}
+          >
+            Build Component
+          </button>
+        </div>
+        </>
+        )}
       </div>
     </div>
   );
