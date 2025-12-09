@@ -5,3 +5,4 @@ export * from './useTeamBackground';
 export * from './useDeleteConfirmation';
 export * from './useLoadGameHandler';
 export * from './useCalendarData';
+export * from './useGlobalSearch';
