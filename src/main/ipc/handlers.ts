@@ -134,4 +134,13 @@ export function registerIpcHandlers(): void {
     }
     return queryEvents(state.events, query);
   });
+
+  // Design handlers
+  ipcMain.handle(IpcChannels.DESIGN_START_NEXT_YEAR, () => {
+    return GameStateManager.startNextYearChassis();
+  });
+
+  ipcMain.handle(IpcChannels.DESIGN_SET_NEXT_YEAR_ALLOCATION, (_event, allocation: number) => {
+    return GameStateManager.setNextYearChassisAllocation(allocation);
+  });
 }

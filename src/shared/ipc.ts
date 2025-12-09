@@ -153,6 +153,10 @@ export const IpcChannels = {
 
   // Events
   EVENTS_QUERY: 'events:query',
+
+  // Design
+  DESIGN_START_NEXT_YEAR: 'design:startNextYear',
+  DESIGN_SET_NEXT_YEAR_ALLOCATION: 'design:setNextYearAllocation',
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];
@@ -286,6 +290,16 @@ export interface IpcInvokeMap {
   [IpcChannels.EVENTS_QUERY]: {
     args: [query: EventQuery];
     result: GameEvent[];
+  };
+
+  // Design
+  [IpcChannels.DESIGN_START_NEXT_YEAR]: {
+    args: [];
+    result: GameState;
+  };
+  [IpcChannels.DESIGN_SET_NEXT_YEAR_ALLOCATION]: {
+    args: [allocation: number];
+    result: GameState;
   };
 }
 

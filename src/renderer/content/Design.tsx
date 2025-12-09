@@ -1,8 +1,10 @@
-import { useState } from 'react';
-import { useDerivedGameState } from '../hooks';
+import { useState, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useDerivedGameState, queryKeys } from '../hooks';
 import { SectionHeading, ProgressBar, TabBar } from '../components';
 import type { Tab } from '../components';
 import { GHOST_BORDERED_BUTTON_CLASSES } from '../utils/theme-styles';
+import { IpcChannels } from '../../shared/ipc';
 import {
   ChassisDesignStage,
   TechnologyComponent,
@@ -11,6 +13,7 @@ import {
   type TechnologyLevel,
   type CurrentYearChassisState,
   type DesignState,
+  type GameState,
 } from '../../shared/domain';
 
 // ===========================================
@@ -284,67 +287,247 @@ function SummaryTab({ designState, currentYear }: SummaryTabProps) {
 interface NextYearChassisTabProps {
   chassis: ChassisDesign | null;
   currentYear: number;
+  designState: DesignState;
+  onStartWork: () => void;
+  onAllocationChange: (allocation: number) => void;
 }
 
-function NextYearChassisTab({ chassis, currentYear }: NextYearChassisTabProps) {
+function NextYearChassisTab({
+  chassis,
+  currentYear,
+  designState,
+  onStartWork,
+  onAllocationChange,
+}: NextYearChassisTabProps) {
+  // Calculate total allocated to other projects
+  const currentYearAllocation = designState.currentYearChassis.designersAssigned;
+  const technologyAllocation = designState.activeTechnologyProject?.designersAssigned ?? 0;
+  const nextYearAllocation = chassis?.designersAssigned ?? 0;
+  const availableAllocation = 100 - currentYearAllocation - technologyAllocation - nextYearAllocation;
+
+  // Not started state
   if (!chassis) {
     return (
-      <div className="card p-8 text-center">
-        <p className="text-muted">No chassis design in progress for {currentYear + 1} season.</p>
+      <div className="space-y-6">
+        {/* Top Section: Designer Allocation + Chassis Info */}
+        <div className="grid grid-cols-2 gap-6">
+          {/* Designer Allocation Panel */}
+          <div className="card p-4">
+            <SectionHeading>Designer</SectionHeading>
+            <div className="mt-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-amber-400">Available</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-mono text-primary">
+                    {availableAllocation}%
+                  </span>
+                  <div className="w-24 h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-amber-500"
+                      style={{ width: `${availableAllocation}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-secondary">{currentYear + 1} Chassis</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-mono text-primary">0%</span>
+                  <div className="w-24 h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
+                    <div className="h-full bg-blue-500" style={{ width: '0%' }} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Chassis Info Panel */}
+          <div className="card p-4">
+            <SectionHeading>Chassis {currentYear + 1}-A</SectionHeading>
+            <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted">Stage</span>
+                <span className="text-secondary">Not Started</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted">Efficiency</span>
+                <span className="text-primary font-mono">0%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Start Work Section */}
+        <div className="card p-4">
+          <div className="flex items-center justify-between mb-4">
+            <SectionHeading>{currentYear + 1} Chassis Design</SectionHeading>
+            <span className="text-sm text-muted">0%</span>
+          </div>
+
+          <div className="text-center py-8">
+            <p className="text-muted mb-4">
+              No chassis design in progress for {currentYear + 1} season.
+            </p>
+            <button
+              type="button"
+              onClick={onStartWork}
+              className={`btn px-4 py-2 text-sm font-medium rounded-lg border cursor-pointer ${GHOST_BORDERED_BUTTON_CLASSES}`}
+            >
+              Start Work
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
   const overallProgress = getChassisOverallProgress(chassis);
   const stageMap = new Map(chassis.stages.map((s) => [s.stage, s]));
+  const currentStageName = getCurrentStageName(chassis);
 
   return (
-    <div className="card p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <SectionHeading>{currentYear + 1} Chassis Design</SectionHeading>
-          <p className="text-sm text-muted mt-1">SA{currentYear + 1}-A</p>
-        </div>
-        <div className="text-right">
-          <div className="text-2xl font-bold text-primary">{overallProgress}%</div>
-          <p className="text-sm text-muted">
-            {chassis.designersAssigned} designer{chassis.designersAssigned !== 1 ? 's' : ''} assigned
-          </p>
-        </div>
-      </div>
-
-      <div className="mb-4">
-        <ProgressBar value={overallProgress} />
-      </div>
-
-      <div className="grid grid-cols-4 gap-4">
-        {STAGE_ORDER.map((stage, index) => {
-          const stageProgress = stageMap.get(stage);
-          const progress = stageProgress?.progress ?? 0;
-          const completed = stageProgress?.completed ?? false;
-          const isActive =
-            !completed &&
-            STAGE_ORDER.slice(0, index).every((s) => stageMap.get(s)?.completed);
-
-          return (
-            <div
-              key={stage}
-              className={`p-4 rounded border ${
-                isActive
-                  ? 'border-[var(--accent-500)] bg-[var(--accent-900)]/30'
-                  : completed
-                    ? 'border-green-600 bg-green-900/20'
-                    : 'border-subtle'
-              }`}
-            >
-              <div className="text-xs text-secondary mb-2">{STAGE_LABELS[stage]}</div>
-              <div className="text-xl font-bold text-primary mb-2">
-                {completed ? '✓' : `${progress}/${MAX_STAGE_PROGRESS}`}
+    <div className="space-y-6">
+      {/* Top Section: Designer Allocation + Chassis Info */}
+      <div className="grid grid-cols-2 gap-6">
+        {/* Designer Allocation Panel */}
+        <div className="card p-4">
+          <SectionHeading>Designer</SectionHeading>
+          <div className="mt-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-amber-400">Available</span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-mono text-primary">
+                  {availableAllocation}%
+                </span>
+                <div className="w-24 h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-amber-500"
+                    style={{ width: `${availableAllocation}%` }}
+                  />
+                </div>
               </div>
-              <ProgressBar value={(progress / MAX_STAGE_PROGRESS) * 100} />
             </div>
-          );
-        })}
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-secondary">{currentYear + 1} Chassis</span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-mono text-primary">
+                  {nextYearAllocation}%
+                </span>
+                <div className="w-24 h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-blue-500"
+                    style={{ width: `${nextYearAllocation}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Chassis Info Panel */}
+        <div className="card p-4">
+          <SectionHeading>Chassis {currentYear + 1}-A</SectionHeading>
+          <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted">Stage</span>
+              <span className="text-secondary">{currentStageName}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted">Efficiency</span>
+              <span className="text-primary font-mono">{chassis.efficiencyRating}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Design Progress Section */}
+      <div className="card p-4">
+        <div className="flex items-center justify-between mb-4">
+          <SectionHeading>{currentYear + 1} Chassis Design</SectionHeading>
+          <span className="text-sm text-muted">{overallProgress}%</span>
+        </div>
+
+        {/* Overall Progress Bar */}
+        <div className="mb-4">
+          <ProgressBar value={overallProgress} />
+        </div>
+
+        {/* 4-Stage Table */}
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-muted text-xs border-b border-subtle">
+              <th className="text-left py-2 w-32">Stage</th>
+              <th className="text-center py-2 w-24">Allocation</th>
+              <th className="text-center py-2">Progress</th>
+              <th className="text-center py-2 w-16">Done</th>
+            </tr>
+          </thead>
+          <tbody>
+            {STAGE_ORDER.map((stage) => {
+              const stageProgress = stageMap.get(stage);
+              const progress = stageProgress?.progress ?? 0;
+              const completed = stageProgress?.completed ?? false;
+              const stagePercent = (progress / MAX_STAGE_PROGRESS) * 100;
+
+              return (
+                <tr key={stage} className="border-b border-subtle last:border-0">
+                  <td className="py-3 text-secondary">{STAGE_LABELS[stage]}</td>
+                  <td className="py-3">
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => onAllocationChange(Math.max(0, nextYearAllocation - 10))}
+                        className="w-6 h-6 rounded bg-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-600)] cursor-pointer"
+                      >
+                        −
+                      </button>
+                      <span className="font-mono text-primary w-8 text-center">
+                        {nextYearAllocation}%
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onAllocationChange(
+                            Math.min(100 - currentYearAllocation - technologyAllocation, nextYearAllocation + 10)
+                          )
+                        }
+                        className="w-6 h-6 rounded bg-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-600)] cursor-pointer"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </td>
+                  <td className="py-3 px-4">
+                    <div className="w-full h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
+                      <div
+                        className={`h-full ${completed ? 'bg-green-500' : 'bg-amber-500'} transition-all`}
+                        style={{ width: `${stagePercent}%` }}
+                      />
+                    </div>
+                  </td>
+                  <td className="py-3 text-center">
+                    {completed ? (
+                      <span className="text-green-400">✓</span>
+                    ) : (
+                      <span className="text-muted">○</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+
+        {/* Build Chassis Button */}
+        <div className="flex justify-end mt-4">
+          <button
+            type="button"
+            className={`btn px-4 py-2 text-sm font-medium rounded-lg border cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${GHOST_BORDERED_BUTTON_CLASSES}`}
+            disabled={overallProgress < 100}
+          >
+            Build Chassis
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -598,6 +781,23 @@ function TechnologyTab({ levels }: TechnologyTabProps) {
 export function Design() {
   const [activeTab, setActiveTab] = useState<DesignTab>('summary');
   const { gameState, playerTeam } = useDerivedGameState();
+  const queryClient = useQueryClient();
+
+  const handleStartNextYearChassis = useCallback(async () => {
+    const newState = await window.electronAPI.invoke(IpcChannels.DESIGN_START_NEXT_YEAR);
+    queryClient.setQueryData<GameState | null>(queryKeys.gameState, newState);
+  }, [queryClient]);
+
+  const handleSetNextYearAllocation = useCallback(
+    async (allocation: number) => {
+      const newState = await window.electronAPI.invoke(
+        IpcChannels.DESIGN_SET_NEXT_YEAR_ALLOCATION,
+        allocation
+      );
+      queryClient.setQueryData<GameState | null>(queryKeys.gameState, newState);
+    },
+    [queryClient]
+  );
 
   if (!gameState || !playerTeam) {
     return (
@@ -619,7 +819,13 @@ export function Design() {
         <SummaryTab designState={designState} currentYear={currentYear} />
       )}
       {activeTab === 'next-year' && (
-        <NextYearChassisTab chassis={designState.nextYearChassis} currentYear={currentYear} />
+        <NextYearChassisTab
+          chassis={designState.nextYearChassis}
+          currentYear={currentYear}
+          designState={designState}
+          onStartWork={handleStartNextYearChassis}
+          onAllocationChange={handleSetNextYearAllocation}
+        />
       )}
       {activeTab === 'current-year' && (
         <CurrentYearChassisTab
