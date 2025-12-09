@@ -6,7 +6,7 @@ import * as THREE from 'three';
 const OFFICE_MODEL_PATH = 'data/models/mersus_office.glb';
 
 // Animation duration in seconds (one way)
-const ANIMATION_DURATION = 12;
+const ANIMATION_DURATION = 60;
 
 // Camera positions for animation
 const CAMERA_START = {
