@@ -1,4 +1,4 @@
-import { Suspense, useRef } from 'react';
+import { Suspense, useRef, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useGLTF, Environment, SoftShadows, Sky } from '@react-three/drei';
 import * as THREE from 'three';
@@ -31,13 +31,15 @@ function easeInOutSine(t: number): number {
 function OfficeModel() {
   const { scene } = useGLTF(OFFICE_MODEL_PATH);
 
-  // Enable shadows on all meshes
-  scene.traverse((child) => {
-    if (child instanceof THREE.Mesh) {
-      child.castShadow = true;
-      child.receiveShadow = true;
-    }
-  });
+  // Enable shadows on all meshes (only on initial load)
+  useMemo(() => {
+    scene.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
+  }, [scene]);
 
   return <primitive object={scene} />;
 }
