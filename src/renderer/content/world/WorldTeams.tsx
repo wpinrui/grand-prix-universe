@@ -3,7 +3,7 @@ import { useDerivedGameState } from '../../hooks';
 import { TeamBadge } from '../../components/TeamBadge';
 import { FlagIcon } from '../../components/FlagIcon';
 import { SectionHeading, TeamStatsGrid, DriverCard, ChiefCard } from '../../components';
-import type { Team, Driver, Chief, DriverStanding } from '../../../shared/domain';
+import type { Team, Driver, Chief, DriverStanding, ConstructorStanding } from '../../../shared/domain';
 
 // ===========================================
 // TEAM PROFILE CONTENT
@@ -13,7 +13,7 @@ interface TeamProfileContentProps {
   team: Team;
   drivers: Driver[];
   chiefs: Chief[];
-  constructorStanding: { position: number; points: number; wins: number } | undefined;
+  constructorStanding: ConstructorStanding | undefined;
   driverStandingsMap: Map<string, DriverStanding>;
 }
 
@@ -104,23 +104,25 @@ export function WorldTeams({ initialTeamId }: WorldTeamsProps) {
 
   const { teams, drivers, chiefs } = gameState;
 
+  // Build lookup maps for O(1) access
+  const constructorStandingsMap = new Map<string, ConstructorStanding>(
+    gameState.currentSeason.constructorStandings.map((s) => [s.teamId, s])
+  );
+  const driverStandingsMap = new Map<string, DriverStanding>(
+    gameState.currentSeason.driverStandings.map((s) => [s.driverId, s])
+  );
+
   // Sort teams by constructor standings position
   const sortedTeams = [...teams].sort((a, b) => {
-    const standingA = gameState.currentSeason.constructorStandings.find((s) => s.teamId === a.id);
-    const standingB = gameState.currentSeason.constructorStandings.find((s) => s.teamId === b.id);
-    return (standingA?.position ?? 999) - (standingB?.position ?? 999);
+    const posA = constructorStandingsMap.get(a.id)?.position ?? 999;
+    const posB = constructorStandingsMap.get(b.id)?.position ?? 999;
+    return posA - posB;
   });
 
   const selectedTeam = teams.find((t) => t.id === selectedTeamId) ?? sortedTeams[0];
   const teamDrivers = drivers.filter((d) => d.teamId === selectedTeam.id);
   const teamChiefs = chiefs.filter((c) => c.teamId === selectedTeam.id);
-
-  const constructorStanding = gameState.currentSeason.constructorStandings.find(
-    (s) => s.teamId === selectedTeam.id
-  );
-  const driverStandingsMap = new Map<string, DriverStanding>(
-    gameState.currentSeason.driverStandings.map((s) => [s.driverId, s])
-  );
+  const constructorStanding = constructorStandingsMap.get(selectedTeam.id);
 
   return (
     <div className="space-y-6 max-w-6xl">
@@ -136,9 +138,7 @@ export function WorldTeams({ initialTeamId }: WorldTeamsProps) {
           className="surface-primary border border-subtle rounded-lg px-4 py-2 text-primary cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent-500)]"
         >
           {sortedTeams.map((team) => {
-            const standing = gameState.currentSeason.constructorStandings.find(
-              (s) => s.teamId === team.id
-            );
+            const standing = constructorStandingsMap.get(team.id);
             const isPlayer = team.id === playerTeam.id;
             return (
               <option key={team.id} value={team.id}>
