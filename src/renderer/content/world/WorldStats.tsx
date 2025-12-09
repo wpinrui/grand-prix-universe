@@ -99,6 +99,9 @@ function buildSeasonChartData(
   });
 }
 
+// Stats that can be cumulated (position is calculated, not cumulated)
+type CumulativeStat = Exclude<StatCategory, 'position'>;
+
 function buildRaceChartData(
   seasons: SeasonData[],
   selectedTeamIds: string[],
@@ -109,11 +112,10 @@ function buildRaceChartData(
 
   seasons.forEach((season) => {
     // Track cumulative stats for ALL teams (needed for accurate position calculation)
-    const cumulativeStats: Record<string, Record<StatCategory, number>> = {};
+    const cumulativeStats: Record<string, Record<CumulativeStat, number>> = {};
     allTeamIds.forEach((teamId) => {
       cumulativeStats[teamId] = {
         points: 0,
-        position: 0,
         wins: 0,
         podiums: 0,
         polePositions: 0,
@@ -444,8 +446,6 @@ function StatsChart({ chartData, selectedTeamIds, teamById, stat, invertYAxis }:
 // ===========================================
 // MAIN COMPONENT
 // ===========================================
-
-// Select ALL teams by default
 
 export function WorldStats() {
   const { gameState } = useDerivedGameState();
