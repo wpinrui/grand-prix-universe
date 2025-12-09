@@ -12,7 +12,7 @@ import { ACCENT_TEXT_STYLE, ACCENT_BORDERED_BUTTON_STYLE, GHOST_BORDERED_BUTTON_
 export function getPercentageColorClass(value: number): string {
   if (value >= 80) return 'bg-emerald-500';
   if (value >= 60) return 'bg-lime-500';
-  if (value >= 40) return 'bg-yellow-500';
+  if (value >= 40) return 'bg-amber-500';
   if (value >= 20) return 'bg-orange-500';
   return 'bg-red-500';
 }

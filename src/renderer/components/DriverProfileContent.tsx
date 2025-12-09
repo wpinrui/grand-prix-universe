@@ -13,7 +13,7 @@ import {
 } from './PersonProfileCards';
 import { SectionHeading } from './SectionHeading';
 import { EntityLink } from './EntityLink';
-import { DRIVER_ROLE_LABELS, formatOrdinal } from '../utils/format';
+import { DRIVER_ROLE_LABELS, formatOrdinal, pluralize } from '../utils/format';
 import type { TeamColors } from '../utils/face-generator';
 import type {
   Driver,
@@ -180,7 +180,7 @@ function DriverStatePanel({ driverState }: DriverStatePanelProps) {
             label="Injury"
             value={
               <span className="text-red-400">
-                {driverState.injuryWeeksRemaining} {driverState.injuryWeeksRemaining === 1 ? 'week' : 'weeks'} out
+                {pluralize(driverState.injuryWeeksRemaining, 'week')} out
               </span>
             }
           />
@@ -194,7 +194,7 @@ function DriverStatePanel({ driverState }: DriverStatePanelProps) {
             label="Ban"
             value={
               <span className="text-red-400">
-                {driverState.banRacesRemaining} {driverState.banRacesRemaining === 1 ? 'race' : 'races'} remaining
+                {pluralize(driverState.banRacesRemaining, 'race')} remaining
               </span>
             }
           />
@@ -266,9 +266,9 @@ function FormPanel({ recentResults }: FormPanelProps) {
   return (
     <StatPanel title="Recent Form">
       <div className="flex gap-2">
-        {displayResults.map((result, idx) => (
+        {displayResults.map((result, index) => (
           <div
-            key={idx}
+            key={index}
             className="flex-1 text-center py-2 px-1 rounded bg-[var(--neutral-800)]"
             title={`Race ${result.raceNumber}: ${result.points} pts`}
           >
@@ -403,9 +403,9 @@ export function DriverProfileContent({
   const fullName = `${driver.firstName} ${driver.lastName}`;
 
   // Build dropdown options if provided
-  const dropdownOptions = allDrivers?.map((d) => ({
-    id: d.id,
-    label: `${d.firstName} ${d.lastName}`,
+  const dropdownOptions = allDrivers?.map((driverOption) => ({
+    id: driverOption.id,
+    label: `${driverOption.firstName} ${driverOption.lastName}`,
   }));
 
   return (

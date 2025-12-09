@@ -8,7 +8,8 @@ import { FlagIcon } from './FlagIcon';
 import { ACCENT_TEXT_STYLE, ACCENT_CARD_STYLE } from '../utils/theme-styles';
 import { generateFace, type TeamColors } from '../utils/face-generator';
 import { seasonToYear } from '../../shared/utils/date-utils';
-import { formatAnnualSalary } from '../utils/format';
+import { formatAnnualSalary, pluralize } from '../utils/format';
+import { getPercentageColorClass } from './ContentPrimitives';
 
 // ===========================================
 // ATTRIBUTE BAR COMPONENT
@@ -26,21 +27,12 @@ interface AttributeBarProps {
 export function AttributeBar({ label, value, maxValue = 100 }: AttributeBarProps) {
   const percentage = Math.min(100, (value / maxValue) * 100);
 
-  // Color based on value
-  const getBarColor = (val: number): string => {
-    if (val >= 80) return 'bg-emerald-500';
-    if (val >= 60) return 'bg-lime-500';
-    if (val >= 40) return 'bg-amber-500';
-    if (val >= 20) return 'bg-orange-500';
-    return 'bg-red-500';
-  };
-
   return (
     <div className="flex items-center gap-3">
       <span className="text-sm text-secondary w-28 shrink-0">{label}</span>
       <div className="flex-1 h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
         <div
-          className={`h-full ${getBarColor(value)} transition-all`}
+          className={`h-full ${getPercentageColorClass(value)} transition-all`}
           style={{ width: `${percentage}%` }}
         />
       </div>
@@ -185,13 +177,13 @@ export function PersonHeader({
               </button>
               {isDropdownOpen && (
                 <ul className="absolute top-full left-0 mt-1 z-50 min-w-64 max-h-80 overflow-auto surface-primary border border-subtle rounded-lg shadow-lg py-1">
-                  {allOptions.map((opt) => (
+                  {allOptions.map((option) => (
                     <li
-                      key={opt.id}
-                      onClick={() => handleOptionClick(opt.id)}
-                      className={getPersonOptionClasses(opt.id === selectedId)}
+                      key={option.id}
+                      onClick={() => handleOptionClick(option.id)}
+                      className={getPersonOptionClasses(option.id === selectedId)}
                     >
-                      {opt.label}
+                      {option.label}
                     </li>
                   ))}
                 </ul>
@@ -310,7 +302,7 @@ export function ContractPanel({
             label="Years Left"
             value={
               <span className={isExpiring ? 'text-amber-400' : ''}>
-                {yearsRemaining} {yearsRemaining === 1 ? 'year' : 'years'}
+                {pluralize(yearsRemaining, 'year')}
               </span>
             }
           />
