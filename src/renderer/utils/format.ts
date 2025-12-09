@@ -9,7 +9,7 @@ import {
   ChiefRole,
 } from '../../shared/domain';
 import { compareSavesByNewest, type SaveSlotInfo } from '../../shared/ipc';
-import { formatGameDate } from '../../shared/utils/date-utils';
+import { formatGameDate, seasonToYear } from '../../shared/utils/date-utils';
 
 // ===========================================
 // ROLE & LABEL CONSTANTS
@@ -82,6 +82,19 @@ export const ROLE_TO_DEPARTMENT: Record<ChiefRole, Department> = {
 };
 
 // ===========================================
+// NUMBER FORMATTERS
+// ===========================================
+
+/**
+ * Format a number as an ordinal (e.g., 1st, 2nd, 3rd, 4th)
+ */
+export function formatOrdinal(n: number): string {
+  const suffixes = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
+}
+
+// ===========================================
 // CURRENCY FORMATTERS
 // ===========================================
 
@@ -111,6 +124,25 @@ export function formatCompact(amount: number): string {
  */
 export function formatAnnualSalary(amount: number): string {
   return `$${formatCompact(amount)}/yr`;
+}
+
+// ===========================================
+// CONTRACT FORMATTERS
+// ===========================================
+
+/**
+ * Format a season number as a contract end date (e.g., "31 Dec 2025")
+ */
+export function formatContractEnd(seasonNumber: number): string {
+  const year = seasonToYear(seasonNumber);
+  return `31 Dec ${year}`;
+}
+
+/**
+ * Format a contract line with salary and end date (e.g., "$1.5M/yr · Contract ends 31 Dec 2025")
+ */
+export function formatContractLine(salary: number, contractEnd: number): string {
+  return `${formatAnnualSalary(salary)} · Contract ends ${formatContractEnd(contractEnd)}`;
 }
 
 // ===========================================
