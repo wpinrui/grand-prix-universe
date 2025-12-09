@@ -130,6 +130,27 @@ function LevelBar({ value, compact = false }: LevelBarProps) {
 // TAB VIEWS
 // ===========================================
 
+// ===========================================
+// SUMMARY TAB COMPONENTS
+// ===========================================
+
+interface AllocationRowProps {
+  label: string;
+  value: number;
+  isHighlighted?: boolean;
+}
+
+function AllocationRow({ label, value, isHighlighted = false }: AllocationRowProps) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className={`text-sm ${isHighlighted ? 'text-amber-400' : 'text-secondary'}`}>
+        {label}
+      </span>
+      <span className="text-sm font-mono text-primary">{value}%</span>
+    </div>
+  );
+}
+
 interface SummaryTabProps {
   designState: DesignState;
   currentSeason: number;
@@ -142,103 +163,117 @@ function SummaryTab({ designState, currentSeason }: SummaryTabProps) {
     ? getChassisOverallProgress(designState.nextYearChassis)
     : 0;
 
+  // Calculate staff allocation percentages
+  const nextYearAllocation = designState.nextYearChassis?.designersAssigned ?? 0;
+  const currentYearAllocation = designState.currentYearChassis.designersAssigned;
+  const technologyAllocation = designState.activeTechnologyProject?.designersAssigned ?? 0;
+  const availableAllocation = 100 - nextYearAllocation - currentYearAllocation - technologyAllocation;
+
   return (
     <div className="grid grid-cols-2 gap-6">
-      {/* Left: Chassis Overview */}
+      {/* Left Column: Designer Allocation + Technology Grid */}
       <div className="space-y-4">
-        {/* Current Year */}
+        {/* Designer Allocation Panel */}
         <div className="card p-4">
-          <div className="flex items-center justify-between mb-3">
-            <SectionHeading>{currentSeason} Chassis</SectionHeading>
-            <span className="text-sm font-mono text-primary">SA{currentSeason}-A</span>
-          </div>
-          <div className="grid grid-cols-3 gap-4 text-sm">
-            <div>
-              <span className="text-muted">Handling</span>
-              <div className="text-primary font-mono">
-                {designState.currentYearChassis.handlingRevealed > 0
-                  ? `${designState.currentYearChassis.handlingRevealed}%`
-                  : '?'}
-              </div>
-            </div>
-            <div>
-              <span className="text-muted">Problems</span>
-              <div className="text-primary font-mono">{discoveredCount} found</div>
-            </div>
-            <div>
-              <span className="text-muted">Designers</span>
-              <div className="text-primary font-mono">{designState.currentYearChassis.designersAssigned}%</div>
-            </div>
+          <SectionHeading>Designer</SectionHeading>
+          <div className="mt-4 space-y-2">
+            <AllocationRow label="available" value={availableAllocation} isHighlighted />
+            <AllocationRow label={`${currentSeason + 1} Chassis`} value={nextYearAllocation} />
+            <AllocationRow label={`${currentSeason} Chassis`} value={currentYearAllocation} />
+            <AllocationRow label="Technology" value={technologyAllocation} />
           </div>
         </div>
 
-        {/* Next Year */}
+        {/* Technology Grid */}
         <div className="card p-4">
-          <div className="flex items-center justify-between mb-3">
-            <SectionHeading>{currentSeason + 1} Chassis</SectionHeading>
-            <span className="text-sm font-mono text-primary">SA{currentSeason + 1}-A</span>
-          </div>
-          <div className="grid grid-cols-3 gap-4 text-sm mb-3">
-            <div>
-              <span className="text-muted">Stage</span>
-              <div className="text-primary">
-                {designState.nextYearChassis
-                  ? getCurrentStageName(designState.nextYearChassis)
-                  : 'Not Started'}
-              </div>
-            </div>
-            <div>
-              <span className="text-muted">Progress</span>
-              <div className="text-primary font-mono">{nextYearProgress}%</div>
-            </div>
-            <div>
-              <span className="text-muted">Designers</span>
-              <div className="text-primary font-mono">{designState.nextYearChassis?.designersAssigned ?? 0}%</div>
-            </div>
-          </div>
-          {designState.nextYearChassis && (
-            <ProgressBar value={nextYearProgress} />
-          )}
+          <SectionHeading>Technology</SectionHeading>
+          <table className="w-full text-sm mt-4">
+            <thead>
+              <tr className="text-muted text-xs">
+                <th className="text-left py-1"></th>
+                <th className="text-center py-1">Performance</th>
+                <th className="text-center py-1">Reliability</th>
+              </tr>
+            </thead>
+            <tbody>
+              {TECH_ORDER.map((component) => {
+                const level = levelMap.get(component);
+                return (
+                  <tr key={component}>
+                    <td className="py-1.5 text-secondary">{TECH_LABELS[component]}</td>
+                    <td className="py-1.5">
+                      <div className="flex justify-center">
+                        <LevelBar value={level?.performance ?? 1} compact />
+                      </div>
+                    </td>
+                    <td className="py-1.5">
+                      <div className="flex justify-center">
+                        <LevelBar value={level?.reliability ?? 1} compact />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      {/* Right: Technology Grid */}
-      <div className="card p-4">
-        <div className="flex items-center justify-between mb-3">
-          <SectionHeading>Technology</SectionHeading>
-          <span className="text-sm text-muted">
-            {designState.activeTechnologyProject?.designersAssigned ?? 0}% designers
-          </span>
+      {/* Right Column: Chassis Info Panels */}
+      <div className="space-y-4">
+        {/* Current Year Chassis */}
+        <div className="card p-4">
+          <SectionHeading>{currentSeason} Chassis</SectionHeading>
+          <table className="w-full text-sm mt-4">
+            <thead>
+              <tr className="text-muted text-xs">
+                <th className="text-left py-1">Name</th>
+                <th className="text-center py-1">Handling</th>
+                <th className="text-center py-1">Project</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="py-1.5 text-secondary">SA{currentSeason}-A</td>
+                <td className="py-1.5 text-center font-mono text-primary">
+                  {designState.currentYearChassis.handlingRevealed > 0
+                    ? `${designState.currentYearChassis.handlingRevealed}%`
+                    : '?'}
+                </td>
+                <td className="py-1.5 text-center text-secondary">
+                  {discoveredCount > 0 ? `${discoveredCount} problems` : '---'}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-muted text-xs border-b border-subtle">
-              <th className="text-left py-2">Component</th>
-              <th className="text-center py-2">Performance</th>
-              <th className="text-center py-2">Reliability</th>
-            </tr>
-          </thead>
-          <tbody>
-            {TECH_ORDER.map((component) => {
-              const level = levelMap.get(component);
-              return (
-                <tr key={component} className="border-b border-subtle last:border-0">
-                  <td className="py-2 text-secondary">{TECH_LABELS[component]}</td>
-                  <td className="py-2">
-                    <div className="flex justify-center">
-                      <LevelBar value={level?.performance ?? 1} compact />
-                    </div>
-                  </td>
-                  <td className="py-2">
-                    <div className="flex justify-center">
-                      <LevelBar value={level?.reliability ?? 1} compact />
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+
+        {/* Next Year Chassis */}
+        <div className="card p-4">
+          <SectionHeading>{currentSeason + 1} Chassis</SectionHeading>
+          <table className="w-full text-sm mt-4">
+            <thead>
+              <tr className="text-muted text-xs">
+                <th className="text-left py-1">Name</th>
+                <th className="text-center py-1">Stage</th>
+                <th className="text-center py-1">Efficiency</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="py-1.5 text-secondary">SA{currentSeason + 1}-A</td>
+                <td className="py-1.5 text-center text-secondary">
+                  {designState.nextYearChassis
+                    ? getCurrentStageName(designState.nextYearChassis)
+                    : 'Not started'}
+                </td>
+                <td className="py-1.5 text-center font-mono text-primary">
+                  {designState.nextYearChassis ? `${nextYearProgress}%` : '0%'}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
