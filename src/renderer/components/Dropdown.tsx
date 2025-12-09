@@ -125,8 +125,22 @@ export function Dropdown<T extends string>({
 
   const listboxId = id ? `${id}-listbox` : undefined;
 
+  // Find the longest option label for sizing
+  const longestLabel = options.reduce(
+    (longest, opt) => (opt.label.length > longest.length ? opt.label : longest),
+    ''
+  );
+
   return (
-    <div ref={containerRef} className={`relative ${className}`}>
+    <div ref={containerRef} className={`relative inline-block ${className}`}>
+      {/* Hidden sizer - renders longest option to set minimum width */}
+      <div className="invisible h-0 overflow-hidden" aria-hidden="true">
+        <span className="px-4 py-2 flex items-center gap-3 whitespace-nowrap">
+          {longestLabel}
+          <span className="w-4" /> {/* Space for chevron */}
+        </span>
+      </div>
+
       {/* Trigger button */}
       <button
         type="button"
@@ -137,11 +151,11 @@ export function Dropdown<T extends string>({
         aria-controls={listboxId}
         onClick={() => setIsOpen(!isOpen)}
         onKeyDown={handleKeyDown}
-        className="surface-primary border border-subtle rounded-lg px-4 py-2 text-primary cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent-500)] flex items-center justify-between gap-3 min-w-[200px]"
+        className="w-full surface-primary border border-subtle rounded-lg px-4 py-2 text-primary cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent-500)] flex items-center justify-between gap-3"
       >
         <span className="truncate">{selectedOption?.label ?? 'Select...'}</span>
         <svg
-          className={`w-4 h-4 text-muted transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 flex-shrink-0 text-muted transition-transform ${isOpen ? 'rotate-180' : ''}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
