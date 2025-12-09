@@ -37,6 +37,7 @@ import {
   Races,
   Results,
   RaceWeekend,
+  WorldTeams,
 } from '../content';
 import { GamePhase } from '../../shared/domain';
 import { RoutePaths } from '../routes';
@@ -75,6 +76,7 @@ export function MainLayout() {
   const [showAutoSaveToast, setShowAutoSaveToast] = useState(false);
   const [isCalendarPreviewOpen, setIsCalendarPreviewOpen] = useState(false);
   const [targetRaceNumber, setTargetRaceNumber] = useState<number | null>(null);
+  const [targetTeamId, setTargetTeamId] = useState<string | null>(null);
 
   const navigate = useNavigate();
   const clearGameState = useClearGameState();
@@ -99,11 +101,15 @@ export function MainLayout() {
     setSelectedSectionId(section.id);
     setSelectedSubItemId(section.subItems[0].id);
     setTargetRaceNumber(null);
+    setTargetTeamId(null);
   };
 
   const handleSubItemClick = (subItemId: string) => {
     if (subItemId !== 'results') {
       setTargetRaceNumber(null);
+    }
+    if (subItemId !== 'teams') {
+      setTargetTeamId(null);
     }
     setSelectedSubItemId(subItemId);
   };
@@ -144,11 +150,12 @@ export function MainLayout() {
     const route = getEntityRoute(type, id);
     setSelectedSectionId(route.section);
     setSelectedSubItemId(route.subItem);
-    // entityId will be used by World pages when they're implemented
-    // For now, just navigate to the section/subItem
+    // Pass entityId to the appropriate page
     if (type === 'race') {
       const raceNum = parseInt(id, 10);
       setTargetRaceNumber(Number.isNaN(raceNum) ? null : raceNum);
+    } else if (type === 'team') {
+      setTargetTeamId(id);
     }
   }, []);
 
@@ -190,6 +197,13 @@ export function MainLayout() {
 
   const renderContent = () => {
     // Routes with props - handle explicitly
+    if (selectedSectionId === 'world' && selectedSubItemId === 'teams') {
+      return (
+        <WorldTeams
+          initialTeamId={targetTeamId}
+        />
+      );
+    }
     if (selectedSectionId === 'fia' && selectedSubItemId === 'races') {
       return <Races onViewRaceReport={navigateToRaceReport} />;
     }

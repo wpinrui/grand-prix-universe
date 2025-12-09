@@ -14,3 +14,4 @@ export { Championship } from './Championship';
 export { Races } from './Races';
 export { Results } from './Results';
 export { RaceWeekend } from './RaceWeekend';
+export { WorldTeams } from './world';

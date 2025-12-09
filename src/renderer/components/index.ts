@@ -7,3 +7,4 @@ export { SummaryStat, DetailRow, ProgressBar, CenteredMessage, getPercentageColo
 export type { Tab } from './ContentPrimitives';
 export { CarViewer3D } from './CarViewer3D';
 export { EntityLink } from './EntityLink';
+export { StatCard, MiniStat, TeamStatsGrid, DriverCard, ChiefCard, TeamHeader, TeamProfileContent } from './TeamProfileCards';
