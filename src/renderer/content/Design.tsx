@@ -55,6 +55,7 @@ const MAX_TECH_LEVEL = 5;
 // ===========================================
 
 function getChassisOverallProgress(chassis: ChassisDesign): number {
+  if (chassis.stages.length === 0) return 0;
   const totalProgress = chassis.stages.reduce((sum, s) => sum + s.progress, 0);
   const maxProgress = chassis.stages.length * MAX_STAGE_PROGRESS;
   return Math.round((totalProgress / maxProgress) * 100);
@@ -152,11 +153,11 @@ function NextYearChassisSection({ chassis, currentSeason }: NextYearChassisSecti
 
 interface TechnologySectionProps {
   levels: TechnologyLevel[];
+  avgLevel: number;
 }
 
-function TechnologySection({ levels }: TechnologySectionProps) {
+function TechnologySection({ levels, avgLevel }: TechnologySectionProps) {
   const levelMap = new Map(levels.map((l) => [l.component, l]));
-  const avgLevel = getTechAverageLevel(levels);
 
   return (
     <section>
@@ -281,7 +282,7 @@ export function Design() {
       <NextYearChassisSection chassis={designState.nextYearChassis} currentSeason={currentSeason} />
 
       {/* Technology Components */}
-      <TechnologySection levels={designState.technologyLevels} />
+      <TechnologySection levels={designState.technologyLevels} avgLevel={avgTechLevel} />
 
       {/* Current Year Chassis */}
       <CurrentYearChassisSection chassisState={designState.currentYearChassis} />
