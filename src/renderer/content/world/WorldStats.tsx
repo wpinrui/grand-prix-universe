@@ -22,6 +22,7 @@ import type { SeasonData, ConstructorStanding, Team } from '../../../shared/doma
 // ===========================================
 
 type StatCategory = 'points' | 'position' | 'wins' | 'podiums' | 'polePositions';
+type TimeScale = 'season' | 'race';
 
 interface StatOption {
   value: StatCategory;
@@ -29,9 +30,16 @@ interface StatOption {
   invertYAxis?: boolean; // For position, lower is better
 }
 
+interface TimeScaleOption {
+  value: TimeScale;
+  label: string;
+}
+
 interface ChartDataPoint {
   season: number;
-  [teamId: string]: number;
+  race?: number; // For race-by-race view
+  label: string; // Display label for X-axis
+  [teamId: string]: number | string | undefined;
 }
 
 // ===========================================
@@ -51,6 +59,11 @@ const TAB_OPTIONS = [
   { id: 'table' as const, label: 'Table' },
 ];
 
+const TIME_SCALE_OPTIONS: TimeScaleOption[] = [
+  { value: 'season', label: 'Per Season' },
+  { value: 'race', label: 'Per Race' },
+];
+
 // ===========================================
 // HELPERS
 // ===========================================
@@ -64,19 +77,101 @@ function formatStatValue(value: number, stat: StatCategory): string | number {
   return stat === 'position' ? `P${value}` : value;
 }
 
-function buildChartData(
+function buildSeasonChartData(
   seasons: SeasonData[],
   teamIds: string[],
   stat: StatCategory
 ): ChartDataPoint[] {
   return seasons.map((season) => {
-    const dataPoint: ChartDataPoint = { season: season.seasonNumber };
+    const dataPoint: ChartDataPoint = {
+      season: season.seasonNumber,
+      label: `S${season.seasonNumber}`,
+    };
     teamIds.forEach((teamId) => {
       const standing = season.constructorStandings.find((s) => s.teamId === teamId);
       dataPoint[teamId] = getTeamStat(standing, stat);
     });
     return dataPoint;
   });
+}
+
+function buildRaceChartData(
+  seasons: SeasonData[],
+  teamIds: string[],
+  stat: StatCategory
+): ChartDataPoint[] {
+  const dataPoints: ChartDataPoint[] = [];
+
+  seasons.forEach((season) => {
+    // Track cumulative stats per team for this season
+    const cumulativeStats: Record<string, Record<StatCategory, number>> = {};
+    teamIds.forEach((teamId) => {
+      cumulativeStats[teamId] = {
+        points: 0,
+        position: 0, // Will be calculated at end
+        wins: 0,
+        podiums: 0,
+        polePositions: 0,
+      };
+    });
+
+    // Process each completed race
+    const completedRaces = season.calendar.filter((r) => r.completed && r.result);
+    completedRaces.forEach((race) => {
+      const result = race.result!;
+
+      // Update cumulative stats from race results
+      teamIds.forEach((teamId) => {
+        const teamRaceResults = result.race.filter((r) => r.teamId === teamId);
+        const teamQualiResults = result.qualifying.filter((r) => r.teamId === teamId);
+
+        teamRaceResults.forEach((r) => {
+          cumulativeStats[teamId].points += r.points;
+          if (r.finishPosition === 1) cumulativeStats[teamId].wins += 1;
+          if (r.finishPosition !== null && r.finishPosition <= 3) cumulativeStats[teamId].podiums += 1;
+        });
+
+        teamQualiResults.forEach((q) => {
+          if (q.gridPosition === 1) cumulativeStats[teamId].polePositions += 1;
+        });
+      });
+
+      // Create data point for this race
+      const dataPoint: ChartDataPoint = {
+        season: season.seasonNumber,
+        race: race.raceNumber,
+        label: `S${season.seasonNumber}R${race.raceNumber}`,
+      };
+
+      teamIds.forEach((teamId) => {
+        // For position, we need to calculate based on points ranking
+        if (stat === 'position') {
+          const sortedTeams = [...teamIds].sort(
+            (a, b) => cumulativeStats[b].points - cumulativeStats[a].points
+          );
+          dataPoint[teamId] = sortedTeams.indexOf(teamId) + 1;
+        } else {
+          dataPoint[teamId] = cumulativeStats[teamId][stat];
+        }
+      });
+
+      dataPoints.push(dataPoint);
+    });
+  });
+
+  return dataPoints;
+}
+
+function buildChartData(
+  seasons: SeasonData[],
+  teamIds: string[],
+  stat: StatCategory,
+  timeScale: TimeScale
+): ChartDataPoint[] {
+  if (timeScale === 'race') {
+    return buildRaceChartData(seasons, teamIds, stat);
+  }
+  return buildSeasonChartData(seasons, teamIds, stat);
 }
 
 // ===========================================
@@ -242,9 +337,14 @@ interface CustomTooltipProps {
 function CustomTooltip({ active, payload, label, teamById, stat }: CustomTooltipProps) {
   if (!active || !payload || !payload.length) return null;
 
+  // Format the label for display
+  const displayLabel = typeof label === 'string' && label.includes('R')
+    ? label.replace(/S(\d+)R(\d+)/, 'Season $1 Race $2')
+    : `Season ${label}`;
+
   return (
     <div className="surface-primary border border-subtle rounded-lg p-3 shadow-lg">
-      <p className="text-sm font-semibold text-primary mb-2">Season {label}</p>
+      <p className="text-sm font-semibold text-primary mb-2">{displayLabel}</p>
       <div className="space-y-1">
         {payload.map((entry) => {
           const team = teamById.get(entry.dataKey);
@@ -296,10 +396,10 @@ function StatsChart({ chartData, selectedTeamIds, teamById, stat, invertYAxis }:
         <LineChart data={chartData} margin={CHART_MARGINS}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--neutral-700)" />
           <XAxis
-            dataKey="season"
+            dataKey="label"
             stroke="var(--neutral-500)"
-            tick={{ fill: 'var(--neutral-400)' }}
-            tickFormatter={(value) => `S${value}`}
+            tick={{ fill: 'var(--neutral-400)', fontSize: 12 }}
+            interval="preserveStartEnd"
           />
           <YAxis
             stroke="var(--neutral-500)"
@@ -345,7 +445,11 @@ export function WorldStats() {
   const [selectedStat, setSelectedStat] = useState<StatCategory>('points');
   const [selectedTeamIds, setSelectedTeamIds] = useState<Set<string>>(new Set());
   const [activeView, setActiveView] = useState<'chart' | 'table'>('chart');
+  const [timeScale, setTimeScale] = useState<TimeScale>('season');
+  const [fromSeason, setFromSeason] = useState<number | null>(null);
+  const [toSeason, setToSeason] = useState<number | null>(null);
   const hasInitializedTeams = useRef(false);
+  const hasInitializedRange = useRef(false);
 
   // Build all seasons array (past + current)
   const allSeasons = useMemo(() => {
@@ -354,6 +458,32 @@ export function WorldStats() {
       (a, b) => a.seasonNumber - b.seasonNumber
     );
   }, [gameState]);
+
+  // Initialize season range on first load
+  useEffect(() => {
+    if (hasInitializedRange.current) return;
+    if (allSeasons.length === 0) return;
+
+    setFromSeason(allSeasons[0].seasonNumber);
+    setToSeason(allSeasons[allSeasons.length - 1].seasonNumber);
+    hasInitializedRange.current = true;
+  }, [allSeasons]);
+
+  // Filter seasons by selected range
+  const filteredSeasons = useMemo(() => {
+    if (fromSeason === null || toSeason === null) return allSeasons;
+    return allSeasons.filter(
+      (s) => s.seasonNumber >= fromSeason && s.seasonNumber <= toSeason
+    );
+  }, [allSeasons, fromSeason, toSeason]);
+
+  // Build season options for dropdowns
+  const seasonOptions = useMemo(() => {
+    return allSeasons.map((s) => ({
+      value: String(s.seasonNumber),
+      label: `Season ${s.seasonNumber}`,
+    }));
+  }, [allSeasons]);
 
   const teams = gameState?.teams ?? [];
 
@@ -376,10 +506,10 @@ export function WorldStats() {
     }
   }, [gameState?.currentSeason.constructorStandings]);
 
-  // Build chart data
+  // Build chart data from filtered seasons
   const chartData = useMemo(() => {
-    return buildChartData(allSeasons, Array.from(selectedTeamIds), selectedStat);
-  }, [allSeasons, selectedTeamIds, selectedStat]);
+    return buildChartData(filteredSeasons, Array.from(selectedTeamIds), selectedStat, timeScale);
+  }, [filteredSeasons, selectedTeamIds, selectedStat, timeScale]);
 
   // Get stat option for Y-axis config
   const statOption = STAT_OPTIONS.find((o) => o.value === selectedStat);
@@ -423,11 +553,30 @@ export function WorldStats() {
     );
   }
 
+  // Handlers for season range
+  const handleFromSeasonChange = (value: string) => {
+    const num = parseInt(value, 10);
+    setFromSeason(num);
+    // Ensure "to" is not before "from"
+    if (toSeason !== null && num > toSeason) {
+      setToSeason(num);
+    }
+  };
+
+  const handleToSeasonChange = (value: string) => {
+    const num = parseInt(value, 10);
+    setToSeason(num);
+    // Ensure "from" is not after "to"
+    if (fromSeason !== null && num < fromSeason) {
+      setFromSeason(num);
+    }
+  };
+
   return (
     <div className="max-w-6xl space-y-6">
       {/* Controls row */}
-      <div className="flex items-center gap-4">
-        <div className="flex-1">
+      <div className="flex flex-wrap items-end gap-4">
+        <div>
           <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
             Statistic
           </label>
@@ -435,10 +584,43 @@ export function WorldStats() {
             options={STAT_OPTIONS}
             value={selectedStat}
             onChange={setSelectedStat}
-            className="w-64"
+            className="w-48"
           />
         </div>
         <div>
+          <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
+            Scale
+          </label>
+          <Dropdown
+            options={TIME_SCALE_OPTIONS}
+            value={timeScale}
+            onChange={setTimeScale}
+            className="w-32"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
+            From
+          </label>
+          <Dropdown
+            options={seasonOptions}
+            value={fromSeason !== null ? String(fromSeason) : ''}
+            onChange={handleFromSeasonChange}
+            className="w-32"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
+            To
+          </label>
+          <Dropdown
+            options={seasonOptions}
+            value={toSeason !== null ? String(toSeason) : ''}
+            onChange={handleToSeasonChange}
+            className="w-32"
+          />
+        </div>
+        <div className="ml-auto">
           <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
             View
           </label>
@@ -471,7 +653,7 @@ export function WorldStats() {
             />
           ) : (
             <StatsTable
-              seasons={allSeasons}
+              seasons={filteredSeasons}
               teams={teams}
               selectedTeamIds={selectedTeamIds}
               stat={selectedStat}
@@ -482,8 +664,9 @@ export function WorldStats() {
 
       {/* Info footer */}
       <div className="text-xs text-muted">
-        Data from {allSeasons.length} season{allSeasons.length !== 1 ? 's' : ''} (Season{' '}
-        {allSeasons[0]?.seasonNumber} - Season {allSeasons[allSeasons.length - 1]?.seasonNumber})
+        Showing {filteredSeasons.length} season{filteredSeasons.length !== 1 ? 's' : ''}{' '}
+        {timeScale === 'race' ? `(${chartData.length} data points)` : ''} — Season{' '}
+        {fromSeason} to Season {toSeason}
       </div>
     </div>
   );
