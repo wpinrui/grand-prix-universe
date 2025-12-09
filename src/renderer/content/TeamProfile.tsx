@@ -1,51 +1,39 @@
 import type { CSSProperties } from 'react';
 import { useDerivedGameState } from '../hooks';
 import { TeamBadge } from '../components/TeamBadge';
+import { FlagIcon } from '../components/FlagIcon';
 import { SectionHeading } from '../components';
 import { ACCENT_CARD_STYLE, ACCENT_TEXT_STYLE } from '../utils/theme-styles';
 import {
   formatCurrency,
   formatAnnualSalary,
   DRIVER_ROLE_LABELS,
-  DEPARTMENT_LABELS,
   CHIEF_ROLE_LABELS,
-  STAFF_QUALITY_LABELS,
-  DEPARTMENT_ORDER,
-  STAFF_QUALITY_ORDER,
 } from '../utils/format';
 import type {
   Driver,
   Chief,
-  TeamRuntimeState,
+  DriverStanding,
 } from '../../shared/domain';
-
-const MORALE_THRESHOLDS = {
-  EXCELLENT: 80,
-  GOOD: 60,
-  LOW: 40,
-} as const;
+import { seasonToYear } from '../../shared/utils/date-utils';
 
 // ===========================================
 // FORMATTERS
 // ===========================================
 
-interface MoraleStyle {
-  colorClass: string;
-  glow: string;
+function formatOrdinal(n: number): string {
+  const suffixes = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
 }
 
-const MORALE_STYLES = {
-  excellent: { colorClass: 'bg-emerald-500', glow: '0 0 8px rgba(16, 185, 129, 0.5)' },
-  good: { colorClass: 'bg-yellow-500', glow: '0 0 8px rgba(234, 179, 8, 0.5)' },
-  low: { colorClass: 'bg-orange-500', glow: '0 0 8px rgba(249, 115, 22, 0.5)' },
-  critical: { colorClass: 'bg-red-500', glow: '0 0 8px rgba(239, 68, 68, 0.5)' },
-} as const;
+function formatContractEnd(seasonNumber: number): string {
+  const year = seasonToYear(seasonNumber);
+  return `31 Dec ${year}`;
+}
 
-function getMoraleStyle(value: number): MoraleStyle {
-  if (value >= MORALE_THRESHOLDS.EXCELLENT) return MORALE_STYLES.excellent;
-  if (value >= MORALE_THRESHOLDS.GOOD) return MORALE_STYLES.good;
-  if (value >= MORALE_THRESHOLDS.LOW) return MORALE_STYLES.low;
-  return MORALE_STYLES.critical;
+function formatContractLine(salary: number, contractEnd: number): string {
+  return `${formatAnnualSalary(salary)} · Contract ends ${formatContractEnd(contractEnd)}`;
 }
 
 // ===========================================
@@ -80,35 +68,25 @@ function StatCard({ label, value, accent = false }: StatCardProps) {
   );
 }
 
-interface ProgressBarProps {
-  value: number;
-  colorClass: string;
-  glow?: string;
-}
-
-function ProgressBar({ value, colorClass, glow }: ProgressBarProps) {
-  return (
-    <div className="progress-track flex-1 h-2">
-      <div
-        className={`progress-fill h-2 ${colorClass}`}
-        style={{
-          width: `${value}%`,
-          boxShadow: glow,
-        }}
-      />
-    </div>
-  );
-}
-
 // ===========================================
 // DRIVER & CHIEF CARDS
 // ===========================================
 
-interface DriverCardProps {
-  driver: Driver;
+function MiniStat({ value, label }: { value: React.ReactNode; label?: string }) {
+  return (
+    <div className="text-muted">
+      <span className="font-medium text-secondary">{value}</span>
+      {label && <span className="ml-1">{label}</span>}
+    </div>
+  );
 }
 
-function DriverCard({ driver }: DriverCardProps) {
+interface DriverCardProps {
+  driver: Driver;
+  standing: DriverStanding | undefined;
+}
+
+function DriverCard({ driver, standing }: DriverCardProps) {
   return (
     <div className="card p-4 flex gap-4">
       {/* Driver photo or placeholder */}
@@ -124,15 +102,24 @@ function DriverCard({ driver }: DriverCardProps) {
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="font-bold text-primary">
-          {driver.firstName} {driver.lastName}
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-primary">
+            {driver.firstName} {driver.lastName}
+          </span>
+          <FlagIcon country={driver.nationality} size="sm" />
         </div>
         <div className="text-sm font-medium text-secondary">
           {DRIVER_ROLE_LABELS[driver.role] ?? driver.role}
         </div>
-        <div className="text-xs text-muted mt-2 space-y-0.5">
-          <div>{driver.nationality} · Rep: {driver.reputation}</div>
-          <div>Salary: {formatAnnualSalary(driver.salary)} · Contract: S{driver.contractEnd}</div>
+        {/* Championship Stats */}
+        <div className="flex gap-4 mt-2 text-xs">
+          <MiniStat value={standing ? formatOrdinal(standing.position) : '-'} />
+          <MiniStat value={standing?.points ?? 0} label="Pts" />
+          <MiniStat value={standing?.wins ?? 0} label="Wins" />
+        </div>
+        {/* Contract Info */}
+        <div className="text-xs text-muted mt-1">
+          {formatContractLine(driver.salary, driver.contractEnd)}
         </div>
       </div>
     </div>
@@ -152,90 +139,10 @@ function ChiefCard({ chief }: ChiefCardProps) {
       <div className="font-bold text-primary">
         {chief.firstName} {chief.lastName}
       </div>
-      <div className="text-xs text-muted mt-2">
-        Ability: {chief.ability} · {formatAnnualSalary(chief.salary)}
+      <div className="text-xs text-muted mt-2 space-y-0.5">
+        <div>Ability: {chief.ability}</div>
+        <div>{formatContractLine(chief.salary, chief.contractEnd)}</div>
       </div>
-    </div>
-  );
-}
-
-// ===========================================
-// MORALE & STAFF SECTIONS
-// ===========================================
-
-interface MoraleBarProps {
-  label: string;
-  value: number;
-}
-
-function MoraleBar({ label, value }: MoraleBarProps) {
-  const { colorClass, glow } = getMoraleStyle(value);
-
-  return (
-    <div className="flex items-center gap-4">
-      <span className="text-sm font-medium text-secondary w-28">{label}</span>
-      <ProgressBar value={value} colorClass={colorClass} glow={glow} />
-      <span className="text-sm font-bold text-primary w-10 text-right tabular-nums">{value}</span>
-    </div>
-  );
-}
-
-interface StaffSummaryProps {
-  teamState: TeamRuntimeState;
-}
-
-function StaffSummary({ teamState }: StaffSummaryProps) {
-  return (
-    <div className="space-y-3">
-      {DEPARTMENT_ORDER.map((dept) => {
-        const counts = teamState.staffCounts[dept];
-        const total = STAFF_QUALITY_ORDER.reduce(
-          (sum, quality) => sum + (counts[quality] || 0),
-          0
-        );
-        return (
-          <div key={dept} className="flex items-center gap-4">
-            <span className="text-sm font-medium text-secondary w-28">{DEPARTMENT_LABELS[dept]}</span>
-            <span className="text-base font-bold text-primary">{total}</span>
-            <span className="text-sm text-muted">
-              ({STAFF_QUALITY_ORDER.map((quality) => counts[quality] || 0).join('/')})
-            </span>
-          </div>
-        );
-      })}
-      <div className="text-sm text-muted pt-3 border-t border-[var(--neutral-600)]">
-        Quality breakdown: {STAFF_QUALITY_ORDER.map((q) => STAFF_QUALITY_LABELS[q]).join(' / ')}
-      </div>
-    </div>
-  );
-}
-
-interface DevelopmentTestingSectionProps {
-  teamState: TeamRuntimeState;
-}
-
-function DevelopmentTestingSection({ teamState }: DevelopmentTestingSectionProps) {
-  const { handlingRevealed, problems } = teamState.designState.currentYearChassis;
-  const discoveredProblems = problems.filter((p) => p.discovered);
-
-  return (
-    <div className="card p-5" style={ACCENT_CARD_STYLE}>
-      <div className="flex items-center gap-4 mb-2">
-        <span className="text-base font-medium text-secondary">Handling Knowledge</span>
-        <ProgressBar
-          value={handlingRevealed}
-          colorClass="bg-[var(--accent-500)]"
-          glow="0 0 8px color-mix(in srgb, var(--accent-500) 50%, transparent)"
-        />
-        <span className="text-base font-bold tabular-nums" style={ACCENT_TEXT_STYLE}>
-          {handlingRevealed}%
-        </span>
-      </div>
-      {discoveredProblems.length > 0 && (
-        <div className="text-sm text-muted">
-          Problems found: {discoveredProblems.map((p) => p.problem).join(', ')}
-        </div>
-      )}
     </div>
   );
 }
@@ -257,7 +164,14 @@ export function TeamProfile() {
 
   const teamDrivers = gameState.drivers.filter((driver) => driver.teamId === playerTeam.id);
   const teamChiefs = gameState.chiefs.filter((chief) => chief.teamId === playerTeam.id);
-  const teamState = gameState.teamStates[playerTeam.id];
+
+  // Get championship standings
+  const constructorStanding = gameState.currentSeason.constructorStandings.find(
+    (s) => s.teamId === playerTeam.id
+  );
+  const driverStandingsMap = new Map<string, DriverStanding>(
+    gameState.currentSeason.driverStandings.map((s) => [s.driverId, s])
+  );
 
   return (
     <div className="space-y-8 max-w-6xl">
@@ -268,21 +182,23 @@ export function TeamProfile() {
           <h1 className="text-2xl font-bold text-primary tracking-tight">
             {playerTeam.name}
           </h1>
-          <div className="text-secondary font-medium mt-1">
-            Principal: {playerTeam.principal}
-          </div>
           <p className="text-sm text-muted mt-2 max-w-2xl leading-relaxed">
             {playerTeam.description}
           </p>
         </div>
+        {/* Location with Flag */}
+        <div className="flex items-center gap-2 text-secondary">
+          <FlagIcon country={playerTeam.headquarters} size="md" />
+          <span className="font-medium">{playerTeam.headquarters}</span>
+        </div>
       </div>
 
-      {/* Team Info Grid */}
+      {/* Team Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard label="Budget" value={formatCurrency(playerTeam.budget)} accent />
-        <StatCard label="Headquarters" value={playerTeam.headquarters} />
-        <StatCard label="Facilities" value={`${playerTeam.factory.facilities.filter(f => f.quality > 0).length}/${playerTeam.factory.facilities.length}`} />
-        <StatCard label="Setup Points" value={teamState?.setupPoints ?? 0} />
+        <StatCard label="Championship" value={constructorStanding ? `P${constructorStanding.position}` : '-'} />
+        <StatCard label="Points" value={constructorStanding?.points ?? 0} />
+        <StatCard label="Wins" value={constructorStanding?.wins ?? 0} />
       </div>
 
       {/* Drivers Section */}
@@ -291,7 +207,11 @@ export function TeamProfile() {
         {teamDrivers.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {teamDrivers.map((driver) => (
-              <DriverCard key={driver.id} driver={driver} />
+              <DriverCard
+                key={driver.id}
+                driver={driver}
+                standing={driverStandingsMap.get(driver.id)}
+              />
             ))}
           </div>
         ) : (
@@ -312,40 +232,6 @@ export function TeamProfile() {
           <p className="text-muted">No chiefs assigned</p>
         )}
       </section>
-
-      {/* Department Morale */}
-      {teamState && (
-        <section>
-          <SectionHeading>Department Morale</SectionHeading>
-          <div className="card p-5 space-y-3">
-            {DEPARTMENT_ORDER.map((dept) => (
-              <MoraleBar
-                key={dept}
-                label={DEPARTMENT_LABELS[dept]}
-                value={teamState.morale[dept]}
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Staff Counts */}
-      {teamState && (
-        <section>
-          <SectionHeading>Staff</SectionHeading>
-          <div className="card p-5">
-            <StaffSummary teamState={teamState} />
-          </div>
-        </section>
-      )}
-
-      {/* Development Testing Progress */}
-      {teamState && (
-        <section>
-          <SectionHeading>Development Testing</SectionHeading>
-          <DevelopmentTestingSection teamState={teamState} />
-        </section>
-      )}
     </div>
   );
 }
