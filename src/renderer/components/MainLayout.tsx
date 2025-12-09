@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   sections,
@@ -8,6 +8,7 @@ import {
   type Section,
 } from '../navigation';
 import { useDerivedGameState, useTeamTheme, useClearGameState, useQuitApp, useAutoSaveListener } from '../hooks';
+import { EntityNavigationContext, getEntityRoute, type EntityType } from '../utils/entity-navigation';
 import { SectionButton } from './NavButtons';
 import { TopBar } from './TopBar';
 import { BottomBar } from './BottomBar';
@@ -138,6 +139,24 @@ export function MainLayout() {
     setIsCalendarPreviewOpen(false);
   }, []);
 
+  // Entity navigation for Football Manager-style linking
+  const navigateToEntity = useCallback((type: EntityType, id: string) => {
+    const route = getEntityRoute(type, id);
+    setSelectedSectionId(route.section);
+    setSelectedSubItemId(route.subItem);
+    // entityId will be used by World pages when they're implemented
+    // For now, just navigate to the section/subItem
+    if (type === 'race') {
+      const raceNum = parseInt(id, 10);
+      setTargetRaceNumber(Number.isNaN(raceNum) ? null : raceNum);
+    }
+  }, []);
+
+  const entityNavigationValue = useMemo(
+    () => ({ navigateToEntity }),
+    [navigateToEntity]
+  );
+
   // Shared calendar data props (used by both CalendarPreviewPanel and SimulationOverlay)
   const calendarDataProps = gameState?.currentDate
     ? {
@@ -214,95 +233,97 @@ export function MainLayout() {
   };
 
   return (
-    <div className="main-layout flex w-full h-screen surface-base text-primary">
-      {/* Left Sidebar - wider */}
-      <aside className="sidebar flex flex-col w-52 surface-primary border-r border-subtle">
-        <div className="flex flex-col py-3">
-          {sections.map((section) => (
-            <SectionButton
-              key={section.id}
-              section={section}
-              isSelected={section.id === selectedSectionId}
-              onClick={() => handleSectionClick(section)}
-            />
-          ))}
-        </div>
-      </aside>
+    <EntityNavigationContext.Provider value={entityNavigationValue}>
+      <div className="main-layout flex w-full h-screen surface-base text-primary">
+        {/* Left Sidebar - wider */}
+        <aside className="sidebar flex flex-col w-52 surface-primary border-r border-subtle">
+          <div className="flex flex-col py-3">
+            {sections.map((section) => (
+              <SectionButton
+                key={section.id}
+                section={section}
+                isSelected={section.id === selectedSectionId}
+                onClick={() => handleSectionClick(section)}
+              />
+            ))}
+          </div>
+        </aside>
 
-      {/* Main Area */}
-      <div className="relative flex flex-col flex-1 min-w-0">
-        <TopBar
-          sectionLabel={selectedSection.label}
-          subItemLabel={selectedSubItem.label}
-          currentDate={gameState?.currentDate ?? null}
-          playerTeam={playerTeam}
-          onCalendarClick={toggleCalendarPreview}
-        />
-
-        {/* Calendar Preview Panel */}
-        {calendarDataProps && (
-          <CalendarPreviewPanel
-            {...calendarDataProps}
-            isVisible={isCalendarPreviewOpen && !(gameState?.simulation?.isSimulating ?? false)}
-            onClose={closeCalendarPreview}
+        {/* Main Area */}
+        <div className="relative flex flex-col flex-1 min-w-0">
+          <TopBar
+            sectionLabel={selectedSection.label}
+            subItemLabel={selectedSubItem.label}
+            currentDate={gameState?.currentDate ?? null}
+            playerTeam={playerTeam}
+            onCalendarClick={toggleCalendarPreview}
           />
-        )}
 
-        {/* Content Area - with background image, blur, and team tint */}
-        <main className="content relative flex-1 overflow-hidden">
-          {playerTeam && (
-            <BackgroundLayer
-              teamId={playerTeam.id}
-              tintColor="var(--accent-900)"
-              position="absolute"
-              tintOpacity={75}
-              baseOpacity={92}
+          {/* Calendar Preview Panel */}
+          {calendarDataProps && (
+            <CalendarPreviewPanel
+              {...calendarDataProps}
+              isVisible={isCalendarPreviewOpen && !(gameState?.simulation?.isSimulating ?? false)}
+              onClose={closeCalendarPreview}
             />
           )}
 
-          {/* Content layer */}
-          <div className="relative z-10 h-full p-8 overflow-auto">
-            {renderContent()}
-          </div>
-        </main>
+          {/* Content Area - with background image, blur, and team tint */}
+          <main className="content relative flex-1 overflow-hidden">
+            {playerTeam && (
+              <BackgroundLayer
+                teamId={playerTeam.id}
+                tintColor="var(--accent-900)"
+                position="absolute"
+                tintOpacity={75}
+                baseOpacity={92}
+              />
+            )}
 
-        <BottomBar
-          playerTeam={playerTeam}
-          selectedSection={selectedSection}
-          selectedSubItemId={selectedSubItemId}
-          onSubItemClick={handleSubItemClick}
-          nextRace={nextRace}
-        />
+            {/* Content layer */}
+            <div className="relative z-10 h-full p-8 overflow-auto">
+              {renderContent()}
+            </div>
+          </main>
+
+          <BottomBar
+            playerTeam={playerTeam}
+            selectedSection={selectedSection}
+            selectedSubItemId={selectedSubItemId}
+            onSubItemClick={handleSubItemClick}
+            nextRace={nextRace}
+          />
+        </div>
+
+        {/* Confirmation Dialog */}
+        {activeDialog && (
+          <ConfirmDialog
+            {...ACTION_CONFIGS[activeDialog].dialog}
+            onConfirm={actionHandlers[activeDialog]}
+            onCancel={closeDialog}
+          />
+        )}
+
+        {/* Auto-save Toast */}
+        {showAutoSaveToast && (
+          <AutoSaveToast
+            message="Game auto-saved"
+            onDismiss={handleDismissToast}
+          />
+        )}
+
+        {/* Simulation Overlay - full screen during simulation */}
+        {calendarDataProps && (
+          <SimulationOverlay
+            {...calendarDataProps}
+            isVisible={gameState?.simulation?.isSimulating ?? false}
+            isPostSeason={gameState?.phase === GamePhase.PostSeason}
+            sectionLabel={selectedSection.label}
+            subItemLabel={selectedSubItem.label}
+            playerTeam={playerTeam}
+          />
+        )}
       </div>
-
-      {/* Confirmation Dialog */}
-      {activeDialog && (
-        <ConfirmDialog
-          {...ACTION_CONFIGS[activeDialog].dialog}
-          onConfirm={actionHandlers[activeDialog]}
-          onCancel={closeDialog}
-        />
-      )}
-
-      {/* Auto-save Toast */}
-      {showAutoSaveToast && (
-        <AutoSaveToast
-          message="Game auto-saved"
-          onDismiss={handleDismissToast}
-        />
-      )}
-
-      {/* Simulation Overlay - full screen during simulation */}
-      {calendarDataProps && (
-        <SimulationOverlay
-          {...calendarDataProps}
-          isVisible={gameState?.simulation?.isSimulating ?? false}
-          isPostSeason={gameState?.phase === GamePhase.PostSeason}
-          sectionLabel={selectedSection.label}
-          subItemLabel={selectedSubItem.label}
-          playerTeam={playerTeam}
-        />
-      )}
-    </div>
+    </EntityNavigationContext.Provider>
   );
 }
