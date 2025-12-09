@@ -175,11 +175,11 @@ function SummaryTab({ designState, currentSeason }: SummaryTabProps) {
       <div className="space-y-4">
         {/* Designer Allocation Panel */}
         <div className="card p-4">
-          <SectionHeading>Designer</SectionHeading>
+          <SectionHeading>Designer Allocation</SectionHeading>
           <div className="mt-4 space-y-2">
-            <AllocationRow label="available" value={availableAllocation} isHighlighted />
-            <AllocationRow label={`${currentSeason + 1} Chassis`} value={nextYearAllocation} />
-            <AllocationRow label={`${currentSeason} Chassis`} value={currentYearAllocation} />
+            <AllocationRow label="Available" value={availableAllocation} isHighlighted />
+            <AllocationRow label="Next Year Chassis" value={nextYearAllocation} />
+            <AllocationRow label="Current Year Chassis" value={currentYearAllocation} />
             <AllocationRow label="Technology" value={technologyAllocation} />
           </div>
         </div>
