@@ -73,7 +73,7 @@ const MAX_STAGE_PROGRESS = 10;
 const MAX_TECH_LEVEL = 100;
 const MAX_SOLUTION_PROGRESS = 10;
 const LEVEL_BAR_BOXES = 10; // Number of boxes in LevelBar visualization
-const LEVEL_BAR_STEP = MAX_TECH_LEVEL / LEVEL_BAR_BOXES; // 20 points per box
+const LEVEL_BAR_STEP = MAX_TECH_LEVEL / LEVEL_BAR_BOXES; // 10 points per box
 const ALLOCATION_STEP = 10; // Increment/decrement step for designer allocation
 
 const PROBLEM_LABELS: Record<HandlingProblem, string> = {
@@ -136,12 +136,11 @@ interface LevelBarProps {
 }
 
 /**
- * Visual bar showing a 0-100 value as 5 discrete boxes
- * 1-20 = 1 box, 21-40 = 2 boxes, 41-60 = 3 boxes, 61-80 = 4 boxes, 81-100 = 5 boxes
- * Value 0 shows no boxes filled.
+ * Visual bar showing a 0-100 value as 10 discrete boxes
+ * Each box represents 10 points. Value 0 shows no boxes filled.
  */
 function LevelBar({ value, compact = false }: LevelBarProps) {
-  // Convert 0-100 value to 0-5 filled boxes
+  // Convert 0-100 value to 0-10 filled boxes
   const filledBoxes = Math.min(LEVEL_BAR_BOXES, Math.ceil(value / LEVEL_BAR_STEP));
 
   return (
