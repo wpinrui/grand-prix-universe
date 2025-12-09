@@ -74,6 +74,7 @@ import {
   ManufacturerDealType,
   TechnologyComponent,
   HandlingProblem,
+  ChassisDesignStage,
   hasRaceSeat,
   createEvent,
   managerRef,
@@ -1411,5 +1412,68 @@ export const GameStateManager = {
     transitionToNewSeason(state, seasonEndResult.newCalendar);
 
     return { success: true, state };
+  },
+
+  /**
+   * Starts work on next year's chassis design.
+   * Creates a new ChassisDesign if none exists.
+   */
+  startNextYearChassis(): GameState {
+    const state = GameStateManager.currentState;
+    if (!state) {
+      throw new Error('No active game');
+    }
+
+    const playerTeamId = state.playerInfo.teamId;
+    const teamState = state.teamStates[playerTeamId];
+    const designState = teamState.designState;
+
+    // Already started
+    if (designState.nextYearChassis !== null) {
+      return state;
+    }
+
+    // Create new chassis design for next season
+    const nextSeason = state.currentDate.year + 1;
+    designState.nextYearChassis = {
+      targetSeason: nextSeason,
+      stages: [
+        { stage: ChassisDesignStage.Design, progress: 0, completed: false },
+        { stage: ChassisDesignStage.CFD, progress: 0, completed: false },
+        { stage: ChassisDesignStage.Model, progress: 0, completed: false },
+        { stage: ChassisDesignStage.WindTunnel, progress: 0, completed: false },
+      ],
+      designersAssigned: 0,
+      efficiencyRating: 0,
+      isLegal: true,
+      startedAt: { ...state.currentDate },
+    };
+
+    return state;
+  },
+
+  /**
+   * Sets the designer allocation for next year's chassis.
+   * @param allocation - Percentage of designers (0-100)
+   */
+  setNextYearChassisAllocation(allocation: number): GameState {
+    const state = GameStateManager.currentState;
+    if (!state) {
+      throw new Error('No active game');
+    }
+
+    const playerTeamId = state.playerInfo.teamId;
+    const teamState = state.teamStates[playerTeamId];
+    const designState = teamState.designState;
+
+    if (!designState.nextYearChassis) {
+      throw new Error('No next year chassis design in progress');
+    }
+
+    // Clamp allocation to valid range
+    const clampedAllocation = Math.max(0, Math.min(100, allocation));
+    designState.nextYearChassis.designersAssigned = clampedAllocation;
+
+    return state;
   },
 };

@@ -1,8 +1,10 @@
-import { useState } from 'react';
-import { useDerivedGameState } from '../hooks';
+import { useState, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useDerivedGameState, useRegulationsBySeason, queryKeys } from '../hooks';
 import { SectionHeading, ProgressBar, TabBar } from '../components';
 import type { Tab } from '../components';
 import { GHOST_BORDERED_BUTTON_CLASSES } from '../utils/theme-styles';
+import { IpcChannels } from '../../shared/ipc';
 import {
   ChassisDesignStage,
   TechnologyComponent,
@@ -11,6 +13,7 @@ import {
   type TechnologyLevel,
   type CurrentYearChassisState,
   type DesignState,
+  type GameState,
 } from '../../shared/domain';
 
 // ===========================================
@@ -26,8 +29,8 @@ type DesignTab = 'summary' | 'next-year' | 'current-year' | 'technology';
 function getTabs(currentYear: number): Tab<DesignTab>[] {
   return [
     { id: 'summary', label: 'Summary' },
-    { id: 'next-year', label: `${currentYear + 1} Chassis` },
     { id: 'current-year', label: `${currentYear} Chassis` },
+    { id: 'next-year', label: `${currentYear + 1} Chassis` },
     { id: 'technology', label: 'Technology' },
   ];
 }
@@ -71,6 +74,7 @@ const MAX_TECH_LEVEL = 5;
 const MAX_SOLUTION_PROGRESS = 10;
 const LEVEL_INDICES = [1, 2, 3, 4, 5] as const;
 const HANDLING_REVEALED_PER_TEST_LEVEL = 20; // Each test level reveals 20% handling
+const ALLOCATION_STEP = 10; // Increment/decrement step for designer allocation
 
 const PROBLEM_LABELS: Record<HandlingProblem, string> = {
   [HandlingProblem.OversteerFast]: 'Oversteer (Fast)',
@@ -102,6 +106,21 @@ function getCurrentStageName(chassis: ChassisDesign): string {
     }
   }
   return 'Complete';
+}
+
+interface AllocationBreakdown {
+  nextYear: number;
+  currentYear: number;
+  technology: number;
+  available: number;
+}
+
+function calculateAllocationBreakdown(designState: DesignState): AllocationBreakdown {
+  const nextYear = designState.nextYearChassis?.designersAssigned ?? 0;
+  const currentYear = designState.currentYearChassis.designersAssigned;
+  const technology = designState.activeTechnologyProject?.designersAssigned ?? 0;
+  const available = 100 - nextYear - currentYear - technology;
+  return { nextYear, currentYear, technology, available };
 }
 
 // ===========================================
@@ -165,11 +184,7 @@ function SummaryTab({ designState, currentYear }: SummaryTabProps) {
     ? getChassisOverallProgress(designState.nextYearChassis)
     : 0;
 
-  // Calculate staff allocation percentages
-  const nextYearAllocation = designState.nextYearChassis?.designersAssigned ?? 0;
-  const currentYearAllocation = designState.currentYearChassis.designersAssigned;
-  const technologyAllocation = designState.activeTechnologyProject?.designersAssigned ?? 0;
-  const availableAllocation = 100 - nextYearAllocation - currentYearAllocation - technologyAllocation;
+  const allocation = calculateAllocationBreakdown(designState);
 
   return (
     <div className="grid grid-cols-2 gap-6">
@@ -179,10 +194,10 @@ function SummaryTab({ designState, currentYear }: SummaryTabProps) {
         <div className="card p-4">
           <SectionHeading>Designer Allocation</SectionHeading>
           <div className="mt-4 space-y-2">
-            <AllocationRow label="Available" value={availableAllocation} isHighlighted />
-            <AllocationRow label={`${currentYear + 1} Chassis`} value={nextYearAllocation} />
-            <AllocationRow label={`${currentYear} Chassis`} value={currentYearAllocation} />
-            <AllocationRow label="Technology" value={technologyAllocation} />
+            <AllocationRow label="Available" value={allocation.available} isHighlighted />
+            <AllocationRow label={`${currentYear + 1} Chassis`} value={allocation.nextYear} />
+            <AllocationRow label={`${currentYear} Chassis`} value={allocation.currentYear} />
+            <AllocationRow label="Technology" value={allocation.technology} />
           </div>
         </div>
 
@@ -281,70 +296,286 @@ function SummaryTab({ designState, currentYear }: SummaryTabProps) {
   );
 }
 
+// ===========================================
+// NEXT YEAR CHASSIS TAB COMPONENTS
+// ===========================================
+
+interface DesignerAllocationPanelProps {
+  availableAllocation: number;
+  chassisAllocation: number;
+  maxAllocation: number;
+  label: string;
+  onAllocationChange?: (newValue: number) => void;
+}
+
+function DesignerAllocationPanel({
+  availableAllocation,
+  chassisAllocation,
+  maxAllocation,
+  label,
+  onAllocationChange,
+}: DesignerAllocationPanelProps) {
+  return (
+    <div className="card p-4">
+      <SectionHeading>Designer</SectionHeading>
+      <div className="mt-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-amber-400">Available</span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-mono text-primary">{availableAllocation}%</span>
+            <div className="w-24 h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
+              <div className="h-full bg-amber-500" style={{ width: `${availableAllocation}%` }} />
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-secondary">{label}</span>
+          <div className="flex items-center gap-2">
+            {onAllocationChange ? (
+              <AllocationControl
+                value={chassisAllocation}
+                maxValue={maxAllocation}
+                onChange={onAllocationChange}
+              />
+            ) : (
+              <>
+                <span className="text-sm font-mono text-primary">{chassisAllocation}%</span>
+                <div className="w-24 h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
+                  <div className="h-full bg-blue-500" style={{ width: `${chassisAllocation}%` }} />
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface ChassisInfoPanelProps {
+  chassisName: string;
+  stageName: string;
+  efficiency: number;
+}
+
+function ChassisInfoPanel({ chassisName, stageName, efficiency }: ChassisInfoPanelProps) {
+  return (
+    <div className="card p-4">
+      <SectionHeading>{chassisName}</SectionHeading>
+      <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+        <div className="flex justify-between">
+          <span className="text-muted">Stage</span>
+          <span className="text-secondary">{stageName}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted">Efficiency</span>
+          <span className="text-primary font-mono">{efficiency}%</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface AllocationControlProps {
+  value: number;
+  maxValue: number;
+  onChange: (newValue: number) => void;
+}
+
+function AllocationControl({ value, maxValue, onChange }: AllocationControlProps) {
+  return (
+    <div className="flex items-center justify-center gap-2">
+      <button
+        type="button"
+        onClick={() => onChange(Math.max(0, value - ALLOCATION_STEP))}
+        className="w-6 h-6 rounded bg-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-600)] cursor-pointer"
+      >
+        −
+      </button>
+      <span className="font-mono text-primary w-8 text-center">{value}%</span>
+      <button
+        type="button"
+        onClick={() => onChange(Math.min(maxValue, value + ALLOCATION_STEP))}
+        className="w-6 h-6 rounded bg-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-600)] cursor-pointer"
+      >
+        +
+      </button>
+    </div>
+  );
+}
+
+interface RegulationsBadgeProps {
+  year: number;
+  available: boolean;
+}
+
+function RegulationsBadge({ year, available }: RegulationsBadgeProps) {
+  if (available) {
+    return (
+      <span className="px-2 py-1 text-xs font-medium rounded bg-emerald-900/50 text-emerald-400 border border-emerald-700">
+        {year} Regulations
+      </span>
+    );
+  }
+  return (
+    <span className="px-2 py-1 text-xs font-medium rounded bg-amber-900/50 text-amber-400 border border-amber-700">
+      Awaiting {year} Regulations
+    </span>
+  );
+}
+
 interface NextYearChassisTabProps {
   chassis: ChassisDesign | null;
   currentYear: number;
+  designState: DesignState;
+  regulationsAvailable: boolean;
+  onStartWork: () => void;
+  onAllocationChange: (allocation: number) => void;
 }
 
-function NextYearChassisTab({ chassis, currentYear }: NextYearChassisTabProps) {
+function NextYearChassisTab({
+  chassis,
+  currentYear,
+  designState,
+  regulationsAvailable,
+  onStartWork,
+  onAllocationChange,
+}: NextYearChassisTabProps) {
+  const allocation = calculateAllocationBreakdown(designState);
+  // Max allocation = current allocation + available (what's not used by other projects)
+  const maxNextYearAllocation = allocation.nextYear + allocation.available;
+
+  const chassisLabel = `${currentYear + 1} Chassis`;
+  const chassisName = `Chassis ${currentYear + 1}-A`;
+  const nextYear = currentYear + 1;
+
+  // Not started state
   if (!chassis) {
     return (
-      <div className="card p-8 text-center">
-        <p className="text-muted">No chassis design in progress for {currentYear + 1} season.</p>
+      <div className="space-y-6">
+        <div className="grid grid-cols-2 gap-6">
+          <DesignerAllocationPanel
+            availableAllocation={allocation.available}
+            chassisAllocation={0}
+            maxAllocation={maxNextYearAllocation}
+            label={chassisLabel}
+          />
+          <ChassisInfoPanel chassisName={chassisName} stageName="Not Started" efficiency={0} />
+        </div>
+
+        <div className="card p-4">
+          <div className="flex items-center justify-between mb-4">
+            <SectionHeading>{chassisLabel} Design</SectionHeading>
+            <RegulationsBadge year={nextYear} available={regulationsAvailable} />
+          </div>
+
+          <div className="text-center py-8">
+            {regulationsAvailable ? (
+              <>
+                <p className="text-muted mb-4">
+                  No chassis design in progress for {nextYear} season.
+                </p>
+                <button
+                  type="button"
+                  onClick={onStartWork}
+                  className={`btn px-4 py-2 text-sm font-medium rounded-lg border cursor-pointer ${GHOST_BORDERED_BUTTON_CLASSES}`}
+                >
+                  Start Work
+                </button>
+              </>
+            ) : (
+              <p className="text-muted">
+                Waiting for FIA to publish {nextYear} regulations before design work can begin.
+              </p>
+            )}
+          </div>
+        </div>
       </div>
     );
   }
 
   const overallProgress = getChassisOverallProgress(chassis);
   const stageMap = new Map(chassis.stages.map((s) => [s.stage, s]));
+  const currentStageName = getCurrentStageName(chassis);
 
   return (
-    <div className="card p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <SectionHeading>{currentYear + 1} Chassis Design</SectionHeading>
-          <p className="text-sm text-muted mt-1">SA{currentYear + 1}-A</p>
-        </div>
-        <div className="text-right">
-          <div className="text-2xl font-bold text-primary">{overallProgress}%</div>
-          <p className="text-sm text-muted">
-            {chassis.designersAssigned} designer{chassis.designersAssigned !== 1 ? 's' : ''} assigned
-          </p>
-        </div>
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 gap-6">
+        <DesignerAllocationPanel
+          availableAllocation={allocation.available}
+          chassisAllocation={allocation.nextYear}
+          maxAllocation={maxNextYearAllocation}
+          label={chassisLabel}
+          onAllocationChange={onAllocationChange}
+        />
+        <ChassisInfoPanel
+          chassisName={chassisName}
+          stageName={currentStageName}
+          efficiency={chassis.efficiencyRating}
+        />
       </div>
 
-      <div className="mb-4">
-        <ProgressBar value={overallProgress} />
-      </div>
+      <div className="card p-4">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <SectionHeading>{chassisLabel} Design</SectionHeading>
+            <RegulationsBadge year={nextYear} available={regulationsAvailable} />
+          </div>
+          <span className="text-sm text-muted">{overallProgress}%</span>
+        </div>
 
-      <div className="grid grid-cols-4 gap-4">
-        {STAGE_ORDER.map((stage, index) => {
-          const stageProgress = stageMap.get(stage);
-          const progress = stageProgress?.progress ?? 0;
-          const completed = stageProgress?.completed ?? false;
-          const isActive =
-            !completed &&
-            STAGE_ORDER.slice(0, index).every((s) => stageMap.get(s)?.completed);
+        <div className="mb-4">
+          <ProgressBar value={overallProgress} />
+        </div>
 
-          return (
-            <div
-              key={stage}
-              className={`p-4 rounded border ${
-                isActive
-                  ? 'border-[var(--accent-500)] bg-[var(--accent-900)]/30'
-                  : completed
-                    ? 'border-green-600 bg-green-900/20'
-                    : 'border-subtle'
-              }`}
-            >
-              <div className="text-xs text-secondary mb-2">{STAGE_LABELS[stage]}</div>
-              <div className="text-xl font-bold text-primary mb-2">
-                {completed ? '✓' : `${progress}/${MAX_STAGE_PROGRESS}`}
-              </div>
-              <ProgressBar value={(progress / MAX_STAGE_PROGRESS) * 100} />
-            </div>
-          );
-        })}
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-muted text-xs border-b border-subtle">
+              <th className="text-left py-2 w-32">Stage</th>
+              <th className="text-center py-2">Progress</th>
+              <th className="text-center py-2 w-16">Done</th>
+            </tr>
+          </thead>
+          <tbody>
+            {STAGE_ORDER.map((stage) => {
+              const stageProgress = stageMap.get(stage);
+              const progress = stageProgress?.progress ?? 0;
+              const completed = stageProgress?.completed ?? false;
+              const stagePercent = (progress / MAX_STAGE_PROGRESS) * 100;
+
+              return (
+                <tr key={stage} className="border-b border-subtle last:border-0">
+                  <td className="py-3 text-secondary">{STAGE_LABELS[stage]}</td>
+                  <td className="py-3 px-4">
+                    <div className="w-full h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
+                      <div
+                        className={`h-full ${completed ? 'bg-green-500' : 'bg-amber-500'} transition-all`}
+                        style={{ width: `${stagePercent}%` }}
+                      />
+                    </div>
+                  </td>
+                  <td className="py-3 text-center">
+                    {completed ? (
+                      <span className="text-green-400">✓</span>
+                    ) : (
+                      <span className="text-muted">○</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+
+        <div className="flex justify-end mt-4">
+          <button
+            type="button"
+            className={`btn px-4 py-2 text-sm font-medium rounded-lg border cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${GHOST_BORDERED_BUTTON_CLASSES}`}
+            disabled={overallProgress < 100}
+          >
+            Build Chassis
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -353,9 +584,10 @@ function NextYearChassisTab({ chassis, currentYear }: NextYearChassisTabProps) {
 interface CurrentYearChassisTabProps {
   chassisState: CurrentYearChassisState;
   currentYear: number;
+  designState: DesignState;
 }
 
-function CurrentYearChassisTab({ chassisState, currentYear }: CurrentYearChassisTabProps) {
+function CurrentYearChassisTab({ chassisState, currentYear, designState }: CurrentYearChassisTabProps) {
   const problemMap = new Map(chassisState.problems.map((p) => [p.problem, p]));
 
   // Find the active problem being worked on, or first discovered unsolved problem
@@ -370,44 +602,21 @@ function CurrentYearChassisTab({ chassisState, currentYear }: CurrentYearChassis
       ? `${activeProblemState.solutionProgress}/${MAX_SOLUTION_PROGRESS}`
       : '---';
 
+  const allocation = calculateAllocationBreakdown(designState);
+  const chassisLabel = `${currentYear} Chassis`;
+  // Max allocation = current allocation + available (what's not used by other projects)
+  const maxCurrentYearAllocation = allocation.currentYear + allocation.available;
+
   return (
     <div className="space-y-6">
       {/* Top Section: Designer Allocation + Chassis Info */}
       <div className="grid grid-cols-2 gap-6">
-        {/* Designer Allocation Panel */}
-        <div className="card p-4">
-          <SectionHeading>Designer</SectionHeading>
-          <div className="mt-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-amber-400">Available</span>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-mono text-primary">
-                  {100 - chassisState.designersAssigned}%
-                </span>
-                <div className="w-24 h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-amber-500"
-                    style={{ width: `${100 - chassisState.designersAssigned}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-secondary">{currentYear} Chassis</span>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-mono text-primary">
-                  {chassisState.designersAssigned}%
-                </span>
-                <div className="w-24 h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-blue-500"
-                    style={{ width: `${chassisState.designersAssigned}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <DesignerAllocationPanel
+          availableAllocation={allocation.available}
+          chassisAllocation={allocation.currentYear}
+          maxAllocation={maxCurrentYearAllocation}
+          label={chassisLabel}
+        />
 
         {/* Chassis Info Panel */}
         <div className="card p-4">
@@ -475,7 +684,6 @@ function CurrentYearChassisTab({ chassisState, currentYear }: CurrentYearChassis
           <thead>
             <tr className="text-muted text-xs border-b border-subtle">
               <th className="text-left py-2 w-32">Stage</th>
-              <th className="text-center py-2 w-24">Allocation</th>
               <th className="text-center py-2">Progress</th>
               <th className="text-center py-2 w-16">Done</th>
             </tr>
@@ -494,23 +702,6 @@ function CurrentYearChassisTab({ chassisState, currentYear }: CurrentYearChassis
               return (
                 <tr key={stage} className="border-b border-subtle last:border-0">
                   <td className="py-3 text-secondary">{STAGE_LABELS[stage]}</td>
-                  <td className="py-3">
-                    <div className="flex items-center justify-center gap-2">
-                      <button
-                        type="button"
-                        className="w-6 h-6 rounded bg-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-600)] cursor-pointer"
-                      >
-                        −
-                      </button>
-                      <span className="font-mono text-primary w-8 text-center">0%</span>
-                      <button
-                        type="button"
-                        className="w-6 h-6 rounded bg-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-600)] cursor-pointer"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </td>
                   <td className="py-3 px-4">
                     <div className="w-full h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
                       <div
@@ -598,6 +789,28 @@ function TechnologyTab({ levels }: TechnologyTabProps) {
 export function Design() {
   const [activeTab, setActiveTab] = useState<DesignTab>('summary');
   const { gameState, playerTeam } = useDerivedGameState();
+  const queryClient = useQueryClient();
+
+  // Query next year's regulations (hook enabled only when we know the year)
+  const nextYear = gameState?.currentDate.year ? gameState.currentDate.year + 1 : 0;
+  const { data: nextYearRegulations } = useRegulationsBySeason(nextYear);
+  const regulationsAvailable = nextYearRegulations !== null && nextYearRegulations !== undefined;
+
+  const handleStartNextYearChassis = useCallback(async () => {
+    const newState = await window.electronAPI.invoke(IpcChannels.DESIGN_START_NEXT_YEAR);
+    queryClient.setQueryData<GameState | null>(queryKeys.gameState, newState);
+  }, [queryClient]);
+
+  const handleSetNextYearAllocation = useCallback(
+    async (allocation: number) => {
+      const newState = await window.electronAPI.invoke(
+        IpcChannels.DESIGN_SET_NEXT_YEAR_ALLOCATION,
+        allocation
+      );
+      queryClient.setQueryData<GameState | null>(queryKeys.gameState, newState);
+    },
+    [queryClient]
+  );
 
   if (!gameState || !playerTeam) {
     return (
@@ -619,12 +832,20 @@ export function Design() {
         <SummaryTab designState={designState} currentYear={currentYear} />
       )}
       {activeTab === 'next-year' && (
-        <NextYearChassisTab chassis={designState.nextYearChassis} currentYear={currentYear} />
+        <NextYearChassisTab
+          chassis={designState.nextYearChassis}
+          currentYear={currentYear}
+          designState={designState}
+          regulationsAvailable={regulationsAvailable}
+          onStartWork={handleStartNextYearChassis}
+          onAllocationChange={handleSetNextYearAllocation}
+        />
       )}
       {activeTab === 'current-year' && (
         <CurrentYearChassisTab
           chassisState={designState.currentYearChassis}
           currentYear={currentYear}
+          designState={designState}
         />
       )}
       {activeTab === 'technology' && <TechnologyTab levels={designState.technologyLevels} />}
