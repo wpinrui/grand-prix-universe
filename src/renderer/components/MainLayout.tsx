@@ -37,6 +37,10 @@ import {
   Results,
   RaceWeekend,
 } from '../content';
+import { GamePhase } from '../../shared/domain';
+import { RoutePaths } from '../routes';
+
+type ActiveDialog = ActionType | null;
 
 // Route map for simple components (no props needed)
 const ROUTE_COMPONENTS: Partial<Record<SectionId, Record<string, React.ComponentType>>> = {
@@ -62,10 +66,6 @@ const ROUTE_COMPONENTS: Partial<Record<SectionId, Record<string, React.Component
     'game-options': GameOptions,
   },
 };
-import { GamePhase } from '../../shared/domain';
-import { RoutePaths } from '../routes';
-
-type ActiveDialog = ActionType | null;
 
 export function MainLayout() {
   const [selectedSectionId, setSelectedSectionId] = useState<SectionId>(defaultSection);
