@@ -23,12 +23,14 @@ type DesignTab = 'summary' | 'next-year' | 'current-year' | 'technology';
 // CONSTANTS
 // ===========================================
 
-const TABS: Tab<DesignTab>[] = [
-  { id: 'summary', label: 'Summary' },
-  { id: 'next-year', label: 'Next Year Chassis' },
-  { id: 'current-year', label: 'Current Year Chassis' },
-  { id: 'technology', label: 'Technology' },
-];
+function getTabs(currentYear: number): Tab<DesignTab>[] {
+  return [
+    { id: 'summary', label: 'Summary' },
+    { id: 'next-year', label: `${currentYear + 1} Chassis` },
+    { id: 'current-year', label: `${currentYear} Chassis` },
+    { id: 'technology', label: 'Technology' },
+  ];
+}
 
 const STAGE_LABELS: Record<ChassisDesignStage, string> = {
   [ChassisDesignStage.Design]: 'Design',
@@ -178,8 +180,8 @@ function SummaryTab({ designState, currentYear }: SummaryTabProps) {
           <SectionHeading>Designer Allocation</SectionHeading>
           <div className="mt-4 space-y-2">
             <AllocationRow label="Available" value={availableAllocation} isHighlighted />
-            <AllocationRow label="Next Year Chassis" value={nextYearAllocation} />
-            <AllocationRow label="Current Year Chassis" value={currentYearAllocation} />
+            <AllocationRow label={`${currentYear + 1} Chassis`} value={nextYearAllocation} />
+            <AllocationRow label={`${currentYear} Chassis`} value={currentYearAllocation} />
             <AllocationRow label="Technology" value={technologyAllocation} />
           </div>
         </div>
@@ -611,7 +613,7 @@ export function Design() {
 
   return (
     <div>
-      <TabBar tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} />
+      <TabBar tabs={getTabs(currentYear)} activeTab={activeTab} onTabChange={setActiveTab} />
 
       {activeTab === 'summary' && (
         <SummaryTab designState={designState} currentYear={currentYear} />
