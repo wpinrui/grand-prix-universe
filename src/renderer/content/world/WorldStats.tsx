@@ -2,7 +2,7 @@
  * World Stats page - Historical stats with line charts
  * Compare team performance across seasons
  */
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import {
   LineChart,
   Line,
@@ -265,14 +265,87 @@ function CustomTooltip({ active, payload, label, teamById, stat }: CustomTooltip
 }
 
 // ===========================================
+// STATS CHART COMPONENT
+// ===========================================
+
+const CHART_HEIGHT = 400;
+const CHART_MARGINS = { top: 20, right: 30, left: 20, bottom: 20 };
+
+interface StatsChartProps {
+  chartData: ChartDataPoint[];
+  selectedTeamIds: Set<string>;
+  teamById: Map<string, Team>;
+  stat: StatCategory;
+  invertYAxis?: boolean;
+}
+
+function StatsChart({ chartData, selectedTeamIds, teamById, stat, invertYAxis }: StatsChartProps) {
+  if (selectedTeamIds.size === 0) {
+    return (
+      <div className="card p-4">
+        <div className="h-80 flex items-center justify-center text-secondary">
+          Select at least one team to view the chart
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="card p-4">
+      <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
+        <LineChart data={chartData} margin={CHART_MARGINS}>
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--neutral-700)" />
+          <XAxis
+            dataKey="season"
+            stroke="var(--neutral-500)"
+            tick={{ fill: 'var(--neutral-400)' }}
+            tickFormatter={(value) => `S${value}`}
+          />
+          <YAxis
+            stroke="var(--neutral-500)"
+            tick={{ fill: 'var(--neutral-400)' }}
+            reversed={invertYAxis}
+            domain={invertYAxis ? [1, 'auto'] : [0, 'auto']}
+          />
+          <Tooltip content={<CustomTooltip teamById={teamById} stat={stat} />} />
+          <Legend
+            formatter={(value: string) => {
+              const team = teamById.get(value);
+              return team?.shortName ?? value;
+            }}
+          />
+          {Array.from(selectedTeamIds).map((teamId) => {
+            const team = teamById.get(teamId);
+            return (
+              <Line
+                key={teamId}
+                type="monotone"
+                dataKey={teamId}
+                stroke={team?.primaryColor ?? '#888'}
+                strokeWidth={2}
+                dot={{ fill: team?.primaryColor ?? '#888', strokeWidth: 0 }}
+                activeDot={{ r: 6, strokeWidth: 0 }}
+              />
+            );
+          })}
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+// ===========================================
 // MAIN COMPONENT
 // ===========================================
+
+const INITIAL_TEAM_COUNT = 5;
 
 export function WorldStats() {
   const { gameState } = useDerivedGameState();
   const [selectedStat, setSelectedStat] = useState<StatCategory>('points');
   const [selectedTeamIds, setSelectedTeamIds] = useState<Set<string>>(new Set());
   const [activeView, setActiveView] = useState<'chart' | 'table'>('chart');
+  const hasInitializedTeams = useRef(false);
 
   // Build all seasons array (past + current)
   const allSeasons = useMemo(() => {
@@ -287,19 +360,21 @@ export function WorldStats() {
   // Memoized team lookup map for O(1) access
   const teamById = useMemo(() => new Map(teams.map((t) => [t.id, t])), [teams]);
 
-  // Initialize selected teams to top 5 on first load
+  // Initialize selected teams to top N on first load only
   useEffect(() => {
-    if (selectedTeamIds.size === 0 && gameState?.currentSeason.constructorStandings) {
-      const topTeamIds = new Set(
-        gameState.currentSeason.constructorStandings
-          .slice(0, 5)
-          .map((s) => s.teamId)
-      );
-      if (topTeamIds.size > 0) {
-        setSelectedTeamIds(topTeamIds);
-      }
+    if (hasInitializedTeams.current) return;
+    if (!gameState?.currentSeason.constructorStandings) return;
+
+    const topTeamIds = new Set(
+      gameState.currentSeason.constructorStandings
+        .slice(0, INITIAL_TEAM_COUNT)
+        .map((s) => s.teamId)
+    );
+    if (topTeamIds.size > 0) {
+      setSelectedTeamIds(topTeamIds);
+      hasInitializedTeams.current = true;
     }
-  }, [gameState?.currentSeason.constructorStandings, selectedTeamIds.size]);
+  }, [gameState?.currentSeason.constructorStandings]);
 
   // Build chart data
   const chartData = useMemo(() => {
@@ -389,54 +464,13 @@ export function WorldStats() {
         {/* Chart or Table - main area */}
         <div className="lg:col-span-3">
           {activeView === 'chart' ? (
-            <div className="card p-4">
-              {selectedTeamIds.size === 0 ? (
-                <div className="h-80 flex items-center justify-center text-secondary">
-                  Select at least one team to view the chart
-                </div>
-              ) : (
-                <ResponsiveContainer width="100%" height={400}>
-                  <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--neutral-700)" />
-                    <XAxis
-                      dataKey="season"
-                      stroke="var(--neutral-500)"
-                      tick={{ fill: 'var(--neutral-400)' }}
-                      tickFormatter={(value) => `S${value}`}
-                    />
-                    <YAxis
-                      stroke="var(--neutral-500)"
-                      tick={{ fill: 'var(--neutral-400)' }}
-                      reversed={statOption?.invertYAxis}
-                      domain={statOption?.invertYAxis ? [1, 'auto'] : [0, 'auto']}
-                    />
-                    <Tooltip
-                      content={<CustomTooltip teamById={teamById} stat={selectedStat} />}
-                    />
-                    <Legend
-                      formatter={(value: string) => {
-                        const team = teamById.get(value);
-                        return team?.shortName ?? value;
-                      }}
-                    />
-                    {Array.from(selectedTeamIds).map((teamId) => {
-                      const team = teamById.get(teamId);
-                      return (
-                        <Line
-                          key={teamId}
-                          type="monotone"
-                          dataKey={teamId}
-                          stroke={team?.primaryColor ?? '#888'}
-                          strokeWidth={2}
-                          dot={{ fill: team?.primaryColor ?? '#888', strokeWidth: 0 }}
-                          activeDot={{ r: 6, strokeWidth: 0 }}
-                        />
-                      );
-                    })}
-                  </LineChart>
-                </ResponsiveContainer>
-              )}
-            </div>
+            <StatsChart
+              chartData={chartData}
+              selectedTeamIds={selectedTeamIds}
+              teamById={teamById}
+              stat={selectedStat}
+              invertYAxis={statOption?.invertYAxis}
+            />
           ) : (
             <StatsTable
               seasons={allSeasons}
