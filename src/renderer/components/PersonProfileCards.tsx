@@ -144,7 +144,7 @@ export function PersonHeader({
         ) : showFacejs ? (
           <div
             ref={faceContainerRef}
-            className="absolute inset-0 flex items-center justify-center"
+            className="absolute inset-0 grid place-items-center"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
