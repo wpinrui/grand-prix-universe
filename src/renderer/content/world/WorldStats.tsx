@@ -396,7 +396,7 @@ function StatsChart({ chartData, selectedTeamIds, teamById, stat, invertYAxis }:
   }
 
   return (
-    <div className="p-4">
+    <div className="p-4 [&_.recharts-wrapper]:outline-none">
       <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
         <LineChart data={chartData} margin={CHART_MARGINS}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--neutral-700)" />
