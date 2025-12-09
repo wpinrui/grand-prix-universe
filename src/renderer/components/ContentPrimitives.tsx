@@ -117,7 +117,7 @@ interface TabBarProps<T extends string> {
   onTabChange: (tab: T) => void;
 }
 
-/** Horizontal tab bar with underline indicator */
+/** Horizontal tab bar with pill-style buttons */
 export function TabBar<T extends string>({ tabs, activeTab, onTabChange }: TabBarProps<T>) {
   return (
     <div className="flex gap-1 mb-6">
@@ -128,7 +128,7 @@ export function TabBar<T extends string>({ tabs, activeTab, onTabChange }: TabBa
           onClick={() => onTabChange(tab.id)}
           className={`px-5 py-2.5 text-sm font-medium cursor-pointer transition-colors rounded ${
             activeTab === tab.id
-              ? 'bg-accent text-black'
+              ? 'bg-amber-500 text-black'
               : 'text-secondary hover:text-primary hover:bg-white/10'
           }`}
         >
