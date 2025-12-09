@@ -3,9 +3,10 @@
  * Used by WorldDrivers and WorldStaff pages.
  * Modular design allows reuse across different person types.
  */
-import type { CSSProperties } from 'react';
+import { useRef, useEffect, type CSSProperties } from 'react';
 import { FlagIcon } from './FlagIcon';
 import { ACCENT_TEXT_STYLE, ACCENT_CARD_STYLE } from '../utils/theme-styles';
+import { generateFace, type TeamColors } from '../utils/face-generator';
 
 // ===========================================
 // ATTRIBUTE BAR COMPONENT
@@ -65,6 +66,10 @@ interface PersonHeaderProps {
   subtitle?: string;
   /** Optional race number for drivers */
   raceNumber?: number;
+  /** Unique ID for faces.js generation (required if no photoUrl) */
+  personId?: string;
+  /** Team colors for faces.js (required if no photoUrl) */
+  teamColors?: TeamColors;
   /** All available options for dropdown selector */
   allOptions?: { id: string; label: string }[];
   /** Current selected ID */
@@ -81,11 +86,25 @@ export function PersonHeader({
   roleText,
   subtitle,
   raceNumber,
+  personId,
+  teamColors,
   allOptions,
   selectedId,
   onSelect,
 }: PersonHeaderProps) {
   const showDropdown = allOptions && allOptions.length > 0 && onSelect;
+  const faceContainerRef = useRef<HTMLDivElement>(null);
+
+  // Generate face when no photo URL but faces.js props are provided
+  useEffect(() => {
+    if (!photoUrl && personId && teamColors && faceContainerRef.current) {
+      // Clear previous content
+      faceContainerRef.current.innerHTML = '';
+      generateFace(faceContainerRef.current, personId, nationality, teamColors, 128);
+    }
+  }, [photoUrl, personId, nationality, teamColors]);
+
+  const showFacejs = !photoUrl && personId && teamColors;
 
   return (
     <div className="flex gap-6">
@@ -93,6 +112,8 @@ export function PersonHeader({
       <div className="w-32 h-40 rounded-lg overflow-hidden shrink-0 surface-inset flex items-center justify-center relative">
         {photoUrl ? (
           <img src={photoUrl} alt={name} className="w-full h-full object-cover" />
+        ) : showFacejs ? (
+          <div ref={faceContainerRef} className="w-full h-full flex items-center justify-center" />
         ) : (
           <span className="text-muted text-sm">No Photo</span>
         )}
@@ -190,14 +211,16 @@ export function StatRow({ label, value, muted = false }: StatRowProps) {
 // CONTRACT PANEL COMPONENT
 // ===========================================
 
+export type ContractRelationship = 'own-team' | 'other-team' | 'free-agent';
+
 interface ContractPanelProps {
   salary: number;
   contractEndSeason: number;
   currentSeason: number;
-  /** Called when "Enter Talks" button is clicked */
+  /** Called when contract action button is clicked */
   onEnterTalks?: () => void;
-  /** Whether talks are available (e.g., only for player's team drivers) */
-  canEnterTalks?: boolean;
+  /** Relationship to this person for button text */
+  relationship: ContractRelationship;
 }
 
 export function ContractPanel({
@@ -205,11 +228,11 @@ export function ContractPanel({
   contractEndSeason,
   currentSeason,
   onEnterTalks,
-  canEnterTalks = false,
+  relationship,
 }: ContractPanelProps) {
   const yearsRemaining = contractEndSeason - currentSeason;
   const isExpiring = yearsRemaining <= 1;
-  const isFreeAgent = salary === 0 && contractEndSeason === 0;
+  const isFreeAgent = relationship === 'free-agent';
 
   // Convert season number to year (season 1 = 2025, etc.)
   const contractEndYear = 2024 + contractEndSeason;
@@ -219,6 +242,18 @@ export function ContractPanel({
     if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}M/yr`;
     if (amount >= 1_000) return `$${(amount / 1_000).toFixed(0)}K/yr`;
     return amount === 0 ? 'Free Agent' : `$${amount}/yr`;
+  };
+
+  // Button text based on relationship
+  const getButtonText = (): string => {
+    switch (relationship) {
+      case 'own-team':
+        return 'Renegotiate Contract';
+      case 'other-team':
+        return 'Approach Driver';
+      case 'free-agent':
+        return 'Offer Contract';
+    }
   };
 
   return (
@@ -239,13 +274,13 @@ export function ContractPanel({
           />
         </div>
       )}
-      {canEnterTalks && onEnterTalks && (
+      {onEnterTalks && (
         <button
           type="button"
           onClick={onEnterTalks}
           className="mt-4 w-full py-2 px-4 rounded-lg font-medium bg-[var(--accent-600)] text-[var(--accent-contrast)] hover:brightness-110 transition cursor-pointer"
         >
-          Enter Contract Talks
+          {getButtonText()}
         </button>
       )}
     </StatPanel>

@@ -9,6 +9,7 @@ import {
   extractRecentResults,
   extractCareerHistory,
 } from '../../components';
+import type { ContractRelationship } from '../../components';
 import type { DriverStanding } from '../../../shared/domain';
 
 interface WorldDriversProps {
@@ -91,6 +92,11 @@ export function WorldDrivers({ initialDriverId }: WorldDriversProps) {
   // Get driver's team (if any)
   const driverTeam = selectedDriver.teamId ? teamMap.get(selectedDriver.teamId) ?? null : null;
 
+  // Build team colors for faces.js
+  const teamColors = driverTeam
+    ? { primary: driverTeam.primaryColor, secondary: driverTeam.secondaryColor }
+    : { primary: '#555555', secondary: '#333333' }; // Default gray for free agents
+
   // Get driver standing
   const driverStanding = driverStandingsMap.get(selectedDriver.id);
 
@@ -107,8 +113,12 @@ export function WorldDrivers({ initialDriverId }: WorldDriversProps) {
     gameState.teams
   );
 
-  // Check if this is a driver on the player's team
-  const isPlayerTeamDriver = selectedDriver.teamId === playerTeam.id;
+  // Determine contract relationship
+  const getContractRelationship = (): ContractRelationship => {
+    if (selectedDriver.teamId === null) return 'free-agent';
+    if (selectedDriver.teamId === playerTeam.id) return 'own-team';
+    return 'other-team';
+  };
 
   // Handle contract talks (placeholder for now)
   const handleEnterContractTalks = () => {
@@ -126,7 +136,8 @@ export function WorldDrivers({ initialDriverId }: WorldDriversProps) {
         currentSeason={gameState.currentSeason.seasonNumber}
         recentResults={recentResults}
         careerHistory={careerHistory}
-        isPlayerTeamDriver={isPlayerTeamDriver}
+        contractRelationship={getContractRelationship()}
+        teamColors={teamColors}
         onEnterContractTalks={handleEnterContractTalks}
         allDrivers={sortedDrivers}
         onDriverSelect={setSelectedDriverId}

@@ -9,10 +9,12 @@ import {
   StatPanel,
   StatRow,
   ContractPanel,
+  type ContractRelationship,
 } from './PersonProfileCards';
 import { SectionHeading } from './SectionHeading';
 import { EntityLink } from './EntityLink';
 import { DRIVER_ROLE_LABELS, formatOrdinal } from '../utils/format';
+import type { TeamColors } from '../utils/face-generator';
 import type {
   Driver,
   DriverStanding,
@@ -376,9 +378,11 @@ interface DriverProfileContentProps {
   recentResults: RecentRaceResult[];
   /** Past season summaries for career history */
   careerHistory: SeasonSummary[];
-  /** Whether this is a driver on the player's team */
-  isPlayerTeamDriver?: boolean;
-  /** Called when "Enter Contract Talks" is clicked */
+  /** Relationship to the player's team */
+  contractRelationship: ContractRelationship;
+  /** Team colors for faces.js (if no photo) */
+  teamColors?: TeamColors;
+  /** Called when contract action button is clicked */
   onEnterContractTalks?: () => void;
   /** All drivers for dropdown selector */
   allDrivers?: Driver[];
@@ -394,7 +398,8 @@ export function DriverProfileContent({
   currentSeason,
   recentResults,
   careerHistory,
-  isPlayerTeamDriver = false,
+  contractRelationship,
+  teamColors,
   onEnterContractTalks,
   allDrivers,
   onDriverSelect,
@@ -419,6 +424,8 @@ export function DriverProfileContent({
         roleText={team ? DRIVER_ROLE_LABELS[driver.role] : 'Free Agent'}
         subtitle={`${age} years old · Born ${formatDateOfBirth(driver.dateOfBirth)}`}
         raceNumber={driver.raceNumber}
+        personId={driver.id}
+        teamColors={teamColors}
         allOptions={dropdownOptions}
         selectedId={driver.id}
         onSelect={onDriverSelect}
@@ -447,7 +454,7 @@ export function DriverProfileContent({
             salary={driver.salary}
             contractEndSeason={driver.contractEnd}
             currentSeason={currentSeason}
-            canEnterTalks={isPlayerTeamDriver}
+            relationship={contractRelationship}
             onEnterTalks={onEnterContractTalks}
           />
 
