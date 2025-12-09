@@ -119,9 +119,10 @@ interface AllocationBreakdown {
 function calculateAllocationBreakdown(designState: DesignState): AllocationBreakdown {
   const nextYear = designState.nextYearChassis?.designersAssigned ?? 0;
   const currentYear = designState.currentYearChassis.designersAssigned;
-  // Sum allocation across all active technology projects (fallback for old saves)
-  const projects = designState.activeTechnologyProjects ?? [];
-  const technology = projects.reduce((sum, project) => sum + project.designersAssigned, 0);
+  const technology = designState.activeTechnologyProjects.reduce(
+    (sum, project) => sum + project.designersAssigned,
+    0
+  );
   const available = 100 - nextYear - currentYear - technology;
   return { nextYear, currentYear, technology, available };
 }
