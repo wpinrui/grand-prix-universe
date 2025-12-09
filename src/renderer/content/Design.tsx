@@ -108,6 +108,21 @@ function getCurrentStageName(chassis: ChassisDesign): string {
   return 'Complete';
 }
 
+interface AllocationBreakdown {
+  nextYear: number;
+  currentYear: number;
+  technology: number;
+  available: number;
+}
+
+function calculateAllocationBreakdown(designState: DesignState): AllocationBreakdown {
+  const nextYear = designState.nextYearChassis?.designersAssigned ?? 0;
+  const currentYear = designState.currentYearChassis.designersAssigned;
+  const technology = designState.activeTechnologyProject?.designersAssigned ?? 0;
+  const available = 100 - nextYear - currentYear - technology;
+  return { nextYear, currentYear, technology, available };
+}
+
 // ===========================================
 // SHARED COMPONENTS
 // ===========================================
@@ -169,11 +184,7 @@ function SummaryTab({ designState, currentYear }: SummaryTabProps) {
     ? getChassisOverallProgress(designState.nextYearChassis)
     : 0;
 
-  // Calculate staff allocation percentages
-  const nextYearAllocation = designState.nextYearChassis?.designersAssigned ?? 0;
-  const currentYearAllocation = designState.currentYearChassis.designersAssigned;
-  const technologyAllocation = designState.activeTechnologyProject?.designersAssigned ?? 0;
-  const availableAllocation = 100 - nextYearAllocation - currentYearAllocation - technologyAllocation;
+  const allocation = calculateAllocationBreakdown(designState);
 
   return (
     <div className="grid grid-cols-2 gap-6">
@@ -183,10 +194,10 @@ function SummaryTab({ designState, currentYear }: SummaryTabProps) {
         <div className="card p-4">
           <SectionHeading>Designer Allocation</SectionHeading>
           <div className="mt-4 space-y-2">
-            <AllocationRow label="Available" value={availableAllocation} isHighlighted />
-            <AllocationRow label={`${currentYear + 1} Chassis`} value={nextYearAllocation} />
-            <AllocationRow label={`${currentYear} Chassis`} value={currentYearAllocation} />
-            <AllocationRow label="Technology" value={technologyAllocation} />
+            <AllocationRow label="Available" value={allocation.available} isHighlighted />
+            <AllocationRow label={`${currentYear + 1} Chassis`} value={allocation.nextYear} />
+            <AllocationRow label={`${currentYear} Chassis`} value={allocation.currentYear} />
+            <AllocationRow label="Technology" value={allocation.technology} />
           </div>
         </div>
 
@@ -292,13 +303,17 @@ function SummaryTab({ designState, currentYear }: SummaryTabProps) {
 interface DesignerAllocationPanelProps {
   availableAllocation: number;
   chassisAllocation: number;
+  maxAllocation: number;
   label: string;
+  onAllocationChange?: (newValue: number) => void;
 }
 
 function DesignerAllocationPanel({
   availableAllocation,
   chassisAllocation,
+  maxAllocation,
   label,
+  onAllocationChange,
 }: DesignerAllocationPanelProps) {
   return (
     <div className="card p-4">
@@ -316,10 +331,20 @@ function DesignerAllocationPanel({
         <div className="flex items-center justify-between">
           <span className="text-sm text-secondary">{label}</span>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-mono text-primary">{chassisAllocation}%</span>
-            <div className="w-24 h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
-              <div className="h-full bg-blue-500" style={{ width: `${chassisAllocation}%` }} />
-            </div>
+            {onAllocationChange ? (
+              <AllocationControl
+                value={chassisAllocation}
+                maxValue={maxAllocation}
+                onChange={onAllocationChange}
+              />
+            ) : (
+              <>
+                <span className="text-sm font-mono text-primary">{chassisAllocation}%</span>
+                <div className="w-24 h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
+                  <div className="h-full bg-blue-500" style={{ width: `${chassisAllocation}%` }} />
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -394,12 +419,9 @@ function NextYearChassisTab({
   onStartWork,
   onAllocationChange,
 }: NextYearChassisTabProps) {
-  // Calculate total allocated to other projects
-  const currentYearAllocation = designState.currentYearChassis.designersAssigned;
-  const technologyAllocation = designState.activeTechnologyProject?.designersAssigned ?? 0;
-  const nextYearAllocation = chassis?.designersAssigned ?? 0;
-  const availableAllocation = 100 - currentYearAllocation - technologyAllocation - nextYearAllocation;
-  const maxNextYearAllocation = 100 - currentYearAllocation - technologyAllocation;
+  const allocation = calculateAllocationBreakdown(designState);
+  // Max allocation = current allocation + available (what's not used by other projects)
+  const maxNextYearAllocation = allocation.nextYear + allocation.available;
 
   const chassisLabel = `${currentYear + 1} Chassis`;
   const chassisName = `Chassis ${currentYear + 1}-A`;
@@ -410,8 +432,9 @@ function NextYearChassisTab({
       <div className="space-y-6">
         <div className="grid grid-cols-2 gap-6">
           <DesignerAllocationPanel
-            availableAllocation={availableAllocation}
+            availableAllocation={allocation.available}
             chassisAllocation={0}
+            maxAllocation={maxNextYearAllocation}
             label={chassisLabel}
           />
           <ChassisInfoPanel chassisName={chassisName} stageName="Not Started" efficiency={0} />
@@ -448,9 +471,11 @@ function NextYearChassisTab({
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-6">
         <DesignerAllocationPanel
-          availableAllocation={availableAllocation}
-          chassisAllocation={nextYearAllocation}
+          availableAllocation={allocation.available}
+          chassisAllocation={allocation.nextYear}
+          maxAllocation={maxNextYearAllocation}
           label={chassisLabel}
+          onAllocationChange={onAllocationChange}
         />
         <ChassisInfoPanel
           chassisName={chassisName}
@@ -473,7 +498,6 @@ function NextYearChassisTab({
           <thead>
             <tr className="text-muted text-xs border-b border-subtle">
               <th className="text-left py-2 w-32">Stage</th>
-              <th className="text-center py-2 w-24">Allocation</th>
               <th className="text-center py-2">Progress</th>
               <th className="text-center py-2 w-16">Done</th>
             </tr>
@@ -488,13 +512,6 @@ function NextYearChassisTab({
               return (
                 <tr key={stage} className="border-b border-subtle last:border-0">
                   <td className="py-3 text-secondary">{STAGE_LABELS[stage]}</td>
-                  <td className="py-3">
-                    <AllocationControl
-                      value={nextYearAllocation}
-                      maxValue={maxNextYearAllocation}
-                      onChange={onAllocationChange}
-                    />
-                  </td>
                   <td className="py-3 px-4">
                     <div className="w-full h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
                       <div
@@ -533,9 +550,10 @@ function NextYearChassisTab({
 interface CurrentYearChassisTabProps {
   chassisState: CurrentYearChassisState;
   currentYear: number;
+  designState: DesignState;
 }
 
-function CurrentYearChassisTab({ chassisState, currentYear }: CurrentYearChassisTabProps) {
+function CurrentYearChassisTab({ chassisState, currentYear, designState }: CurrentYearChassisTabProps) {
   const problemMap = new Map(chassisState.problems.map((p) => [p.problem, p]));
 
   // Find the active problem being worked on, or first discovered unsolved problem
@@ -550,44 +568,21 @@ function CurrentYearChassisTab({ chassisState, currentYear }: CurrentYearChassis
       ? `${activeProblemState.solutionProgress}/${MAX_SOLUTION_PROGRESS}`
       : '---';
 
+  const allocation = calculateAllocationBreakdown(designState);
+  const chassisLabel = `${currentYear} Chassis`;
+  // Max allocation = current allocation + available (what's not used by other projects)
+  const maxCurrentYearAllocation = allocation.currentYear + allocation.available;
+
   return (
     <div className="space-y-6">
       {/* Top Section: Designer Allocation + Chassis Info */}
       <div className="grid grid-cols-2 gap-6">
-        {/* Designer Allocation Panel */}
-        <div className="card p-4">
-          <SectionHeading>Designer</SectionHeading>
-          <div className="mt-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-amber-400">Available</span>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-mono text-primary">
-                  {100 - chassisState.designersAssigned}%
-                </span>
-                <div className="w-24 h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-amber-500"
-                    style={{ width: `${100 - chassisState.designersAssigned}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-secondary">{currentYear} Chassis</span>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-mono text-primary">
-                  {chassisState.designersAssigned}%
-                </span>
-                <div className="w-24 h-2 bg-[var(--neutral-700)] rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-blue-500"
-                    style={{ width: `${chassisState.designersAssigned}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <DesignerAllocationPanel
+          availableAllocation={allocation.available}
+          chassisAllocation={allocation.currentYear}
+          maxAllocation={maxCurrentYearAllocation}
+          label={chassisLabel}
+        />
 
         {/* Chassis Info Panel */}
         <div className="card p-4">
@@ -828,6 +823,7 @@ export function Design() {
         <CurrentYearChassisTab
           chassisState={designState.currentYearChassis}
           currentYear={currentYear}
+          designState={designState}
         />
       )}
       {activeTab === 'technology' && <TechnologyTab levels={designState.technologyLevels} />}
