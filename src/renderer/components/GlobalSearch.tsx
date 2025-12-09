@@ -3,7 +3,7 @@
  * Opens with Ctrl+K, searches teams, drivers, staff, circuits, and pages
  */
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { Search, Users, User, UserCog, MapPin, FileText } from 'lucide-react';
 import { useGlobalSearch, type SearchResult, type SearchResultType } from '../hooks/useGlobalSearch';
 import type { SectionId } from '../navigation';
@@ -104,11 +104,25 @@ export function GlobalSearch({ isOpen, onClose, onSelect }: GlobalSearchProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // Build flat list of all results for keyboard navigation
-  const flatResults: SearchResult[] = [];
-  for (const config of GROUP_CONFIG) {
-    flatResults.push(...results[config.key]);
-  }
+  // Memoize flat list of all results for keyboard navigation
+  const flatResults = useMemo(() => {
+    const flat: SearchResult[] = [];
+    for (const config of GROUP_CONFIG) {
+      flat.push(...results[config.key]);
+    }
+    return flat;
+  }, [results]);
+
+  // Memoize base indices for each group
+  const groupBaseIndices = useMemo(() => {
+    let baseIndex = 0;
+    const indices: Record<string, number> = {};
+    for (const config of GROUP_CONFIG) {
+      indices[config.key] = baseIndex;
+      baseIndex += results[config.key].length;
+    }
+    return indices;
+  }, [results]);
 
   // Reset state when opening
   useEffect(() => {
@@ -168,14 +182,6 @@ export function GlobalSearch({ isOpen, onClose, onSelect }: GlobalSearchProps) {
   );
 
   if (!isOpen) return null;
-
-  // Calculate base indices for each group
-  let baseIndex = 0;
-  const groupBaseIndices: Record<string, number> = {};
-  for (const config of GROUP_CONFIG) {
-    groupBaseIndices[config.key] = baseIndex;
-    baseIndex += results[config.key].length;
-  }
 
   return (
     <div
