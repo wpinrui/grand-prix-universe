@@ -32,17 +32,19 @@ interface ResultGroupProps {
 // CONSTANTS
 // ===========================================
 
-const GROUP_CONFIG: Array<{
-  key: keyof ReturnType<typeof useGlobalSearch>['results'];
-  label: string;
-  icon: React.ReactNode;
-}> = [
+const GROUP_CONFIG = [
   { key: 'teams', label: 'Teams', icon: <Users size={14} /> },
   { key: 'drivers', label: 'Drivers', icon: <User size={14} /> },
   { key: 'staff', label: 'Staff', icon: <UserCog size={14} /> },
   { key: 'circuits', label: 'Circuits', icon: <MapPin size={14} /> },
   { key: 'pages', label: 'Pages', icon: <FileText size={14} /> },
-];
+] as const satisfies ReadonlyArray<{
+  key: keyof ReturnType<typeof useGlobalSearch>['results'];
+  label: string;
+  icon: React.ReactNode;
+}>;
+
+type GroupKey = (typeof GROUP_CONFIG)[number]['key'];
 
 const KBD_CLASSES = 'px-1.5 py-0.5 font-mono bg-[var(--neutral-800)] rounded border border-subtle mr-1';
 
@@ -118,7 +120,7 @@ export function GlobalSearch({ isOpen, onClose, onSelect }: GlobalSearchProps) {
   // Memoize base indices for each group
   const groupBaseIndices = useMemo(() => {
     let baseIndex = 0;
-    const indices: Record<string, number> = {};
+    const indices = {} as Record<GroupKey, number>;
     for (const config of GROUP_CONFIG) {
       indices[config.key] = baseIndex;
       baseIndex += results[config.key].length;
