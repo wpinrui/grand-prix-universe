@@ -123,6 +123,12 @@ export function PersonHeader({
       // Clear previous content
       faceContainerRef.current.innerHTML = '';
       generateFace(faceContainerRef.current, personId, nationality, teamColors, 128);
+      // Center the generated SVG
+      const svg = faceContainerRef.current.querySelector('svg');
+      if (svg) {
+        svg.style.display = 'block';
+        svg.style.margin = 'auto';
+      }
     }
   }, [photoUrl, personId, nationality, teamColors]);
 
