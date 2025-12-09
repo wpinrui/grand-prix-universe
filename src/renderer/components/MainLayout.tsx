@@ -42,6 +42,31 @@ import { RoutePaths } from '../routes';
 
 type ActiveDialog = ActionType | null;
 
+// Route map for simple components (no props needed)
+const ROUTE_COMPONENTS: Partial<Record<SectionId, Record<string, React.ComponentType>>> = {
+  team: {
+    profile: TeamProfile,
+    mail: Mail,
+    finance: Finance,
+    staff: Staff,
+    wiki: PlayerWiki,
+  },
+  world: {
+    news: News,
+  },
+  engineering: {
+    cars: Cars,
+    factory: Factory,
+    design: Design,
+  },
+  fia: {
+    championship: Championship,
+  },
+  options: {
+    'game-options': GameOptions,
+  },
+};
+
 export function MainLayout() {
   const [selectedSectionId, setSelectedSectionId] = useState<SectionId>(defaultSection);
   const [selectedSubItemId, setSelectedSubItemId] = useState<string>(defaultSubItem);
@@ -113,8 +138,6 @@ export function MainLayout() {
     setIsCalendarPreviewOpen(false);
   }, []);
 
-  const isOptionsScreen = selectedSectionId === 'options';
-
   // Shared calendar data props (used by both CalendarPreviewPanel and SimulationOverlay)
   const calendarDataProps = gameState?.currentDate
     ? {
@@ -147,50 +170,10 @@ export function MainLayout() {
   }
 
   const renderContent = () => {
-    if (selectedSectionId === 'team' && selectedSubItemId === 'profile') {
-      return <TeamProfile />;
-    }
-
-    if (selectedSectionId === 'world' && selectedSubItemId === 'news') {
-      return <News />;
-    }
-
-    if (selectedSectionId === 'team' && selectedSubItemId === 'mail') {
-      return <Mail />;
-    }
-
-    if (selectedSectionId === 'team' && selectedSubItemId === 'finance') {
-      return <Finance />;
-    }
-
-    if (selectedSectionId === 'team' && selectedSubItemId === 'staff') {
-      return <Staff />;
-    }
-
-    if (selectedSectionId === 'team' && selectedSubItemId === 'wiki') {
-      return <PlayerWiki />;
-    }
-
-    if (selectedSectionId === 'engineering' && selectedSubItemId === 'cars') {
-      return <Cars />;
-    }
-
-    if (selectedSectionId === 'engineering' && selectedSubItemId === 'factory') {
-      return <Factory />;
-    }
-
-    if (selectedSectionId === 'engineering' && selectedSubItemId === 'design') {
-      return <Design />;
-    }
-
-    if (selectedSectionId === 'fia' && selectedSubItemId === 'championship') {
-      return <Championship />;
-    }
-
+    // Routes with props - handle explicitly
     if (selectedSectionId === 'fia' && selectedSubItemId === 'races') {
       return <Races onViewRaceReport={navigateToRaceReport} />;
     }
-
     if (selectedSectionId === 'fia' && selectedSubItemId === 'results') {
       return (
         <Results
@@ -199,25 +182,25 @@ export function MainLayout() {
         />
       );
     }
-
-    if (isOptionsScreen) {
-      switch (selectedSubItemId) {
-        case 'saved-games':
-          return <SavedGames onNavigateToProfile={navigateToProfile} />;
-        case 'game-options':
-          return <GameOptions />;
-        default:
-          if (isActionType(selectedSubItemId)) {
-            return (
-              <ActionScreen
-                {...ACTION_CONFIGS[selectedSubItemId].screen}
-                onShowDialog={() => setActiveDialog(selectedSubItemId)}
-              />
-            );
-          }
-      }
+    if (selectedSectionId === 'options' && selectedSubItemId === 'saved-games') {
+      return <SavedGames onNavigateToProfile={navigateToProfile} />;
+    }
+    if (selectedSectionId === 'options' && isActionType(selectedSubItemId)) {
+      return (
+        <ActionScreen
+          {...ACTION_CONFIGS[selectedSubItemId].screen}
+          onShowDialog={() => setActiveDialog(selectedSubItemId)}
+        />
+      );
     }
 
+    // Simple routes - use route map
+    const RouteComponent = ROUTE_COMPONENTS[selectedSectionId]?.[selectedSubItemId];
+    if (RouteComponent) {
+      return <RouteComponent />;
+    }
+
+    // Fallback for unimplemented routes
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
