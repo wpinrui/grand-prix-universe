@@ -173,6 +173,8 @@ export function TeamHeader({ team, allTeams, onTeamSelect, principalName }: Team
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
+
   const handleTeamClick = (teamId: string) => {
     setIsDropdownOpen(false);
     onTeamSelect?.(teamId);
@@ -194,7 +196,7 @@ export function TeamHeader({ team, allTeams, onTeamSelect, principalName }: Team
             className={`text-2xl font-bold text-primary tracking-tight ${
               showDropdown ? 'cursor-pointer hover:text-[var(--accent-400)] transition-colors' : ''
             }`}
-            onClick={showDropdown ? () => setIsDropdownOpen(!isDropdownOpen) : undefined}
+            onClick={showDropdown ? toggleDropdown : undefined}
           >
             {team.name}
           </h1>
@@ -202,7 +204,7 @@ export function TeamHeader({ team, allTeams, onTeamSelect, principalName }: Team
             <>
               <button
                 type="button"
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                onClick={toggleDropdown}
                 className="p-1 text-muted hover:text-primary cursor-pointer transition-colors"
                 title="Select team"
               >
