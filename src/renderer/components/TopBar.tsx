@@ -4,6 +4,8 @@ import { ACCENT_MUTED_BUTTON_CLASSES, ACCENT_MUTED_BUTTON_STYLE, ICON_BUTTON_GHO
 import { AdvanceWeekButton } from './AdvanceWeekButton';
 import { formatGameDate } from '../../shared/utils/date-utils';
 
+const NAV_BUTTON_CLASSES = `${ICON_BUTTON_GHOST_CLASSES} p-1.5 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed`;
+
 interface TopBarProps {
   currentDate: GameDate | null;
   playerTeam: Team | null;
@@ -35,7 +37,7 @@ export function TopBar({
             type="button"
             onClick={onBack}
             disabled={!canGoBack}
-            className={`${ICON_BUTTON_GHOST_CLASSES} p-1.5 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed`}
+            className={NAV_BUTTON_CLASSES}
             title="Go back"
           >
             <ChevronLeft size={20} />
@@ -44,7 +46,7 @@ export function TopBar({
             type="button"
             onClick={onForward}
             disabled={!canGoForward}
-            className={`${ICON_BUTTON_GHOST_CLASSES} p-1.5 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed`}
+            className={NAV_BUTTON_CLASSES}
             title="Go forward"
           >
             <ChevronRight size={20} />

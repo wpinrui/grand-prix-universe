@@ -44,6 +44,8 @@ const GROUP_CONFIG: Array<{
   { key: 'pages', label: 'Pages', icon: <FileText size={14} /> },
 ];
 
+const KBD_CLASSES = 'px-1.5 py-0.5 font-mono bg-[var(--neutral-800)] rounded border border-subtle mr-1';
+
 // ===========================================
 // RESULT GROUP COMPONENT
 // ===========================================
@@ -239,11 +241,11 @@ export function GlobalSearch({ isOpen, onClose, onSelect }: GlobalSearchProps) {
         {hasResults && (
           <div className="px-4 py-2 border-t border-subtle text-xs text-muted flex items-center gap-4">
             <span>
-              <kbd className="px-1.5 py-0.5 font-mono bg-[var(--neutral-800)] rounded border border-subtle mr-1">↑↓</kbd>
+              <kbd className={KBD_CLASSES}>↑↓</kbd>
               Navigate
             </span>
             <span>
-              <kbd className="px-1.5 py-0.5 font-mono bg-[var(--neutral-800)] rounded border border-subtle mr-1">↵</kbd>
+              <kbd className={KBD_CLASSES}>↵</kbd>
               Select
             </span>
           </div>
