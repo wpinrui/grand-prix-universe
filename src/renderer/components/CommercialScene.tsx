@@ -104,13 +104,22 @@ export function CommercialScene({ className = '', blurred = false }: CommercialS
           near: 0.1,
           far: 1000,
         }}
-        gl={{ antialias: true, alpha: true }}
+        gl={{ antialias: true, alpha: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.2 }}
         style={{ background: 'transparent' }}
       >
-        {/* Lighting */}
-        <Environment preset="apartment" />
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[10, 10, 5]} intensity={1} />
+        {/* Lighting - warm office feel */}
+        <Environment preset="sunset" />
+        <ambientLight intensity={0.3} color="#fff5e6" />
+        <directionalLight
+          position={[10, 10, 5]}
+          intensity={1.5}
+          color="#fff8f0"
+          castShadow
+        />
+        {/* Fill light from windows */}
+        <directionalLight position={[-5, 3, 8]} intensity={0.8} color="#e6f0ff" />
+        {/* Warm bounce light */}
+        <pointLight position={[0, 2, 0]} intensity={0.4} color="#ffdfba" />
 
         {/* Office Model */}
         <Suspense fallback={<LoadingFallback />}>
