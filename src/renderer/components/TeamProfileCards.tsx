@@ -5,7 +5,7 @@
 import type { CSSProperties } from 'react';
 import { FlagIcon } from './FlagIcon';
 import { TeamBadge } from './TeamBadge';
-import { SectionHeading } from './ContentPrimitives';
+import { SectionHeading } from './SectionHeading';
 import { ACCENT_CARD_STYLE, ACCENT_TEXT_STYLE } from '../utils/theme-styles';
 import {
   formatCurrency,
