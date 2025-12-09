@@ -40,7 +40,57 @@ Grand Prix Universe recreates the depth and feel of GPW with:
 - ✅ Phase 2: Engine Abstractions
 - ✅ Phase 3: Game Loop & State
 - ✅ Phase 4: UI Shell (navigation, layout, theming)
-- 🔄 Phase 5: Section UIs (1/28 screens done)
+- 🔄 Phase 5: Section UIs
+
+### Screen Completion
+
+**TEAM** (5/5)
+- [x] Profile
+- [x] Mail
+- [x] Finance
+- [x] Staff
+- [x] Player Wiki
+
+**WORLD** (5/5)
+- [x] News
+- [x] Teams
+- [x] Drivers
+- [x] Staff
+- [x] Stats
+
+**ENGINEERING** (3/6)
+- [x] Cars
+- [ ] Testing
+- [x] Design (partial - 2/4 tabs)
+- [ ] Construction
+- [ ] Contracts
+- [x] Factory
+
+**COMMERCIAL** (0/4)
+- [ ] Sponsors
+- [ ] Deals
+- [ ] Hospitality
+- [ ] Licensing
+
+**RACING** (0/4)
+- [ ] Orders
+- [ ] Car Set-Up
+- [ ] Assembly
+- [ ] Pit Lane
+
+**FIA** (3/6)
+- [x] Championship
+- [x] Results
+- [x] Races
+- [ ] Ranking
+- [ ] Regulations
+- [ ] History
+
+**OPTIONS** (4/4)
+- [x] Saved Games
+- [x] Game Options
+- [x] Restart Game
+- [x] Quit
 
 See [agents/proposal.md](agents/proposal.md) for full design document.
 
