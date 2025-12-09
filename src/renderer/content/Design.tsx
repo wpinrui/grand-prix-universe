@@ -29,8 +29,8 @@ type DesignTab = 'summary' | 'next-year' | 'current-year' | 'technology';
 function getTabs(currentYear: number): Tab<DesignTab>[] {
   return [
     { id: 'summary', label: 'Summary' },
-    { id: 'next-year', label: `${currentYear + 1} Chassis` },
     { id: 'current-year', label: `${currentYear} Chassis` },
+    { id: 'next-year', label: `${currentYear + 1} Chassis` },
     { id: 'technology', label: 'Technology' },
   ];
 }
