@@ -25,7 +25,6 @@ interface StaffMember {
   id: string;
   firstName: string;
   lastName: string;
-  type: 'principal' | 'chief';
   role: StaffFilterType;
   ability: number;
   teamId: string | null;
@@ -88,7 +87,6 @@ export function WorldStaff({ initialStaffId }: WorldStaffProps) {
       id: c.id,
       firstName: c.firstName,
       lastName: c.lastName,
-      type: 'chief' as const,
       role: c.role,
       ability: c.ability,
       teamId: c.teamId,
