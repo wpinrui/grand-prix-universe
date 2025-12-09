@@ -4,6 +4,8 @@
  */
 import type { CSSProperties } from 'react';
 import { FlagIcon } from './FlagIcon';
+import { TeamBadge } from './TeamBadge';
+import { SectionHeading } from './ContentPrimitives';
 import { ACCENT_CARD_STYLE, ACCENT_TEXT_STYLE } from '../utils/theme-styles';
 import {
   formatCurrency,
@@ -12,7 +14,7 @@ import {
   DRIVER_ROLE_LABELS,
   CHIEF_ROLE_LABELS,
 } from '../utils/format';
-import type { Driver, Chief, DriverStanding, ConstructorStanding } from '../../shared/domain';
+import type { Team, Driver, Chief, DriverStanding, ConstructorStanding } from '../../shared/domain';
 
 // ===========================================
 // STAT DISPLAY COMPONENTS
@@ -137,6 +139,86 @@ export function ChiefCard({ chief }: ChiefCardProps) {
         <div>Ability: {chief.ability}</div>
         <div>{formatContractLine(chief.salary, chief.contractEnd)}</div>
       </div>
+    </div>
+  );
+}
+
+// ===========================================
+// TEAM HEADER
+// ===========================================
+
+interface TeamHeaderProps {
+  team: Team;
+}
+
+export function TeamHeader({ team }: TeamHeaderProps) {
+  return (
+    <div className="flex items-start gap-6">
+      <TeamBadge team={team} className="w-24 h-20" />
+      <div className="flex-1">
+        <h1 className="text-2xl font-bold text-primary tracking-tight">{team.name}</h1>
+        <p className="text-sm text-muted mt-2 max-w-2xl leading-relaxed">{team.description}</p>
+      </div>
+      <div className="flex items-center gap-2 text-secondary">
+        <FlagIcon country={team.headquarters} size="md" />
+        <span className="font-medium">{team.headquarters}</span>
+      </div>
+    </div>
+  );
+}
+
+// ===========================================
+// TEAM PROFILE CONTENT (FULL LAYOUT)
+// ===========================================
+
+interface TeamProfileContentProps {
+  team: Team;
+  drivers: Driver[];
+  chiefs: Chief[];
+  constructorStanding: ConstructorStanding | undefined;
+  driverStandingsMap: Map<string, DriverStanding>;
+}
+
+export function TeamProfileContent({
+  team,
+  drivers,
+  chiefs,
+  constructorStanding,
+  driverStandingsMap,
+}: TeamProfileContentProps) {
+  return (
+    <div className="space-y-8">
+      <TeamHeader team={team} />
+
+      <TeamStatsGrid budget={team.budget} standing={constructorStanding} />
+
+      {/* Drivers Section */}
+      <section>
+        <SectionHeading>Drivers</SectionHeading>
+        {drivers.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {drivers.map((driver) => (
+              <DriverCard key={driver.id} driver={driver} standing={driverStandingsMap.get(driver.id)} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-muted">No drivers contracted</p>
+        )}
+      </section>
+
+      {/* Chiefs Section */}
+      <section>
+        <SectionHeading>Department Chiefs</SectionHeading>
+        {chiefs.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {chiefs.map((chief) => (
+              <ChiefCard key={chief.id} chief={chief} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-muted">No chiefs assigned</p>
+        )}
+      </section>
     </div>
   );
 }

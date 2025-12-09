@@ -1,77 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useDerivedGameState } from '../../hooks';
-import { TeamBadge } from '../../components/TeamBadge';
-import { FlagIcon } from '../../components/FlagIcon';
-import { SectionHeading, TeamStatsGrid, DriverCard, ChiefCard } from '../../components';
-import type { Team, Driver, Chief, DriverStanding, ConstructorStanding } from '../../../shared/domain';
+import { TeamProfileContent } from '../../components';
+import type { DriverStanding, ConstructorStanding } from '../../../shared/domain';
 
-// ===========================================
-// TEAM PROFILE CONTENT
-// ===========================================
-
-interface TeamProfileContentProps {
-  team: Team;
-  drivers: Driver[];
-  chiefs: Chief[];
-  constructorStanding: ConstructorStanding | undefined;
-  driverStandingsMap: Map<string, DriverStanding>;
-}
-
-function TeamProfileContent({
-  team,
-  drivers,
-  chiefs,
-  constructorStanding,
-  driverStandingsMap,
-}: TeamProfileContentProps) {
-  return (
-    <div className="space-y-8">
-      {/* Team Header */}
-      <div className="flex items-start gap-6">
-        <TeamBadge team={team} className="w-24 h-20" />
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold text-primary tracking-tight">{team.name}</h1>
-          <p className="text-sm text-muted mt-2 max-w-2xl leading-relaxed">{team.description}</p>
-        </div>
-        <div className="flex items-center gap-2 text-secondary">
-          <FlagIcon country={team.headquarters} size="md" />
-          <span className="font-medium">{team.headquarters}</span>
-        </div>
-      </div>
-
-      {/* Team Stats Grid */}
-      <TeamStatsGrid budget={team.budget} standing={constructorStanding} />
-
-      {/* Drivers Section */}
-      <section>
-        <SectionHeading>Drivers</SectionHeading>
-        {drivers.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {drivers.map((driver) => (
-              <DriverCard key={driver.id} driver={driver} standing={driverStandingsMap.get(driver.id)} />
-            ))}
-          </div>
-        ) : (
-          <p className="text-muted">No drivers contracted</p>
-        )}
-      </section>
-
-      {/* Chiefs Section */}
-      <section>
-        <SectionHeading>Department Chiefs</SectionHeading>
-        {chiefs.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {chiefs.map((chief) => (
-              <ChiefCard key={chief.id} chief={chief} />
-            ))}
-          </div>
-        ) : (
-          <p className="text-muted">No chiefs assigned</p>
-        )}
-      </section>
-    </div>
-  );
-}
+/** Used for sorting teams without standings to the end */
+const NO_STANDING_POSITION = 999;
 
 // ===========================================
 // MAIN COMPONENT
@@ -114,8 +47,8 @@ export function WorldTeams({ initialTeamId }: WorldTeamsProps) {
 
   // Sort teams by constructor standings position
   const sortedTeams = [...teams].sort((a, b) => {
-    const posA = constructorStandingsMap.get(a.id)?.position ?? 999;
-    const posB = constructorStandingsMap.get(b.id)?.position ?? 999;
+    const posA = constructorStandingsMap.get(a.id)?.position ?? NO_STANDING_POSITION;
+    const posB = constructorStandingsMap.get(b.id)?.position ?? NO_STANDING_POSITION;
     return posA - posB;
   });
 
