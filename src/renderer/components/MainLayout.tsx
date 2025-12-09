@@ -303,22 +303,27 @@ export function MainLayout() {
 
           {/* Content Area - with background image, blur, and team tint */}
           <main className="content relative flex-1 overflow-hidden">
-            {/* Commercial section uses 3D scene as background */}
-            {selectedSectionId === 'commercial' ? (
+            {/* 3D scene - always mounted, hidden when not on commercial */}
+            <div
+              className={`absolute inset-0 ${
+                selectedSectionId === 'commercial' ? '' : 'invisible'
+              }`}
+            >
               <CommercialScene
-                className="absolute inset-0"
+                className="w-full h-full"
                 blurred={selectedSubItemId !== 'overview'}
               />
-            ) : (
-              playerTeam && (
-                <BackgroundLayer
-                  teamId={playerTeam.id}
-                  tintColor="var(--accent-900)"
-                  position="absolute"
-                  tintOpacity={75}
-                  baseOpacity={92}
-                />
-              )
+            </div>
+
+            {/* Background layer for non-commercial sections */}
+            {selectedSectionId !== 'commercial' && playerTeam && (
+              <BackgroundLayer
+                teamId={playerTeam.id}
+                tintColor="var(--accent-900)"
+                position="absolute"
+                tintOpacity={75}
+                baseOpacity={92}
+              />
             )}
 
             {/* Content layer */}
