@@ -2,7 +2,7 @@
  * Shared card components for displaying team profile information.
  * Used by both TeamProfile (player's team) and WorldTeams (any team).
  */
-import type { CSSProperties } from 'react';
+import { useState, useRef, useEffect, type CSSProperties } from 'react';
 import { FlagIcon } from './FlagIcon';
 import { TeamBadge } from './TeamBadge';
 import { SectionHeading } from './SectionHeading';
@@ -150,28 +150,75 @@ export function ChiefCard({ chief }: ChiefCardProps) {
 
 interface TeamHeaderProps {
   team: Team;
-  /** If provided, shows a chevron button that navigates to World > Teams */
-  onNavigateToTeam?: () => void;
+  /** All teams available for selection in the dropdown */
+  allTeams?: Team[];
+  /** Called when a team is selected from the dropdown */
+  onTeamSelect?: (teamId: string) => void;
 }
 
-export function TeamHeader({ team, onNavigateToTeam }: TeamHeaderProps) {
+export function TeamHeader({ team, allTeams, onTeamSelect }: TeamHeaderProps) {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleTeamClick = (teamId: string) => {
+    setIsDropdownOpen(false);
+    onTeamSelect?.(teamId);
+  };
+
+  const showDropdown = allTeams && allTeams.length > 0 && onTeamSelect;
+
   return (
     <div className="flex items-start gap-6">
       <TeamBadge team={team} className="w-24 h-20" />
       <div className="flex-1">
-        <div className="flex items-center gap-2">
+        <div className="relative inline-flex items-center gap-2" ref={dropdownRef}>
           <h1 className="text-2xl font-bold text-primary tracking-tight">{team.name}</h1>
-          {onNavigateToTeam && (
-            <button
-              type="button"
-              onClick={onNavigateToTeam}
-              className="p-1 text-muted hover:text-primary cursor-pointer transition-colors"
-              title="View in World Teams"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+          {showDropdown && (
+            <>
+              <button
+                type="button"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="p-1 text-muted hover:text-primary cursor-pointer transition-colors"
+                title="Select team"
+              >
+                <svg
+                  className={`w-5 h-5 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {isDropdownOpen && (
+                <ul className="absolute top-full left-0 mt-1 z-50 min-w-64 max-h-80 overflow-auto surface-primary border border-subtle rounded-lg shadow-lg py-1">
+                  {allTeams.map((t) => (
+                    <li
+                      key={t.id}
+                      onClick={() => handleTeamClick(t.id)}
+                      className={`px-4 py-2 cursor-pointer transition-colors ${
+                        t.id === team.id
+                          ? 'text-[var(--accent-400)] hover:bg-[var(--neutral-700)]'
+                          : 'text-primary hover:bg-[var(--neutral-700)]'
+                      }`}
+                    >
+                      {t.name}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
           )}
         </div>
         {team.principal && (
@@ -197,8 +244,10 @@ interface TeamProfileContentProps {
   chiefs: Chief[];
   constructorStanding: ConstructorStanding | undefined;
   driverStandingsMap: Map<string, DriverStanding>;
-  /** If provided, shows a chevron button that navigates to World > Teams */
-  onNavigateToTeam?: () => void;
+  /** All teams available for selection in the dropdown */
+  allTeams?: Team[];
+  /** Called when a team is selected from the dropdown */
+  onTeamSelect?: (teamId: string) => void;
 }
 
 export function TeamProfileContent({
@@ -207,11 +256,12 @@ export function TeamProfileContent({
   chiefs,
   constructorStanding,
   driverStandingsMap,
-  onNavigateToTeam,
+  allTeams,
+  onTeamSelect,
 }: TeamProfileContentProps) {
   return (
     <div className="space-y-8">
-      <TeamHeader team={team} onNavigateToTeam={onNavigateToTeam} />
+      <TeamHeader team={team} allTeams={allTeams} onTeamSelect={onTeamSelect} />
 
       <TeamStatsGrid budget={team.budget} standing={constructorStanding} />
 

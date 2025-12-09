@@ -33,7 +33,8 @@ export function TeamProfile() {
         chiefs={teamChiefs}
         constructorStanding={constructorStanding}
         driverStandingsMap={driverStandingsMap}
-        onNavigateToTeam={() => navigateToEntity('team', playerTeam.id)}
+        allTeams={gameState.teams}
+        onTeamSelect={(teamId) => navigateToEntity('team', teamId)}
       />
     </div>
   );
