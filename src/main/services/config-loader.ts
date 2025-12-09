@@ -17,6 +17,7 @@ import type {
   Sponsor,
   Manufacturer,
   Chief,
+  TeamPrincipal,
   GameRules,
   Regulations,
   SeasonRegulations,
@@ -48,6 +49,10 @@ interface ManufacturersFile {
 
 interface ChiefsFile {
   chiefs: Chief[];
+}
+
+interface PrincipalsFile {
+  principals: TeamPrincipal[];
 }
 
 /** Race schedule entry mapping circuit to week */
@@ -118,7 +123,7 @@ function loadConfigFile<T>(filename: string): T | null {
 }
 
 // Unified cache for all content types
-type CacheKey = 'teams' | 'drivers' | 'circuits' | 'sponsors' | 'manufacturers' | 'chiefs' | 'raceSchedule';
+type CacheKey = 'teams' | 'drivers' | 'circuits' | 'sponsors' | 'manufacturers' | 'chiefs' | 'principals' | 'raceSchedule';
 const cache: Record<CacheKey, unknown[] | null> = {
   teams: null,
   drivers: null,
@@ -126,6 +131,7 @@ const cache: Record<CacheKey, unknown[] | null> = {
   sponsors: null,
   manufacturers: null,
   chiefs: null,
+  principals: null,
   raceSchedule: null,
 };
 
@@ -226,6 +232,22 @@ export const ConfigLoader = {
     return this.getChiefs().find((chief) => chief.id === id);
   },
 
+  getPrincipals(): TeamPrincipal[] {
+    return getCachedContent<PrincipalsFile, TeamPrincipal>(
+      'principals',
+      'team-principals.json',
+      (f) => f.principals
+    );
+  },
+
+  getPrincipalById(id: string): TeamPrincipal | undefined {
+    return this.getPrincipals().find((principal) => principal.id === id);
+  },
+
+  getPrincipalByTeamId(teamId: string): TeamPrincipal | undefined {
+    return this.getPrincipals().find((principal) => principal.teamId === teamId);
+  },
+
   getRaceSchedule(): RaceScheduleEntry[] {
     return getCachedContent<RaceScheduleFile, RaceScheduleEntry>(
       'raceSchedule',
@@ -301,6 +323,7 @@ export const ConfigLoader = {
     cache.sponsors = null;
     cache.manufacturers = null;
     cache.chiefs = null;
+    cache.principals = null;
     cache.raceSchedule = null;
     configCache.rules = NOT_LOADED;
     configCache.regulations = NOT_LOADED;

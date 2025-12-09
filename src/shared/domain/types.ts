@@ -328,6 +328,21 @@ export interface Chief {
   contractEnd: number;
 }
 
+/**
+ * TeamPrincipal - The team boss/manager
+ * Responsible for overall team strategy, negotiations, and leadership
+ */
+export interface TeamPrincipal {
+  id: string;
+  firstName: string;
+  lastName: string;
+  nationality: string;
+  ability: number; // 0-100, management/leadership skill
+  teamId: string | null; // null = available for hire
+  salary: number;
+  contractEnd: number;
+}
+
 // =============================================================================
 // TECHNICAL TYPES
 // =============================================================================
