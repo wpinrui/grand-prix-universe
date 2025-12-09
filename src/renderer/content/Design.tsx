@@ -7,7 +7,6 @@ import {
   type ChassisDesign,
   type TechnologyLevel,
   type CurrentYearChassisState,
-  type DesignState,
 } from '../../shared/domain';
 
 // ===========================================
@@ -254,7 +253,7 @@ export function Design() {
   }
 
   const teamState = gameState.teamStates[playerTeam.id];
-  const designState: DesignState = teamState.designState;
+  const designState = teamState.designState;
   const currentSeason = gameState.currentSeason.seasonNumber;
 
   // Summary stats
