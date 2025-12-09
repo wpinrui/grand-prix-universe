@@ -1,4 +1,6 @@
 export { MainLayout } from './MainLayout';
+export { Dropdown } from './Dropdown';
+export type { DropdownOption } from './Dropdown';
 export { BackgroundLayer } from './BackgroundLayer';
 export { SectionHeading } from './SectionHeading';
 export { CalendarEventRow } from './CalendarEventRow';
