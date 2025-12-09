@@ -74,7 +74,6 @@ const MAX_TECH_LEVEL = 100;
 const MAX_SOLUTION_PROGRESS = 10;
 const LEVEL_BAR_BOXES = 5; // Number of boxes in LevelBar visualization
 const LEVEL_BAR_STEP = MAX_TECH_LEVEL / LEVEL_BAR_BOXES; // 20 points per box
-const HANDLING_REVEALED_PER_TEST_LEVEL = 20; // Each test level reveals 20% handling
 const ALLOCATION_STEP = 10; // Increment/decrement step for designer allocation
 
 const PROBLEM_LABELS: Record<HandlingProblem, string> = {
@@ -232,12 +231,12 @@ function SummaryTab({ designState, currentYear }: SummaryTabProps) {
                     <td className="py-1.5 text-secondary">{TECH_LABELS[component]}</td>
                     <td className="py-1.5">
                       <div className="flex justify-center">
-                        <LevelBar value={level?.performance ?? 1} compact />
+                        <LevelBar value={level?.performance ?? 0} compact />
                       </div>
                     </td>
                     <td className="py-1.5">
                       <div className="flex justify-center">
-                        <LevelBar value={level?.reliability ?? 1} compact />
+                        <LevelBar value={level?.reliability ?? 0} compact />
                       </div>
                     </td>
                   </tr>
@@ -636,7 +635,7 @@ function CurrentYearChassisTab({ chassisState, currentYear, designState }: Curre
           <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted">Tests</span>
-              <LevelBar value={Math.ceil(chassisState.handlingRevealed / HANDLING_REVEALED_PER_TEST_LEVEL)} />
+              <LevelBar value={chassisState.handlingRevealed} />
             </div>
             <div className="flex justify-between">
               <span className="text-muted">Handling</span>
@@ -763,8 +762,8 @@ function TechnologyTab({ levels }: TechnologyTabProps) {
     <div className="grid grid-cols-4 gap-4">
       {TECH_ORDER.map((component) => {
         const level = levelMap.get(component);
-        const perf = level?.performance ?? 1;
-        const rel = level?.reliability ?? 1;
+        const perf = level?.performance ?? 0;
+        const rel = level?.reliability ?? 0;
 
         return (
           <div key={component} className="card p-4">
