@@ -23,6 +23,24 @@ interface DropdownProps<T extends string> {
 }
 
 // ===========================================
+// HELPERS
+// ===========================================
+
+function getOptionClasses(isHighlighted: boolean, isSelected: boolean): string {
+  const base = 'px-4 py-2 cursor-pointer transition-colors';
+
+  if (isHighlighted) {
+    return `${base} bg-[var(--accent-600)] text-white`;
+  }
+
+  if (isSelected) {
+    return `${base} text-[var(--accent-400)] hover:bg-[var(--neutral-700)]`;
+  }
+
+  return `${base} text-primary hover:bg-[var(--neutral-700)]`;
+}
+
+// ===========================================
 // COMPONENT
 // ===========================================
 
@@ -175,26 +193,19 @@ export function Dropdown<T extends string>({
           }
           className="absolute z-50 mt-1 w-full max-h-60 overflow-auto surface-primary border border-subtle rounded-lg shadow-lg py-1"
         >
-          {options.map((option, index) => {
-            const isSelected = option.value === value;
-            const isHighlighted = index === highlightedIndex;
-
-            return (
-              <li
-                key={option.value}
-                id={id ? `${id}-option-${index}` : undefined}
-                role="option"
-                aria-selected={isSelected}
-                onClick={() => handleSelect(option.value)}
-                onMouseEnter={() => setHighlightedIndex(index)}
-                className={`px-4 py-2 cursor-pointer transition-colors ${
-                  isHighlighted ? 'bg-[var(--accent-600)] text-white' : 'text-primary hover:bg-[var(--neutral-700)]'
-                } ${isSelected && !isHighlighted ? 'text-[var(--accent-400)]' : ''}`}
-              >
-                {option.label}
-              </li>
-            );
-          })}
+          {options.map((option, index) => (
+            <li
+              key={option.value}
+              id={id ? `${id}-option-${index}` : undefined}
+              role="option"
+              aria-selected={option.value === value}
+              onClick={() => handleSelect(option.value)}
+              onMouseEnter={() => setHighlightedIndex(index)}
+              className={getOptionClasses(index === highlightedIndex, option.value === value)}
+            >
+              {option.label}
+            </li>
+          ))}
         </ul>
       )}
     </div>
