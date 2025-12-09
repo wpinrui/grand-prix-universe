@@ -190,7 +190,14 @@ export function TeamHeader({ team, allTeams, onTeamSelect, principalName }: Team
       <TeamBadge team={team} className="w-24 h-20" />
       <div className="flex-1">
         <div className="relative inline-flex items-center gap-2" ref={dropdownRef}>
-          <h1 className="text-2xl font-bold text-primary tracking-tight">{team.name}</h1>
+          <h1
+            className={`text-2xl font-bold text-primary tracking-tight ${
+              showDropdown ? 'cursor-pointer hover:text-[var(--accent-400)] transition-colors' : ''
+            }`}
+            onClick={showDropdown ? () => setIsDropdownOpen(!isDropdownOpen) : undefined}
+          >
+            {team.name}
+          </h1>
           {showDropdown && (
             <>
               <button
