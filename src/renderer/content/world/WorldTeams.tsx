@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useDerivedGameState } from '../../hooks';
-import { TeamProfileContent } from '../../components';
+import { TeamProfileContent, Dropdown } from '../../components';
+import type { DropdownOption } from '../../components';
 import type { DriverStanding, ConstructorStanding } from '../../../shared/domain';
 
 /** Used for sorting teams without standings to the end */
@@ -57,6 +58,16 @@ export function WorldTeams({ initialTeamId }: WorldTeamsProps) {
   const teamChiefs = chiefs.filter((c) => c.teamId === selectedTeam.id);
   const constructorStanding = constructorStandingsMap.get(selectedTeam.id);
 
+  // Memoize dropdown options to avoid recreation on every render
+  const teamOptions: DropdownOption<string>[] = useMemo(
+    () =>
+      sortedTeams.map((team) => ({
+        value: team.id,
+        label: `${team.name}${team.id === playerTeam.id ? ' (You)' : ''}`,
+      })),
+    [sortedTeams, playerTeam.id]
+  );
+
   return (
     <div className="space-y-6 max-w-6xl">
       {/* Team Selector */}
@@ -64,18 +75,12 @@ export function WorldTeams({ initialTeamId }: WorldTeamsProps) {
         <label htmlFor="team-select" className="text-sm font-medium text-secondary">
           Select Team:
         </label>
-        <select
+        <Dropdown
           id="team-select"
+          options={teamOptions}
           value={selectedTeam.id}
-          onChange={(e) => setSelectedTeamId(e.target.value)}
-          className="surface-primary border border-subtle rounded-lg px-4 py-2 text-primary cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent-500)]"
-        >
-          {sortedTeams.map((team) => (
-            <option key={team.id} value={team.id}>
-              {team.name}{team.id === playerTeam.id ? ' (You)' : ''}
-            </option>
-          ))}
-        </select>
+          onChange={setSelectedTeamId}
+        />
       </div>
 
       {/* Team Profile */}
