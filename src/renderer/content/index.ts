@@ -6,6 +6,7 @@ export { Staff } from './Staff';
 export { PlayerWiki } from './PlayerWiki';
 export { Cars } from './Cars';
 export { Factory } from './Factory';
+export { Design } from './Design';
 export { SavedGames } from './SavedGames';
 export { GameOptions } from './GameOptions';
 export { ActionScreen, ACTION_CONFIGS, isActionType, type ActionType } from './ActionScreen';
