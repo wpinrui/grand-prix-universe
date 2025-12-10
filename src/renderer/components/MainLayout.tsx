@@ -31,6 +31,7 @@ import {
   Testing,
   Design,
   Construction,
+  Contracts,
   SavedGames,
   GameOptions,
   ActionScreen,
@@ -78,6 +79,7 @@ const ROUTE_COMPONENTS: Partial<Record<SectionId, Record<string, React.Component
     factory: Factory,
     design: Design,
     construction: Construction,
+    contracts: Contracts,
   },
   fia: {
     championship: Championship,
