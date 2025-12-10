@@ -99,6 +99,11 @@ const PROBLEM_LABELS: Record<HandlingProblem, string> = {
   [HandlingProblem.HighPitchSensitivity]: 'High Pitch Sensitivity',
 };
 
+const PHASE_LABELS: Record<TechnologyProjectPhase, string> = {
+  [TechnologyProjectPhase.Discovery]: 'Brainstorming',
+  [TechnologyProjectPhase.Development]: 'Development',
+};
+
 // ===========================================
 // HELPER FUNCTIONS
 // ===========================================
@@ -792,11 +797,6 @@ interface TechnologyTabProps {
   ) => void;
 }
 
-const PHASE_LABELS: Record<TechnologyProjectPhase, string> = {
-  [TechnologyProjectPhase.Discovery]: 'Brainstorming',
-  [TechnologyProjectPhase.Development]: 'Development',
-};
-
 function getProjectStatus(project: TechnologyDesignProject | undefined): string {
   if (!project) return '---';
   if (project.phase === TechnologyProjectPhase.Discovery) {
@@ -872,11 +872,9 @@ function TechnologyTab({
   const levelMap = new Map(designState.technologyLevels.map((l) => [l.component, l]));
 
   // Create a map of active projects by component+attribute key
-  const projectMap = new Map<string, TechnologyDesignProject>();
-  for (const project of designState.activeTechnologyProjects) {
-    const key = `${project.component}-${project.attribute}`;
-    projectMap.set(key, project);
-  }
+  const projectMap = new Map(
+    designState.activeTechnologyProjects.map((p) => [`${p.component}-${p.attribute}`, p])
+  );
 
   const allocation = calculateAllocationBreakdown(designState);
   const totalTechAllocation = designState.activeTechnologyProjects.reduce(
