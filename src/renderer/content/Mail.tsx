@@ -229,13 +229,10 @@ export function Mail() {
     );
   }, [gameState]);
 
-  // Auto-select first email when list changes
+  // Auto-select first email, or reset if current selection becomes invalid
   useEffect(() => {
-    if (mailItems.length > 0 && !selectedEmailId) {
-      setSelectedEmailId(mailItems[0].id);
-    }
-    // If selected email no longer exists, select first
-    if (selectedEmailId && !mailItems.find((e) => e.id === selectedEmailId)) {
+    const selectionIsValid = selectedEmailId && mailItems.some((e) => e.id === selectedEmailId);
+    if (!selectionIsValid) {
       setSelectedEmailId(mailItems.length > 0 ? mailItems[0].id : null);
     }
   }, [mailItems, selectedEmailId]);
