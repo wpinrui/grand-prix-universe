@@ -204,6 +204,40 @@ export interface CurrentYearChassisState {
   accumulatedSolutionWorkUnits: number; // Partial progress toward next solution point
 }
 
+// =============================================================================
+// DEVELOPMENT TESTING TYPES
+// =============================================================================
+
+/**
+ * TestSession - State of an active development testing session
+ *
+ * Development testing discovers handling problems in the current year's chassis:
+ * - First test completion reveals the overall Handling % (0-100)
+ * - Subsequent tests reveal one specific handling problem each
+ *
+ * Mechanics are allocated to testing (similar to designers for design work).
+ * Work units accumulate daily based on mechanic capacity × allocation.
+ */
+export interface TestSession {
+  /** Whether a test session is currently active */
+  active: boolean;
+
+  /** Driver performing the testing (any team driver can test) */
+  driverId: string | null;
+
+  /** Percentage of mechanic department allocated to testing (0-100) */
+  mechanicsAllocated: number;
+
+  /** Progress toward test completion (0-10, 10 = complete) */
+  progress: number;
+
+  /** Partial work units accumulated toward next progress point */
+  accumulatedWorkUnits: number;
+
+  /** Number of development tests completed this season */
+  testsCompleted: number;
+}
+
 /**
  * DesignState - Complete design department state for a team
  * Contains all chassis, technology, and improvement tracking
@@ -1047,8 +1081,10 @@ export interface TeamRuntimeState {
   sponsorSatisfaction: Record<string, number>;
   // Staff counts by department and quality (GPW-style anonymous pools)
   staffCounts: DepartmentStaffCounts;
-  // Testing progress (setup points for Set-Up Testing)
+  // Set-up Testing progress (setup points for race car setup)
   setupPoints: number; // Accumulated from set-up testing
+  // Development Testing session (discovers handling problems)
+  testSession: TestSession;
   // Design department state (chassis, technology, improvements, handling)
   designState: DesignState;
 }

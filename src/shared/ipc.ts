@@ -145,6 +145,25 @@ export interface SetCurrentYearAllocationParams {
   allocation: number; // 0-100
 }
 
+// =============================================================================
+// TESTING TYPES
+// =============================================================================
+
+/**
+ * Parameters for starting a development test session
+ */
+export interface StartTestSessionParams {
+  driverId: string; // Driver to perform the testing
+  mechanicsAllocated: number; // 0-100 percentage of mechanic department
+}
+
+/**
+ * Parameters for updating mechanic allocation on an active test
+ */
+export interface SetTestAllocationParams {
+  mechanicsAllocated: number; // 0-100
+}
+
 /**
  * Payload sent on each simulation tick (day advancement)
  * Pushed from main -> renderer via IPC event
@@ -204,6 +223,11 @@ export const IpcChannels = {
   DESIGN_SET_TECH_ALLOCATION: 'design:setTechAllocation',
   DESIGN_SET_CURRENT_YEAR_PROBLEM: 'design:setCurrentYearProblem',
   DESIGN_SET_CURRENT_YEAR_ALLOCATION: 'design:setCurrentYearAllocation',
+
+  // Testing (Development Testing for handling problem discovery)
+  TESTING_START: 'testing:start',
+  TESTING_STOP: 'testing:stop',
+  TESTING_SET_ALLOCATION: 'testing:setAllocation',
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];
@@ -366,6 +390,20 @@ export interface IpcInvokeMap {
   };
   [IpcChannels.DESIGN_SET_CURRENT_YEAR_ALLOCATION]: {
     args: [params: SetCurrentYearAllocationParams];
+    result: GameState;
+  };
+
+  // Testing (Development Testing)
+  [IpcChannels.TESTING_START]: {
+    args: [params: StartTestSessionParams];
+    result: GameState;
+  };
+  [IpcChannels.TESTING_STOP]: {
+    args: [];
+    result: GameState;
+  };
+  [IpcChannels.TESTING_SET_ALLOCATION]: {
+    args: [params: SetTestAllocationParams];
     result: GameState;
   };
 }

@@ -95,6 +95,7 @@ import {
   ChiefRole,
   CHASSIS_STAGE_ORDER,
   TYPICAL_WORK_UNITS_PER_DAY,
+  createDefaultTestSession,
 } from '../../shared/domain';
 import type {
   EmailData,
@@ -302,6 +303,7 @@ function createInitialTeamState(
     sponsorSatisfaction,
     staffCounts: cloneDeep(initialStaffCounts),
     setupPoints: 0,
+    testSession: createDefaultTestSession(),
     designState: createInitialDesignState(),
   };
 }
