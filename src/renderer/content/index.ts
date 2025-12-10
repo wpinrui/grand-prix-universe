@@ -8,6 +8,7 @@ export { Cars } from './Cars';
 export { Factory } from './Factory';
 export { Testing } from './Testing';
 export { Design } from './Design';
+export { Construction } from './Construction';
 export { SavedGames } from './SavedGames';
 export { GameOptions } from './GameOptions';
 export { ActionScreen, ACTION_CONFIGS, isActionType, type ActionType } from './ActionScreen';
