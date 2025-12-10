@@ -787,6 +787,7 @@ export enum CalendarEventType {
   Email = 'email',
   Headline = 'headline',
   Milestone = 'milestone',
+  Projection = 'projection', // Estimated future completion (updates daily)
 }
 
 /**

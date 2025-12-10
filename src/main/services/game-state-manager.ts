@@ -89,6 +89,8 @@ import {
   TECH_COMPONENT_DISPLAY_NAMES,
   CHASSIS_STAGE_DISPLAY_NAMES,
   TECH_ATTRIBUTE_SHORT_NAMES,
+  getProjectedMilestones,
+  ChiefRole,
 } from '../../shared/domain';
 import {
   getPreSeasonStartDate,
@@ -1063,6 +1065,49 @@ function applyDesignUpdates(
 }
 
 /**
+ * Update projected milestone events on the calendar
+ * Clears old projections and adds new ones based on current allocations
+ */
+function updateProjectedMilestones(state: GameState): void {
+  // Remove old projection events
+  state.calendarEvents = state.calendarEvents.filter(
+    (e) => e.type !== CalendarEventType.Projection
+  );
+
+  // Get player team data
+  const playerTeamId = state.player.teamId;
+  const playerTeam = state.teams.find((t) => t.id === playerTeamId);
+  const playerTeamState = state.teamStates[playerTeamId];
+  if (!playerTeam || !playerTeamState) return;
+
+  const chiefDesigner = state.chiefs.find(
+    (c) => c.teamId === playerTeamId && c.role === ChiefRole.Designer
+  ) ?? null;
+
+  // Compute projected milestones
+  const projections = getProjectedMilestones(
+    playerTeamState.designState,
+    {
+      staffCounts: playerTeamState.staffCounts.design,
+      facilities: playerTeam.factory.facilities,
+      chiefDesigner,
+    },
+    state.currentDate
+  );
+
+  // Add projection events to calendar
+  for (const projection of projections) {
+    state.calendarEvents.push({
+      id: randomUUID(),
+      date: projection.estimatedDate,
+      type: CalendarEventType.Projection,
+      subject: projection.description,
+      critical: false,
+    });
+  }
+}
+
+/**
  * Update championship standings in game state (mutates state)
  */
 function updateChampionshipStandings(
@@ -1258,6 +1303,10 @@ function applyTurnResult(state: GameState, result: TurnProcessingResult): boolea
 
   // Apply design updates and check for player milestones
   const playerHadMilestone = applyDesignUpdates(state, result.designUpdates, result.newDate);
+
+  // Update projected milestone dates based on current progress
+  updateProjectedMilestones(state);
+
   return playerHadMilestone;
 }
 

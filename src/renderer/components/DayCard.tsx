@@ -2,7 +2,7 @@ import type { GameDate, CalendarEvent } from '../../shared/domain';
 import { CalendarEventType } from '../../shared/domain';
 import { getShortDayName, getShortMonthName, type RaceSessionType } from '../../shared/utils/date-utils';
 import { FlagIcon } from './FlagIcon';
-import { Flag } from 'lucide-react';
+import { Flag, Clock } from 'lucide-react';
 
 export interface RaceWeekendInfo {
   session: RaceSessionType;
@@ -67,6 +67,7 @@ export function DayCard({ date, isCurrent, isPast, events, raceWeekendInfo }: Da
           {/* Calendar events */}
           {events.map((event) => {
             const isMilestone = event.type === CalendarEventType.Milestone;
+            const isProjection = event.type === CalendarEventType.Projection;
             return (
               <div
                 key={event.id}
@@ -74,11 +75,14 @@ export function DayCard({ date, isCurrent, isPast, events, raceWeekendInfo }: Da
                   mb-1.5 p-1.5 rounded text-xs flex items-center gap-1.5
                   ${isMilestone
                     ? 'bg-emerald-900/50 text-emerald-300 border border-emerald-700/50'
-                    : 'bg-[var(--neutral-750)] text-muted'}
+                    : isProjection
+                      ? 'bg-sky-900/30 text-sky-300/80 border border-dashed border-sky-700/50'
+                      : 'bg-[var(--neutral-750)] text-muted'}
                 `}
-                title={event.subject}
+                title={isProjection ? `Est: ${event.subject}` : event.subject}
               >
                 {isMilestone && <Flag size={12} className="flex-shrink-0" />}
+                {isProjection && <Clock size={12} className="flex-shrink-0" />}
                 <span className="truncate">{event.subject}</span>
               </div>
             );

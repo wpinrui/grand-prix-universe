@@ -30,26 +30,34 @@ const PIXELS_PER_DAY = 80;
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 /**
- * Renders event count summary for a day cell in month grid
+ * Renders event summary for a day cell in month grid
+ * Shows actual event subjects for better context
  */
 function EventsSummary({ events }: { events: CalendarEvent[] }) {
-  const milestoneCount = events.filter((e) => e.type === CalendarEventType.Milestone).length;
-  const otherCount = events.length - milestoneCount;
-
-  const parts: string[] = [];
-  if (milestoneCount > 0) {
-    parts.push(`${milestoneCount} milestone${milestoneCount > 1 ? 's' : ''}`);
-  }
-  if (otherCount > 0) {
-    parts.push(`${otherCount} event${otherCount > 1 ? 's' : ''}`);
-  }
+  const milestones = events.filter((e) => e.type === CalendarEventType.Milestone);
+  const projections = events.filter((e) => e.type === CalendarEventType.Projection);
 
   return (
-    <div
-      className={`text-xs truncate ${milestoneCount > 0 ? 'text-emerald-400' : 'text-muted'}`}
-      title={events.map((e) => e.subject).join(', ')}
-    >
-      {parts.join(', ')}
+    <div className="space-y-0.5" title={events.map((e) => e.subject).join('\n')}>
+      {/* Show milestone subjects (green) */}
+      {milestones.slice(0, 2).map((e) => (
+        <div key={e.id} className="text-xs truncate text-emerald-400">
+          {e.subject}
+        </div>
+      ))}
+      {milestones.length > 2 && (
+        <div className="text-xs text-emerald-400">+{milestones.length - 2} more</div>
+      )}
+
+      {/* Show projection subjects (sky/blue, dimmer) */}
+      {projections.slice(0, 2).map((e) => (
+        <div key={e.id} className="text-xs truncate text-sky-400/70">
+          Est: {e.subject}
+        </div>
+      ))}
+      {projections.length > 2 && (
+        <div className="text-xs text-sky-400/70">+{projections.length - 2} more</div>
+      )}
     </div>
   );
 }
