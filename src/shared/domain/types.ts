@@ -834,6 +834,7 @@ export enum EmailCategory {
   TechDevelopmentComplete = 'tech-development-complete',
   HandlingSolutionComplete = 'handling-solution-complete',
   TestComplete = 'test-complete',
+  PartReady = 'part-ready',
 }
 
 /**
@@ -891,12 +892,27 @@ export interface TestCompleteData {
   chiefMechanicId?: string;
 }
 
+export interface PartReadyData {
+  category: EmailCategory.PartReady;
+  pendingPartId: string; // ID of the pending part for installation
+  item: string; // Display name e.g. "Brakes Performance +6"
+  payoff: number; // Stat improvement amount
+  baseCost: number; // Cost to install on one car
+  recommendedCar: 1 | 2; // Which car to recommend (based on driver roles)
+  recommendedDriverId: string; // Driver ID for EntityLink
+  recommendedDriverName: string; // For display
+  otherDriverId: string; // The other driver
+  otherDriverName: string;
+  chiefId?: string;
+}
+
 export type EmailData =
   | ChassisStageCompleteData
   | TechBreakthroughData
   | TechDevelopmentCompleteData
   | HandlingSolutionCompleteData
-  | TestCompleteData;
+  | TestCompleteData
+  | PartReadyData;
 
 /**
  * CalendarEvent - An event displayed on the calendar strip

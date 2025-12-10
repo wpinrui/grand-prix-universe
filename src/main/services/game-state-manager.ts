@@ -106,12 +106,17 @@ import type {
   TechDevelopmentCompleteData,
   HandlingSolutionCompleteData,
   TestCompleteData,
+  PartReadyData,
+  PendingPart,
 } from '../../shared/domain/types';
+import { PendingPartSource, DriverRole } from '../../shared/domain/types';
 import {
   getPreSeasonStartDate,
   getWeekNumber,
   yearToSeason,
   DEFAULT_SIMULATION_STATE,
+  offsetDate,
+  isSameDay,
 } from '../../shared/utils/date-utils';
 
 /** Current save format version */
@@ -122,6 +127,9 @@ const DEFAULT_CONTRACT_DURATION = 3;
 
 /** Default starting season for new games */
 const DEFAULT_STARTING_SEASON = 1;
+
+/** Days to build a part after design completes */
+const PART_BUILD_TIME_DAYS = 7;
 
 /** Initial morale for drivers and departments (0-100 scale) */
 const INITIAL_MORALE = 70;
@@ -1191,7 +1199,7 @@ function applyDesignUpdates(
         const subject = `${techName} ${attrShortName} development complete`;
         const body = `The ${techName} ${attrShortName} development project is now complete. ` +
           `Our ${attrShortName} rating has improved by +${completion.statIncrease} points. ` +
-          `This improvement is now available for use in our cars.`;
+          `The part is now being built and will be ready for installation in ${PART_BUILD_TIME_DAYS} days.`;
         // Get the new value from updated technology levels
         const techLevel = update.updatedDesignState.technologyLevels.find(
           (t) => t.component === completion.component
@@ -1221,13 +1229,31 @@ function applyDesignUpdates(
             data
           )
         );
+
+        // Create pending part for player team
+        if (isPlayerTeam) {
+          const itemName = `${techName} ${attrShortName} +${completion.statIncrease}`;
+          const pendingPart: PendingPart = {
+            id: randomUUID(),
+            source: PendingPartSource.Technology,
+            item: itemName,
+            payoff: completion.statIncrease,
+            baseCost: 50000, // TODO: Calculate based on component/improvement
+            buildStartDate: currentDate,
+            readyDate: offsetDate(currentDate, PART_BUILD_TIME_DAYS),
+            installedOnCars: [],
+            component: completion.component,
+            attribute: completion.attribute,
+          };
+          teamState.pendingParts.push(pendingPart);
+        }
       } else {
         // Handling solution completion
         const problemName = HANDLING_PROBLEM_DISPLAY_NAMES[completion.problem];
         const subject = `Handling solution complete: ${problemName}`;
         const body = `We have successfully resolved the ${problemName} handling issue. ` +
           `The chassis handling has improved by +${completion.statIncrease} points. ` +
-          `The drivers should notice improved performance in affected conditions.`;
+          `The part is now being built and will be ready for installation in ${PART_BUILD_TIME_DAYS} days.`;
         const data: HandlingSolutionCompleteData = {
           category: EmailCategory.HandlingSolutionComplete,
           problem: completion.problem,
@@ -1247,6 +1273,23 @@ function applyDesignUpdates(
             data
           )
         );
+
+        // Create pending part for player team
+        if (isPlayerTeam) {
+          const itemName = `${problemName} Fix`;
+          const pendingPart: PendingPart = {
+            id: randomUUID(),
+            source: PendingPartSource.HandlingSolution,
+            item: itemName,
+            payoff: completion.statIncrease,
+            baseCost: 75000, // TODO: Calculate based on problem
+            buildStartDate: currentDate,
+            readyDate: offsetDate(currentDate, PART_BUILD_TIME_DAYS),
+            installedOnCars: [],
+            handlingProblem: completion.problem,
+          };
+          teamState.pendingParts.push(pendingPart);
+        }
       }
     }
   }
@@ -1584,6 +1627,112 @@ function buildRaceInput(state: GameState, raceResult: RaceWeekendResult): RacePr
 }
 
 /**
+ * Check for pending parts that are ready and emit Part Ready emails
+ * Returns true if any part became ready (for auto-stop)
+ */
+function checkPendingParts(state: GameState, currentDate: GameDate): boolean {
+  const playerTeamId = state.player.teamId;
+  const teamState = state.teamStates[playerTeamId];
+  const playerTeam = state.teams.find((t) => t.id === playerTeamId);
+  if (!teamState || !playerTeam) return false;
+
+  // Find team drivers for recommendation
+  const teamDrivers = state.drivers.filter(
+    (d) => d.teamId === playerTeamId && d.role !== DriverRole.Test
+  );
+  if (teamDrivers.length < 2) return false; // Need 2 drivers for recommendation
+
+  // Sort by car number to get car 1 and car 2 drivers
+  const sortedDrivers = [...teamDrivers].sort(
+    (a, b) => (a.raceNumber ?? 99) - (b.raceNumber ?? 99)
+  );
+  const driver1 = sortedDrivers[0];
+  const driver2 = sortedDrivers[1];
+
+  // Determine recommendation based on driver roles
+  // Driver 1 / Driver 2 roles: always recommend Driver 1
+  // Equal / Equal roles: use a simple rotation (first ready part goes to car 1)
+  const equalRoles = driver1.role === DriverRole.Equal && driver2.role === DriverRole.Equal;
+
+  // Get chief designer for sender
+  const chiefDesigner = state.chiefs.find(
+    (c) => c.teamId === playerTeamId && c.role === ChiefRole.Designer
+  );
+  const sender = formatChiefSender(chiefDesigner);
+
+  let hadReadyPart = false;
+  let partIndex = 0;
+
+  for (const pendingPart of teamState.pendingParts) {
+    // Only process parts that are ready and not yet installed
+    if (pendingPart.installedOnCars.length > 0) continue;
+    if (!isSameDay(pendingPart.readyDate, currentDate)) continue;
+
+    hadReadyPart = true;
+
+    // Determine recommendation for this part
+    let recommendedCar: 1 | 2;
+    let recommendedDriver: typeof driver1;
+    let otherDriver: typeof driver1;
+
+    if (equalRoles) {
+      // Rotate recommendation based on part index
+      recommendedCar = partIndex % 2 === 0 ? 1 : 2;
+      recommendedDriver = recommendedCar === 1 ? driver1 : driver2;
+      otherDriver = recommendedCar === 1 ? driver2 : driver1;
+    } else {
+      // Driver 1 role gets priority
+      if (driver1.role === DriverRole.First) {
+        recommendedCar = 1;
+        recommendedDriver = driver1;
+        otherDriver = driver2;
+      } else {
+        recommendedCar = 2;
+        recommendedDriver = driver2;
+        otherDriver = driver1;
+      }
+    }
+
+    const data: PartReadyData = {
+      category: EmailCategory.PartReady,
+      pendingPartId: pendingPart.id,
+      item: pendingPart.item,
+      payoff: pendingPart.payoff,
+      baseCost: pendingPart.baseCost,
+      recommendedCar,
+      recommendedDriverId: recommendedDriver.id,
+      recommendedDriverName: `${recommendedDriver.firstName} ${recommendedDriver.lastName}`,
+      otherDriverId: otherDriver.id,
+      otherDriverName: `${otherDriver.firstName} ${otherDriver.lastName}`,
+      chiefId: chiefDesigner?.id,
+    };
+
+    const subject = `Part ready: ${pendingPart.item}`;
+    const body = `The ${pendingPart.item} is now ready for installation. ` +
+      `We recommend installing on ${recommendedDriver.firstName} ${recommendedDriver.lastName}'s car first. ` +
+      `Installation cost: $${pendingPart.baseCost.toLocaleString()} per car, ` +
+      `or $${(pendingPart.baseCost * 3).toLocaleString()} for both cars (rush).`;
+
+    state.calendarEvents.push(
+      createDesignEmail(
+        currentDate,
+        subject,
+        body,
+        sender,
+        chiefDesigner?.id,
+        EmailCategory.PartReady,
+        true, // Critical - auto-stop for player to make installation choice
+        data
+      )
+    );
+
+    partIndex++;
+  }
+
+  return hadReadyPart;
+}
+
+/**
  * Apply turn processing result to game state (mutates state)
  * Returns true if player team had a design milestone or test completion (for auto-stop)
  */
@@ -1599,10 +1748,13 @@ function applyTurnResult(state: GameState, result: TurnProcessingResult): boolea
   // Apply testing updates and check for player completions
   const playerHadTestCompletion = applyTestingUpdates(state, result.testingUpdates, result.newDate);
 
+  // Check for pending parts that are ready
+  const playerHadReadyPart = checkPendingParts(state, result.newDate);
+
   // Update projected milestone dates based on current progress
   updateProjectedMilestones(state);
 
-  return playerHadDesignMilestone || playerHadTestCompletion;
+  return playerHadDesignMilestone || playerHadTestCompletion || playerHadReadyPart;
 }
 
 /**
