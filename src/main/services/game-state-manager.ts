@@ -89,9 +89,20 @@ import {
   TECH_COMPONENT_DISPLAY_NAMES,
   CHASSIS_STAGE_DISPLAY_NAMES,
   TECH_ATTRIBUTE_SHORT_NAMES,
+  TECH_ATTRIBUTE_DISPLAY_NAMES,
+  HANDLING_PROBLEM_DISPLAY_NAMES,
   getProjectedMilestones,
   ChiefRole,
+  CHASSIS_STAGE_ORDER,
+  TYPICAL_WORK_UNITS_PER_DAY,
 } from '../../shared/domain';
+import type {
+  EmailData,
+  ChassisStageCompleteData,
+  TechBreakthroughData,
+  TechDevelopmentCompleteData,
+  HandlingSolutionCompleteData,
+} from '../../shared/domain/types';
 import {
   getPreSeasonStartDate,
   getWeekNumber,
@@ -967,7 +978,8 @@ function createDesignEmail(
   sender: string,
   senderId: string | undefined,
   emailCategory: EmailCategory,
-  critical: boolean
+  critical: boolean,
+  data?: EmailData
 ): CalendarEvent {
   return {
     id: randomUUID(),
@@ -979,6 +991,7 @@ function createDesignEmail(
     sender,
     senderId,
     body,
+    data,
   };
 }
 
@@ -1027,9 +1040,19 @@ function applyDesignUpdates(
     // Chassis stage completions
     for (const completion of update.chassisStageCompletions) {
       const stageName = CHASSIS_STAGE_DISPLAY_NAMES[completion.stage];
+      const stageIndex = CHASSIS_STAGE_ORDER.indexOf(completion.stage);
+      const chassisYear = update.updatedDesignState.nextYearChassis?.targetYear ?? 0;
       const body = `The ${stageName} stage of next year's chassis design is now complete. ` +
         `The new efficiency rating is ${completion.newEfficiencyRating.toFixed(1)}. ` +
         `We can now proceed to the next phase of development.`;
+      const data: ChassisStageCompleteData = {
+        category: EmailCategory.ChassisStageComplete,
+        chassisYear,
+        completedStageIndex: stageIndex,
+        stageName,
+        efficiency: completion.newEfficiencyRating,
+        chiefId: chiefDesigner?.id,
+      };
       state.calendarEvents.push(
         createDesignEmail(
           currentDate,
@@ -1038,7 +1061,8 @@ function applyDesignUpdates(
           sender,
           chiefDesigner?.id,
           EmailCategory.ChassisStageComplete,
-          true
+          true,
+          data
         )
       );
     }
@@ -1046,11 +1070,23 @@ function applyDesignUpdates(
     // Technology breakthroughs
     for (const breakthrough of update.breakthroughs) {
       const techName = TECH_COMPONENT_DISPLAY_NAMES[breakthrough.component];
-      const attrName = TECH_ATTRIBUTE_SHORT_NAMES[breakthrough.attribute];
-      const subject = `${techName} ${attrName} breakthrough (+${breakthrough.statIncrease})`;
-      const body = `Excellent news! Our research into ${techName} ${attrName} has yielded a breakthrough. ` +
+      const attrShortName = TECH_ATTRIBUTE_SHORT_NAMES[breakthrough.attribute];
+      const attrFullName = TECH_ATTRIBUTE_DISPLAY_NAMES[breakthrough.attribute];
+      const subject = `${techName} ${attrShortName} breakthrough (+${breakthrough.statIncrease})`;
+      const body = `Excellent news! Our research into ${techName} ${attrShortName} has yielded a breakthrough. ` +
         `We've discovered an improvement worth +${breakthrough.statIncrease} points. ` +
         `The development team is now working to implement this into a production-ready component.`;
+      const estimatedDays = Math.ceil(breakthrough.workUnitsRequired / TYPICAL_WORK_UNITS_PER_DAY);
+      const data: TechBreakthroughData = {
+        category: EmailCategory.TechBreakthrough,
+        component: breakthrough.component,
+        attribute: breakthrough.attribute,
+        componentName: techName,
+        attributeName: attrFullName,
+        statIncrease: breakthrough.statIncrease,
+        estimatedDays,
+        chiefId: chiefDesigner?.id,
+      };
       state.calendarEvents.push(
         createDesignEmail(
           currentDate,
@@ -1059,7 +1095,8 @@ function applyDesignUpdates(
           sender,
           chiefDesigner?.id,
           EmailCategory.TechBreakthrough,
-          true
+          true,
+          data
         )
       );
     }
@@ -1068,11 +1105,29 @@ function applyDesignUpdates(
     for (const completion of update.completions) {
       if (completion.type === 'technology') {
         const techName = TECH_COMPONENT_DISPLAY_NAMES[completion.component];
-        const attrName = TECH_ATTRIBUTE_SHORT_NAMES[completion.attribute];
-        const subject = `${techName} ${attrName} development complete`;
-        const body = `The ${techName} ${attrName} development project is now complete. ` +
-          `Our ${attrName} rating has improved by +${completion.statIncrease} points. ` +
+        const attrShortName = TECH_ATTRIBUTE_SHORT_NAMES[completion.attribute];
+        const attrFullName = TECH_ATTRIBUTE_DISPLAY_NAMES[completion.attribute];
+        const subject = `${techName} ${attrShortName} development complete`;
+        const body = `The ${techName} ${attrShortName} development project is now complete. ` +
+          `Our ${attrShortName} rating has improved by +${completion.statIncrease} points. ` +
           `This improvement is now available for use in our cars.`;
+        // Get the new value from updated technology levels
+        const techLevel = update.updatedDesignState.technologyLevels.find(
+          (t) => t.component === completion.component
+        );
+        const newValue = completion.attribute === TechnologyAttribute.Performance
+          ? techLevel?.performance ?? 0
+          : techLevel?.reliability ?? 0;
+        const data: TechDevelopmentCompleteData = {
+          category: EmailCategory.TechDevelopmentComplete,
+          component: completion.component,
+          attribute: completion.attribute,
+          componentName: techName,
+          attributeName: attrFullName,
+          statIncrease: completion.statIncrease,
+          newValue,
+          chiefId: chiefDesigner?.id,
+        };
         state.calendarEvents.push(
           createDesignEmail(
             currentDate,
@@ -1081,15 +1136,24 @@ function applyDesignUpdates(
             sender,
             chiefDesigner?.id,
             EmailCategory.TechDevelopmentComplete,
-            true
+            true,
+            data
           )
         );
       } else {
         // Handling solution completion
-        const subject = `Handling solution complete`;
-        const body = `We have successfully resolved the ${completion.problem} handling issue. ` +
+        const problemName = HANDLING_PROBLEM_DISPLAY_NAMES[completion.problem];
+        const subject = `Handling solution complete: ${problemName}`;
+        const body = `We have successfully resolved the ${problemName} handling issue. ` +
           `The chassis handling has improved by +${completion.statIncrease} points. ` +
           `The drivers should notice improved performance in affected conditions.`;
+        const data: HandlingSolutionCompleteData = {
+          category: EmailCategory.HandlingSolutionComplete,
+          problem: completion.problem,
+          problemName,
+          handlingImprovement: completion.statIncrease,
+          chiefId: chiefDesigner?.id,
+        };
         state.calendarEvents.push(
           createDesignEmail(
             currentDate,
@@ -1098,7 +1162,8 @@ function applyDesignUpdates(
             sender,
             chiefDesigner?.id,
             EmailCategory.HandlingSolutionComplete,
-            true
+            true,
+            data
           )
         );
       }

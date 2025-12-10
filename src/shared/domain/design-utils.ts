@@ -150,6 +150,20 @@ export const TECH_ATTRIBUTE_SHORT_NAMES: Record<TechnologyAttribute, string> = {
 };
 
 /**
+ * Display names for handling problems
+ */
+export const HANDLING_PROBLEM_DISPLAY_NAMES: Record<HandlingProblem, string> = {
+  [HandlingProblem.OversteerFast]: 'Oversteer (Fast Corners)',
+  [HandlingProblem.OversteerSlow]: 'Oversteer (Slow Corners)',
+  [HandlingProblem.UndersteerFast]: 'Understeer (Fast Corners)',
+  [HandlingProblem.UndersteerSlow]: 'Understeer (Slow Corners)',
+  [HandlingProblem.HighDrag]: 'High Drag',
+  [HandlingProblem.PoorBalance]: 'Poor Balance',
+  [HandlingProblem.LowDownforce]: 'Low Downforce',
+  [HandlingProblem.HighPitchSensitivity]: 'High Pitch Sensitivity',
+};
+
+/**
  * Maximum efficiency bonus points from chief designer (additive to base efficiency)
  * A 100-ability chief adds up to this many points to the efficiency rating
  */
@@ -506,6 +520,13 @@ export const BASE_DEVELOPMENT_WORK_UNITS = 2000;
  * Work units per payoff point (higher payoff = more development time)
  */
 export const WORK_UNITS_PER_PAYOFF_POINT = 300;
+
+/**
+ * Approximate work units per day for a typical team
+ * Used for rough time estimates when detailed calculation isn't available
+ * Based on: ~300 staff ability × 50% allocation × 1.2 facility multiplier
+ */
+export const TYPICAL_WORK_UNITS_PER_DAY = 180;
 
 /**
  * Chief designer bonus to breakthrough probability (per point of ability)

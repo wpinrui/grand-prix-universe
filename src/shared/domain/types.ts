@@ -801,6 +801,58 @@ export enum EmailCategory {
 }
 
 /**
+ * EmailData - Structured data for rich email detail rendering
+ * Each email category has its own data shape for category-specific UI
+ *
+ * @agent: When adding new email categories, add a corresponding EmailData type
+ * and update the EmailDataMap. The Mail detail panel uses this for rich rendering.
+ */
+export interface ChassisStageCompleteData {
+  category: EmailCategory.ChassisStageComplete;
+  chassisYear: number; // e.g., 2026
+  completedStageIndex: number; // 0-3 (Design, CFD, Model, Wind Tunnel)
+  stageName: string; // Display name of completed stage
+  efficiency: number; // Current chassis efficiency (0-100)
+  chiefId?: string; // For EntityLink to chief
+}
+
+export interface TechBreakthroughData {
+  category: EmailCategory.TechBreakthrough;
+  component: TechnologyComponent;
+  attribute: TechnologyAttribute;
+  componentName: string; // Display name
+  attributeName: string; // "Performance" or "Reliability"
+  statIncrease: number; // e.g., +5
+  estimatedDays: number; // Development time estimate
+  chiefId?: string;
+}
+
+export interface TechDevelopmentCompleteData {
+  category: EmailCategory.TechDevelopmentComplete;
+  component: TechnologyComponent;
+  attribute: TechnologyAttribute;
+  componentName: string;
+  attributeName: string;
+  statIncrease: number;
+  newValue: number; // Final stat value after increase
+  chiefId?: string;
+}
+
+export interface HandlingSolutionCompleteData {
+  category: EmailCategory.HandlingSolutionComplete;
+  problem: HandlingProblem;
+  problemName: string; // Display name
+  handlingImprovement: number;
+  chiefId?: string;
+}
+
+export type EmailData =
+  | ChassisStageCompleteData
+  | TechBreakthroughData
+  | TechDevelopmentCompleteData
+  | HandlingSolutionCompleteData;
+
+/**
  * CalendarEvent - An event displayed on the calendar strip
  * Shows brief text on the relevant day; full content via Mail/News screens
  */
@@ -814,6 +866,7 @@ export interface CalendarEvent {
   sender?: string;   // Email sender name (e.g., "Adrian Newey (Chief Designer)")
   senderId?: string; // Chief ID for face generation lookup
   body?: string;     // Full email body text
+  data?: EmailData;  // Structured data for rich detail panel rendering
 }
 
 /**

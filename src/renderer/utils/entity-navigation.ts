@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react';
 import type { SectionId } from '../navigation';
 
-export type EntityType = 'team' | 'driver' | 'chief' | 'principal' | 'circuit' | 'race' | 'player-wiki';
+export type EntityType = 'team' | 'driver' | 'chief' | 'principal' | 'circuit' | 'race' | 'player-wiki' | 'engineering-design';
 
 export interface EntityRoute {
   section: SectionId;
@@ -30,6 +30,9 @@ export function getEntityRoute(type: EntityType, id: string): EntityRoute {
     case 'player-wiki':
       // Navigate to player wiki page (id is ignored)
       return { section: 'team', subItem: 'wiki', entityId: '' };
+    case 'engineering-design':
+      // Navigate to engineering design screen (id is ignored)
+      return { section: 'engineering', subItem: 'design', entityId: '' };
   }
 }
 
