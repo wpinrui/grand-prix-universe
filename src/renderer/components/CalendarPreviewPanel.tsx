@@ -29,6 +29,31 @@ const PIXELS_PER_DAY = 80;
 /** Day names for month grid header */
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
+/**
+ * Renders event count summary for a day cell in month grid
+ */
+function EventsSummary({ events }: { events: CalendarEvent[] }) {
+  const milestoneCount = events.filter((e) => e.type === CalendarEventType.Milestone).length;
+  const otherCount = events.length - milestoneCount;
+
+  const parts: string[] = [];
+  if (milestoneCount > 0) {
+    parts.push(`${milestoneCount} milestone${milestoneCount > 1 ? 's' : ''}`);
+  }
+  if (otherCount > 0) {
+    parts.push(`${otherCount} event${otherCount > 1 ? 's' : ''}`);
+  }
+
+  return (
+    <div
+      className={`text-xs truncate ${milestoneCount > 0 ? 'text-emerald-400' : 'text-muted'}`}
+      title={events.map((e) => e.subject).join(', ')}
+    >
+      {parts.join(', ')}
+    </div>
+  );
+}
+
 /** Delay before adding click-outside listener (prevents opening click from closing) */
 const CLICK_OUTSIDE_DELAY_MS = 100;
 
@@ -361,22 +386,9 @@ export function CalendarPreviewPanel({
                         )}
 
                         {/* Events indicator */}
-                        {dayEvents.length > 0 && isCurrentMonth && (() => {
-                          const milestoneCount = dayEvents.filter(
-                            (e) => e.type === CalendarEventType.Milestone
-                          ).length;
-                          const otherCount = dayEvents.length - milestoneCount;
-                          return (
-                            <div
-                              className={`text-xs truncate ${milestoneCount > 0 ? 'text-emerald-400' : 'text-muted'}`}
-                              title={dayEvents.map((e) => e.subject).join(', ')}
-                            >
-                              {milestoneCount > 0 && `${milestoneCount} milestone${milestoneCount > 1 ? 's' : ''}`}
-                              {milestoneCount > 0 && otherCount > 0 && ', '}
-                              {otherCount > 0 && `${otherCount} event${otherCount > 1 ? 's' : ''}`}
-                            </div>
-                          );
-                        })()}
+                        {dayEvents.length > 0 && isCurrentMonth && (
+                          <EventsSummary events={dayEvents} />
+                        )}
                       </div>
                     );
                   })}

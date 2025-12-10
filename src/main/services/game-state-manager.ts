@@ -88,6 +88,7 @@ import {
   teamRef,
   TECH_COMPONENT_DISPLAY_NAMES,
   CHASSIS_STAGE_DISPLAY_NAMES,
+  TECH_ATTRIBUTE_SHORT_NAMES,
 } from '../../shared/domain';
 import {
   getPreSeasonStartDate,
@@ -1017,7 +1018,7 @@ function applyDesignUpdates(
     // Technology breakthroughs
     for (const breakthrough of update.breakthroughs) {
       const techName = TECH_COMPONENT_DISPLAY_NAMES[breakthrough.component];
-      const attrName = breakthrough.attribute === TechnologyAttribute.Performance ? 'Perf' : 'Rel';
+      const attrName = TECH_ATTRIBUTE_SHORT_NAMES[breakthrough.attribute];
       const subject = `${techName} ${attrName} breakthrough (+${breakthrough.statIncrease})`;
       state.calendarEvents.push(
         createMilestoneEvent(
@@ -1033,7 +1034,7 @@ function applyDesignUpdates(
     for (const completion of update.completions) {
       if (completion.type === 'technology') {
         const techName = TECH_COMPONENT_DISPLAY_NAMES[completion.component];
-        const attrName = completion.attribute === TechnologyAttribute.Performance ? 'Perf' : 'Rel';
+        const attrName = TECH_ATTRIBUTE_SHORT_NAMES[completion.attribute];
         const subject = `${techName} ${attrName} development complete`;
         state.calendarEvents.push(
           createMilestoneEvent(

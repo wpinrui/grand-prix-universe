@@ -133,6 +133,14 @@ export const CHASSIS_STAGE_DISPLAY_NAMES: Record<ChassisDesignStage, string> = {
 };
 
 /**
+ * Short display names for technology attributes (for compact UI like calendar events)
+ */
+export const TECH_ATTRIBUTE_SHORT_NAMES: Record<TechnologyAttribute, string> = {
+  [TechnologyAttribute.Performance]: 'Perf',
+  [TechnologyAttribute.Reliability]: 'Rel',
+};
+
+/**
  * Maximum efficiency bonus points from chief designer (additive to base efficiency)
  * A 100-ability chief adds up to this many points to the efficiency rating
  */
