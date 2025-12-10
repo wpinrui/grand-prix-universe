@@ -1004,6 +1004,72 @@ function formatChiefSender(chief: Chief | null): string {
 }
 
 /**
+ * Create a news headline for design events from AI teams
+ */
+function createDesignNewsHeadline(
+  date: GameDate,
+  subject: string,
+  body: string
+): CalendarEvent {
+  return {
+    id: randomUUID(),
+    date,
+    type: CalendarEventType.Headline,
+    subject,
+    body,
+    critical: false,
+  };
+}
+
+/**
+ * Generate news headlines for a team's design milestones
+ */
+function generateDesignNewsForTeam(
+  state: GameState,
+  update: DesignUpdate,
+  currentDate: GameDate,
+  teamName: string
+): void {
+  // Chassis stage completions
+  for (const completion of update.chassisStageCompletions) {
+    const stageName = CHASSIS_STAGE_DISPLAY_NAMES[completion.stage];
+    const subject = `${teamName} complete ${stageName} stage`;
+    const body = `${teamName} have completed the ${stageName} stage of their next year's chassis development. ` +
+      `The team continues to make progress on their car design for the upcoming season.`;
+    state.calendarEvents.push(createDesignNewsHeadline(currentDate, subject, body));
+  }
+
+  // Technology breakthroughs
+  for (const breakthrough of update.breakthroughs) {
+    const techName = TECH_COMPONENT_DISPLAY_NAMES[breakthrough.component];
+    const attrShortName = TECH_ATTRIBUTE_SHORT_NAMES[breakthrough.attribute];
+    const subject = `${teamName} achieve ${techName} breakthrough`;
+    const body = `${teamName} have made a breakthrough in ${techName} ${attrShortName}. ` +
+      `The team's engineering department is now working to implement this improvement into their car.`;
+    state.calendarEvents.push(createDesignNewsHeadline(currentDate, subject, body));
+  }
+
+  // Technology completions
+  for (const completion of update.completions) {
+    if (completion.type === 'technology') {
+      const techName = TECH_COMPONENT_DISPLAY_NAMES[completion.component];
+      const attrShortName = TECH_ATTRIBUTE_SHORT_NAMES[completion.attribute];
+      const subject = `${teamName} upgrade ${techName}`;
+      const body = `${teamName} have completed development of an upgraded ${techName} component. ` +
+        `The improvement to ${attrShortName} is now available for use in their cars.`;
+      state.calendarEvents.push(createDesignNewsHeadline(currentDate, subject, body));
+    } else {
+      // Handling solution completion
+      const problemName = HANDLING_PROBLEM_DISPLAY_NAMES[completion.problem];
+      const subject = `${teamName} resolve handling issue`;
+      const body = `${teamName} have successfully addressed the ${problemName} handling problem with their current chassis. ` +
+        `Drivers should notice improved performance in affected conditions.`;
+      state.calendarEvents.push(createDesignNewsHeadline(currentDate, subject, body));
+    }
+  }
+}
+
+/**
  * Apply design updates to game state and create calendar events for milestones
  * Returns true if player team had any milestones (for auto-stop)
  */
@@ -1028,8 +1094,16 @@ function applyDesignUpdates(
       playerHadMilestone = true;
     }
 
-    // Only create emails for player's team
-    if (!isPlayerTeam) continue;
+    // For non-player teams: generate news headlines if they have milestones, then skip
+    if (!isPlayerTeam) {
+      if (hasMilestones(update)) {
+        const team = state.teams.find((t) => t.id === update.teamId);
+        if (team) {
+          generateDesignNewsForTeam(state, update, currentDate, team.name);
+        }
+      }
+      continue;
+    }
 
     // Get the Chief Designer for sender
     const chiefDesigner = state.chiefs.find(
