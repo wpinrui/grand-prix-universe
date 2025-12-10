@@ -479,10 +479,11 @@ export function applyTechnologyPayoff(
 // =============================================================================
 
 /**
- * Base probability of discovering a breakthrough per day (with 100% allocation)
- * At 50% allocation, expect a breakthrough roughly every 10 days
+ * Breakthrough probability per work unit produced
+ * With ~180 work units/day (typical team), gives ~10% daily chance
+ * More designers + better quality = more work units = higher breakthrough chance
  */
-export const BASE_BREAKTHROUGH_PROBABILITY = 0.2;
+export const BREAKTHROUGH_PROBABILITY_PER_WORK_UNIT = 0.0005;
 
 /**
  * Minimum payoff for a technology breakthrough (stat increase)
@@ -532,27 +533,30 @@ export const CHIEF_MAX_PAYOFF_BONUS = 3;
 /**
  * Calculate the daily probability of discovering a breakthrough
  *
- * @param percentAllocated - Designer capacity allocated to this project (0-100)
+ * Probability scales with work units (which factor in staff numbers, quality, allocation).
+ * More designers working = higher chance. Chief and facilities add flat bonuses.
+ *
+ * @param workUnits - Work units produced this day for this project
  * @param chiefDesigner - Chief designer (null if position vacant)
  * @param facilities - Factory facilities
  * @returns Probability (0-1) of discovering a breakthrough today
  */
 export function calculateBreakthroughProbability(
-  percentAllocated: number,
+  workUnits: number,
   chiefDesigner: Chief | null,
   facilities: Facility[]
 ): number {
-  if (percentAllocated <= 0) return 0;
+  if (workUnits <= 0) return 0;
 
-  // Base probability scaled by allocation
-  let probability = BASE_BREAKTHROUGH_PROBABILITY * (percentAllocated / 100);
+  // Base probability from work units (more staff working = higher chance)
+  let probability = workUnits * BREAKTHROUGH_PROBABILITY_PER_WORK_UNIT;
 
-  // Chief designer bonus
+  // Chief designer bonus (flat addition based on ability)
   if (chiefDesigner) {
     probability += chiefDesigner.ability * CHIEF_BREAKTHROUGH_PROBABILITY_BONUS;
   }
 
-  // Facility bonuses
+  // Facility bonuses (flat addition per quality level)
   for (const facility of facilities) {
     const bonus = FACILITY_BREAKTHROUGH_BONUS[facility.type];
     if (bonus !== undefined && facility.quality > 0) {
@@ -633,7 +637,7 @@ export function processTechnologyProjectDay(
   // Discovery phase: check for breakthrough
   if (project.phase === TechnologyProjectPhase.Discovery) {
     const probability = calculateBreakthroughProbability(
-      project.designersAssigned,
+      workUnits,
       chiefDesigner,
       facilities
     );
