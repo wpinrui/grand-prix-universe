@@ -812,6 +812,7 @@ export interface CalendarEvent {
   critical: boolean; // If true, auto-stops simulation
   emailCategory?: EmailCategory; // Only set when type is Email
   sender?: string;   // Email sender name (e.g., "Adrian Newey (Chief Designer)")
+  senderId?: string; // Chief ID for face generation lookup
   body?: string;     // Full email body text
 }
 

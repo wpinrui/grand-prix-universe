@@ -965,6 +965,7 @@ function createDesignEmail(
   subject: string,
   body: string,
   sender: string,
+  senderId: string | undefined,
   emailCategory: EmailCategory,
   critical: boolean
 ): CalendarEvent {
@@ -976,6 +977,7 @@ function createDesignEmail(
     critical,
     emailCategory,
     sender,
+    senderId,
     body,
   };
 }
@@ -1034,6 +1036,7 @@ function applyDesignUpdates(
           `${stageName} stage complete`,
           body,
           sender,
+          chiefDesigner?.id,
           EmailCategory.ChassisStageComplete,
           true
         )
@@ -1054,6 +1057,7 @@ function applyDesignUpdates(
           subject,
           body,
           sender,
+          chiefDesigner?.id,
           EmailCategory.TechBreakthrough,
           true
         )
@@ -1075,6 +1079,7 @@ function applyDesignUpdates(
             subject,
             body,
             sender,
+            chiefDesigner?.id,
             EmailCategory.TechDevelopmentComplete,
             true
           )
@@ -1091,6 +1096,7 @@ function applyDesignUpdates(
             subject,
             body,
             sender,
+            chiefDesigner?.id,
             EmailCategory.HandlingSolutionComplete,
             true
           )

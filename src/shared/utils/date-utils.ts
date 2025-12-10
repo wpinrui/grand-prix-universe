@@ -149,9 +149,14 @@ export function isFriday(date: GameDate): boolean {
 }
 
 /**
- * Format a GameDate for display (e.g., "15 March 2025")
+ * Format a GameDate for display
+ * @param date - The date to format
+ * @param format - 'full' (default): "15 March 2025", 'short': "15 Mar"
  */
-export function formatGameDate(date: GameDate): string {
+export function formatGameDate(date: GameDate, format: 'full' | 'short' = 'full'): string {
+  if (format === 'short') {
+    return `${date.day} ${SHORT_MONTH_NAMES[date.month - 1]}`;
+  }
   return `${date.day} ${MONTH_NAMES[date.month - 1]} ${date.year}`;
 }
 
