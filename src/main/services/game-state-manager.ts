@@ -1476,8 +1476,7 @@ export const GameStateManager = {
     }
 
     // Clamp allocation to valid range
-    const clampedAllocation = Math.max(0, Math.min(100, allocation));
-    designState.nextYearChassis.designersAssigned = clampedAllocation;
+    designState.nextYearChassis.designersAssigned = clampPercentage(allocation);
 
     return state;
   },
@@ -1559,8 +1558,7 @@ export const GameStateManager = {
     }
 
     // Clamp allocation to valid range
-    const clampedAllocation = Math.max(0, Math.min(100, allocation));
-    project.designersAssigned = clampedAllocation;
+    project.designersAssigned = clampPercentage(allocation);
 
     return state;
   },
@@ -1601,8 +1599,7 @@ export const GameStateManager = {
     const { state, designState } = getPlayerDesignState();
 
     // Clamp allocation to valid range
-    const clampedAllocation = Math.max(0, Math.min(100, allocation));
-    designState.currentYearChassis.designersAssigned = clampedAllocation;
+    designState.currentYearChassis.designersAssigned = clampPercentage(allocation);
 
     return state;
   },
