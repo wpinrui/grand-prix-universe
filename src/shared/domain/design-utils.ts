@@ -133,6 +133,14 @@ export const CHASSIS_STAGE_DISPLAY_NAMES: Record<ChassisDesignStage, string> = {
 };
 
 /**
+ * Full display names for technology attributes
+ */
+export const TECH_ATTRIBUTE_DISPLAY_NAMES: Record<TechnologyAttribute, string> = {
+  [TechnologyAttribute.Performance]: 'Performance',
+  [TechnologyAttribute.Reliability]: 'Reliability',
+};
+
+/**
  * Short display names for technology attributes (for compact UI like calendar events)
  */
 export const TECH_ATTRIBUTE_SHORT_NAMES: Record<TechnologyAttribute, string> = {
@@ -1169,8 +1177,7 @@ export function getProjectedMilestones(
     if (project.phase === TechnologyProjectPhase.Development && project.designersAssigned > 0) {
       const daysRemaining = estimateTechProjectDaysRemaining(project, input);
       if (daysRemaining !== null && daysRemaining > 0) {
-        const attrName =
-          project.attribute === TechnologyAttribute.Performance ? 'Performance' : 'Reliability';
+        const attrName = TECH_ATTRIBUTE_DISPLAY_NAMES[project.attribute];
         milestones.push({
           type: 'tech-development',
           description: `${TECH_COMPONENT_DISPLAY_NAMES[project.component]} ${attrName} (+${project.payoff ?? '?'})`,
