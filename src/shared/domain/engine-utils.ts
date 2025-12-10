@@ -27,9 +27,34 @@ export const ENGINE_STAT_KEYS: (keyof EngineStats)[] = [
 export const MAX_CUSTOMISATION_PER_STAT = 10;
 
 /**
+ * Maximum year-end evolution change per stat
+ */
+export const MAX_EVOLUTION_CHANGE = 10;
+
+/**
  * Season-start normalization ceiling (best manufacturer for each stat)
  */
 export const NORMALIZATION_CEILING = 70;
+
+/** Minimum stat value */
+export const MIN_STAT_VALUE = 0;
+
+/** Maximum stat value */
+export const MAX_STAT_VALUE = 100;
+
+/**
+ * Clamps a value between min and max (inclusive)
+ */
+export function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+/**
+ * Clamps a stat value to valid range (0-100)
+ */
+export function clampStat(value: number): number {
+  return clamp(value, MIN_STAT_VALUE, MAX_STAT_VALUE);
+}
 
 /**
  * Creates a default (zeroed) engine customisation object
@@ -152,9 +177,9 @@ export function getEffectiveEngineStats(
     effective[key] += customisation[key];
   }
 
-  // Clamp to valid range (0-100)
+  // Clamp to valid range
   for (const key of ENGINE_STAT_KEYS) {
-    effective[key] = Math.max(0, Math.min(100, effective[key]));
+    effective[key] = clampStat(effective[key]);
   }
 
   return effective;
@@ -220,8 +245,8 @@ export function evolveEngineStats(stats: EngineStats): EngineStats {
   for (const key of ENGINE_STAT_KEYS) {
     // Random change with normal distribution (mean=0, stdDev=5)
     // This gives ~68% of changes in [-5, +5], ~95% in [-10, +10]
-    const change = Math.max(-10, Math.min(10, normalRandom(0, 5)));
-    evolved[key] = Math.max(0, Math.min(100, stats[key] + change));
+    const change = clamp(normalRandom(0, 5), -MAX_EVOLUTION_CHANGE, MAX_EVOLUTION_CHANGE);
+    evolved[key] = clampStat(stats[key] + change);
   }
 
   return evolved;
