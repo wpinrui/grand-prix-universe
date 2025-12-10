@@ -15,3 +15,5 @@ export type { ContractRelationship } from './PersonProfileCards';
 export { DriverProfileContent, extractRecentResults, extractCareerHistory } from './DriverProfileContent';
 export type { RecentRaceResult, SeasonSummary } from './DriverProfileContent';
 export { GlobalSearch, parsePageId } from './GlobalSearch';
+export { StaffAllocationSlider } from './StaffAllocationSlider';
+export type { StaffAllocationSliderProps } from './StaffAllocationSlider';

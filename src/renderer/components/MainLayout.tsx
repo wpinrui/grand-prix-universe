@@ -28,6 +28,7 @@ import {
   PlayerWiki,
   Cars,
   Factory,
+  Testing,
   Design,
   SavedGames,
   GameOptions,
@@ -72,6 +73,7 @@ const ROUTE_COMPONENTS: Partial<Record<SectionId, Record<string, React.Component
   },
   engineering: {
     cars: Cars,
+    testing: Testing,
     factory: Factory,
     design: Design,
   },

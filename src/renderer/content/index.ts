@@ -6,6 +6,7 @@ export { Staff } from './Staff';
 export { PlayerWiki } from './PlayerWiki';
 export { Cars } from './Cars';
 export { Factory } from './Factory';
+export { Testing } from './Testing';
 export { Design } from './Design';
 export { SavedGames } from './SavedGames';
 export { GameOptions } from './GameOptions';
