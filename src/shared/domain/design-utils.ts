@@ -150,6 +150,20 @@ export const TECH_ATTRIBUTE_SHORT_NAMES: Record<TechnologyAttribute, string> = {
 };
 
 /**
+ * Display names for handling problems
+ */
+export const HANDLING_PROBLEM_DISPLAY_NAMES: Record<HandlingProblem, string> = {
+  [HandlingProblem.OversteerFast]: 'Oversteer (Fast Corners)',
+  [HandlingProblem.OversteerSlow]: 'Oversteer (Slow Corners)',
+  [HandlingProblem.UndersteerFast]: 'Understeer (Fast Corners)',
+  [HandlingProblem.UndersteerSlow]: 'Understeer (Slow Corners)',
+  [HandlingProblem.HighDrag]: 'High Drag',
+  [HandlingProblem.PoorBalance]: 'Poor Balance',
+  [HandlingProblem.LowDownforce]: 'Low Downforce',
+  [HandlingProblem.HighPitchSensitivity]: 'High Pitch Sensitivity',
+};
+
+/**
  * Maximum efficiency bonus points from chief designer (additive to base efficiency)
  * A 100-ability chief adds up to this many points to the efficiency rating
  */

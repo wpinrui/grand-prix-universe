@@ -1,13 +1,24 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { User, ChevronDown, ChevronRight, Search } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { User, ChevronDown, ChevronRight, Search, ArrowRight } from 'lucide-react';
 import { useDerivedGameState } from '../hooks';
-import { SectionHeading, Dropdown } from '../components';
+import { SectionHeading, Dropdown, EntityLink } from '../components';
 import { CalendarEventType, EmailCategory } from '../../shared/domain';
-import type { CalendarEvent, Chief, Team, GameDate } from '../../shared/domain';
+import type {
+  CalendarEvent,
+  Chief,
+  Team,
+  GameDate,
+  ChassisStageCompleteData,
+  TechBreakthroughData,
+  TechDevelopmentCompleteData,
+  HandlingSolutionCompleteData,
+} from '../../shared/domain';
 import type { DropdownOption } from '../components/Dropdown';
 import { getFilteredCalendarEvents } from '../utils/calendar-event-utils';
 import { formatGameDate, formatDateGroupHeader, dateKey } from '../../shared/utils/date-utils';
 import { generateFace, FREE_AGENT_COLORS } from '../utils/face-generator';
+import { ACCENT_BORDERED_BUTTON_STYLE } from '../utils/theme-styles';
 
 // ===========================================
 // TYPES
@@ -309,6 +320,237 @@ function EmailListPanel({
 }
 
 // ===========================================
+// RICH DETAIL RENDERERS
+// ===========================================
+
+const CHASSIS_STAGES = ['Design', 'CFD', 'Model', 'Wind Tunnel'];
+
+interface ChassisStageDetailProps {
+  data: ChassisStageCompleteData;
+  chiefs: Chief[];
+}
+
+function ChassisStageDetail({ data, chiefs }: ChassisStageDetailProps) {
+  const navigate = useNavigate();
+  const chief = data.chiefId ? chiefs.find((c) => c.id === data.chiefId) : null;
+
+  return (
+    <div className="space-y-4">
+      {/* Stage progress indicator */}
+      <div className="p-4 rounded-lg bg-[var(--neutral-800)]">
+        <div className="text-xs text-muted mb-2">Chassis Design Progress</div>
+        <div className="flex items-center gap-2">
+          {CHASSIS_STAGES.map((stage, idx) => {
+            const isComplete = idx <= data.completedStageIndex;
+            const isCurrent = idx === data.completedStageIndex;
+            return (
+              <div key={stage} className="flex-1">
+                <div
+                  className={`h-2 rounded ${
+                    isComplete ? 'bg-emerald-500' : 'bg-[var(--neutral-600)]'
+                  } ${isCurrent ? 'ring-2 ring-emerald-400' : ''}`}
+                />
+                <div className={`text-xs mt-1 text-center ${isComplete ? 'text-emerald-400' : 'text-muted'}`}>
+                  {stage}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="p-3 rounded-lg bg-[var(--neutral-800)]">
+          <div className="text-xs text-muted">Target Year</div>
+          <div className="text-lg font-medium text-primary">{data.chassisYear}</div>
+        </div>
+        <div className="p-3 rounded-lg bg-[var(--neutral-800)]">
+          <div className="text-xs text-muted">Efficiency Rating</div>
+          <div className="text-lg font-medium text-primary">{data.efficiency.toFixed(1)}</div>
+        </div>
+      </div>
+
+      {/* Chief link */}
+      {chief && (
+        <div className="text-sm text-secondary">
+          Chief Designer:{' '}
+          <EntityLink type="chief" id={chief.id}>
+            {chief.firstName} {chief.lastName}
+          </EntityLink>
+        </div>
+      )}
+
+      {/* Action button */}
+      <button
+        type="button"
+        onClick={() => navigate('/engineering/design')}
+        className="flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition-colors"
+        style={ACCENT_BORDERED_BUTTON_STYLE}
+      >
+        View Design Screen
+        <ArrowRight size={16} />
+      </button>
+    </div>
+  );
+}
+
+interface TechBreakthroughDetailProps {
+  data: TechBreakthroughData;
+  chiefs: Chief[];
+}
+
+function TechBreakthroughDetail({ data, chiefs }: TechBreakthroughDetailProps) {
+  const navigate = useNavigate();
+  const chief = data.chiefId ? chiefs.find((c) => c.id === data.chiefId) : null;
+
+  return (
+    <div className="space-y-4">
+      {/* Improvement highlight */}
+      <div className="p-4 rounded-lg bg-emerald-900/30 border border-emerald-600/30">
+        <div className="text-xs text-emerald-400 mb-1">Breakthrough Discovered</div>
+        <div className="text-2xl font-bold text-emerald-400">+{data.statIncrease}</div>
+        <div className="text-sm text-secondary mt-1">
+          {data.componentName} {data.attributeName}
+        </div>
+      </div>
+
+      {/* Development time */}
+      <div className="p-3 rounded-lg bg-[var(--neutral-800)]">
+        <div className="text-xs text-muted">Estimated Development Time</div>
+        <div className="text-lg font-medium text-primary">~{data.estimatedDays} days</div>
+      </div>
+
+      {/* Chief link */}
+      {chief && (
+        <div className="text-sm text-secondary">
+          Chief Designer:{' '}
+          <EntityLink type="chief" id={chief.id}>
+            {chief.firstName} {chief.lastName}
+          </EntityLink>
+        </div>
+      )}
+
+      {/* Action button */}
+      <button
+        type="button"
+        onClick={() => navigate('/engineering/design')}
+        className="flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition-colors"
+        style={ACCENT_BORDERED_BUTTON_STYLE}
+      >
+        View Design Screen
+        <ArrowRight size={16} />
+      </button>
+    </div>
+  );
+}
+
+interface TechDevelopmentDetailProps {
+  data: TechDevelopmentCompleteData;
+  chiefs: Chief[];
+}
+
+function TechDevelopmentDetail({ data, chiefs }: TechDevelopmentDetailProps) {
+  const navigate = useNavigate();
+  const chief = data.chiefId ? chiefs.find((c) => c.id === data.chiefId) : null;
+
+  return (
+    <div className="space-y-4">
+      {/* Completion highlight */}
+      <div className="p-4 rounded-lg bg-purple-900/30 border border-purple-600/30">
+        <div className="text-xs text-purple-400 mb-1">Development Complete</div>
+        <div className="flex items-baseline gap-2">
+          <span className="text-2xl font-bold text-purple-400">{data.newValue}</span>
+          <span className="text-sm text-purple-300">(+{data.statIncrease})</span>
+        </div>
+        <div className="text-sm text-secondary mt-1">
+          {data.componentName} {data.attributeName}
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div className="p-3 rounded-lg bg-[var(--neutral-800)]">
+        <div className="flex justify-between text-xs mb-1">
+          <span className="text-muted">{data.componentName} {data.attributeName}</span>
+          <span className="text-primary">{data.newValue}/100</span>
+        </div>
+        <div className="h-2 bg-[var(--neutral-600)] rounded overflow-hidden">
+          <div
+            className="h-full bg-purple-500 transition-all"
+            style={{ width: `${data.newValue}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Chief link */}
+      {chief && (
+        <div className="text-sm text-secondary">
+          Chief Designer:{' '}
+          <EntityLink type="chief" id={chief.id}>
+            {chief.firstName} {chief.lastName}
+          </EntityLink>
+        </div>
+      )}
+
+      {/* Action button */}
+      <button
+        type="button"
+        onClick={() => navigate('/engineering/design')}
+        className="flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition-colors"
+        style={ACCENT_BORDERED_BUTTON_STYLE}
+      >
+        View Design Screen
+        <ArrowRight size={16} />
+      </button>
+    </div>
+  );
+}
+
+interface HandlingSolutionDetailProps {
+  data: HandlingSolutionCompleteData;
+  chiefs: Chief[];
+}
+
+function HandlingSolutionDetail({ data, chiefs }: HandlingSolutionDetailProps) {
+  const navigate = useNavigate();
+  const chief = data.chiefId ? chiefs.find((c) => c.id === data.chiefId) : null;
+
+  return (
+    <div className="space-y-4">
+      {/* Solution highlight */}
+      <div className="p-4 rounded-lg bg-amber-900/30 border border-amber-600/30">
+        <div className="text-xs text-amber-400 mb-1">Handling Problem Solved</div>
+        <div className="text-lg font-bold text-amber-400">{data.problemName}</div>
+        <div className="text-sm text-secondary mt-1">
+          Handling improved by +{data.handlingImprovement} points
+        </div>
+      </div>
+
+      {/* Chief link */}
+      {chief && (
+        <div className="text-sm text-secondary">
+          Chief Designer:{' '}
+          <EntityLink type="chief" id={chief.id}>
+            {chief.firstName} {chief.lastName}
+          </EntityLink>
+        </div>
+      )}
+
+      {/* Action button */}
+      <button
+        type="button"
+        onClick={() => navigate('/engineering/design')}
+        className="flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition-colors"
+        style={ACCENT_BORDERED_BUTTON_STYLE}
+      >
+        View Design Screen
+        <ArrowRight size={16} />
+      </button>
+    </div>
+  );
+}
+
+// ===========================================
 // RIGHT PANEL - EMAIL DETAIL
 // ===========================================
 
@@ -326,6 +568,26 @@ function EmailDetailPanel({ email, chiefs, teams }: EmailDetailPanelProps) {
       </div>
     );
   }
+
+  // Render rich content based on email data category
+  const renderRichContent = () => {
+    if (!email.data) return null;
+
+    switch (email.data.category) {
+      case EmailCategory.ChassisStageComplete:
+        return <ChassisStageDetail data={email.data as ChassisStageCompleteData} chiefs={chiefs} />;
+      case EmailCategory.TechBreakthrough:
+        return <TechBreakthroughDetail data={email.data as TechBreakthroughData} chiefs={chiefs} />;
+      case EmailCategory.TechDevelopmentComplete:
+        return <TechDevelopmentDetail data={email.data as TechDevelopmentCompleteData} chiefs={chiefs} />;
+      case EmailCategory.HandlingSolutionComplete:
+        return <HandlingSolutionDetail data={email.data as HandlingSolutionCompleteData} chiefs={chiefs} />;
+      default:
+        return null;
+    }
+  };
+
+  const richContent = renderRichContent();
 
   return (
     <div className="p-4">
@@ -349,8 +611,19 @@ function EmailDetailPanel({ email, chiefs, teams }: EmailDetailPanelProps) {
         <h2 className="text-lg text-primary mt-3">{email.subject}</h2>
       </div>
 
-      {/* Body */}
-      {email.body ? (
+      {/* Rich content or fallback body */}
+      {richContent ? (
+        <div className="space-y-4">
+          {/* Body text */}
+          {email.body && (
+            <div className="text-secondary text-sm leading-relaxed whitespace-pre-wrap">
+              {email.body}
+            </div>
+          )}
+          {/* Rich detail content */}
+          {richContent}
+        </div>
+      ) : email.body ? (
         <div className="text-secondary text-sm leading-relaxed whitespace-pre-wrap">
           {email.body}
         </div>
