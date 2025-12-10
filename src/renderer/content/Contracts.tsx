@@ -47,6 +47,14 @@ const STAT_DESCRIPTIONS: Record<keyof EngineStats, string> = {
   predictability: 'Consistency and driver error reduction',
 };
 
+const NULL_CONTRACT_DATA = {
+  contract: null,
+  manufacturer: null,
+  engineState: null,
+  car1Driver: null,
+  car2Driver: null,
+} as const;
+
 // ===========================================
 // HELPER FUNCTIONS
 // ===========================================
@@ -276,58 +284,56 @@ function CurrentContractTab({
       <div className="card p-6" style={ACCENT_CARD_STYLE}>
         <h3 className="text-lg font-semibold text-primary mb-4">Available Actions</h3>
         <div className="grid grid-cols-3 gap-4">
-          <div className="p-4 bg-neutral-800/50 rounded-lg">
-            <div className="text-sm font-medium text-primary mb-1">Buy Customisation Points</div>
-            <div className="text-xs text-muted mb-2">
-              Purchase flexibility points to reallocate engine stats (±10 max per stat)
-            </div>
-            <div className="text-sm text-secondary mb-2">
-              {formatMoney(manufacturer.costs.customisationPoint)} per point
-            </div>
-            <button
-              type="button"
-              className={`${GHOST_BORDERED_BUTTON_CLASSES} w-full text-sm cursor-pointer`}
-              disabled // Will be enabled in PR 3
-            >
-              Purchase
-            </button>
-          </div>
-
-          <div className="p-4 bg-neutral-800/50 rounded-lg">
-            <div className="text-sm font-medium text-primary mb-1">Pre-Season Optimisation</div>
-            <div className="text-xs text-muted mb-2">
-              Tailor the engine to your car for a flat bonus to all stats next season
-            </div>
-            <div className="text-sm text-secondary mb-2">
-              {formatMoney(manufacturer.costs.optimisation)}
-            </div>
-            <button
-              type="button"
-              className={`${GHOST_BORDERED_BUTTON_CLASSES} w-full text-sm cursor-pointer`}
-              disabled // Will be enabled in PR 3
-            >
-              {engineState.optimisationPurchasedForNextSeason ? 'Purchased' : 'Purchase'}
-            </button>
-          </div>
-
-          <div className="p-4 bg-neutral-800/50 rounded-lg">
-            <div className="text-sm font-medium text-primary mb-1">Ad-Hoc Engine Upgrade</div>
-            <div className="text-xs text-muted mb-2">
-              Purchase a fresh engine with the latest spec for one car
-            </div>
-            <div className="text-sm text-secondary mb-2">
-              {formatMoney(manufacturer.costs.upgrade)} per engine
-            </div>
-            <button
-              type="button"
-              className={`${GHOST_BORDERED_BUTTON_CLASSES} w-full text-sm cursor-pointer`}
-              disabled // Will be enabled in PR 3
-            >
-              Purchase
-            </button>
-          </div>
+          <ActionCard
+            title="Buy Customisation Points"
+            description="Purchase flexibility points to reallocate engine stats (±10 max per stat)"
+            cost={`${formatMoney(manufacturer.costs.customisationPoint)} per point`}
+            buttonLabel="Purchase"
+            disabled
+          />
+          <ActionCard
+            title="Pre-Season Optimisation"
+            description="Tailor the engine to your car for a flat bonus to all stats next season"
+            cost={formatMoney(manufacturer.costs.optimisation)}
+            buttonLabel={engineState.optimisationPurchasedForNextSeason ? 'Purchased' : 'Purchase'}
+            disabled
+          />
+          <ActionCard
+            title="Ad-Hoc Engine Upgrade"
+            description="Purchase a fresh engine with the latest spec for one car"
+            cost={`${formatMoney(manufacturer.costs.upgrade)} per engine`}
+            buttonLabel="Purchase"
+            disabled
+          />
         </div>
       </div>
+    </div>
+  );
+}
+
+interface ActionCardProps {
+  title: string;
+  description: string;
+  cost: string;
+  buttonLabel: string;
+  disabled?: boolean;
+  onClick?: () => void;
+}
+
+function ActionCard({ title, description, cost, buttonLabel, disabled, onClick }: ActionCardProps) {
+  return (
+    <div className="p-4 bg-neutral-800/50 rounded-lg">
+      <div className="text-sm font-medium text-primary mb-1">{title}</div>
+      <div className="text-xs text-muted mb-2">{description}</div>
+      <div className="text-sm text-secondary mb-2">{cost}</div>
+      <button
+        type="button"
+        className={`${GHOST_BORDERED_BUTTON_CLASSES} w-full text-sm cursor-pointer`}
+        disabled={disabled}
+        onClick={onClick}
+      >
+        {buttonLabel}
+      </button>
     </div>
   );
 }
@@ -352,7 +358,7 @@ export function Contracts() {
   // Get the player's engine contract and manufacturer
   const { contract, manufacturer, engineState, car1Driver, car2Driver } = useMemo(() => {
     if (!gameState || !playerTeam) {
-      return { contract: null, manufacturer: null, engineState: null, car1Driver: null, car2Driver: null };
+      return NULL_CONTRACT_DATA;
     }
 
     const playerTeamId = gameState.player.teamId;
@@ -361,7 +367,7 @@ export function Contracts() {
     );
 
     if (!engineContract) {
-      return { contract: null, manufacturer: null, engineState: null, car1Driver: null, car2Driver: null };
+      return NULL_CONTRACT_DATA;
     }
 
     const engineManufacturer = gameState.manufacturers.find(
