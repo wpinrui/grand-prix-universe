@@ -147,102 +147,98 @@ function SetupState({
   const mechanicsRemaining = mechanicCount - mechanicsUsed;
 
   return (
-    <div className="grid grid-cols-3 gap-6">
-      {/* Left Column: Mechanic Allocation Panel */}
+    <div className="space-y-6 max-w-2xl">
+      {/* Mechanic Allocation Panel */}
       <div className="card p-4">
         <SectionHeading>Mechanic Allocation</SectionHeading>
-        <div className="mt-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-secondary">Total Mechanics</span>
+        <div className="mt-4 flex gap-8">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-secondary">Total:</span>
             <span className="text-sm font-mono text-primary">{mechanicCount}</span>
           </div>
-          <div className="border-t border-subtle pt-3 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-secondary">Testing</span>
-              <span className="text-sm font-mono text-primary">
-                {mechanicsUsed} ({mechanicsAllocated}%)
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-amber-400">Available</span>
-              <span className="text-sm font-mono text-primary">
-                {mechanicsRemaining} ({100 - mechanicsAllocated}%)
-              </span>
-            </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-secondary">Testing:</span>
+            <span className="text-sm font-mono text-primary">
+              {mechanicsUsed} ({mechanicsAllocated}%)
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-amber-400">Available:</span>
+            <span className="text-sm font-mono text-primary">
+              {mechanicsRemaining} ({100 - mechanicsAllocated}%)
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Right Columns: Setup Card */}
-      <div className="col-span-2 space-y-6">
-        <div className="card p-6" style={ACCENT_CARD_STYLE}>
-          <SectionHeading>Test Setup</SectionHeading>
+      {/* Setup Card */}
+      <div className="card p-6" style={ACCENT_CARD_STYLE}>
+        <SectionHeading>Test Setup</SectionHeading>
 
-          <div className="mt-6 space-y-6">
-            {/* Driver Selection */}
-            <div>
-              <label className="block text-sm font-medium text-secondary mb-2">
-                Test Driver
-              </label>
-              {hasDrivers ? (
-                <Dropdown
-                  id="test-driver"
-                  options={driverOptions}
-                  value={selectedDriverId ?? ''}
-                  onChange={onDriverChange}
-                  className="w-64"
-                />
-              ) : (
-                <p className="text-sm text-red-400">No drivers available on team</p>
-              )}
-              <p className="text-xs text-muted mt-1">
-                Any team driver can perform development testing.
-              </p>
-            </div>
-
-            {/* Mechanic Allocation */}
-            <StaffAllocationSlider
-              id="mechanic-allocation"
-              value={mechanicsAllocated}
-              onChange={onMechanicsChange}
-              staffCount={mechanicCount}
-              label="Mechanic Allocation"
-              helperText="Higher allocation = faster test completion."
-            />
-
-            {/* Estimated Time */}
-            {estimatedDays !== null && mechanicsAllocated > 0 && (
-              <div className="p-4 surface-secondary rounded-lg">
-                <div className="flex items-center justify-between">
-                  <span className="text-secondary">Estimated Duration</span>
-                  <span className="font-semibold text-primary">
-                    ~{estimatedDays} {estimatedDays === 1 ? 'day' : 'days'}
-                  </span>
-                </div>
-              </div>
+        <div className="mt-6 space-y-6">
+          {/* Driver Selection */}
+          <div>
+            <label className="block text-sm font-medium text-secondary mb-2">
+              Test Driver
+            </label>
+            {hasDrivers ? (
+              <Dropdown
+                id="test-driver"
+                options={driverOptions}
+                value={selectedDriverId ?? ''}
+                onChange={onDriverChange}
+                className="w-64"
+              />
+            ) : (
+              <p className="text-sm text-red-400">No drivers available on team</p>
             )}
+            <p className="text-xs text-muted mt-1">
+              Any team driver can perform development testing.
+            </p>
           </div>
-        </div>
 
-        {/* Action Buttons */}
-        <div className="flex gap-4">
-          <button
-            type="button"
-            className="px-6 py-3 rounded-lg font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            style={canStart ? ACCENT_BORDERED_BUTTON_STYLE : undefined}
-            onClick={onStartTest}
-            disabled={!canStart}
-          >
-            Begin Test
-          </button>
-          <button
-            type="button"
-            className={`${GHOST_BORDERED_BUTTON_CLASSES} px-6 py-3 rounded-lg cursor-pointer`}
-            onClick={onCancel}
-          >
-            Cancel
-          </button>
+          {/* Mechanic Allocation */}
+          <StaffAllocationSlider
+            id="mechanic-allocation"
+            value={mechanicsAllocated}
+            onChange={onMechanicsChange}
+            staffCount={mechanicCount}
+            label="Mechanic Allocation"
+            helperText="Higher allocation = faster test completion."
+          />
+
+          {/* Estimated Time */}
+          {estimatedDays !== null && mechanicsAllocated > 0 && (
+            <div className="p-4 surface-secondary rounded-lg">
+              <div className="flex items-center justify-between">
+                <span className="text-secondary">Estimated Duration</span>
+                <span className="font-semibold text-primary">
+                  ~{estimatedDays} {estimatedDays === 1 ? 'day' : 'days'}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex gap-4">
+        <button
+          type="button"
+          className="px-6 py-3 rounded-lg font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          style={canStart ? ACCENT_BORDERED_BUTTON_STYLE : undefined}
+          onClick={onStartTest}
+          disabled={!canStart}
+        >
+          Begin Test
+        </button>
+        <button
+          type="button"
+          className={`${GHOST_BORDERED_BUTTON_CLASSES} px-6 py-3 rounded-lg cursor-pointer`}
+          onClick={onCancel}
+        >
+          Cancel
+        </button>
       </div>
     </div>
   );
