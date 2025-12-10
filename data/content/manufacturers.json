@@ -6,7 +6,19 @@
       "type": "engine",
       "reputation": 95,
       "annualCost": 28000000,
-      "quality": 90,
+      "engineStats": {
+        "power": 88,
+        "fuelEfficiency": 85,
+        "reliability": 90,
+        "heat": 82,
+        "predictability": 87
+      },
+      "costs": {
+        "baseEngine": 4000000,
+        "upgrade": 2500000,
+        "customisationPoint": 300000,
+        "optimisation": 5000000
+      },
       "worksTeamId": "silver-arrow-motorsport",
       "partnerTeamIds": []
     },
@@ -16,7 +28,19 @@
       "type": "engine",
       "reputation": 93,
       "annualCost": 26000000,
-      "quality": 90,
+      "engineStats": {
+        "power": 92,
+        "fuelEfficiency": 78,
+        "reliability": 85,
+        "heat": 72,
+        "predictability": 75
+      },
+      "costs": {
+        "baseEngine": 3800000,
+        "upgrade": 2400000,
+        "customisationPoint": 280000,
+        "optimisation": 4800000
+      },
       "worksTeamId": "crimson-bull-racing",
       "partnerTeamIds": ["toro-minore"]
     },
@@ -26,7 +50,19 @@
       "type": "engine",
       "reputation": 85,
       "annualCost": 20000000,
-      "quality": 77,
+      "engineStats": {
+        "power": 80,
+        "fuelEfficiency": 86,
+        "reliability": 70,
+        "heat": 68,
+        "predictability": 65
+      },
+      "costs": {
+        "baseEngine": 3200000,
+        "upgrade": 2000000,
+        "customisationPoint": 250000,
+        "optimisation": 4000000
+      },
       "worksTeamId": "scuderia-veloce",
       "partnerTeamIds": []
     },
@@ -36,7 +72,19 @@
       "type": "engine",
       "reputation": 75,
       "annualCost": 16000000,
-      "quality": 74,
+      "engineStats": {
+        "power": 72,
+        "fuelEfficiency": 75,
+        "reliability": 72,
+        "heat": 70,
+        "predictability": 73
+      },
+      "costs": {
+        "baseEngine": 2800000,
+        "upgrade": 1800000,
+        "customisationPoint": 220000,
+        "optimisation": 3500000
+      },
       "worksTeamId": "team-alfie",
       "partnerTeamIds": []
     },
@@ -46,7 +94,19 @@
       "type": "engine",
       "reputation": 55,
       "annualCost": 8000000,
-      "quality": 53,
+      "engineStats": {
+        "power": 58,
+        "fuelEfficiency": 62,
+        "reliability": 65,
+        "heat": 60,
+        "predictability": 68
+      },
+      "costs": {
+        "baseEngine": 1500000,
+        "upgrade": 1000000,
+        "customisationPoint": 150000,
+        "optimisation": 2000000
+      },
       "worksTeamId": null,
       "partnerTeamIds": []
     }
