@@ -86,7 +86,7 @@ function PartsTable({ entries, drivers }: PartsTableProps) {
   if (entries.length === 0) {
     return (
       <div className="card p-8 text-center text-muted">
-        <p>No entries for this season</p>
+        <p>No entries for this year</p>
       </div>
     );
   }
@@ -180,14 +180,17 @@ export function Construction() {
       });
   }, [partsLog, selectedSeason, typeFilter]);
 
-  // Calculate totals
+  // Calculate totals in single pass
   const totals = useMemo(() => {
-    const upgrades = filteredEntries
-      .filter((e) => e.type === PartsLogEntryType.Upgrade)
-      .reduce((sum, e) => sum + e.cost, 0);
-    const repairs = filteredEntries
-      .filter((e) => e.type === PartsLogEntryType.Repair)
-      .reduce((sum, e) => sum + e.cost, 0);
+    let upgrades = 0;
+    let repairs = 0;
+    for (const entry of filteredEntries) {
+      if (entry.type === PartsLogEntryType.Upgrade) {
+        upgrades += entry.cost;
+      } else {
+        repairs += entry.cost;
+      }
+    }
     return { upgrades, repairs, total: upgrades + repairs };
   }, [filteredEntries]);
 
@@ -206,7 +209,7 @@ export function Construction() {
         <SectionHeading>Parts & Repairs Log</SectionHeading>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-secondary">Season:</span>
+            <span className="text-sm text-secondary">Year:</span>
             <Dropdown
               id="season-filter"
               options={seasonOptions}
