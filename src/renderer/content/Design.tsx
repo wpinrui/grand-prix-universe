@@ -780,8 +780,11 @@ function CurrentYearChassisTab({
 interface TechnologyTabProps {
   designState: DesignState;
   allocationStep: number;
-  onStartProject: (component: TechnologyComponent, attribute: TechnologyAttribute) => void;
-  onCancelProject: (component: TechnologyComponent, attribute: TechnologyAttribute) => void;
+  onToggleProject: (
+    component: TechnologyComponent,
+    attribute: TechnologyAttribute,
+    isActive: boolean
+  ) => void;
   onSetAllocation: (
     component: TechnologyComponent,
     attribute: TechnologyAttribute,
@@ -863,8 +866,7 @@ function TechAttributeCell({
 function TechnologyTab({
   designState,
   allocationStep,
-  onStartProject,
-  onCancelProject,
+  onToggleProject,
   onSetAllocation,
 }: TechnologyTabProps) {
   const levelMap = new Map(designState.technologyLevels.map((l) => [l.component, l]));
@@ -941,9 +943,7 @@ function TechnologyTab({
                     level={perfLevel}
                     project={perfProject}
                     onToggleWork={() =>
-                      perfProject
-                        ? onCancelProject(component, TechnologyAttribute.Performance)
-                        : onStartProject(component, TechnologyAttribute.Performance)
+                      onToggleProject(component, TechnologyAttribute.Performance, !!perfProject)
                     }
                     maxAllocation={maxPerfAlloc}
                     step={allocationStep}
@@ -955,9 +955,7 @@ function TechnologyTab({
                     level={relLevel}
                     project={relProject}
                     onToggleWork={() =>
-                      relProject
-                        ? onCancelProject(component, TechnologyAttribute.Reliability)
-                        : onStartProject(component, TechnologyAttribute.Reliability)
+                      onToggleProject(component, TechnologyAttribute.Reliability, !!relProject)
                     }
                     maxAllocation={maxRelAlloc}
                     step={allocationStep}
@@ -1005,23 +1003,12 @@ export function Design() {
     [queryClient]
   );
 
-  const handleStartTechProject = useCallback(
-    async (component: TechnologyComponent, attribute: TechnologyAttribute) => {
-      const newState = await window.electronAPI.invoke(IpcChannels.DESIGN_START_TECH_PROJECT, {
-        component,
-        attribute,
-      });
-      queryClient.setQueryData<GameState | null>(queryKeys.gameState, newState);
-    },
-    [queryClient]
-  );
-
-  const handleCancelTechProject = useCallback(
-    async (component: TechnologyComponent, attribute: TechnologyAttribute) => {
-      const newState = await window.electronAPI.invoke(IpcChannels.DESIGN_CANCEL_TECH_PROJECT, {
-        component,
-        attribute,
-      });
+  const handleToggleTechProject = useCallback(
+    async (component: TechnologyComponent, attribute: TechnologyAttribute, isActive: boolean) => {
+      const channel = isActive
+        ? IpcChannels.DESIGN_CANCEL_TECH_PROJECT
+        : IpcChannels.DESIGN_START_TECH_PROJECT;
+      const newState = await window.electronAPI.invoke(channel, { component, attribute });
       queryClient.setQueryData<GameState | null>(queryKeys.gameState, newState);
     },
     [queryClient]
@@ -1086,8 +1073,7 @@ export function Design() {
         <TechnologyTab
           designState={designState}
           allocationStep={allocationStep}
-          onStartProject={handleStartTechProject}
-          onCancelProject={handleCancelTechProject}
+          onToggleProject={handleToggleTechProject}
           onSetAllocation={handleSetTechAllocation}
         />
       )}
