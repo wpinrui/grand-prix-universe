@@ -10,7 +10,6 @@
 export enum Department {
   Commercial = 'commercial',
   Design = 'design',
-  Engineering = 'engineering',
   Mechanics = 'mechanics',
 }
 
@@ -39,7 +38,6 @@ export enum DriverRole {
 
 export enum ChiefRole {
   Designer = 'designer',
-  Engineer = 'engineer',
   Mechanic = 'mechanic',
   Commercial = 'commercial',
 }

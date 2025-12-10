@@ -299,7 +299,6 @@ function createInitialDepartmentMorale(): DepartmentMorale {
   return {
     [Department.Commercial]: INITIAL_MORALE,
     [Department.Design]: INITIAL_MORALE,
-    [Department.Engineering]: INITIAL_MORALE,
     [Department.Mechanics]: INITIAL_MORALE,
   };
 }

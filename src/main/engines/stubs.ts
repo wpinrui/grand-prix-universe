@@ -886,14 +886,13 @@ function generateRaceTeamStateChanges(
     // Budget bonus for points
     const budgetChange = points * POINTS_BONUS_PER_POINT;
 
-    // Morale boost for engineering/mechanics based on results
+    // Morale boost for mechanics based on results
     const moraleBoost = calculateFinishMorale(bestFinish, points > 0);
 
     changes.push({
       teamId,
       budgetChange,
       moraleChanges: {
-        [Department.Engineering]: moraleBoost,
         [Department.Mechanics]: moraleBoost,
       },
       sponsorSatisfactionChanges: generateFluctuations(Object.keys(state.sponsorSatisfaction)),
