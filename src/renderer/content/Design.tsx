@@ -811,9 +811,7 @@ function getProjectStatus(project: TechnologyDesignProject | undefined): string 
 interface TechAttributeCellProps {
   level: number;
   project: TechnologyDesignProject | undefined;
-  isWorking: boolean;
   onToggleWork: () => void;
-  allocation: number;
   maxAllocation: number;
   step: number;
   onAllocationChange: (value: number) => void;
@@ -822,13 +820,14 @@ interface TechAttributeCellProps {
 function TechAttributeCell({
   level,
   project,
-  isWorking,
   onToggleWork,
-  allocation,
   maxAllocation,
   step,
   onAllocationChange,
 }: TechAttributeCellProps) {
+  const isWorking = !!project;
+  const allocation = project?.designersAssigned ?? 0;
+
   return (
     <>
       {/* Level */}
@@ -931,12 +930,9 @@ function TechnologyTab({
               const perfProject = projectMap.get(perfKey);
               const relProject = projectMap.get(relKey);
 
-              const perfAlloc = perfProject?.designersAssigned ?? 0;
-              const relAlloc = relProject?.designersAssigned ?? 0;
-
-              // Max allocation = current allocation + available
-              const maxPerfAlloc = perfAlloc + allocation.available;
-              const maxRelAlloc = relAlloc + allocation.available;
+              // Max allocation = current project allocation + available
+              const maxPerfAlloc = (perfProject?.designersAssigned ?? 0) + allocation.available;
+              const maxRelAlloc = (relProject?.designersAssigned ?? 0) + allocation.available;
 
               return (
                 <tr key={component} className="border-b border-subtle last:border-0">
@@ -944,13 +940,11 @@ function TechnologyTab({
                   <TechAttributeCell
                     level={perfLevel}
                     project={perfProject}
-                    isWorking={!!perfProject}
                     onToggleWork={() =>
                       perfProject
                         ? onCancelProject(component, TechnologyAttribute.Performance)
                         : onStartProject(component, TechnologyAttribute.Performance)
                     }
-                    allocation={perfAlloc}
                     maxAllocation={maxPerfAlloc}
                     step={allocationStep}
                     onAllocationChange={(val) =>
@@ -960,13 +954,11 @@ function TechnologyTab({
                   <TechAttributeCell
                     level={relLevel}
                     project={relProject}
-                    isWorking={!!relProject}
                     onToggleWork={() =>
                       relProject
                         ? onCancelProject(component, TechnologyAttribute.Reliability)
                         : onStartProject(component, TechnologyAttribute.Reliability)
                     }
-                    allocation={relAlloc}
                     maxAllocation={maxRelAlloc}
                     step={allocationStep}
                     onAllocationChange={(val) =>
