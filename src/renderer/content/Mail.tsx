@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { User, ChevronDown, ChevronRight, Search, ArrowRight } from 'lucide-react';
 import { useDerivedGameState } from '../hooks';
 import { SectionHeading, Dropdown, EntityLink } from '../components';
 import { CalendarEventType, EmailCategory } from '../../shared/domain';
+import { useEntityNavigation } from '../utils/entity-navigation';
 import type {
   CalendarEvent,
   Chief,
@@ -331,7 +331,7 @@ interface ChassisStageDetailProps {
 }
 
 function ChassisStageDetail({ data, chiefs }: ChassisStageDetailProps) {
-  const navigate = useNavigate();
+  const navigateToEntity = useEntityNavigation();
   const chief = data.chiefId ? chiefs.find((c) => c.id === data.chiefId) : null;
 
   return (
@@ -384,7 +384,7 @@ function ChassisStageDetail({ data, chiefs }: ChassisStageDetailProps) {
       {/* Action button */}
       <button
         type="button"
-        onClick={() => navigate('/engineering/design')}
+        onClick={() => navigateToEntity('engineering-design', '')}
         className="flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition-colors"
         style={ACCENT_BORDERED_BUTTON_STYLE}
       >
@@ -401,7 +401,7 @@ interface TechBreakthroughDetailProps {
 }
 
 function TechBreakthroughDetail({ data, chiefs }: TechBreakthroughDetailProps) {
-  const navigate = useNavigate();
+  const navigateToEntity = useEntityNavigation();
   const chief = data.chiefId ? chiefs.find((c) => c.id === data.chiefId) : null;
 
   return (
@@ -434,7 +434,7 @@ function TechBreakthroughDetail({ data, chiefs }: TechBreakthroughDetailProps) {
       {/* Action button */}
       <button
         type="button"
-        onClick={() => navigate('/engineering/design')}
+        onClick={() => navigateToEntity('engineering-design', '')}
         className="flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition-colors"
         style={ACCENT_BORDERED_BUTTON_STYLE}
       >
@@ -451,7 +451,7 @@ interface TechDevelopmentDetailProps {
 }
 
 function TechDevelopmentDetail({ data, chiefs }: TechDevelopmentDetailProps) {
-  const navigate = useNavigate();
+  const navigateToEntity = useEntityNavigation();
   const chief = data.chiefId ? chiefs.find((c) => c.id === data.chiefId) : null;
 
   return (
@@ -495,7 +495,7 @@ function TechDevelopmentDetail({ data, chiefs }: TechDevelopmentDetailProps) {
       {/* Action button */}
       <button
         type="button"
-        onClick={() => navigate('/engineering/design')}
+        onClick={() => navigateToEntity('engineering-design', '')}
         className="flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition-colors"
         style={ACCENT_BORDERED_BUTTON_STYLE}
       >
@@ -512,7 +512,7 @@ interface HandlingSolutionDetailProps {
 }
 
 function HandlingSolutionDetail({ data, chiefs }: HandlingSolutionDetailProps) {
-  const navigate = useNavigate();
+  const navigateToEntity = useEntityNavigation();
   const chief = data.chiefId ? chiefs.find((c) => c.id === data.chiefId) : null;
 
   return (
@@ -539,7 +539,7 @@ function HandlingSolutionDetail({ data, chiefs }: HandlingSolutionDetailProps) {
       {/* Action button */}
       <button
         type="button"
-        onClick={() => navigate('/engineering/design')}
+        onClick={() => navigateToEntity('engineering-design', '')}
         className="flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition-colors"
         style={ACCENT_BORDERED_BUTTON_STYLE}
       >
