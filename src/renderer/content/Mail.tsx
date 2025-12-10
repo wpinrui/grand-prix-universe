@@ -1,12 +1,22 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { User } from 'lucide-react';
+import { User, ChevronDown, ChevronRight } from 'lucide-react';
 import { useDerivedGameState } from '../hooks';
 import { SectionHeading } from '../components';
 import { CalendarEventType } from '../../shared/domain';
-import type { CalendarEvent, Chief, Team } from '../../shared/domain';
+import type { CalendarEvent, Chief, Team, GameDate } from '../../shared/domain';
 import { getFilteredCalendarEvents } from '../utils/calendar-event-utils';
-import { formatGameDate } from '../../shared/utils/date-utils';
+import { formatGameDate, formatDateGroupHeader, dateKey } from '../../shared/utils/date-utils';
 import { generateFace, FREE_AGENT_COLORS } from '../utils/face-generator';
+
+// ===========================================
+// TYPES
+// ===========================================
+
+interface DateGroup {
+  date: GameDate;
+  key: string;
+  emails: CalendarEvent[];
+}
 
 // ===========================================
 // HELPERS
@@ -16,6 +26,23 @@ const DEFAULT_SENDER = 'System';
 
 function getSenderDisplay(email: CalendarEvent): string {
   return email.sender || DEFAULT_SENDER;
+}
+
+function groupEmailsByDate(emails: CalendarEvent[]): DateGroup[] {
+  const groupMap = new Map<string, DateGroup>();
+
+  for (const email of emails) {
+    const key = dateKey(email.date);
+    const existing = groupMap.get(key);
+    if (existing) {
+      existing.emails.push(email);
+    } else {
+      groupMap.set(key, { date: email.date, key, emails: [email] });
+    }
+  }
+
+  // Convert to array (already sorted by date since emails come sorted)
+  return Array.from(groupMap.values());
 }
 
 // ===========================================
@@ -89,7 +116,7 @@ function EmailListItem({ email, isSelected, onSelect, chiefs, teams }: EmailList
     <button
       type="button"
       onClick={onSelect}
-      className={`w-full text-left px-3 py-2.5 border-b border-subtle last:border-b-0 cursor-pointer transition-colors ${
+      className={`w-full text-left px-3 py-2.5 cursor-pointer transition-colors ${
         isSelected
           ? 'bg-[var(--accent-900)]/40 border-l-2 border-l-[var(--accent-500)]'
           : 'hover:bg-[var(--neutral-800)]/50'
@@ -121,16 +148,58 @@ function EmailListItem({ email, isSelected, onSelect, chiefs, teams }: EmailList
   );
 }
 
+// ===========================================
+// DATE GROUP HEADER
+// ===========================================
+
+interface DateGroupHeaderProps {
+  group: DateGroup;
+  isExpanded: boolean;
+  onToggle: () => void;
+}
+
+function DateGroupHeader({ group, isExpanded, onToggle }: DateGroupHeaderProps) {
+  const itemCount = group.emails.length;
+  const itemText = itemCount === 1 ? '1 item' : `${itemCount} items`;
+
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className="w-full flex items-center justify-between px-3 py-2 bg-[var(--neutral-800)] cursor-pointer hover:bg-[var(--neutral-700)] transition-colors"
+    >
+      <span className="text-sm font-medium text-primary">
+        {formatDateGroupHeader(group.date)} ({itemText})
+      </span>
+      {isExpanded ? (
+        <ChevronDown size={16} className="text-muted" />
+      ) : (
+        <ChevronRight size={16} className="text-muted" />
+      )}
+    </button>
+  );
+}
+
 interface EmailListPanelProps {
-  emails: CalendarEvent[];
+  groups: DateGroup[];
   selectedId: string | null;
   onSelectEmail: (id: string) => void;
   chiefs: Chief[];
   teams: Team[];
+  collapsedGroups: Set<string>;
+  onToggleGroup: (key: string) => void;
 }
 
-function EmailListPanel({ emails, selectedId, onSelectEmail, chiefs, teams }: EmailListPanelProps) {
-  if (emails.length === 0) {
+function EmailListPanel({
+  groups,
+  selectedId,
+  onSelectEmail,
+  chiefs,
+  teams,
+  collapsedGroups,
+  onToggleGroup,
+}: EmailListPanelProps) {
+  if (groups.length === 0) {
     return (
       <div className="py-12 text-center">
         <p className="text-secondary">No messages yet.</p>
@@ -142,17 +211,33 @@ function EmailListPanel({ emails, selectedId, onSelectEmail, chiefs, teams }: Em
   }
 
   return (
-    <div className="divide-y divide-subtle">
-      {emails.map((email) => (
-        <EmailListItem
-          key={email.id}
-          email={email}
-          isSelected={selectedId === email.id}
-          onSelect={() => onSelectEmail(email.id)}
-          chiefs={chiefs}
-          teams={teams}
-        />
-      ))}
+    <div>
+      {groups.map((group) => {
+        const isExpanded = !collapsedGroups.has(group.key);
+        return (
+          <div key={group.key}>
+            <DateGroupHeader
+              group={group}
+              isExpanded={isExpanded}
+              onToggle={() => onToggleGroup(group.key)}
+            />
+            {isExpanded && (
+              <div className="divide-y divide-subtle">
+                {group.emails.map((email) => (
+                  <EmailListItem
+                    key={email.id}
+                    email={email}
+                    isSelected={selectedId === email.id}
+                    onSelect={() => onSelectEmail(email.id)}
+                    chiefs={chiefs}
+                    teams={teams}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -218,6 +303,7 @@ function EmailDetailPanel({ email, chiefs, teams }: EmailDetailPanelProps) {
 export function Mail() {
   const { gameState } = useDerivedGameState();
   const [selectedEmailId, setSelectedEmailId] = useState<string | null>(null);
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
 
   const mailItems = useMemo(() => {
     if (!gameState) return [];
@@ -228,6 +314,8 @@ export function Mail() {
       MAX_MAIL_ITEMS
     );
   }, [gameState]);
+
+  const dateGroups = useMemo(() => groupEmailsByDate(mailItems), [mailItems]);
 
   // Auto-select first email, or reset if current selection becomes invalid
   useEffect(() => {
@@ -241,6 +329,18 @@ export function Mail() {
     () => mailItems.find((e) => e.id === selectedEmailId) || null,
     [mailItems, selectedEmailId]
   );
+
+  const handleToggleGroup = (key: string) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  };
 
   if (!gameState) {
     return (
@@ -260,11 +360,13 @@ export function Mail() {
         <div className="w-80 shrink-0 card overflow-hidden flex flex-col">
           <div className="flex-1 overflow-y-auto">
             <EmailListPanel
-              emails={mailItems}
+              groups={dateGroups}
               selectedId={selectedEmailId}
               onSelectEmail={setSelectedEmailId}
               chiefs={gameState.chiefs}
               teams={gameState.teams}
+              collapsedGroups={collapsedGroups}
+              onToggleGroup={handleToggleGroup}
             />
           </div>
         </div>

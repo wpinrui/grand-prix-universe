@@ -28,6 +28,9 @@ const SHORT_MONTH_NAMES = [
 /** Short day names (Monday = 1) */
 const SHORT_DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
+/** Full day names (Monday = 1) */
+const FULL_DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
 /** Day of week constants (1=Monday, 7=Sunday) */
 export const DayOfWeek = {
   Monday: 1,
@@ -428,4 +431,36 @@ export function getMonthCalendarDays(year: number, month: number): GameDate[] {
   }
 
   return days;
+}
+
+/**
+ * Get ordinal suffix for a day number (1st, 2nd, 3rd, etc.)
+ */
+export function getOrdinalSuffix(day: number): string {
+  if (day >= 11 && day <= 13) return 'th';
+  switch (day % 10) {
+    case 1: return 'st';
+    case 2: return 'nd';
+    case 3: return 'rd';
+    default: return 'th';
+  }
+}
+
+/**
+ * Get full day name (Monday, Tuesday, etc.)
+ */
+export function getFullDayName(date: GameDate): string {
+  const dayOfWeek = getDayOfWeek(date);
+  return FULL_DAY_NAMES[dayOfWeek - 1];
+}
+
+/**
+ * Format date for group headers (FM-style)
+ * Returns "Tuesday August 1st 2023"
+ */
+export function formatDateGroupHeader(date: GameDate): string {
+  const dayName = getFullDayName(date);
+  const monthName = MONTH_NAMES[date.month - 1];
+  const dayWithSuffix = `${date.day}${getOrdinalSuffix(date.day)}`;
+  return `${dayName} ${monthName} ${dayWithSuffix} ${date.year}`;
 }
