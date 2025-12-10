@@ -18,7 +18,7 @@ import { CALENDAR_PANEL_HEIGHT, ICON_BUTTON_GHOST_CLASSES, PANEL_TRANSLUCENT_BG_
 /** Number of visible days in strip view */
 const VISIBLE_DAYS = 7;
 /** Extra days rendered on each side for smooth scrolling */
-const BUFFER_DAYS = 3;
+const BUFFER_DAYS = 7;
 /** Total days rendered in strip */
 const TOTAL_DAYS = VISIBLE_DAYS + BUFFER_DAYS * 2;
 /** Width of one day as percentage of visible area */
