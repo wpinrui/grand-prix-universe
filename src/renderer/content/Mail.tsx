@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { User, ChevronDown, ChevronRight } from 'lucide-react';
+import { User, ChevronDown, ChevronRight, Search } from 'lucide-react';
 import { useDerivedGameState } from '../hooks';
-import { SectionHeading } from '../components';
-import { CalendarEventType } from '../../shared/domain';
+import { SectionHeading, Dropdown } from '../components';
+import { CalendarEventType, EmailCategory } from '../../shared/domain';
 import type { CalendarEvent, Chief, Team, GameDate } from '../../shared/domain';
+import type { DropdownOption } from '../components/Dropdown';
 import { getFilteredCalendarEvents } from '../utils/calendar-event-utils';
 import { formatGameDate, formatDateGroupHeader, dateKey } from '../../shared/utils/date-utils';
 import { generateFace, FREE_AGENT_COLORS } from '../utils/face-generator';
@@ -17,6 +18,43 @@ interface DateGroup {
   key: string;
   emails: CalendarEvent[];
 }
+
+// ===========================================
+// CATEGORY FILTER OPTIONS
+// ===========================================
+
+type CategoryFilterValue = 'all' | EmailCategory;
+
+const CATEGORY_FILTER_OPTIONS: DropdownOption<CategoryFilterValue>[] = [
+  { value: 'all', label: 'All Categories' },
+  { value: EmailCategory.ChassisStageComplete, label: 'Chassis Stage' },
+  { value: EmailCategory.TechBreakthrough, label: 'Tech Breakthrough' },
+  { value: EmailCategory.TechDevelopmentComplete, label: 'Tech Development' },
+  { value: EmailCategory.HandlingSolutionComplete, label: 'Handling Solution' },
+];
+
+// ===========================================
+// CATEGORY BADGE CONFIG
+// ===========================================
+
+const CATEGORY_BADGE_CONFIG: Record<EmailCategory, { label: string; className: string }> = {
+  [EmailCategory.ChassisStageComplete]: {
+    label: 'Chassis',
+    className: 'bg-blue-600/20 text-blue-400',
+  },
+  [EmailCategory.TechBreakthrough]: {
+    label: 'Breakthrough',
+    className: 'bg-emerald-600/20 text-emerald-400',
+  },
+  [EmailCategory.TechDevelopmentComplete]: {
+    label: 'Development',
+    className: 'bg-purple-600/20 text-purple-400',
+  },
+  [EmailCategory.HandlingSolutionComplete]: {
+    label: 'Handling',
+    className: 'bg-amber-600/20 text-amber-400',
+  },
+};
 
 // ===========================================
 // HELPERS
@@ -100,6 +138,25 @@ function SenderAvatar({ email, chiefs, teams, size = 32 }: SenderAvatarProps) {
 const MAX_MAIL_ITEMS = 50;
 
 // ===========================================
+// CATEGORY BADGE COMPONENT
+// ===========================================
+
+interface CategoryBadgeProps {
+  category: EmailCategory | undefined;
+}
+
+function CategoryBadge({ category }: CategoryBadgeProps) {
+  if (!category) return null;
+  const config = CATEGORY_BADGE_CONFIG[category];
+  if (!config) return null;
+  return (
+    <span className={`text-xs px-1.5 py-0.5 rounded ${config.className}`}>
+      {config.label}
+    </span>
+  );
+}
+
+// ===========================================
 // LEFT PANEL - EMAIL LIST
 // ===========================================
 
@@ -138,10 +195,13 @@ function EmailListItem({ email, isSelected, onSelect, chiefs, teams }: EmailList
           <p className={`text-sm truncate mt-0.5 ${isSelected ? 'text-secondary' : 'text-muted'}`}>
             {email.subject}
           </p>
-          {/* Critical badge */}
-          {email.critical && (
-            <span className="text-xs text-amber-400 mt-1 inline-block">Important</span>
-          )}
+          {/* Category badge + Critical badge */}
+          <div className="flex items-center gap-2 mt-1">
+            <CategoryBadge category={email.emailCategory} />
+            {email.critical && (
+              <span className="text-xs text-amber-400">Important</span>
+            )}
+          </div>
         </div>
       </div>
     </button>
@@ -273,11 +333,14 @@ function EmailDetailPanel({ email, chiefs, teams }: EmailDetailPanelProps) {
                 <h3 className="text-primary font-medium">{getSenderDisplay(email)}</h3>
                 <p className="text-xs text-muted mt-0.5">{formatGameDate(email.date)}</p>
               </div>
-              {email.critical && (
-                <span className="shrink-0 px-2 py-0.5 text-xs font-medium bg-amber-600/20 text-amber-400 rounded">
-                  Important
-                </span>
-              )}
+              <div className="flex items-center gap-2 shrink-0">
+                <CategoryBadge category={email.emailCategory} />
+                {email.critical && (
+                  <span className="px-2 py-0.5 text-xs font-medium bg-amber-600/20 text-amber-400 rounded">
+                    Important
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -304,8 +367,10 @@ export function Mail() {
   const { gameState } = useDerivedGameState();
   const [selectedEmailId, setSelectedEmailId] = useState<string | null>(null);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilterValue>('all');
 
-  const mailItems = useMemo(() => {
+  const allMailItems = useMemo(() => {
     if (!gameState) return [];
     return getFilteredCalendarEvents(
       gameState.calendarEvents,
@@ -314,6 +379,28 @@ export function Mail() {
       MAX_MAIL_ITEMS
     );
   }, [gameState]);
+
+  // Apply search and category filters
+  const mailItems = useMemo(() => {
+    let filtered = allMailItems;
+
+    // Category filter
+    if (categoryFilter !== 'all') {
+      filtered = filtered.filter((e) => e.emailCategory === categoryFilter);
+    }
+
+    // Search filter (case-insensitive, matches subject or sender)
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (e) =>
+          e.subject.toLowerCase().includes(query) ||
+          (e.sender && e.sender.toLowerCase().includes(query))
+      );
+    }
+
+    return filtered;
+  }, [allMailItems, categoryFilter, searchQuery]);
 
   const dateGroups = useMemo(() => groupEmailsByDate(mailItems), [mailItems]);
 
@@ -353,6 +440,28 @@ export function Mail() {
   return (
     <div className="h-full flex flex-col">
       <SectionHeading>Mail</SectionHeading>
+
+      {/* Search and filter toolbar */}
+      <div className="flex items-center gap-3 mb-4">
+        {/* Search bar */}
+        <div className="relative flex-1 max-w-xs">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+          <input
+            type="text"
+            placeholder="Search emails..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-3 py-2 surface-primary border border-subtle rounded-lg text-sm text-primary placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-[var(--accent-500)]"
+          />
+        </div>
+        {/* Category filter */}
+        <Dropdown
+          id="mail-category-filter"
+          options={CATEGORY_FILTER_OPTIONS}
+          value={categoryFilter}
+          onChange={setCategoryFilter}
+        />
+      </div>
 
       {/* Two-panel layout */}
       <div className="flex-1 flex gap-4 min-h-0">
