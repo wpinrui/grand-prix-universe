@@ -230,6 +230,14 @@ function getPlayerDesignState(): { state: GameState; designState: DesignState } 
 }
 
 /**
+ * Creates a predicate for finding technology projects by component and attribute.
+ */
+function matchesTechProject(component: TechnologyComponent, attribute: TechnologyAttribute) {
+  return (p: TechnologyDesignProject): boolean =>
+    p.component === component && p.attribute === attribute;
+}
+
+/**
  * Creates initial runtime state for a driver
  */
 function createInitialDriverState(): DriverRuntimeState {
@@ -1491,7 +1499,7 @@ export const GameStateManager = {
 
     // Check if project already exists for this component/attribute
     const existingProject = designState.activeTechnologyProjects.find(
-      (p) => p.component === component && p.attribute === attribute
+      matchesTechProject(component, attribute)
     );
     if (existingProject) {
       throw new Error(`Project already exists for ${component} ${attribute}`);
@@ -1523,7 +1531,7 @@ export const GameStateManager = {
     const { state, designState } = getPlayerDesignState();
 
     const projectIndex = designState.activeTechnologyProjects.findIndex(
-      (p) => p.component === component && p.attribute === attribute
+      matchesTechProject(component, attribute)
     );
 
     if (projectIndex === -1) {
@@ -1550,7 +1558,7 @@ export const GameStateManager = {
     const { state, designState } = getPlayerDesignState();
 
     const project = designState.activeTechnologyProjects.find(
-      (p) => p.component === component && p.attribute === attribute
+      matchesTechProject(component, attribute)
     );
 
     if (!project) {
