@@ -24,6 +24,7 @@ import {
   StaffQuality,
   TechnologyProjectPhase,
   TechnologyComponent,
+  TechnologyAttribute,
   HandlingProblem,
 } from './types';
 
@@ -331,9 +332,6 @@ export interface ChassisProgressionResult {
  * @param chiefDesigner - Chief designer (for efficiency calculation)
  * @returns Updated chassis state and any completion event
  */
-/**
- * Result of processing a day of chassis work
- */
 export function processChassisDay(
   chassis: ChassisDesign,
   workUnits: number,
@@ -404,6 +402,35 @@ export function processChassisDay(
     blocked: false,
     missingFacility: null,
   };
+}
+
+// =============================================================================
+// TECHNOLOGY LEVEL HELPERS
+// =============================================================================
+
+/**
+ * Apply a technology payoff (stat increase) to technology levels
+ *
+ * @param technologyLevels - Current technology levels array
+ * @param component - The technology component to update
+ * @param attribute - Performance or Reliability
+ * @param payoff - Stat increase amount
+ * @returns New technology levels array with the update applied
+ */
+export function applyTechnologyPayoff(
+  technologyLevels: TechnologyLevel[],
+  component: TechnologyComponent,
+  attribute: TechnologyAttribute,
+  payoff: number
+): TechnologyLevel[] {
+  return technologyLevels.map((tech) => {
+    if (tech.component !== component) return tech;
+
+    if (attribute === TechnologyAttribute.Performance) {
+      return { ...tech, performance: Math.min(100, tech.performance + payoff) };
+    }
+    return { ...tech, reliability: Math.min(100, tech.reliability + payoff) };
+  });
 }
 
 // =============================================================================

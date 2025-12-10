@@ -80,7 +80,6 @@ import {
   DriverStanding,
   ConstructorStanding,
   hasRaceSeat,
-  TechnologyAttribute,
 } from '../../shared/domain';
 import {
   getWeekNumber,
@@ -94,6 +93,7 @@ import {
   processChassisDay,
   processTechnologyProjectDay,
   processCurrentYearChassisDay,
+  applyTechnologyPayoff,
   HANDLING_SOLUTION_STAT_INCREASE,
 } from '../../shared/domain/design-utils';
 
@@ -193,24 +193,15 @@ export class StubDesignEngine implements IDesignEngine {
         projectsToRemove.push(i);
 
         // Apply stat increase to technology levels
-        const techIndex = updatedDesignState.technologyLevels.findIndex(
-          (t) => t.component === project.component
-        );
-        if (techIndex !== -1) {
-          const tech = updatedDesignState.technologyLevels[techIndex];
-          const updatedTech = { ...tech };
-          if (project.attribute === TechnologyAttribute.Performance) {
-            updatedTech.performance = Math.min(100, tech.performance + result.payoff);
-          } else {
-            updatedTech.reliability = Math.min(100, tech.reliability + result.payoff);
-          }
-          const newTechLevels = [...updatedDesignState.technologyLevels];
-          newTechLevels[techIndex] = updatedTech;
-          updatedDesignState = {
-            ...updatedDesignState,
-            technologyLevels: newTechLevels,
-          };
-        }
+        updatedDesignState = {
+          ...updatedDesignState,
+          technologyLevels: applyTechnologyPayoff(
+            updatedDesignState.technologyLevels,
+            project.component,
+            project.attribute,
+            result.payoff
+          ),
+        };
       }
     }
 
