@@ -11,6 +11,7 @@
 import type { StaffCounts, Facility, TestSession, GameDate } from './types';
 import { FacilityType, StaffQuality } from './types';
 import { offsetDate } from '../utils/date-utils';
+import { seededRandom } from './design-utils';
 
 // =============================================================================
 // CONSTANTS
@@ -104,14 +105,6 @@ export function getTestingFacilityMultiplier(facilities: Facility[]): number {
 export function getTestingVariance(seed?: number): number {
   const random = seed !== undefined ? seededRandom(seed) : Math.random();
   return TESTING_VARIANCE_MIN + random * (TESTING_VARIANCE_MAX - TESTING_VARIANCE_MIN);
-}
-
-/**
- * Simple seeded random for deterministic testing
- */
-function seededRandom(seed: number): number {
-  const x = Math.sin(seed) * 10000;
-  return x - Math.floor(x);
 }
 
 // =============================================================================
