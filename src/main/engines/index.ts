@@ -11,7 +11,6 @@ export { EngineManager } from './engine-manager';
 export {
   StubRaceEngine,
   StubDesignEngine,
-  StubConstructionEngine,
   StubDevelopmentEngine,
   StubStaffEngine,
   StubFinancialEngine,

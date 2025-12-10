@@ -14,7 +14,6 @@ All entities use **kebab-case string slugs** for IDs (e.g., `"phoenix-racing"`, 
 Team departments that staff can belong to:
 - `commercial` - Sponsor deals, hospitality, licensing
 - `design` - Chassis design, technology R&D
-- `engineering` - Car construction, upgrades
 - `mechanics` - Maintenance, repairs, pit crew
 
 ### StaffQuality
@@ -41,7 +40,6 @@ A driver's position within the team:
 ### ChiefRole
 Department head positions:
 - `designer` - Chief Designer, leads Design department
-- `engineer` - Chief Engineer, leads Engineering
 - `mechanic` - Chief Mechanic, leads Mechanics
 - `commercial` - Commercial Manager, leads Commercial
 

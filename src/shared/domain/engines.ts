@@ -57,10 +57,6 @@ export type RaceResult = Placeholder;
 
 // Design Engine Types - See IDesignEngine interface for documentation
 
-// Construction Engine Types
-export type ConstructionInput = Placeholder;
-export type ConstructionResult = Placeholder;
-
 // Development Engine Types
 export type DevelopmentInput = Placeholder;
 export type DevelopmentResult = Placeholder;
@@ -553,14 +549,6 @@ export interface ITestingEngine {
    * @returns Updated test session and completion data if test finished
    */
   processDay(input: TestingProcessingInput): TestingProcessingResult;
-}
-
-/**
- * IConstructionEngine - Manages building cars, parts, and upgrades
- * Responsible for build queues, resource allocation, completion times
- */
-export interface IConstructionEngine {
-  processConstruction(input: ConstructionInput): ConstructionResult;
 }
 
 /**

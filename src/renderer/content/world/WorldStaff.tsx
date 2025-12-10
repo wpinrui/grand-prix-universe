@@ -37,7 +37,6 @@ const STAFF_FILTER_TABS: { id: StaffFilterType; label: string }[] = [
   { id: 'all', label: 'All' },
   { id: 'principal', label: 'Principals' },
   { id: 'designer', label: 'Designers' },
-  { id: 'engineer', label: 'Engineers' },
   { id: 'mechanic', label: 'Mechanics' },
   { id: 'commercial', label: 'Commercial' },
 ];
@@ -46,7 +45,6 @@ const ROLE_DISPLAY_NAMES: Record<StaffFilterType, string> = {
   all: 'Staff',
   principal: 'Team Principal',
   designer: 'Chief Designer',
-  engineer: 'Chief Engineer',
   mechanic: 'Chief Mechanic',
   commercial: 'Commercial Director',
 };

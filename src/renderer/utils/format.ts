@@ -25,14 +25,12 @@ export const DRIVER_ROLE_LABELS: Record<DriverRole, string> = {
 export const DEPARTMENT_LABELS: Record<Department, string> = {
   [Department.Commercial]: 'Commercial',
   [Department.Design]: 'Design',
-  [Department.Engineering]: 'Engineering',
   [Department.Mechanics]: 'Mechanics',
 };
 
 export const CHIEF_ROLE_LABELS: Record<ChiefRole, string> = {
   [ChiefRole.Commercial]: 'Commercial Manager',
   [ChiefRole.Designer]: 'Chief Designer',
-  [ChiefRole.Engineer]: 'Chief Engineer',
   [ChiefRole.Mechanic]: 'Chief Mechanic',
 };
 
@@ -51,7 +49,6 @@ export const STAFF_QUALITY_LABELS: Record<StaffQuality, string> = {
 /** Display order for departments (Design first as most important) */
 export const DEPARTMENT_ORDER: Department[] = [
   Department.Design,
-  Department.Engineering,
   Department.Mechanics,
   Department.Commercial,
 ];
@@ -68,7 +65,6 @@ export const STAFF_QUALITY_ORDER: StaffQuality[] = [
 /** Display order for chief roles */
 export const CHIEF_ROLE_ORDER: ChiefRole[] = [
   ChiefRole.Designer,
-  ChiefRole.Engineer,
   ChiefRole.Mechanic,
   ChiefRole.Commercial,
 ];
@@ -77,7 +73,6 @@ export const CHIEF_ROLE_ORDER: ChiefRole[] = [
 export const ROLE_TO_DEPARTMENT: Record<ChiefRole, Department> = {
   [ChiefRole.Commercial]: Department.Commercial,
   [ChiefRole.Designer]: Department.Design,
-  [ChiefRole.Engineer]: Department.Engineering,
   [ChiefRole.Mechanic]: Department.Mechanics,
 };
 

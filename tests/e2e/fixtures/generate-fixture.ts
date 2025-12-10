@@ -291,7 +291,6 @@ function main() {
     const morale: DepartmentMorale = {
       [Department.Commercial]: 70,
       [Department.Design]: 70,
-      [Department.Engineering]: 70,
       [Department.Mechanics]: 70,
     };
     teamStates[team.id] = {

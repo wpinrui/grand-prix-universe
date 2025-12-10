@@ -10,7 +10,6 @@ import type {
   IRaceEngine,
   IDesignEngine,
   ITestingEngine,
-  IConstructionEngine,
   IDevelopmentEngine,
   IStaffEngine,
   IFinancialEngine,
@@ -29,8 +28,6 @@ import type {
   TestingProcessingInput,
   TestingProcessingResult,
   TestCompletion,
-  ConstructionInput,
-  ConstructionResult,
   DevelopmentInput,
   DevelopmentResult,
   StaffInput,
@@ -371,12 +368,6 @@ export class StubTestingEngine implements ITestingEngine {
       problemDiscovered,
     };
     return { updatedTestSession: resetSession, completion };
-  }
-}
-
-export class StubConstructionEngine implements IConstructionEngine {
-  processConstruction(_input: ConstructionInput): ConstructionResult {
-    return {};
   }
 }
 
@@ -895,14 +886,13 @@ function generateRaceTeamStateChanges(
     // Budget bonus for points
     const budgetChange = points * POINTS_BONUS_PER_POINT;
 
-    // Morale boost for engineering/mechanics based on results
+    // Morale boost for mechanics based on results
     const moraleBoost = calculateFinishMorale(bestFinish, points > 0);
 
     changes.push({
       teamId,
       budgetChange,
       moraleChanges: {
-        [Department.Engineering]: moraleBoost,
         [Department.Mechanics]: moraleBoost,
       },
       sponsorSatisfactionChanges: generateFluctuations(Object.keys(state.sponsorSatisfaction)),
