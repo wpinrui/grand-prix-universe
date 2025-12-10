@@ -1094,17 +1094,16 @@ function applyDesignUpdates(
       playerHadMilestone = true;
     }
 
-    // For non-player teams with milestones, generate news headlines
-    if (!isPlayerTeam && hasMilestones(update)) {
-      const team = state.teams.find((t) => t.id === update.teamId);
-      if (team) {
-        generateDesignNewsForTeam(state, update, currentDate, team.name);
+    // For non-player teams: generate news headlines if they have milestones, then skip
+    if (!isPlayerTeam) {
+      if (hasMilestones(update)) {
+        const team = state.teams.find((t) => t.id === update.teamId);
+        if (team) {
+          generateDesignNewsForTeam(state, update, currentDate, team.name);
+        }
       }
       continue;
     }
-
-    // Only create emails for player's team
-    if (!isPlayerTeam) continue;
 
     // Get the Chief Designer for sender
     const chiefDesigner = state.chiefs.find(
