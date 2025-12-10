@@ -110,6 +110,29 @@ export const STAGE_FACILITY_REQUIREMENTS: Record<ChassisDesignStage, FacilityTyp
 };
 
 /**
+ * Display names for technology components
+ */
+export const TECH_COMPONENT_DISPLAY_NAMES: Record<TechnologyComponent, string> = {
+  [TechnologyComponent.Brakes]: 'Brakes',
+  [TechnologyComponent.Clutch]: 'Clutch',
+  [TechnologyComponent.Electronics]: 'Electronics',
+  [TechnologyComponent.Gearbox]: 'Gearbox',
+  [TechnologyComponent.Hydraulics]: 'Hydraulics',
+  [TechnologyComponent.Suspension]: 'Suspension',
+  [TechnologyComponent.Throttle]: 'Throttle',
+};
+
+/**
+ * Display names for chassis design stages
+ */
+export const CHASSIS_STAGE_DISPLAY_NAMES: Record<ChassisDesignStage, string> = {
+  [ChassisDesignStage.Design]: 'Design',
+  [ChassisDesignStage.CFD]: 'CFD',
+  [ChassisDesignStage.Model]: 'Model',
+  [ChassisDesignStage.WindTunnel]: 'Wind Tunnel',
+};
+
+/**
  * Maximum efficiency bonus points from chief designer (additive to base efficiency)
  * A 100-ability chief adds up to this many points to the efficiency rating
  */
@@ -1122,15 +1145,9 @@ export function getProjectedMilestones(
     if (daysRemaining !== null && daysRemaining > 0) {
       const currentStage = getCurrentStage(designState.nextYearChassis.stages);
       if (currentStage) {
-        const stageNames: Record<ChassisDesignStage, string> = {
-          [ChassisDesignStage.Design]: 'Design',
-          [ChassisDesignStage.CFD]: 'CFD',
-          [ChassisDesignStage.Model]: 'Model',
-          [ChassisDesignStage.WindTunnel]: 'Wind Tunnel',
-        };
         milestones.push({
           type: 'chassis-stage',
-          description: `${stageNames[currentStage.stage]} stage completion`,
+          description: `${CHASSIS_STAGE_DISPLAY_NAMES[currentStage.stage]} stage completion`,
           estimatedDate: addDaysToDate(currentDate, daysRemaining),
           daysRemaining,
           stage: currentStage.stage,
@@ -1146,18 +1163,9 @@ export function getProjectedMilestones(
       if (daysRemaining !== null && daysRemaining > 0) {
         const attrName =
           project.attribute === TechnologyAttribute.Performance ? 'Performance' : 'Reliability';
-        const componentNames: Record<TechnologyComponent, string> = {
-          [TechnologyComponent.Brakes]: 'Brakes',
-          [TechnologyComponent.Clutch]: 'Clutch',
-          [TechnologyComponent.Electronics]: 'Electronics',
-          [TechnologyComponent.Gearbox]: 'Gearbox',
-          [TechnologyComponent.Hydraulics]: 'Hydraulics',
-          [TechnologyComponent.Suspension]: 'Suspension',
-          [TechnologyComponent.Throttle]: 'Throttle',
-        };
         milestones.push({
           type: 'tech-development',
-          description: `${componentNames[project.component]} ${attrName} (+${project.payoff ?? '?'})`,
+          description: `${TECH_COMPONENT_DISPLAY_NAMES[project.component]} ${attrName} (+${project.payoff ?? '?'})`,
           estimatedDate: addDaysToDate(currentDate, daysRemaining),
           daysRemaining,
           component: project.component,

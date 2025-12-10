@@ -86,6 +86,8 @@ import {
   createEvent,
   managerRef,
   teamRef,
+  TECH_COMPONENT_DISPLAY_NAMES,
+  CHASSIS_STAGE_DISPLAY_NAMES,
 } from '../../shared/domain';
 import {
   getPreSeasonStartDate,
@@ -972,35 +974,6 @@ function createMilestoneEvent(
 }
 
 /**
- * Get display name for a technology component
- */
-function getTechComponentName(component: TechnologyComponent): string {
-  const names: Record<TechnologyComponent, string> = {
-    [TechnologyComponent.Brakes]: 'Brakes',
-    [TechnologyComponent.Clutch]: 'Clutch',
-    [TechnologyComponent.Electronics]: 'Electronics',
-    [TechnologyComponent.Gearbox]: 'Gearbox',
-    [TechnologyComponent.Hydraulics]: 'Hydraulics',
-    [TechnologyComponent.Suspension]: 'Suspension',
-    [TechnologyComponent.Throttle]: 'Throttle',
-  };
-  return names[component];
-}
-
-/**
- * Get display name for a chassis design stage
- */
-function getChassisStageDisplayName(stage: ChassisDesignStage): string {
-  const names: Record<ChassisDesignStage, string> = {
-    [ChassisDesignStage.Design]: 'Design',
-    [ChassisDesignStage.CFD]: 'CFD',
-    [ChassisDesignStage.Model]: 'Model',
-    [ChassisDesignStage.WindTunnel]: 'Wind Tunnel',
-  };
-  return names[stage];
-}
-
-/**
  * Apply design updates to game state and create calendar events for milestones
  * Returns true if player team had any milestones (for auto-stop)
  */
@@ -1030,14 +1003,11 @@ function applyDesignUpdates(
 
     // Chassis stage completions
     for (const completion of update.chassisStageCompletions) {
-      const stageName = getChassisStageDisplayName(completion.stage);
-      const subject = isPlayerTeam
-        ? `${stageName} stage complete`
-        : `${stageName} stage complete`;
+      const stageName = CHASSIS_STAGE_DISPLAY_NAMES[completion.stage];
       state.calendarEvents.push(
         createMilestoneEvent(
           currentDate,
-          subject,
+          `${stageName} stage complete`,
           MilestoneType.ChassisStageComplete,
           isPlayerTeam // Only critical for player team
         )
@@ -1046,7 +1016,7 @@ function applyDesignUpdates(
 
     // Technology breakthroughs
     for (const breakthrough of update.breakthroughs) {
-      const techName = getTechComponentName(breakthrough.component);
+      const techName = TECH_COMPONENT_DISPLAY_NAMES[breakthrough.component];
       const attrName = breakthrough.attribute === TechnologyAttribute.Performance ? 'Perf' : 'Rel';
       const subject = `${techName} ${attrName} breakthrough (+${breakthrough.statIncrease})`;
       state.calendarEvents.push(
@@ -1062,7 +1032,7 @@ function applyDesignUpdates(
     // Technology completions
     for (const completion of update.completions) {
       if (completion.type === 'technology') {
-        const techName = getTechComponentName(completion.component);
+        const techName = TECH_COMPONENT_DISPLAY_NAMES[completion.component];
         const attrName = completion.attribute === TechnologyAttribute.Performance ? 'Perf' : 'Rel';
         const subject = `${techName} ${attrName} development complete`;
         state.calendarEvents.push(
