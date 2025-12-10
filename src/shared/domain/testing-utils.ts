@@ -9,25 +9,19 @@
  */
 
 import type { StaffCounts, Facility, TestSession, GameDate } from './types';
-import { FacilityType, StaffQuality } from './types';
+import { FacilityType } from './types';
 import { offsetDate } from '../utils/date-utils';
-import { seededRandom } from './design-utils';
+import {
+  getStaffAbilityTotal,
+  getRandomVariance,
+  MIN_WORK_UNITS_PER_DAY,
+  WORK_VARIANCE_MIN,
+  WORK_VARIANCE_MAX,
+} from './design-utils';
 
 // =============================================================================
 // CONSTANTS
 // =============================================================================
-
-/**
- * Ability points per mechanic staff quality tier
- * Same scale as design staff for consistency
- */
-export const MECHANIC_ABILITY_BY_QUALITY: Record<StaffQuality, number> = {
-  [StaffQuality.Trainee]: 20,
-  [StaffQuality.Average]: 40,
-  [StaffQuality.Good]: 60,
-  [StaffQuality.VeryGood]: 80,
-  [StaffQuality.Excellent]: 100,
-};
 
 /**
  * Facility multiplier bonus for testing
@@ -36,17 +30,6 @@ export const MECHANIC_ABILITY_BY_QUALITY: Record<StaffQuality, number> = {
 export const TESTING_FACILITY_MULTIPLIER_PER_LEVEL: Partial<Record<FacilityType, number>> = {
   [FacilityType.TestRig]: 0.1, // +10% per level (1-5)
 };
-
-/**
- * Random variance range for daily testing output
- */
-export const TESTING_VARIANCE_MIN = 0.9;
-export const TESTING_VARIANCE_MAX = 1.1;
-
-/**
- * Minimum work units per day for testing (floor to prevent zero-progress days)
- */
-export const MIN_TESTING_WORK_UNITS_PER_DAY = 1;
 
 /**
  * Work units required to earn 1 point of test progress (0-10 scale)
@@ -65,21 +48,6 @@ export const MAX_TEST_PROGRESS = 10;
 // =============================================================================
 
 /**
- * Calculate total ability points from mechanic department staff
- *
- * @param staffCounts - Staff counts by quality tier for mechanic department
- * @returns Total ability points (e.g., 5 excellent = 500)
- */
-export function getMechanicAbilityTotal(staffCounts: StaffCounts): number {
-  let total = 0;
-  for (const quality of Object.values(StaffQuality)) {
-    const count = staffCounts[quality] ?? 0;
-    total += count * MECHANIC_ABILITY_BY_QUALITY[quality];
-  }
-  return total;
-}
-
-/**
  * Calculate facility multiplier for testing
  *
  * @param facilities - All factory facilities
@@ -94,17 +62,6 @@ export function getTestingFacilityMultiplier(facilities: Facility[]): number {
     }
   }
   return 1 + bonus;
-}
-
-/**
- * Generate random variance for daily testing output
- *
- * @param seed - Optional seed for deterministic testing
- * @returns Variance multiplier between TESTING_VARIANCE_MIN and TESTING_VARIANCE_MAX
- */
-export function getTestingVariance(seed?: number): number {
-  const random = seed !== undefined ? seededRandom(seed) : Math.random();
-  return TESTING_VARIANCE_MIN + random * (TESTING_VARIANCE_MAX - TESTING_VARIANCE_MIN);
 }
 
 // =============================================================================
@@ -145,15 +102,15 @@ export function calculateTestingWorkUnits(input: TestingWorkUnitsInput): number 
     return 0;
   }
 
-  const mechanicAbility = getMechanicAbilityTotal(staffCounts);
+  const mechanicAbility = getStaffAbilityTotal(staffCounts);
   const facilityMultiplier = getTestingFacilityMultiplier(facilities);
-  const variance = getTestingVariance(randomSeed);
+  const variance = getRandomVariance(randomSeed);
 
   const rawWorkUnits =
     mechanicAbility * (percentAllocated / 100) * facilityMultiplier * variance;
 
   // Floor to minimum (but only if there's any allocation)
-  return Math.max(MIN_TESTING_WORK_UNITS_PER_DAY, Math.round(rawWorkUnits));
+  return Math.max(MIN_WORK_UNITS_PER_DAY, Math.round(rawWorkUnits));
 }
 
 // =============================================================================
@@ -171,9 +128,9 @@ export function calculateAverageTestingWorkUnits(
 ): number {
   if (percentAllocated <= 0) return 0;
 
-  const mechanicAbility = getMechanicAbilityTotal(staffCounts);
+  const mechanicAbility = getStaffAbilityTotal(staffCounts);
   const facilityMultiplier = getTestingFacilityMultiplier(facilities);
-  const avgVariance = (TESTING_VARIANCE_MIN + TESTING_VARIANCE_MAX) / 2;
+  const avgVariance = (WORK_VARIANCE_MIN + WORK_VARIANCE_MAX) / 2;
 
   return mechanicAbility * (percentAllocated / 100) * facilityMultiplier * avgVariance;
 }
