@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useEffect } from 'react';
 
 export interface StaffAllocationSliderProps {
   /** Unique ID for the slider input */
@@ -78,6 +78,14 @@ export function StaffAllocationSlider({
   className = 'w-64',
 }: StaffAllocationSliderProps) {
   const steps = useMemo(() => generateAllocationSteps(staffCount), [staffCount]);
+
+  // Auto-snap value to nearest valid step on mount and when staffCount changes
+  useEffect(() => {
+    const snappedValue = snapToNearestStep(value, steps);
+    if (snappedValue !== value) {
+      onChange(snappedValue);
+    }
+  }, [steps]); // Only re-snap when steps change, not on every value change
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
