@@ -634,6 +634,12 @@ export const WORK_UNITS_PER_SOLUTION_POINT = 500;
  */
 export const MAX_SOLUTION_PROGRESS = 10;
 
+/**
+ * Fixed stat improvement when a handling solution is completed
+ * Represents general handling improvement from fixing a problem
+ */
+export const HANDLING_SOLUTION_STAT_INCREASE = 5;
+
 // =============================================================================
 // CURRENT YEAR CHASSIS FUNCTIONS
 // =============================================================================

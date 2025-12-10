@@ -173,6 +173,7 @@ function createInitialDesignState(): DesignState {
     problems: createInitialHandlingProblems(),
     activeDesignProblem: null,
     designersAssigned: 0,
+    accumulatedSolutionWorkUnits: 0,
   };
 
   return {

@@ -201,6 +201,7 @@ export interface CurrentYearChassisState {
   problems: HandlingProblemState[];
   activeDesignProblem: HandlingProblem | null; // Which problem is being worked on
   designersAssigned: number;
+  accumulatedSolutionWorkUnits: number; // Partial progress toward next solution point
 }
 
 /**

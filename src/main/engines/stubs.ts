@@ -94,6 +94,7 @@ import {
   processChassisDay,
   processTechnologyProjectDay,
   processCurrentYearChassisDay,
+  HANDLING_SOLUTION_STAT_INCREASE,
 } from '../../shared/domain/design-utils';
 
 export class StubRaceEngine implements IRaceEngine {
@@ -232,19 +233,19 @@ export class StubDesignEngine implements IDesignEngine {
         percentAllocated: designState.currentYearChassis.designersAssigned,
       });
 
-      // Track accumulated work units (stored in a simple way for now)
-      // In a full implementation, this would be stored in the state
-      const accumulatedWorkUnits = 0;
-
       const currentYearResult = processCurrentYearChassisDay(
         designState.currentYearChassis,
         workUnits,
-        accumulatedWorkUnits
+        designState.currentYearChassis.accumulatedSolutionWorkUnits
       );
 
+      // Persist accumulated work units to avoid losing partial progress
       updatedDesignState = {
         ...updatedDesignState,
-        currentYearChassis: currentYearResult.updatedState,
+        currentYearChassis: {
+          ...currentYearResult.updatedState,
+          accumulatedSolutionWorkUnits: currentYearResult.accumulatedWorkUnits,
+        },
       };
 
       // Record handling solution completion
@@ -252,7 +253,7 @@ export class StubDesignEngine implements IDesignEngine {
         completions.push({
           type: 'handling-solution',
           problem: currentYearResult.completedSolution,
-          statIncrease: 5, // Fixed improvement for handling solutions
+          statIncrease: HANDLING_SOLUTION_STAT_INCREASE,
         });
       }
     }
