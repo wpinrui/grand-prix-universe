@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Maximize2, Minimize2, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import type { GameDate, CalendarEvent, CalendarEntry, Circuit } from '../../shared/domain';
+import { CalendarEventType } from '../../shared/domain';
 import { DayCard } from './DayCard';
 import { useCalendarData } from '../hooks';
 import {
@@ -12,32 +13,73 @@ import {
   getMonthName,
 } from '../../shared/utils/date-utils';
 import { FlagIcon } from './FlagIcon';
-import { CALENDAR_PANEL_HEIGHT, ICON_BUTTON_GHOST_CLASSES, PANEL_TRANSLUCENT_BG_CLASSES, PANEL_FOOTER_CLASSES } from '../utils/theme-styles';
+import { CALENDAR_PANEL_HEIGHT, ICON_BUTTON_GHOST_CLASSES, PANEL_TRANSLUCENT_BG_CLASSES, PANEL_FOOTER_CLASSES, EVENT_BADGE_MILESTONE_CLASSES, EVENT_BADGE_PROJECTION_CLASSES } from '../utils/theme-styles';
 
 /** Number of visible days in strip view */
-const VISIBLE_DAYS = 9;
+const VISIBLE_DAYS = 7;
 /** Extra days rendered on each side for smooth scrolling */
-const BUFFER_DAYS = 3;
+const BUFFER_DAYS = 7;
 /** Total days rendered in strip */
 const TOTAL_DAYS = VISIBLE_DAYS + BUFFER_DAYS * 2;
-/** Width of one day as percentage of visible area */
-const DAY_WIDTH_PERCENT = 100 / VISIBLE_DAYS;
+/** Width of one day as percentage of strip width (for translation) */
+const DAY_WIDTH_STRIP_PERCENT = 100 / TOTAL_DAYS;
 /** Pixels of scroll needed to move one day */
 const PIXELS_PER_DAY = 80;
 
 /** Day names for month grid header */
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
+/**
+ * Renders event summary for a day cell in month grid
+ * Uses mini-badges matching DayCard styling for consistency
+ */
+function EventsSummary({ events }: { events: CalendarEvent[] }) {
+  const milestones = events.filter((e) => e.type === CalendarEventType.Milestone);
+  const projections = events.filter((e) => e.type === CalendarEventType.Projection);
+
+  return (
+    <div className="space-y-0.5" title={events.map((e) => e.subject).join('\n')}>
+      {/* Milestones - emerald badges */}
+      {milestones.slice(0, 2).map((e) => (
+        <div
+          key={e.id}
+          className={`text-xs truncate px-1 py-0.5 rounded ${EVENT_BADGE_MILESTONE_CLASSES}`}
+        >
+          {e.subject}
+        </div>
+      ))}
+      {milestones.length > 2 && (
+        <div className="text-xs text-emerald-400">+{milestones.length - 2} more</div>
+      )}
+
+      {/* Projections - sky badges with dashed border */}
+      {projections.slice(0, 2).map((e) => (
+        <div
+          key={e.id}
+          className={`text-xs truncate px-1 py-0.5 rounded ${EVENT_BADGE_PROJECTION_CLASSES}`}
+        >
+          {e.subject}
+        </div>
+      ))}
+      {projections.length > 2 && (
+        <div className="text-xs text-sky-400/70">+{projections.length - 2} more</div>
+      )}
+    </div>
+  );
+}
+
 /** Delay before adding click-outside listener (prevents opening click from closing) */
 const CLICK_OUTSIDE_DELAY_MS = 100;
 
 /**
  * Get extended array of days for smooth scrolling
+ * Anchor date becomes the first visible day
  */
-function getExtendedDays(centerDate: GameDate): GameDate[] {
+function getExtendedDays(anchorDate: GameDate): GameDate[] {
   const days: GameDate[] = [];
-  const startOffset = -(BUFFER_DAYS + 1);
-  let date = offsetDate(centerDate, startOffset);
+  // Anchor date becomes the first visible day (at index BUFFER_DAYS)
+  const startOffset = -BUFFER_DAYS;
+  let date = offsetDate(anchorDate, startOffset);
   for (let i = 0; i < TOTAL_DAYS; i++) {
     days.push(date);
     date = offsetDate(date, 1);
@@ -140,9 +182,9 @@ export function CalendarPreviewPanel({
     [isExpanded]
   );
 
-  // Calculate translateX from pixel offset
+  // Calculate translateX from pixel offset (percentage relative to strip width)
   const fractionalDays = pixelOffset / PIXELS_PER_DAY;
-  const translateX = `${-(BUFFER_DAYS + fractionalDays) * DAY_WIDTH_PERCENT}%`;
+  const translateX = `${-(BUFFER_DAYS + fractionalDays) * DAY_WIDTH_STRIP_PERCENT}%`;
 
   // Strip view data
   const centerDate = useMemo(() => offsetDate(currentDate, dayOffset), [currentDate, dayOffset]);
@@ -361,12 +403,7 @@ export function CalendarPreviewPanel({
 
                         {/* Events indicator */}
                         {dayEvents.length > 0 && isCurrentMonth && (
-                          <div
-                            className="text-xs text-muted truncate"
-                            title={dayEvents.map((e) => e.subject).join(', ')}
-                          >
-                            {dayEvents.length} event{dayEvents.length > 1 ? 's' : ''}
-                          </div>
+                          <EventsSummary events={dayEvents} />
                         )}
                       </div>
                     );

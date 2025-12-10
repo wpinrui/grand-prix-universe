@@ -179,6 +179,22 @@ export const TABLE_HEADER_ROW_CLASS = 'text-xs font-semibold text-muted uppercas
 export const TABLE_BODY_CLASS = 'divide-y divide-[var(--neutral-700)]';
 
 // ===========================================
+// CALENDAR EVENT BADGE STYLES
+// ===========================================
+
+/** Milestone event badge (emerald) - completed design milestones */
+export const EVENT_BADGE_MILESTONE_CLASSES =
+  'bg-emerald-900/50 text-emerald-300 border border-emerald-700/50';
+
+/** Projection event badge (sky, dashed) - estimated future completions */
+export const EVENT_BADGE_PROJECTION_CLASSES =
+  'bg-sky-900/30 text-sky-300/80 border border-dashed border-sky-700/50';
+
+/** Default event badge (neutral) - other events */
+export const EVENT_BADGE_DEFAULT_CLASSES =
+  'bg-[var(--neutral-750)] text-muted';
+
+// ===========================================
 // TABLE ROW HIGHLIGHT STYLES
 // ===========================================
 

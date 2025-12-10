@@ -57,6 +57,7 @@ import type {
   ChassisStageCompletion,
   TechnologyBreakthrough,
   DesignCompletion,
+  DesignUpdate,
 } from '../../shared/domain/engines';
 
 import type {
@@ -80,6 +81,7 @@ import {
   DriverStanding,
   ConstructorStanding,
   hasRaceSeat,
+  ChiefRole,
 } from '../../shared/domain';
 import {
   getWeekNumber,
@@ -1279,11 +1281,14 @@ export function generateStubRaceResult(
  * more sophisticated simulation logic in later phases.
  */
 export class StubTurnEngine implements ITurnEngine {
+  private designEngine = new StubDesignEngine();
+
   /**
    * Process a daily turn - advance time by one day and apply state changes
    */
   processDay(input: TurnProcessingInput): TurnProcessingResult {
-    const { currentDate, phase, calendar, drivers, teams, driverStates, teamStates } = input;
+    const { currentDate, phase, calendar, drivers, teams, chiefs, driverStates, teamStates } =
+      input;
 
     // Get current week number for phase/race determination
     const currentWeek = getWeekNumber(currentDate);
@@ -1297,6 +1302,7 @@ export class StubTurnEngine implements ITurnEngine {
         driverAttributeChanges: [],
         chiefChanges: [],
         teamStateChanges: [],
+        designUpdates: [],
         raceWeek: null,
         blocked: {
           reason: 'post-season',
@@ -1312,6 +1318,29 @@ export class StubTurnEngine implements ITurnEngine {
     // Determine new phase based on week
     const { phase: newPhase, raceWeek } = determinePhaseForWeek(newWeek, calendar);
 
+    // Process design for all teams
+    const designUpdates: DesignUpdate[] = teams.map((team) => {
+      const teamState = teamStates[team.id];
+      const chiefDesigner =
+        chiefs.find((c) => c.teamId === team.id && c.role === ChiefRole.Designer) ?? null;
+
+      const designInput: DesignProcessingInput = {
+        teamId: team.id,
+        designState: teamState.designState,
+        staffCounts: teamState.staffCounts,
+        chiefDesigner,
+        facilities: team.factory.facilities,
+        currentDate: newDate,
+      };
+
+      const designResult = this.designEngine.processDay(designInput);
+
+      return {
+        teamId: team.id,
+        ...designResult,
+      };
+    });
+
     // Check if we should stop simulation (Friday of race weekend)
     const shouldStop = raceWeek !== null && isFriday(newDate);
 
@@ -1322,6 +1351,7 @@ export class StubTurnEngine implements ITurnEngine {
       driverAttributeChanges: [], // No attribute changes during daily processing
       chiefChanges: [], // No chief changes during daily processing
       teamStateChanges: generateTeamStateChanges(teams, teamStates),
+      designUpdates,
       raceWeek,
       shouldStopSimulation: shouldStop,
       stopReason: shouldStop ? 'race-weekend-friday' : undefined,

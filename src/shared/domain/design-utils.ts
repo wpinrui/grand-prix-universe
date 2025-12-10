@@ -17,6 +17,8 @@ import type {
   TechnologyLevel,
   HandlingProblemState,
   CurrentYearChassisState,
+  GameDate,
+  DesignState,
 } from './types';
 import {
   ChassisDesignStage,
@@ -27,6 +29,7 @@ import {
   TechnologyAttribute,
   HandlingProblem,
 } from './types';
+import { offsetDate } from '../utils/date-utils';
 
 // =============================================================================
 // CONSTANTS
@@ -105,6 +108,45 @@ export const STAGE_FACILITY_REQUIREMENTS: Record<ChassisDesignStage, FacilityTyp
   [ChassisDesignStage.CFD]: FacilityType.Supercomputer,
   [ChassisDesignStage.Model]: FacilityType.Workshop,
   [ChassisDesignStage.WindTunnel]: FacilityType.WindTunnel,
+};
+
+/**
+ * Display names for technology components
+ */
+export const TECH_COMPONENT_DISPLAY_NAMES: Record<TechnologyComponent, string> = {
+  [TechnologyComponent.Brakes]: 'Brakes',
+  [TechnologyComponent.Clutch]: 'Clutch',
+  [TechnologyComponent.Electronics]: 'Electronics',
+  [TechnologyComponent.Gearbox]: 'Gearbox',
+  [TechnologyComponent.Hydraulics]: 'Hydraulics',
+  [TechnologyComponent.Suspension]: 'Suspension',
+  [TechnologyComponent.Throttle]: 'Throttle',
+};
+
+/**
+ * Display names for chassis design stages
+ */
+export const CHASSIS_STAGE_DISPLAY_NAMES: Record<ChassisDesignStage, string> = {
+  [ChassisDesignStage.Design]: 'Design',
+  [ChassisDesignStage.CFD]: 'CFD',
+  [ChassisDesignStage.Model]: 'Model',
+  [ChassisDesignStage.WindTunnel]: 'Wind Tunnel',
+};
+
+/**
+ * Full display names for technology attributes
+ */
+export const TECH_ATTRIBUTE_DISPLAY_NAMES: Record<TechnologyAttribute, string> = {
+  [TechnologyAttribute.Performance]: 'Performance',
+  [TechnologyAttribute.Reliability]: 'Reliability',
+};
+
+/**
+ * Short display names for technology attributes (for compact UI like calendar events)
+ */
+export const TECH_ATTRIBUTE_SHORT_NAMES: Record<TechnologyAttribute, string> = {
+  [TechnologyAttribute.Performance]: 'Perf',
+  [TechnologyAttribute.Reliability]: 'Rel',
 };
 
 /**
@@ -438,10 +480,11 @@ export function applyTechnologyPayoff(
 // =============================================================================
 
 /**
- * Base probability of discovering a breakthrough per day (with 100% allocation)
- * A team with average setup (~5% daily chance) discovers a breakthrough every ~20 days
+ * Breakthrough probability per work unit produced
+ * With ~180 work units/day (typical team), gives ~10% daily chance
+ * More designers + better quality = more work units = higher breakthrough chance
  */
-export const BASE_BREAKTHROUGH_PROBABILITY = 0.05;
+export const BREAKTHROUGH_PROBABILITY_PER_WORK_UNIT = 0.00055;
 
 /**
  * Minimum payoff for a technology breakthrough (stat increase)
@@ -491,27 +534,30 @@ export const CHIEF_MAX_PAYOFF_BONUS = 3;
 /**
  * Calculate the daily probability of discovering a breakthrough
  *
- * @param percentAllocated - Designer capacity allocated to this project (0-100)
+ * Probability scales with work units (which factor in staff numbers, quality, allocation).
+ * More designers working = higher chance. Chief and facilities add flat bonuses.
+ *
+ * @param workUnits - Work units produced this day for this project
  * @param chiefDesigner - Chief designer (null if position vacant)
  * @param facilities - Factory facilities
  * @returns Probability (0-1) of discovering a breakthrough today
  */
 export function calculateBreakthroughProbability(
-  percentAllocated: number,
+  workUnits: number,
   chiefDesigner: Chief | null,
   facilities: Facility[]
 ): number {
-  if (percentAllocated <= 0) return 0;
+  if (workUnits <= 0) return 0;
 
-  // Base probability scaled by allocation
-  let probability = BASE_BREAKTHROUGH_PROBABILITY * (percentAllocated / 100);
+  // Base probability from work units (more staff working = higher chance)
+  let probability = workUnits * BREAKTHROUGH_PROBABILITY_PER_WORK_UNIT;
 
-  // Chief designer bonus
+  // Chief designer bonus (flat addition based on ability)
   if (chiefDesigner) {
     probability += chiefDesigner.ability * CHIEF_BREAKTHROUGH_PROBABILITY_BONUS;
   }
 
-  // Facility bonuses
+  // Facility bonuses (flat addition per quality level)
   for (const facility of facilities) {
     const bonus = FACILITY_BREAKTHROUGH_BONUS[facility.type];
     if (bonus !== undefined && facility.quality > 0) {
@@ -592,7 +638,7 @@ export function processTechnologyProjectDay(
   // Discovery phase: check for breakthrough
   if (project.phase === TechnologyProjectPhase.Discovery) {
     const probability = calculateBreakthroughProbability(
-      project.designersAssigned,
+      workUnits,
       chiefDesigner,
       facilities
     );
@@ -952,4 +998,189 @@ export function performSeasonEndNormalization(input: NormalizationInput): Normal
     normalizedTechnologyLevels,
     normalizedChassisEfficiency,
   };
+}
+
+// =============================================================================
+// PROJECTION UTILITIES
+// =============================================================================
+
+/**
+ * Input for projection calculations
+ */
+export interface ProjectionInput {
+  /** Design department staff counts */
+  staffCounts: StaffCounts;
+  /** Factory facilities */
+  facilities: Facility[];
+  /** Chief designer (null if position vacant) */
+  chiefDesigner: Chief | null;
+}
+
+/**
+ * A projected milestone with estimated completion date
+ */
+export interface ProjectedMilestone {
+  /** Type of milestone */
+  type: 'chassis-stage' | 'tech-development' | 'handling-solution';
+  /** Human-readable description */
+  description: string;
+  /** Estimated completion date */
+  estimatedDate: GameDate;
+  /** Days remaining (approximate) */
+  daysRemaining: number;
+  /** Component for tech projects */
+  component?: TechnologyComponent;
+  /** Attribute for tech projects */
+  attribute?: TechnologyAttribute;
+  /** Stage for chassis projects */
+  stage?: ChassisDesignStage;
+}
+
+/**
+ * Calculate average daily work units (without random variance)
+ * Uses the midpoint of variance range for estimation
+ */
+export function calculateAverageDailyWorkUnits(
+  staffCounts: StaffCounts,
+  facilities: Facility[],
+  chiefDesigner: Chief | null,
+  percentAllocated: number
+): number {
+  if (percentAllocated <= 0) return 0;
+
+  const staffAbility = getStaffAbilityTotal(staffCounts);
+  const facilityMultiplier = getFacilityMultiplier(facilities);
+  const chiefBonus = getChiefDesignerBonus(chiefDesigner);
+
+  // Use midpoint of variance range (1.0) for estimation
+  const avgVariance = (WORK_VARIANCE_MIN + WORK_VARIANCE_MAX) / 2;
+
+  return staffAbility * (percentAllocated / 100) * facilityMultiplier * chiefBonus * avgVariance;
+}
+
+/**
+ * Estimate days remaining to complete a technology project in Development phase
+ */
+export function estimateTechProjectDaysRemaining(
+  project: TechnologyDesignProject,
+  input: ProjectionInput
+): number | null {
+  // Only projects in Development phase have known timeframes
+  if (project.phase !== TechnologyProjectPhase.Development) {
+    return null;
+  }
+
+  if (project.workUnitsRequired === null) {
+    return null;
+  }
+
+  const workRemaining = project.workUnitsRequired - project.workUnitsCompleted;
+  if (workRemaining <= 0) return 0;
+
+  const dailyWorkUnits = calculateAverageDailyWorkUnits(
+    input.staffCounts,
+    input.facilities,
+    input.chiefDesigner,
+    project.designersAssigned
+  );
+
+  if (dailyWorkUnits <= 0) return null; // No progress possible
+
+  return Math.ceil(workRemaining / dailyWorkUnits);
+}
+
+/**
+ * Estimate days remaining to complete current chassis stage
+ */
+export function estimateChassisStageCompletion(
+  chassis: ChassisDesign,
+  input: ProjectionInput
+): number | null {
+  const currentStage = getCurrentStage(chassis.stages);
+  if (!currentStage) return null; // All stages complete
+
+  // Check if stage is blocked by missing facility
+  const requiredFacility = STAGE_FACILITY_REQUIREMENTS[currentStage.stage];
+  if (requiredFacility && !hasFacility(input.facilities, requiredFacility)) {
+    return null; // Blocked
+  }
+
+  const progressRemaining = MAX_STAGE_PROGRESS - currentStage.progress;
+  if (progressRemaining <= 0) return 0;
+
+  // Work units needed for remaining progress
+  const workUnitsRemaining =
+    progressRemaining * WORK_UNITS_PER_STAGE_POINT - chassis.accumulatedWorkUnits;
+
+  if (workUnitsRemaining <= 0) return 0;
+
+  const dailyWorkUnits = calculateAverageDailyWorkUnits(
+    input.staffCounts,
+    input.facilities,
+    input.chiefDesigner,
+    chassis.designersAssigned
+  );
+
+  if (dailyWorkUnits <= 0) return null; // No progress possible
+
+  return Math.ceil(workUnitsRemaining / dailyWorkUnits);
+}
+
+/**
+ * Get all projected milestones for a team's design state
+ */
+export function getProjectedMilestones(
+  designState: DesignState,
+  input: ProjectionInput,
+  currentDate: GameDate
+): ProjectedMilestone[] {
+  const milestones: ProjectedMilestone[] = [];
+
+  // Next year chassis stage completion
+  if (designState.nextYearChassis && designState.nextYearChassis.designersAssigned > 0) {
+    const daysRemaining = estimateChassisStageCompletion(designState.nextYearChassis, input);
+    if (daysRemaining !== null && daysRemaining > 0) {
+      const currentStage = getCurrentStage(designState.nextYearChassis.stages);
+      if (currentStage) {
+        milestones.push({
+          type: 'chassis-stage',
+          description: `${CHASSIS_STAGE_DISPLAY_NAMES[currentStage.stage]} stage completion`,
+          estimatedDate: offsetDate(currentDate, daysRemaining),
+          daysRemaining,
+          stage: currentStage.stage,
+        });
+      }
+    }
+  }
+
+  // Technology projects in Development phase
+  for (const project of designState.activeTechnologyProjects) {
+    if (project.phase === TechnologyProjectPhase.Development && project.designersAssigned > 0) {
+      const daysRemaining = estimateTechProjectDaysRemaining(project, input);
+      if (daysRemaining !== null && daysRemaining > 0) {
+        const attrName = TECH_ATTRIBUTE_DISPLAY_NAMES[project.attribute];
+        milestones.push({
+          type: 'tech-development',
+          description: `${TECH_COMPONENT_DISPLAY_NAMES[project.component]} ${attrName} (+${project.payoff ?? '?'})`,
+          estimatedDate: offsetDate(currentDate, daysRemaining),
+          daysRemaining,
+          component: project.component,
+          attribute: project.attribute,
+        });
+      }
+    }
+  }
+
+  // Sort by estimated date (soonest first)
+  milestones.sort((a, b) => {
+    if (a.estimatedDate.year !== b.estimatedDate.year) {
+      return a.estimatedDate.year - b.estimatedDate.year;
+    }
+    if (a.estimatedDate.month !== b.estimatedDate.month) {
+      return a.estimatedDate.month - b.estimatedDate.month;
+    }
+    return a.estimatedDate.day - b.estimatedDate.day;
+  });
+
+  return milestones;
 }

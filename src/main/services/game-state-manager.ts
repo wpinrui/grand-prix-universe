@@ -35,6 +35,7 @@ import type {
   ChiefChange,
   TeamStateChange,
   ChampionshipStandings,
+  DesignUpdate,
 } from '../../shared/domain/engines';
 import type {
   GameState,
@@ -42,6 +43,7 @@ import type {
   PlayerInfo,
   SeasonData,
   CalendarEntry,
+  CalendarEvent,
   DriverStanding,
   ConstructorStanding,
   DriverRuntimeState,
@@ -78,10 +80,17 @@ import {
   TechnologyProjectPhase,
   HandlingProblem,
   ChassisDesignStage,
+  CalendarEventType,
+  MilestoneType,
   hasRaceSeat,
   createEvent,
   managerRef,
   teamRef,
+  TECH_COMPONENT_DISPLAY_NAMES,
+  CHASSIS_STAGE_DISPLAY_NAMES,
+  TECH_ATTRIBUTE_SHORT_NAMES,
+  getProjectedMilestones,
+  ChiefRole,
 } from '../../shared/domain';
 import {
   getPreSeasonStartDate,
@@ -730,10 +739,19 @@ function processSimulationTick(state: GameState): SimulationTickPayload {
 
   // Apply turn result (works for both blocked and normal cases -
   // blocked returns empty change arrays so this is safe)
-  applyTurnResult(state, turnResult);
+  const playerHadMilestone = applyTurnResult(state, turnResult);
 
-  // Determine if we should stop (blocked or explicit stop flag)
-  const shouldStop = turnResult.blocked !== undefined || turnResult.shouldStopSimulation;
+  // Determine if we should stop (blocked, explicit stop flag, or design milestone)
+  const shouldStop =
+    turnResult.blocked !== undefined ||
+    turnResult.shouldStopSimulation ||
+    playerHadMilestone;
+
+  // Determine stop reason
+  let stopReason = turnResult.stopReason;
+  if (!stopReason && playerHadMilestone) {
+    stopReason = 'design-milestone';
+  }
 
   if (shouldStop) {
     state.simulation.isSimulating = false;
@@ -742,7 +760,7 @@ function processSimulationTick(state: GameState): SimulationTickPayload {
   return {
     state,
     stopped: shouldStop,
-    stopReason: turnResult.stopReason,
+    stopReason,
   };
 }
 
@@ -925,6 +943,167 @@ function applyTeamStateChanges(
         }
       }
     }
+  }
+}
+
+/**
+ * Check if a design update has any milestones (events that should be shown on calendar)
+ */
+function hasMilestones(update: DesignUpdate): boolean {
+  return (
+    update.breakthroughs.length > 0 ||
+    update.completions.length > 0 ||
+    update.chassisStageCompletions.length > 0
+  );
+}
+
+/**
+ * Create a milestone calendar event
+ */
+function createMilestoneEvent(
+  date: GameDate,
+  subject: string,
+  milestoneType: MilestoneType,
+  critical: boolean
+): CalendarEvent {
+  return {
+    id: randomUUID(),
+    date,
+    type: CalendarEventType.Milestone,
+    subject,
+    critical,
+    milestoneType,
+  };
+}
+
+/**
+ * Apply design updates to game state and create calendar events for milestones
+ * Returns true if player team had any milestones (for auto-stop)
+ */
+function applyDesignUpdates(
+  state: GameState,
+  updates: DesignUpdate[],
+  currentDate: GameDate
+): boolean {
+  let playerHadMilestone = false;
+  const playerTeamId = state.player.teamId;
+
+  for (const update of updates) {
+    // Update the team's design state
+    const teamState = state.teamStates[update.teamId];
+    if (teamState) {
+      teamState.designState = update.updatedDesignState;
+    }
+
+    // Check if this is the player's team and has milestones
+    const isPlayerTeam = update.teamId === playerTeamId;
+    if (isPlayerTeam && hasMilestones(update)) {
+      playerHadMilestone = true;
+    }
+
+    // Create calendar events for milestones (player team only gets critical events)
+    // All teams get non-critical events for world visibility
+
+    // Chassis stage completions
+    for (const completion of update.chassisStageCompletions) {
+      const stageName = CHASSIS_STAGE_DISPLAY_NAMES[completion.stage];
+      state.calendarEvents.push(
+        createMilestoneEvent(
+          currentDate,
+          `${stageName} stage complete`,
+          MilestoneType.ChassisStageComplete,
+          isPlayerTeam // Only critical for player team
+        )
+      );
+    }
+
+    // Technology breakthroughs
+    for (const breakthrough of update.breakthroughs) {
+      const techName = TECH_COMPONENT_DISPLAY_NAMES[breakthrough.component];
+      const attrName = TECH_ATTRIBUTE_SHORT_NAMES[breakthrough.attribute];
+      const subject = `${techName} ${attrName} breakthrough (+${breakthrough.statIncrease})`;
+      state.calendarEvents.push(
+        createMilestoneEvent(
+          currentDate,
+          subject,
+          MilestoneType.TechBreakthrough,
+          isPlayerTeam
+        )
+      );
+    }
+
+    // Technology completions
+    for (const completion of update.completions) {
+      if (completion.type === 'technology') {
+        const techName = TECH_COMPONENT_DISPLAY_NAMES[completion.component];
+        const attrName = TECH_ATTRIBUTE_SHORT_NAMES[completion.attribute];
+        const subject = `${techName} ${attrName} development complete`;
+        state.calendarEvents.push(
+          createMilestoneEvent(
+            currentDate,
+            subject,
+            MilestoneType.TechDevelopmentComplete,
+            isPlayerTeam
+          )
+        );
+      } else {
+        // Handling solution completion
+        const subject = `Handling solution complete`;
+        state.calendarEvents.push(
+          createMilestoneEvent(
+            currentDate,
+            subject,
+            MilestoneType.HandlingSolutionComplete,
+            isPlayerTeam
+          )
+        );
+      }
+    }
+  }
+
+  return playerHadMilestone;
+}
+
+/**
+ * Update projected milestone events on the calendar
+ * Clears old projections and adds new ones based on current allocations
+ */
+function updateProjectedMilestones(state: GameState): void {
+  // Remove old projection events
+  state.calendarEvents = state.calendarEvents.filter(
+    (e) => e.type !== CalendarEventType.Projection
+  );
+
+  // Get player team data
+  const playerTeamId = state.player.teamId;
+  const playerTeam = state.teams.find((t) => t.id === playerTeamId);
+  const playerTeamState = state.teamStates[playerTeamId];
+  if (!playerTeam || !playerTeamState) return;
+
+  const chiefDesigner = state.chiefs.find(
+    (c) => c.teamId === playerTeamId && c.role === ChiefRole.Designer
+  ) ?? null;
+
+  // Compute projected milestones
+  const projections = getProjectedMilestones(
+    playerTeamState.designState,
+    {
+      staffCounts: playerTeamState.staffCounts.design,
+      facilities: playerTeam.factory.facilities,
+      chiefDesigner,
+    },
+    state.currentDate
+  );
+
+  // Add projection events to calendar
+  for (const projection of projections) {
+    state.calendarEvents.push({
+      id: randomUUID(),
+      date: projection.estimatedDate,
+      type: CalendarEventType.Projection,
+      subject: projection.description,
+      critical: false,
+    });
   }
 }
 
@@ -1114,12 +1293,21 @@ function buildRaceInput(state: GameState, raceResult: RaceWeekendResult): RacePr
 
 /**
  * Apply turn processing result to game state (mutates state)
+ * Returns true if player team had a design milestone (for auto-stop)
  */
-function applyTurnResult(state: GameState, result: TurnProcessingResult): void {
+function applyTurnResult(state: GameState, result: TurnProcessingResult): boolean {
   state.currentDate = result.newDate;
   state.phase = result.newPhase;
   applyDriverStateChanges(state, result.driverStateChanges);
   applyTeamStateChanges(state, result.teamStateChanges);
+
+  // Apply design updates and check for player milestones
+  const playerHadMilestone = applyDesignUpdates(state, result.designUpdates, result.newDate);
+
+  // Update projected milestone dates based on current progress
+  updateProjectedMilestones(state);
+
+  return playerHadMilestone;
 }
 
 /**

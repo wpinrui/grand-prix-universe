@@ -1,6 +1,9 @@
 import type { GameDate, CalendarEvent } from '../../shared/domain';
+import { CalendarEventType } from '../../shared/domain';
 import { getShortDayName, getShortMonthName, type RaceSessionType } from '../../shared/utils/date-utils';
 import { FlagIcon } from './FlagIcon';
+import { Flag, Clock } from 'lucide-react';
+import { EVENT_BADGE_MILESTONE_CLASSES, EVENT_BADGE_PROJECTION_CLASSES, EVENT_BADGE_DEFAULT_CLASSES } from '../utils/theme-styles';
 
 export interface RaceWeekendInfo {
   session: RaceSessionType;
@@ -63,15 +66,26 @@ export function DayCard({ date, isCurrent, isPast, events, raceWeekendInfo }: Da
           )}
 
           {/* Calendar events */}
-          {events.map((event) => (
-            <div
-              key={event.id}
-              className="mb-1.5 p-1.5 rounded bg-[var(--neutral-750)] text-xs text-muted"
-              title={event.subject}
-            >
-              <span className="truncate block">{event.subject}</span>
-            </div>
-          ))}
+          {events.map((event) => {
+            const isMilestone = event.type === CalendarEventType.Milestone;
+            const isProjection = event.type === CalendarEventType.Projection;
+            const badgeClasses = isMilestone
+              ? EVENT_BADGE_MILESTONE_CLASSES
+              : isProjection
+                ? EVENT_BADGE_PROJECTION_CLASSES
+                : EVENT_BADGE_DEFAULT_CLASSES;
+            return (
+              <div
+                key={event.id}
+                className={`mb-1.5 p-1.5 rounded text-xs flex items-center gap-1.5 ${badgeClasses}`}
+                title={isProjection ? `Est: ${event.subject}` : event.subject}
+              >
+                {isMilestone && <Flag size={12} className="flex-shrink-0" />}
+                {isProjection && <Clock size={12} className="flex-shrink-0" />}
+                <span className="truncate">{event.subject}</span>
+              </div>
+            );
+          })}
 
           {/* Empty state */}
           {!raceWeekendInfo && events.length === 0 && (
