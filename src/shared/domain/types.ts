@@ -811,6 +811,8 @@ export interface CalendarEvent {
   subject: string;   // Brief text shown on calendar
   critical: boolean; // If true, auto-stops simulation
   emailCategory?: EmailCategory; // Only set when type is Email
+  sender?: string;   // Email sender name (e.g., "Adrian Newey (Chief Designer)")
+  body?: string;     // Full email body text
 }
 
 /**

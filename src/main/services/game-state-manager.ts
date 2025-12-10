@@ -963,6 +963,8 @@ function hasMilestones(update: DesignUpdate): boolean {
 function createDesignEmail(
   date: GameDate,
   subject: string,
+  body: string,
+  sender: string,
   emailCategory: EmailCategory,
   critical: boolean
 ): CalendarEvent {
@@ -973,7 +975,17 @@ function createDesignEmail(
     subject,
     critical,
     emailCategory,
+    sender,
+    body,
   };
+}
+
+/**
+ * Format a chief's name with their role for email sender
+ */
+function formatChiefSender(chief: Chief | null): string {
+  if (!chief) return 'Design Department';
+  return `${chief.firstName} ${chief.lastName} (Chief Designer)`;
 }
 
 /**
@@ -1001,18 +1013,29 @@ function applyDesignUpdates(
       playerHadMilestone = true;
     }
 
-    // Create calendar events for milestones (player team only gets critical events)
-    // All teams get non-critical events for world visibility
+    // Only create emails for player's team
+    if (!isPlayerTeam) continue;
+
+    // Get the Chief Designer for sender
+    const chiefDesigner = state.chiefs.find(
+      (c) => c.teamId === update.teamId && c.role === ChiefRole.Designer
+    ) ?? null;
+    const sender = formatChiefSender(chiefDesigner);
 
     // Chassis stage completions
     for (const completion of update.chassisStageCompletions) {
       const stageName = CHASSIS_STAGE_DISPLAY_NAMES[completion.stage];
+      const body = `The ${stageName} stage of next year's chassis design is now complete. ` +
+        `The new efficiency rating is ${completion.newEfficiencyRating.toFixed(1)}. ` +
+        `We can now proceed to the next phase of development.`;
       state.calendarEvents.push(
         createDesignEmail(
           currentDate,
           `${stageName} stage complete`,
+          body,
+          sender,
           EmailCategory.ChassisStageComplete,
-          isPlayerTeam // Only critical for player team
+          true
         )
       );
     }
@@ -1022,12 +1045,17 @@ function applyDesignUpdates(
       const techName = TECH_COMPONENT_DISPLAY_NAMES[breakthrough.component];
       const attrName = TECH_ATTRIBUTE_SHORT_NAMES[breakthrough.attribute];
       const subject = `${techName} ${attrName} breakthrough (+${breakthrough.statIncrease})`;
+      const body = `Excellent news! Our research into ${techName} ${attrName} has yielded a breakthrough. ` +
+        `We've discovered an improvement worth +${breakthrough.statIncrease} points. ` +
+        `The development team is now working to implement this into a production-ready component.`;
       state.calendarEvents.push(
         createDesignEmail(
           currentDate,
           subject,
+          body,
+          sender,
           EmailCategory.TechBreakthrough,
-          isPlayerTeam
+          true
         )
       );
     }
@@ -1038,23 +1066,33 @@ function applyDesignUpdates(
         const techName = TECH_COMPONENT_DISPLAY_NAMES[completion.component];
         const attrName = TECH_ATTRIBUTE_SHORT_NAMES[completion.attribute];
         const subject = `${techName} ${attrName} development complete`;
+        const body = `The ${techName} ${attrName} development project is now complete. ` +
+          `Our ${attrName} rating has improved by +${completion.statIncrease} points. ` +
+          `This improvement is now available for use in our cars.`;
         state.calendarEvents.push(
           createDesignEmail(
             currentDate,
             subject,
+            body,
+            sender,
             EmailCategory.TechDevelopmentComplete,
-            isPlayerTeam
+            true
           )
         );
       } else {
         // Handling solution completion
         const subject = `Handling solution complete`;
+        const body = `We have successfully resolved the ${completion.problem} handling issue. ` +
+          `The chassis handling has improved by +${completion.statIncrease} points. ` +
+          `The drivers should notice improved performance in affected conditions.`;
         state.calendarEvents.push(
           createDesignEmail(
             currentDate,
             subject,
+            body,
+            sender,
             EmailCategory.HandlingSolutionComplete,
-            isPlayerTeam
+            true
           )
         );
       }
