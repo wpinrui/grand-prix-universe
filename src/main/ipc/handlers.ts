@@ -14,6 +14,7 @@ import type {
   SetCurrentYearProblemParams,
   SetCurrentYearAllocationParams,
   StartTestSessionParams,
+  InstallPartParams,
 } from '../../shared/ipc';
 import type { NewGameParams, EventQuery } from '../../shared/domain';
 import { queryEvents } from '../../shared/domain';
@@ -202,5 +203,10 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IpcChannels.TESTING_SET_ALLOCATION, (_event, allocation: number) => {
     return GameStateManager.setTestingAllocation(allocation);
+  });
+
+  // Parts installation handlers
+  ipcMain.handle(IpcChannels.PARTS_INSTALL, (_event, params: InstallPartParams) => {
+    return GameStateManager.installPart(params.pendingPartId, params.choice);
   });
 }

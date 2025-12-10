@@ -953,6 +953,45 @@ export interface PartsLogEntry {
 }
 
 /**
+ * PendingPartSource - Where the pending part originated from
+ */
+export enum PendingPartSource {
+  Technology = 'technology',
+  HandlingSolution = 'handling-solution',
+}
+
+/**
+ * PendingPart - A part that is being built (1-week build time)
+ *
+ * When a design project completes (technology breakthrough or handling solution),
+ * a PendingPart is created. After 1 week, the player receives an email to choose
+ * which car(s) to install it on.
+ */
+export interface PendingPart {
+  id: string;
+  /** Where this part came from */
+  source: PendingPartSource;
+  /** Display name for the part (e.g., "Brakes Performance +6") */
+  item: string;
+  /** Stat improvement amount (e.g., +6) */
+  payoff: number;
+  /** Cost to install on one car */
+  baseCost: number;
+  /** Date when design completed and build started */
+  buildStartDate: GameDate;
+  /** Date when build completes and part is ready for installation */
+  readyDate: GameDate;
+  /** Which car(s) this has been installed on (empty = not yet installed) */
+  installedOnCars: (1 | 2)[];
+  /** For technology parts: which component */
+  component?: TechnologyComponent;
+  /** For technology parts: which attribute */
+  attribute?: TechnologyAttribute;
+  /** For handling parts: which problem this fixes */
+  handlingProblem?: HandlingProblem;
+}
+
+/**
  * PlayerInfo - Information about the human player
  */
 export interface PlayerInfo {
@@ -1136,6 +1175,8 @@ export interface TeamRuntimeState {
   testSession: TestSession;
   // Design department state (chassis, technology, improvements, handling)
   designState: DesignState;
+  // Parts being built (1-week build time after design completes)
+  pendingParts: PendingPart[];
 }
 
 /**
