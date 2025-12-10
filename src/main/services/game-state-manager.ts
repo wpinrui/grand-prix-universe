@@ -121,6 +121,7 @@ import {
   offsetDate,
   isSameDay,
 } from '../../shared/utils/date-utils';
+import { createDefaultTeamEngineState } from '../../shared/domain/engine-utils';
 
 /** Current save format version */
 const SAVE_VERSION = '1.0.0';
@@ -323,6 +324,7 @@ function createInitialTeamState(
     testSession: createDefaultTestSession(),
     designState: createInitialDesignState(),
     pendingParts: [],
+    engineState: createDefaultTeamEngineState(),
   };
 }
 

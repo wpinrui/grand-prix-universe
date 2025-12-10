@@ -402,6 +402,29 @@ export interface TeamPrincipal {
 // =============================================================================
 
 /**
+ * Engine stats - the 5 attributes of an engine
+ * All values 0-100, normalized to max 70 at season start
+ */
+export interface EngineStats {
+  power: number; // Raw speed/lap time
+  fuelEfficiency: number; // Fuel usage per lap
+  reliability: number; // DNF probability per race (higher = more reliable)
+  heat: number; // Performance in hot races (higher = better heat management)
+  predictability: number; // Driver error rate modifier (higher = more predictable)
+}
+
+/**
+ * Manufacturer costs - what it costs the manufacturer to provide each product
+ * Used to determine pricing and profitability constraints
+ */
+export interface ManufacturerCosts {
+  baseEngine: number; // Cost to manufacture a single engine
+  upgrade: number; // Cost per spec upgrade
+  customisationPoint: number; // Cost per allocation point granted
+  optimisation: number; // Cost for the optimisation package
+}
+
+/**
  * Manufacturer - A company that supplies engines, tyres, or fuel
  */
 export interface Manufacturer {
@@ -409,10 +432,11 @@ export interface Manufacturer {
   name: string; // display name, e.g. "Honda Racing Development"
   type: ManufacturerType;
   reputation: number; // 0-100, affects attractiveness to teams
-  annualCost: number; // yearly contract cost in dollars
-  quality: number; // 0-100, base quality of products
-  worksTeamId: string | null; // factory team (at most one)
-  partnerTeamIds: string[]; // priority customer teams
+  annualCost: number; // yearly base contract cost in dollars (2 engines)
+  engineStats: EngineStats; // Base engine stats for this manufacturer
+  costs: ManufacturerCosts; // Manufacturer's internal costs (for profitability)
+  worksTeamId: string | null; // Factory team (historical/display only)
+  partnerTeamIds: string[]; // Partner teams (historical/display only)
 }
 
 /**
@@ -1195,6 +1219,40 @@ export interface DriverRuntimeState {
 export type DepartmentMorale = Record<Department, number>;
 
 /**
+ * EngineCustomisation - Tuning adjustments applied to an engine
+ * Each value can be -10 to +10 (capped to prevent unrealistic min-maxing)
+ * Total reallocation is limited by customisation points owned
+ */
+export interface EngineCustomisation {
+  power: number; // -10 to +10
+  fuelEfficiency: number;
+  reliability: number;
+  heat: number;
+  predictability: number;
+}
+
+/**
+ * CarEngineState - Per-car engine state
+ * Tracks the current spec version and any customisation applied
+ */
+export interface CarEngineState {
+  specVersion: number; // Current spec (1, 2, 3...) - 1 is base spec at season start
+  customisation: EngineCustomisation; // Applied tuning adjustments
+}
+
+/**
+ * TeamEngineState - Team-level engine state
+ * Tracks both cars' engines plus team-wide engine resources
+ */
+export interface TeamEngineState {
+  car1Engine: CarEngineState;
+  car2Engine: CarEngineState;
+  customisationPointsOwned: number; // Purchased flexibility points (persist across customisations)
+  optimisationPurchasedForNextSeason: boolean; // Pre-season purchase for next year
+  preNegotiatedUpgrades: number; // Number of pre-paid upgrades remaining this season
+}
+
+/**
  * TeamRuntimeState - Mutable state for a team during gameplay
  * Keyed by teamId in GameState.teamStates
  */
@@ -1213,6 +1271,8 @@ export interface TeamRuntimeState {
   designState: DesignState;
   // Parts being built (1-week build time after design completes)
   pendingParts: PendingPart[];
+  // Engine state (per-car specs and team-wide resources)
+  engineState: TeamEngineState;
 }
 
 /**
