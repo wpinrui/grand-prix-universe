@@ -216,6 +216,20 @@ function clampPercentage(value: number): number {
 }
 
 /**
+ * Gets the player's design state, throwing if no game is active.
+ * Used by design-related GameStateManager methods to reduce boilerplate.
+ */
+function getPlayerDesignState(): { state: GameState; designState: DesignState } {
+  const state = GameStateManager.currentState;
+  if (!state) {
+    throw new Error('No active game');
+  }
+  const playerTeamId = state.player.teamId;
+  const teamState = state.teamStates[playerTeamId];
+  return { state, designState: teamState.designState };
+}
+
+/**
  * Creates initial runtime state for a driver
  */
 function createInitialDriverState(): DriverRuntimeState {
@@ -1423,14 +1437,7 @@ export const GameStateManager = {
    * Creates a new ChassisDesign if none exists.
    */
   startNextYearChassis(): GameState {
-    const state = GameStateManager.currentState;
-    if (!state) {
-      throw new Error('No active game');
-    }
-
-    const playerTeamId = state.player.teamId;
-    const teamState = state.teamStates[playerTeamId];
-    const designState = teamState.designState;
+    const { state, designState } = getPlayerDesignState();
 
     // Already started
     if (designState.nextYearChassis !== null) {
@@ -1462,14 +1469,7 @@ export const GameStateManager = {
    * @param allocation - Percentage of designers (0-100)
    */
   setNextYearChassisAllocation(allocation: number): GameState {
-    const state = GameStateManager.currentState;
-    if (!state) {
-      throw new Error('No active game');
-    }
-
-    const playerTeamId = state.player.teamId;
-    const teamState = state.teamStates[playerTeamId];
-    const designState = teamState.designState;
+    const { state, designState } = getPlayerDesignState();
 
     if (!designState.nextYearChassis) {
       throw new Error('No next year chassis design in progress');
@@ -1488,14 +1488,7 @@ export const GameStateManager = {
    * @param attribute - Which attribute (performance or reliability)
    */
   startTechProject(component: TechnologyComponent, attribute: TechnologyAttribute): GameState {
-    const state = GameStateManager.currentState;
-    if (!state) {
-      throw new Error('No active game');
-    }
-
-    const playerTeamId = state.player.teamId;
-    const teamState = state.teamStates[playerTeamId];
-    const designState = teamState.designState;
+    const { state, designState } = getPlayerDesignState();
 
     // Check if project already exists for this component/attribute
     const existingProject = designState.activeTechnologyProjects.find(
@@ -1528,14 +1521,7 @@ export const GameStateManager = {
    * @param attribute - Which attribute
    */
   cancelTechProject(component: TechnologyComponent, attribute: TechnologyAttribute): GameState {
-    const state = GameStateManager.currentState;
-    if (!state) {
-      throw new Error('No active game');
-    }
-
-    const playerTeamId = state.player.teamId;
-    const teamState = state.teamStates[playerTeamId];
-    const designState = teamState.designState;
+    const { state, designState } = getPlayerDesignState();
 
     const projectIndex = designState.activeTechnologyProjects.findIndex(
       (p) => p.component === component && p.attribute === attribute
@@ -1562,14 +1548,7 @@ export const GameStateManager = {
     attribute: TechnologyAttribute,
     allocation: number
   ): GameState {
-    const state = GameStateManager.currentState;
-    if (!state) {
-      throw new Error('No active game');
-    }
-
-    const playerTeamId = state.player.teamId;
-    const teamState = state.teamStates[playerTeamId];
-    const designState = teamState.designState;
+    const { state, designState } = getPlayerDesignState();
 
     const project = designState.activeTechnologyProjects.find(
       (p) => p.component === component && p.attribute === attribute
@@ -1591,14 +1570,7 @@ export const GameStateManager = {
    * @param problem - Which handling problem to work on, or null to stop
    */
   setCurrentYearProblem(problem: HandlingProblem | null): GameState {
-    const state = GameStateManager.currentState;
-    if (!state) {
-      throw new Error('No active game');
-    }
-
-    const playerTeamId = state.player.teamId;
-    const teamState = state.teamStates[playerTeamId];
-    const designState = teamState.designState;
+    const { state, designState } = getPlayerDesignState();
 
     // If setting a problem, verify it's discovered
     if (problem !== null) {
@@ -1626,14 +1598,7 @@ export const GameStateManager = {
    * @param allocation - Percentage of designers (0-100)
    */
   setCurrentYearAllocation(allocation: number): GameState {
-    const state = GameStateManager.currentState;
-    if (!state) {
-      throw new Error('No active game');
-    }
-
-    const playerTeamId = state.player.teamId;
-    const teamState = state.teamStates[playerTeamId];
-    const designState = teamState.designState;
+    const { state, designState } = getPlayerDesignState();
 
     // Clamp allocation to valid range
     const clampedAllocation = Math.max(0, Math.min(100, allocation));
