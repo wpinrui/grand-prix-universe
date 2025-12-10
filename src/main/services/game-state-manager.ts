@@ -116,6 +116,7 @@ import {
   yearToSeason,
   DEFAULT_SIMULATION_STATE,
   offsetDate,
+  isSameDay,
 } from '../../shared/utils/date-utils';
 
 /** Current save format version */
@@ -1665,7 +1666,7 @@ function checkPendingParts(state: GameState, currentDate: GameDate): boolean {
   for (const pendingPart of teamState.pendingParts) {
     // Only process parts that are ready and not yet installed
     if (pendingPart.installedOnCars.length > 0) continue;
-    if (!isSameDate(pendingPart.readyDate, currentDate)) continue;
+    if (!isSameDay(pendingPart.readyDate, currentDate)) continue;
 
     hadReadyPart = true;
 
@@ -1729,11 +1730,6 @@ function checkPendingParts(state: GameState, currentDate: GameDate): boolean {
   }
 
   return hadReadyPart;
-}
-
-/** Check if two GameDates are the same day */
-function isSameDate(a: GameDate, b: GameDate): boolean {
-  return a.year === b.year && a.month === b.month && a.day === b.day;
 }
 
 /**
