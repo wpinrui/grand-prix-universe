@@ -197,7 +197,7 @@ export interface HandlingProblemState {
  * Tracks handling revelation and problem solutions
  */
 export interface CurrentYearChassisState {
-  handlingRevealed: number; // 0-100, how much handling info is known
+  handlingRevealed: number | null; // null = not revealed, number = revealed handling %
   problems: HandlingProblemState[];
   activeDesignProblem: HandlingProblem | null; // Which problem is being worked on
   designersAssigned: number;
@@ -335,6 +335,7 @@ export interface Team {
   initialEngineManufacturerId: string; // engine supplier at game start
   initialSponsorIds: string[]; // sponsor IDs for game start
   initialStaffCounts: DepartmentStaffCounts; // staff counts at game start
+  initialChassisHandling: number; // 0-100, starting chassis handling quality
 }
 
 /**
@@ -832,6 +833,7 @@ export enum EmailCategory {
   TechBreakthrough = 'tech-breakthrough',
   TechDevelopmentComplete = 'tech-development-complete',
   HandlingSolutionComplete = 'handling-solution-complete',
+  TestComplete = 'test-complete',
 }
 
 /**
@@ -880,11 +882,21 @@ export interface HandlingSolutionCompleteData {
   chiefId?: string;
 }
 
+export interface TestCompleteData {
+  category: EmailCategory.TestComplete;
+  testsCompleted: number; // Total tests completed
+  handlingRevealed: number | null; // Set on first test
+  problemDiscovered: HandlingProblem | null; // Set on subsequent tests
+  problemName: string | null; // Display name of discovered problem
+  chiefMechanicId?: string;
+}
+
 export type EmailData =
   | ChassisStageCompleteData
   | TechBreakthroughData
   | TechDevelopmentCompleteData
-  | HandlingSolutionCompleteData;
+  | HandlingSolutionCompleteData
+  | TestCompleteData;
 
 /**
  * CalendarEvent - An event displayed on the calendar strip

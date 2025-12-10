@@ -9,6 +9,7 @@
 import type {
   IRaceEngine,
   IDesignEngine,
+  ITestingEngine,
   IConstructionEngine,
   IDevelopmentEngine,
   IStaffEngine,
@@ -24,6 +25,7 @@ import type {
 import {
   StubRaceEngine,
   StubDesignEngine,
+  StubTestingEngine,
   StubConstructionEngine,
   StubDevelopmentEngine,
   StubStaffEngine,
@@ -39,6 +41,7 @@ import {
 export class EngineManager {
   race: IRaceEngine = new StubRaceEngine();
   design: IDesignEngine = new StubDesignEngine();
+  testing: ITestingEngine = new StubTestingEngine();
   construction: IConstructionEngine = new StubConstructionEngine();
   development: IDevelopmentEngine = new StubDevelopmentEngine();
   staff: IStaffEngine = new StubStaffEngine();

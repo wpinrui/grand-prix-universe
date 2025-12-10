@@ -13,6 +13,7 @@ import type {
   SetTechAllocationParams,
   SetCurrentYearProblemParams,
   SetCurrentYearAllocationParams,
+  StartTestSessionParams,
 } from '../../shared/ipc';
 import type { NewGameParams, EventQuery } from '../../shared/domain';
 import { queryEvents } from '../../shared/domain';
@@ -189,4 +190,17 @@ export function registerIpcHandlers(): void {
       return GameStateManager.setCurrentYearAllocation(params.allocation);
     }
   );
+
+  // Testing handlers
+  ipcMain.handle(IpcChannels.TESTING_START, (_event, params: StartTestSessionParams) => {
+    return GameStateManager.startTestSession(params.driverId, params.mechanicsAllocated);
+  });
+
+  ipcMain.handle(IpcChannels.TESTING_STOP, () => {
+    return GameStateManager.stopTestSession();
+  });
+
+  ipcMain.handle(IpcChannels.TESTING_SET_ALLOCATION, (_event, allocation: number) => {
+    return GameStateManager.setTestingAllocation(allocation);
+  });
 }

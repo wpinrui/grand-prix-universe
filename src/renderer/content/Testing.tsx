@@ -458,8 +458,8 @@ export function Testing() {
   const viewState = isInSetup ? 'setup' : determineViewState(testSession);
 
   // Calculate handling info from design state
-  const handlingKnown = designState.currentYearChassis.handlingPercent !== null;
-  const handlingPercent = designState.currentYearChassis.handlingPercent ?? 0;
+  const handlingKnown = designState.currentYearChassis.handlingRevealed !== null;
+  const handlingPercent = designState.currentYearChassis.handlingRevealed ?? 0;
   const discoveredProblems = designState.currentYearChassis.problems
     .filter((p) => p.discovered)
     .map((p) => p.problem);
