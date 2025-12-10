@@ -182,8 +182,8 @@ export const TABLE_BODY_CLASS = 'divide-y divide-[var(--neutral-700)]';
 // CALENDAR EVENT BADGE STYLES
 // ===========================================
 
-/** Milestone event badge (emerald) - completed design milestones */
-export const EVENT_BADGE_MILESTONE_CLASSES =
+/** Email event badge (emerald) - design notifications, department emails */
+export const EVENT_BADGE_EMAIL_CLASSES =
   'bg-emerald-900/50 text-emerald-300 border border-emerald-700/50';
 
 /** Projection event badge (sky, dashed) - estimated future completions */

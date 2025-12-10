@@ -786,14 +786,14 @@ export interface SimulationState {
 export enum CalendarEventType {
   Email = 'email',
   Headline = 'headline',
-  Milestone = 'milestone',
   Projection = 'projection', // Estimated future completion (updates daily)
 }
 
 /**
- * MilestoneType - Specific types of design/engineering milestones
+ * EmailCategory - Categorizes emails by source/type
+ * Used to style and filter emails appropriately
  */
-export enum MilestoneType {
+export enum EmailCategory {
   ChassisStageComplete = 'chassis-stage-complete',
   TechBreakthrough = 'tech-breakthrough',
   TechDevelopmentComplete = 'tech-development-complete',
@@ -810,7 +810,7 @@ export interface CalendarEvent {
   type: CalendarEventType;
   subject: string;   // Brief text shown on calendar
   critical: boolean; // If true, auto-stops simulation
-  milestoneType?: MilestoneType; // Only set when type is Milestone
+  emailCategory?: EmailCategory; // Only set when type is Email
 }
 
 /**

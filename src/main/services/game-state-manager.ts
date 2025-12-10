@@ -81,7 +81,7 @@ import {
   HandlingProblem,
   ChassisDesignStage,
   CalendarEventType,
-  MilestoneType,
+  EmailCategory,
   hasRaceSeat,
   createEvent,
   managerRef,
@@ -958,21 +958,21 @@ function hasMilestones(update: DesignUpdate): boolean {
 }
 
 /**
- * Create a milestone calendar event
+ * Create an email calendar event for design notifications
  */
-function createMilestoneEvent(
+function createDesignEmail(
   date: GameDate,
   subject: string,
-  milestoneType: MilestoneType,
+  emailCategory: EmailCategory,
   critical: boolean
 ): CalendarEvent {
   return {
     id: randomUUID(),
     date,
-    type: CalendarEventType.Milestone,
+    type: CalendarEventType.Email,
     subject,
     critical,
-    milestoneType,
+    emailCategory,
   };
 }
 
@@ -1008,10 +1008,10 @@ function applyDesignUpdates(
     for (const completion of update.chassisStageCompletions) {
       const stageName = CHASSIS_STAGE_DISPLAY_NAMES[completion.stage];
       state.calendarEvents.push(
-        createMilestoneEvent(
+        createDesignEmail(
           currentDate,
           `${stageName} stage complete`,
-          MilestoneType.ChassisStageComplete,
+          EmailCategory.ChassisStageComplete,
           isPlayerTeam // Only critical for player team
         )
       );
@@ -1023,10 +1023,10 @@ function applyDesignUpdates(
       const attrName = TECH_ATTRIBUTE_SHORT_NAMES[breakthrough.attribute];
       const subject = `${techName} ${attrName} breakthrough (+${breakthrough.statIncrease})`;
       state.calendarEvents.push(
-        createMilestoneEvent(
+        createDesignEmail(
           currentDate,
           subject,
-          MilestoneType.TechBreakthrough,
+          EmailCategory.TechBreakthrough,
           isPlayerTeam
         )
       );
@@ -1039,10 +1039,10 @@ function applyDesignUpdates(
         const attrName = TECH_ATTRIBUTE_SHORT_NAMES[completion.attribute];
         const subject = `${techName} ${attrName} development complete`;
         state.calendarEvents.push(
-          createMilestoneEvent(
+          createDesignEmail(
             currentDate,
             subject,
-            MilestoneType.TechDevelopmentComplete,
+            EmailCategory.TechDevelopmentComplete,
             isPlayerTeam
           )
         );
@@ -1050,10 +1050,10 @@ function applyDesignUpdates(
         // Handling solution completion
         const subject = `Handling solution complete`;
         state.calendarEvents.push(
-          createMilestoneEvent(
+          createDesignEmail(
             currentDate,
             subject,
-            MilestoneType.HandlingSolutionComplete,
+            EmailCategory.HandlingSolutionComplete,
             isPlayerTeam
           )
         );

@@ -13,7 +13,7 @@ import {
   getMonthName,
 } from '../../shared/utils/date-utils';
 import { FlagIcon } from './FlagIcon';
-import { CALENDAR_PANEL_HEIGHT, ICON_BUTTON_GHOST_CLASSES, PANEL_TRANSLUCENT_BG_CLASSES, PANEL_FOOTER_CLASSES, EVENT_BADGE_MILESTONE_CLASSES, EVENT_BADGE_PROJECTION_CLASSES } from '../utils/theme-styles';
+import { CALENDAR_PANEL_HEIGHT, ICON_BUTTON_GHOST_CLASSES, PANEL_TRANSLUCENT_BG_CLASSES, PANEL_FOOTER_CLASSES, EVENT_BADGE_EMAIL_CLASSES, EVENT_BADGE_PROJECTION_CLASSES } from '../utils/theme-styles';
 
 /** Number of visible days in strip view */
 const VISIBLE_DAYS = 7;
@@ -34,22 +34,22 @@ const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
  * Uses mini-badges matching DayCard styling for consistency
  */
 function EventsSummary({ events }: { events: CalendarEvent[] }) {
-  const milestones = events.filter((e) => e.type === CalendarEventType.Milestone);
+  const emails = events.filter((e) => e.type === CalendarEventType.Email);
   const projections = events.filter((e) => e.type === CalendarEventType.Projection);
 
   return (
     <div className="space-y-0.5" title={events.map((e) => e.subject).join('\n')}>
-      {/* Milestones - emerald badges */}
-      {milestones.slice(0, 2).map((e) => (
+      {/* Emails - emerald badges */}
+      {emails.slice(0, 2).map((e) => (
         <div
           key={e.id}
-          className={`text-xs truncate px-1 py-0.5 rounded ${EVENT_BADGE_MILESTONE_CLASSES}`}
+          className={`text-xs truncate px-1 py-0.5 rounded ${EVENT_BADGE_EMAIL_CLASSES}`}
         >
           {e.subject}
         </div>
       ))}
-      {milestones.length > 2 && (
-        <div className="text-xs text-emerald-400">+{milestones.length - 2} more</div>
+      {emails.length > 2 && (
+        <div className="text-xs text-emerald-400">+{emails.length - 2} more</div>
       )}
 
       {/* Projections - sky badges with dashed border */}
