@@ -21,8 +21,8 @@ const VISIBLE_DAYS = 7;
 const BUFFER_DAYS = 7;
 /** Total days rendered in strip */
 const TOTAL_DAYS = VISIBLE_DAYS + BUFFER_DAYS * 2;
-/** Width of one day as percentage of visible area */
-const DAY_WIDTH_PERCENT = 100 / VISIBLE_DAYS;
+/** Width of one day as percentage of strip width (for translation) */
+const DAY_WIDTH_STRIP_PERCENT = 100 / TOTAL_DAYS;
 /** Pixels of scroll needed to move one day */
 const PIXELS_PER_DAY = 80;
 
@@ -182,9 +182,9 @@ export function CalendarPreviewPanel({
     [isExpanded]
   );
 
-  // Calculate translateX from pixel offset
+  // Calculate translateX from pixel offset (percentage relative to strip width)
   const fractionalDays = pixelOffset / PIXELS_PER_DAY;
-  const translateX = `${-(BUFFER_DAYS + fractionalDays) * DAY_WIDTH_PERCENT}%`;
+  const translateX = `${-(BUFFER_DAYS + fractionalDays) * DAY_WIDTH_STRIP_PERCENT}%`;
 
   // Strip view data
   const centerDate = useMemo(() => offsetDate(currentDate, dayOffset), [currentDate, dayOffset]);
