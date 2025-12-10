@@ -1901,30 +1901,24 @@ function processPostRaceRepairs(
     team.budget -= totalCost;
 
     // Add to partsLog for both cars
-    const logEntryBase = {
-      date: { ...state.currentDate },
-      seasonNumber: state.currentSeason.seasonNumber,
-      type: PartsLogEntryType.Repair,
-      item: 'Post-Race Repair',
-    };
+    const repairs = [
+      { repair: car1Repair, driver: car1Driver },
+      { repair: car2Repair, driver: car2Driver },
+    ];
 
-    state.partsLog.push({
-      ...logEntryBase,
-      id: randomUUID(),
-      cost: car1Repair.totalCost,
-      driverId: car1Driver.id,
-      carNumber: 1,
-      repairDetails: car1Repair.wasRetired ? 'Race retirement' : 'Routine maintenance',
-    });
-
-    state.partsLog.push({
-      ...logEntryBase,
-      id: randomUUID(),
-      cost: car2Repair.totalCost,
-      driverId: car2Driver.id,
-      carNumber: 2,
-      repairDetails: car2Repair.wasRetired ? 'Race retirement' : 'Routine maintenance',
-    });
+    for (const { repair, driver } of repairs) {
+      state.partsLog.push({
+        id: randomUUID(),
+        date: { ...state.currentDate },
+        seasonNumber: state.currentSeason.seasonNumber,
+        type: PartsLogEntryType.Repair,
+        item: 'Post-Race Repair',
+        cost: repair.totalCost,
+        driverId: driver.id,
+        carNumber: repair.carNumber,
+        repairDetails: repair.wasRetired ? 'Race retirement' : 'Routine maintenance',
+      });
+    }
 
     // Send email only for player team
     if (team.id === playerTeamId) {
