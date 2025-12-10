@@ -480,9 +480,9 @@ export function applyTechnologyPayoff(
 
 /**
  * Base probability of discovering a breakthrough per day (with 100% allocation)
- * A team with average setup (~5% daily chance) discovers a breakthrough every ~20 days
+ * At 50% allocation, expect a breakthrough roughly every 10 days
  */
-export const BASE_BREAKTHROUGH_PROBABILITY = 0.05;
+export const BASE_BREAKTHROUGH_PROBABILITY = 0.2;
 
 /**
  * Minimum payoff for a technology breakthrough (stat increase)
