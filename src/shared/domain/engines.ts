@@ -35,6 +35,9 @@ import type {
   TechnologyAttribute,
   ChassisDesignStage,
   HandlingProblem,
+  TestSession,
+  CurrentYearChassisState,
+  StaffCounts,
 } from './types';
 
 // =============================================================================
@@ -243,6 +246,8 @@ export interface TurnProcessingResult extends StateChanges, ProgressionChanges {
   stopReason?: DayStopReason;
   /** Design updates for all teams (updated states and milestones) */
   designUpdates: DesignUpdate[];
+  /** Testing updates for teams with active tests */
+  testingUpdates: TestingUpdate[];
 }
 
 /**
@@ -457,6 +462,97 @@ export interface IDesignEngine {
    * @returns Updated design state and events (breakthroughs, completions)
    */
   processDay(input: DesignProcessingInput): DesignProcessingResult;
+}
+
+// =============================================================================
+// TESTING ENGINE TYPES
+// =============================================================================
+
+/**
+ * TestingProcessingInput - All data needed to process a day of testing
+ * Called once per team per day during time simulation (if test is active)
+ */
+export interface TestingProcessingInput {
+  /** Team being processed */
+  teamId: string;
+
+  /** Current test session state */
+  testSession: TestSession;
+
+  /** Staff counts for mechanics department */
+  mechanicCounts: StaffCounts;
+
+  /** Factory facilities (for test rig multiplier) */
+  facilities: Facility[];
+
+  /** Current year chassis state (for problem discovery) */
+  currentYearChassis: CurrentYearChassisState;
+
+  /** Team's initial chassis handling value (revealed on first test) */
+  initialChassisHandling: number;
+
+  /** Current game date */
+  currentDate: GameDate;
+}
+
+/**
+ * TestCompletion - Result when a test reaches completion
+ * Contains discovered handling or problem information
+ */
+export interface TestCompletion {
+  /** Updated tests completed count */
+  testsCompleted: number;
+
+  /** Handling percentage (set on first test, null otherwise) */
+  handlingRevealed: number | null;
+
+  /** Problem discovered (set on subsequent tests, null if first or no more problems) */
+  problemDiscovered: HandlingProblem | null;
+}
+
+/**
+ * TestingProcessingResult - Result of processing a day of testing
+ */
+export interface TestingProcessingResult {
+  /** Updated test session state */
+  updatedTestSession: TestSession;
+
+  /** Test completion data (null if test not complete this day) */
+  completion: TestCompletion | null;
+}
+
+/**
+ * TestingUpdate - Testing processing result for a single team
+ * Wraps TestingProcessingResult with team identification
+ */
+export interface TestingUpdate extends TestingProcessingResult {
+  /** Team this update applies to */
+  teamId: string;
+}
+
+// =============================================================================
+// TESTING ENGINE INTERFACE
+// =============================================================================
+
+/**
+ * ITestingEngine - Handles development testing progress
+ *
+ * Responsible for:
+ * - Daily work unit accumulation
+ * - Test progress tracking (0-10 scale)
+ * - First test: reveal chassis handling percentage
+ * - Subsequent tests: discover handling problems
+ *
+ * Called once per team per day during time simulation (if test is active).
+ */
+export interface ITestingEngine {
+  /**
+   * Process a single day of testing work for one team
+   *
+   * @param input - Team's test session, staff, facilities, and chassis state
+   * @returns Updated test session and completion data if test finished
+   */
+  processDay(input: TestingProcessingInput): TestingProcessingResult;
 }
 
 /**

@@ -9,6 +9,7 @@
 import type {
   IRaceEngine,
   IDesignEngine,
+  ITestingEngine,
   IConstructionEngine,
   IDevelopmentEngine,
   IStaffEngine,
@@ -25,6 +26,9 @@ import type {
   RaceResult,
   DesignProcessingInput,
   DesignProcessingResult,
+  TestingProcessingInput,
+  TestingProcessingResult,
+  TestCompletion,
   ConstructionInput,
   ConstructionResult,
   DevelopmentInput,
@@ -58,6 +62,7 @@ import type {
   TechnologyBreakthrough,
   DesignCompletion,
   DesignUpdate,
+  TestingUpdate,
 } from '../../shared/domain/engines';
 
 import type {
@@ -71,6 +76,8 @@ import type {
   RaceWeekendResult,
   DriverQualifyingResult,
   DriverRaceResult,
+  TestSession,
+  CurrentYearChassisState,
 } from '../../shared/domain/types';
 
 import {
@@ -98,6 +105,11 @@ import {
   applyTechnologyPayoff,
   HANDLING_SOLUTION_STAT_INCREASE,
 } from '../../shared/domain/design-utils';
+import {
+  calculateTestingWorkUnits,
+  WORK_UNITS_PER_TEST_POINT,
+  MAX_TEST_PROGRESS,
+} from '../../shared/domain/testing-utils';
 
 export class StubRaceEngine implements IRaceEngine {
   simulateQualifying(_input: QualifyingInput): QualifyingResult {
@@ -257,6 +269,108 @@ export class StubDesignEngine implements IDesignEngine {
       completions,
       chassisStageCompletions,
     };
+  }
+}
+
+export class StubTestingEngine implements ITestingEngine {
+  processDay(input: TestingProcessingInput): TestingProcessingResult {
+    const {
+      testSession,
+      mechanicCounts,
+      facilities,
+      currentYearChassis,
+      initialChassisHandling,
+    } = input;
+
+    // If no active test, return unchanged
+    if (!testSession.active) {
+      return { updatedTestSession: testSession, completion: null };
+    }
+
+    // Calculate daily work units
+    const workUnits = calculateTestingWorkUnits({
+      staffCounts: mechanicCounts,
+      facilities,
+      percentAllocated: testSession.mechanicsAllocated,
+    });
+
+    // Accumulate work and check for progress
+    let newAccumulated = testSession.accumulatedWorkUnits + workUnits;
+    let newProgress = testSession.progress;
+
+    while (newAccumulated >= WORK_UNITS_PER_TEST_POINT && newProgress < MAX_TEST_PROGRESS) {
+      newProgress++;
+      newAccumulated -= WORK_UNITS_PER_TEST_POINT;
+    }
+
+    // Check for test completion
+    if (newProgress >= MAX_TEST_PROGRESS) {
+      return this.processTestCompletion(testSession, currentYearChassis, initialChassisHandling);
+    }
+
+    // Return updated session (test still in progress)
+    return {
+      updatedTestSession: {
+        ...testSession,
+        progress: newProgress,
+        accumulatedWorkUnits: newAccumulated,
+      },
+      completion: null,
+    };
+  }
+
+  private processTestCompletion(
+    testSession: TestSession,
+    currentYearChassis: CurrentYearChassisState,
+    initialChassisHandling: number
+  ): TestingProcessingResult {
+    const newTestsCompleted = testSession.testsCompleted + 1;
+
+    // Reset test session (preserve testsCompleted)
+    const resetSession: TestSession = {
+      active: false,
+      driverId: null,
+      mechanicsAllocated: 0,
+      progress: 0,
+      accumulatedWorkUnits: 0,
+      testsCompleted: newTestsCompleted,
+    };
+
+    // First test reveals handling percentage
+    if (newTestsCompleted === 1) {
+      const completion: TestCompletion = {
+        testsCompleted: newTestsCompleted,
+        handlingRevealed: initialChassisHandling,
+        problemDiscovered: null,
+      };
+      return { updatedTestSession: resetSession, completion };
+    }
+
+    // Subsequent tests discover handling problems
+    const undiscoveredProblems = currentYearChassis.problems
+      .filter((p) => !p.discovered)
+      .map((p) => p.problem);
+
+    if (undiscoveredProblems.length === 0) {
+      // No more problems to discover
+      const completion: TestCompletion = {
+        testsCompleted: newTestsCompleted,
+        handlingRevealed: null,
+        problemDiscovered: null,
+      };
+      return { updatedTestSession: resetSession, completion };
+    }
+
+    // Pick a random undiscovered problem
+    const randomIndex = Math.floor(Math.random() * undiscoveredProblems.length);
+    const problemDiscovered = undiscoveredProblems[randomIndex];
+
+    const completion: TestCompletion = {
+      testsCompleted: newTestsCompleted,
+      handlingRevealed: null,
+      problemDiscovered,
+    };
+    return { updatedTestSession: resetSession, completion };
   }
 }
 
@@ -1282,6 +1396,7 @@ export function generateStubRaceResult(
  */
 export class StubTurnEngine implements ITurnEngine {
   private designEngine = new StubDesignEngine();
+  private testingEngine = new StubTestingEngine();
 
   /**
    * Process a daily turn - advance time by one day and apply state changes
@@ -1303,6 +1418,7 @@ export class StubTurnEngine implements ITurnEngine {
         chiefChanges: [],
         teamStateChanges: [],
         designUpdates: [],
+        testingUpdates: [],
         raceWeek: null,
         blocked: {
           reason: 'post-season',
@@ -1341,6 +1457,30 @@ export class StubTurnEngine implements ITurnEngine {
       };
     });
 
+    // Process testing for all teams with active test sessions
+    const testingUpdates: TestingUpdate[] = teams
+      .filter((team) => teamStates[team.id].testSession.active)
+      .map((team) => {
+        const teamState = teamStates[team.id];
+
+        const testingInput: TestingProcessingInput = {
+          teamId: team.id,
+          testSession: teamState.testSession,
+          mechanicCounts: teamState.staffCounts[Department.Mechanics] ?? { trainee: 0, average: 0, good: 0, 'very-good': 0, excellent: 0 },
+          facilities: team.factory.facilities,
+          currentYearChassis: teamState.designState.currentYearChassis,
+          initialChassisHandling: team.initialChassisHandling,
+          currentDate: newDate,
+        };
+
+        const testingResult = this.testingEngine.processDay(testingInput);
+
+        return {
+          teamId: team.id,
+          ...testingResult,
+        };
+      });
+
     // Check if we should stop simulation (Friday of race weekend)
     const shouldStop = raceWeek !== null && isFriday(newDate);
 
@@ -1352,6 +1492,7 @@ export class StubTurnEngine implements ITurnEngine {
       chiefChanges: [], // No chief changes during daily processing
       teamStateChanges: generateTeamStateChanges(teams, teamStates),
       designUpdates,
+      testingUpdates,
       raceWeek,
       shouldStopSimulation: shouldStop,
       stopReason: shouldStop ? 'race-weekend-friday' : undefined,

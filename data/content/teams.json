@@ -33,7 +33,8 @@
         "design": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
         "engineering": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
         "mechanics": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 }
-      }
+      },
+      "initialChassisHandling": 88
     },
     {
       "id": "mercedes",
@@ -68,7 +69,8 @@
         "design": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
         "engineering": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
         "mechanics": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 }
-      }
+      },
+      "initialChassisHandling": 82
     },
     {
       "id": "red-bull-racing",
@@ -103,7 +105,8 @@
         "design": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
         "engineering": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
         "mechanics": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 }
-      }
+      },
+      "initialChassisHandling": 78
     },
     {
       "id": "ferrari",
@@ -138,7 +141,8 @@
         "design": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
         "engineering": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 },
         "mechanics": { "trainee": 2, "average": 6, "good": 12, "very-good": 10, "excellent": 5 }
-      }
+      },
+      "initialChassisHandling": 74
     },
     {
       "id": "williams",
@@ -173,7 +177,8 @@
         "design": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 },
         "engineering": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 },
         "mechanics": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 }
-      }
+      },
+      "initialChassisHandling": 55
     },
     {
       "id": "racing-bulls",
@@ -208,7 +213,8 @@
         "design": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 },
         "engineering": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 },
         "mechanics": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 }
-      }
+      },
+      "initialChassisHandling": 50
     },
     {
       "id": "aston-martin",
@@ -243,7 +249,8 @@
         "design": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 },
         "engineering": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 },
         "mechanics": { "trainee": 3, "average": 6, "good": 8, "very-good": 4, "excellent": 1 }
-      }
+      },
+      "initialChassisHandling": 46
     },
     {
       "id": "haas",
@@ -278,7 +285,8 @@
         "design": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 },
         "engineering": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 },
         "mechanics": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 }
-      }
+      },
+      "initialChassisHandling": 42
     },
     {
       "id": "kick-sauber",
@@ -313,7 +321,8 @@
         "design": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 },
         "engineering": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 },
         "mechanics": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 }
-      }
+      },
+      "initialChassisHandling": 38
     },
     {
       "id": "alpine",
@@ -348,7 +357,8 @@
         "design": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 },
         "engineering": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 },
         "mechanics": { "trainee": 4, "average": 4, "good": 4, "very-good": 2, "excellent": 0 }
-      }
+      },
+      "initialChassisHandling": 32
     }
   ]
 }

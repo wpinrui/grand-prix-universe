@@ -36,6 +36,7 @@ import type {
   TeamStateChange,
   ChampionshipStandings,
   DesignUpdate,
+  TestingUpdate,
 } from '../../shared/domain/engines';
 import type {
   GameState,
@@ -103,6 +104,7 @@ import type {
   TechBreakthroughData,
   TechDevelopmentCompleteData,
   HandlingSolutionCompleteData,
+  TestCompleteData,
 } from '../../shared/domain/types';
 import {
   getPreSeasonStartDate,
@@ -193,7 +195,7 @@ function createInitialHandlingProblems(): HandlingProblemState[] {
  */
 function createInitialDesignState(): DesignState {
   const currentYearChassis: CurrentYearChassisState = {
-    handlingRevealed: 0,
+    handlingRevealed: null,
     problems: createInitialHandlingProblems(),
     activeDesignProblem: null,
     designersAssigned: 0,
@@ -1250,6 +1252,108 @@ function applyDesignUpdates(
 }
 
 /**
+ * Apply testing updates to game state and create emails for completions
+ * Returns true if player team had a test completion (for potential auto-stop)
+ */
+function applyTestingUpdates(
+  state: GameState,
+  updates: TestingUpdate[],
+  currentDate: GameDate
+): boolean {
+  let playerHadCompletion = false;
+  const playerTeamId = state.player.teamId;
+
+  for (const update of updates) {
+    const teamState = state.teamStates[update.teamId];
+    if (!teamState) continue;
+
+    // Update the team's test session
+    teamState.testSession = update.updatedTestSession;
+
+    // Handle test completion
+    if (update.completion) {
+      const isPlayerTeam = update.teamId === playerTeamId;
+
+      if (isPlayerTeam) {
+        playerHadCompletion = true;
+
+        // Update testsCompleted count (already in updatedTestSession)
+        // But we need to apply handling/problem discovery to currentYearChassis
+
+        if (update.completion.handlingRevealed !== null) {
+          // First test: reveal handling percentage
+          teamState.designState.currentYearChassis.handlingRevealed =
+            update.completion.handlingRevealed;
+        }
+
+        if (update.completion.problemDiscovered !== null) {
+          // Subsequent test: mark problem as discovered
+          const problemState = teamState.designState.currentYearChassis.problems.find(
+            (p) => p.problem === update.completion!.problemDiscovered
+          );
+          if (problemState) {
+            problemState.discovered = true;
+          }
+        }
+
+        // Generate test completion email for player
+        const chiefMechanic = state.chiefs.find(
+          (c) => c.teamId === update.teamId && c.role === ChiefRole.Mechanic
+        ) ?? null;
+        const sender = formatChiefSender(chiefMechanic);
+
+        let subject: string;
+        let body: string;
+
+        if (update.completion.handlingRevealed !== null) {
+          // First test - handling revealed
+          subject = `Development Test Complete - Handling: ${update.completion.handlingRevealed}%`;
+          body = `Our first development test has concluded. We've measured the chassis handling at ${update.completion.handlingRevealed}%. ` +
+            `Run additional tests to discover specific handling problems that can be solved to improve performance.`;
+        } else if (update.completion.problemDiscovered !== null) {
+          // Subsequent test - problem discovered
+          const problemName = HANDLING_PROBLEM_DISPLAY_NAMES[update.completion.problemDiscovered];
+          subject = `Development Test Complete - Problem Discovered: ${problemName}`;
+          body = `Our development test has identified a handling issue: ${problemName}. ` +
+            `This problem can now be assigned to the Design department for a solution to be developed.`;
+        } else {
+          // No more problems to discover
+          subject = 'Development Test Complete - No New Problems Found';
+          body = 'Our development test has concluded. All handling problems have already been discovered. ' +
+            'Focus on solving the known problems in the Design department.';
+        }
+
+        const problemName = update.completion.problemDiscovered
+          ? HANDLING_PROBLEM_DISPLAY_NAMES[update.completion.problemDiscovered]
+          : null;
+
+        const data: TestCompleteData = {
+          category: EmailCategory.TestComplete,
+          testsCompleted: update.completion.testsCompleted,
+          handlingRevealed: update.completion.handlingRevealed,
+          problemDiscovered: update.completion.problemDiscovered,
+          problemName,
+          chiefMechanicId: chiefMechanic?.id,
+        };
+
+        state.calendarEvents.push({
+          id: randomUUID(),
+          date: currentDate,
+          type: CalendarEventType.Email,
+          subject,
+          body,
+          sender,
+          critical: true,
+          data,
+        });
+      }
+    }
+  }
+
+  return playerHadCompletion;
+}
+
+/**
  * Update projected milestone events on the calendar
  * Clears old projections and adds new ones based on current allocations
  */
@@ -1478,7 +1582,7 @@ function buildRaceInput(state: GameState, raceResult: RaceWeekendResult): RacePr
 
 /**
  * Apply turn processing result to game state (mutates state)
- * Returns true if player team had a design milestone (for auto-stop)
+ * Returns true if player team had a design milestone or test completion (for auto-stop)
  */
 function applyTurnResult(state: GameState, result: TurnProcessingResult): boolean {
   state.currentDate = result.newDate;
@@ -1487,12 +1591,15 @@ function applyTurnResult(state: GameState, result: TurnProcessingResult): boolea
   applyTeamStateChanges(state, result.teamStateChanges);
 
   // Apply design updates and check for player milestones
-  const playerHadMilestone = applyDesignUpdates(state, result.designUpdates, result.newDate);
+  const playerHadDesignMilestone = applyDesignUpdates(state, result.designUpdates, result.newDate);
+
+  // Apply testing updates and check for player completions
+  const playerHadTestCompletion = applyTestingUpdates(state, result.testingUpdates, result.newDate);
 
   // Update projected milestone dates based on current progress
   updateProjectedMilestones(state);
 
-  return playerHadMilestone;
+  return playerHadDesignMilestone || playerHadTestCompletion;
 }
 
 /**
@@ -1981,6 +2088,80 @@ export const GameStateManager = {
 
     // Clamp allocation to valid range
     designState.currentYearChassis.designersAssigned = clampPercentage(allocation);
+
+    return state;
+  },
+
+  // ==========================================================================
+  // TESTING METHODS
+  // ==========================================================================
+
+  /**
+   * Starts a new development test session.
+   * @param driverId - ID of the driver performing the test
+   * @param mechanicsAllocated - Percentage of mechanics allocated (0-100)
+   */
+  startTestSession(driverId: string, mechanicsAllocated: number): GameState {
+    const state = GameStateManager.currentState;
+    if (!state) {
+      throw new Error('No active game');
+    }
+    const playerTeamId = state.player.teamId;
+    const teamState = state.teamStates[playerTeamId];
+
+    teamState.testSession = {
+      active: true,
+      driverId,
+      mechanicsAllocated: clampPercentage(mechanicsAllocated),
+      progress: 0,
+      accumulatedWorkUnits: 0,
+      testsCompleted: teamState.testSession.testsCompleted,
+    };
+
+    return state;
+  },
+
+  /**
+   * Stops the current test session and resets to inactive state.
+   * Any progress is lost.
+   */
+  stopTestSession(): GameState {
+    const state = GameStateManager.currentState;
+    if (!state) {
+      throw new Error('No active game');
+    }
+    const playerTeamId = state.player.teamId;
+    const teamState = state.teamStates[playerTeamId];
+
+    // Preserve testsCompleted count, reset everything else
+    const testsCompleted = teamState.testSession.testsCompleted;
+    teamState.testSession = {
+      active: false,
+      driverId: null,
+      mechanicsAllocated: 0,
+      progress: 0,
+      accumulatedWorkUnits: 0,
+      testsCompleted,
+    };
+
+    return state;
+  },
+
+  /**
+   * Updates the mechanic allocation for an active test session.
+   * @param allocation - New percentage of mechanics allocated (0-100)
+   */
+  setTestingAllocation(allocation: number): GameState {
+    const state = GameStateManager.currentState;
+    if (!state) {
+      throw new Error('No active game');
+    }
+    const playerTeamId = state.player.teamId;
+    const teamState = state.teamStates[playerTeamId];
+
+    if (teamState.testSession.active) {
+      teamState.testSession.mechanicsAllocated = clampPercentage(allocation);
+    }
 
     return state;
   },
