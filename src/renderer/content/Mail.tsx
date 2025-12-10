@@ -1,10 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useDerivedGameState } from '../hooks';
 import { SectionHeading } from '../components';
 import { CalendarEventType } from '../../shared/domain';
 import type { CalendarEvent } from '../../shared/domain';
 import { getFilteredCalendarEvents } from '../utils/calendar-event-utils';
 import { formatGameDate } from '../../shared/utils/date-utils';
+
+// ===========================================
+// HELPERS
+// ===========================================
+
+const DEFAULT_SENDER = 'System';
+
+function getSenderDisplay(email: CalendarEvent): string {
+  return email.sender || DEFAULT_SENDER;
+}
 
 // ===========================================
 // CONSTANTS
@@ -17,12 +27,12 @@ const MAX_MAIL_ITEMS = 50;
 // ===========================================
 
 interface EmailListItemProps {
-  item: CalendarEvent;
+  email: CalendarEvent;
   isSelected: boolean;
   onSelect: () => void;
 }
 
-function EmailListItem({ item, isSelected, onSelect }: EmailListItemProps) {
+function EmailListItem({ email, isSelected, onSelect }: EmailListItemProps) {
   return (
     <button
       type="button"
@@ -36,18 +46,18 @@ function EmailListItem({ item, isSelected, onSelect }: EmailListItemProps) {
       {/* Sender + time row */}
       <div className="flex items-center justify-between gap-2">
         <span className={`text-sm truncate ${isSelected ? 'text-primary font-medium' : 'text-secondary'}`}>
-          {item.sender || 'System'}
+          {getSenderDisplay(email)}
         </span>
         <span className="text-xs text-muted shrink-0">
-          {formatGameDate(item.date, 'short')}
+          {formatGameDate(email.date, 'short')}
         </span>
       </div>
       {/* Subject row */}
       <p className={`text-sm truncate mt-0.5 ${isSelected ? 'text-secondary' : 'text-muted'}`}>
-        {item.subject}
+        {email.subject}
       </p>
       {/* Critical badge */}
-      {item.critical && (
+      {email.critical && (
         <span className="text-xs text-amber-400 mt-1 inline-block">Important</span>
       )}
     </button>
@@ -74,12 +84,12 @@ function EmailListPanel({ emails, selectedId, onSelectEmail }: EmailListPanelPro
 
   return (
     <div className="divide-y divide-subtle">
-      {emails.map((item) => (
+      {emails.map((email) => (
         <EmailListItem
-          key={item.id}
-          item={item}
-          isSelected={selectedId === item.id}
-          onSelect={() => onSelectEmail(item.id)}
+          key={email.id}
+          email={email}
+          isSelected={selectedId === email.id}
+          onSelect={() => onSelectEmail(email.id)}
         />
       ))}
     </div>
@@ -109,7 +119,7 @@ function EmailDetailPanel({ email }: EmailDetailPanelProps) {
       <div className="border-b border-subtle pb-3 mb-4">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <h3 className="text-primary font-medium">{email.sender || 'System'}</h3>
+            <h3 className="text-primary font-medium">{getSenderDisplay(email)}</h3>
             <p className="text-xs text-muted mt-0.5">{formatGameDate(email.date)}</p>
           </div>
           {email.critical && (
@@ -141,14 +151,15 @@ export function Mail() {
   const { gameState } = useDerivedGameState();
   const [selectedEmailId, setSelectedEmailId] = useState<string | null>(null);
 
-  const mailItems = gameState
-    ? getFilteredCalendarEvents(
-        gameState.calendarEvents,
-        gameState.currentDate,
-        CalendarEventType.Email,
-        MAX_MAIL_ITEMS
-      )
-    : [];
+  const mailItems = useMemo(() => {
+    if (!gameState) return [];
+    return getFilteredCalendarEvents(
+      gameState.calendarEvents,
+      gameState.currentDate,
+      CalendarEventType.Email,
+      MAX_MAIL_ITEMS
+    );
+  }, [gameState]);
 
   // Auto-select first email when list changes
   useEffect(() => {
@@ -161,7 +172,10 @@ export function Mail() {
     }
   }, [mailItems, selectedEmailId]);
 
-  const selectedEmail = mailItems.find((e) => e.id === selectedEmailId) || null;
+  const selectedEmail = useMemo(
+    () => mailItems.find((e) => e.id === selectedEmailId) || null,
+    [mailItems, selectedEmailId]
+  );
 
   if (!gameState) {
     return (
