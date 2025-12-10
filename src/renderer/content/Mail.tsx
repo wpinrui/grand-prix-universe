@@ -528,17 +528,18 @@ function EmailDetailPanel({ email, chiefs, teams }: EmailDetailPanelProps) {
 
   // Render rich content based on email data category
   const renderRichContent = () => {
-    if (!email.data) return null;
+    const { data } = email;
+    if (!data) return null;
 
-    switch (email.data.category) {
+    switch (data.category) {
       case EmailCategory.ChassisStageComplete:
-        return <ChassisStageDetail data={email.data as ChassisStageCompleteData} chiefs={chiefs} />;
+        return <ChassisStageDetail data={data} chiefs={chiefs} />;
       case EmailCategory.TechBreakthrough:
-        return <TechBreakthroughDetail data={email.data as TechBreakthroughData} chiefs={chiefs} />;
+        return <TechBreakthroughDetail data={data} chiefs={chiefs} />;
       case EmailCategory.TechDevelopmentComplete:
-        return <TechDevelopmentDetail data={email.data as TechDevelopmentCompleteData} chiefs={chiefs} />;
+        return <TechDevelopmentDetail data={data} chiefs={chiefs} />;
       case EmailCategory.HandlingSolutionComplete:
-        return <HandlingSolutionDetail data={email.data as HandlingSolutionCompleteData} chiefs={chiefs} />;
+        return <HandlingSolutionDetail data={data} chiefs={chiefs} />;
       default:
         return null;
     }
