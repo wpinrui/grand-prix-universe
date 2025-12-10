@@ -8,14 +8,13 @@ import { app, ipcMain, shell } from 'electron';
 import * as path from 'path';
 import { IpcChannels } from '../../shared/ipc';
 import type {
-  NewGameParams,
-  EventQuery,
   StartTechProjectParams,
   CancelTechProjectParams,
   SetTechAllocationParams,
   SetCurrentYearProblemParams,
   SetCurrentYearAllocationParams,
 } from '../../shared/ipc';
+import type { NewGameParams, EventQuery } from '../../shared/domain';
 import { queryEvents } from '../../shared/domain';
 import { ConfigLoader, GameStateManager, SaveManager } from '../services';
 
