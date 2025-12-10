@@ -221,7 +221,7 @@ export interface RaceWeekInfo {
 /**
  * DayStopReason - Why the simulation should auto-stop
  */
-export type DayStopReason = 'race-weekend-friday' | 'critical-event';
+export type DayStopReason = 'race-weekend-friday' | 'critical-event' | 'design-milestone';
 
 /**
  * TurnProcessingResult - Result of processing a daily turn
@@ -241,6 +241,8 @@ export interface TurnProcessingResult extends StateChanges, ProgressionChanges {
   blocked?: TurnBlocked;
   shouldStopSimulation?: boolean;
   stopReason?: DayStopReason;
+  /** Design updates for all teams (updated states and milestones) */
+  designUpdates: DesignUpdate[];
 }
 
 /**
@@ -383,6 +385,15 @@ export interface DesignProcessingResult {
 
   /** Chassis stages completed this day */
   chassisStageCompletions: ChassisStageCompletion[];
+}
+
+/**
+ * DesignUpdate - Design processing result for a single team
+ * Wraps DesignProcessingResult with team identification
+ */
+export interface DesignUpdate extends DesignProcessingResult {
+  /** Team this update applies to */
+  teamId: string;
 }
 
 // =============================================================================

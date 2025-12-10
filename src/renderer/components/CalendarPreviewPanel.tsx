@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Maximize2, Minimize2, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import type { GameDate, CalendarEvent, CalendarEntry, Circuit } from '../../shared/domain';
+import { CalendarEventType } from '../../shared/domain';
 import { DayCard } from './DayCard';
 import { useCalendarData } from '../hooks';
 import {
@@ -360,14 +361,22 @@ export function CalendarPreviewPanel({
                         )}
 
                         {/* Events indicator */}
-                        {dayEvents.length > 0 && isCurrentMonth && (
-                          <div
-                            className="text-xs text-muted truncate"
-                            title={dayEvents.map((e) => e.subject).join(', ')}
-                          >
-                            {dayEvents.length} event{dayEvents.length > 1 ? 's' : ''}
-                          </div>
-                        )}
+                        {dayEvents.length > 0 && isCurrentMonth && (() => {
+                          const milestoneCount = dayEvents.filter(
+                            (e) => e.type === CalendarEventType.Milestone
+                          ).length;
+                          const otherCount = dayEvents.length - milestoneCount;
+                          return (
+                            <div
+                              className={`text-xs truncate ${milestoneCount > 0 ? 'text-emerald-400' : 'text-muted'}`}
+                              title={dayEvents.map((e) => e.subject).join(', ')}
+                            >
+                              {milestoneCount > 0 && `${milestoneCount} milestone${milestoneCount > 1 ? 's' : ''}`}
+                              {milestoneCount > 0 && otherCount > 0 && ', '}
+                              {otherCount > 0 && `${otherCount} event${otherCount > 1 ? 's' : ''}`}
+                            </div>
+                          );
+                        })()}
                       </div>
                     );
                   })}

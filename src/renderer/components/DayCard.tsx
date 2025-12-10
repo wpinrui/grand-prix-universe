@@ -1,6 +1,8 @@
 import type { GameDate, CalendarEvent } from '../../shared/domain';
+import { CalendarEventType } from '../../shared/domain';
 import { getShortDayName, getShortMonthName, type RaceSessionType } from '../../shared/utils/date-utils';
 import { FlagIcon } from './FlagIcon';
+import { Flag } from 'lucide-react';
 
 export interface RaceWeekendInfo {
   session: RaceSessionType;
@@ -63,15 +65,24 @@ export function DayCard({ date, isCurrent, isPast, events, raceWeekendInfo }: Da
           )}
 
           {/* Calendar events */}
-          {events.map((event) => (
-            <div
-              key={event.id}
-              className="mb-1.5 p-1.5 rounded bg-[var(--neutral-750)] text-xs text-muted"
-              title={event.subject}
-            >
-              <span className="truncate block">{event.subject}</span>
-            </div>
-          ))}
+          {events.map((event) => {
+            const isMilestone = event.type === CalendarEventType.Milestone;
+            return (
+              <div
+                key={event.id}
+                className={`
+                  mb-1.5 p-1.5 rounded text-xs flex items-center gap-1.5
+                  ${isMilestone
+                    ? 'bg-emerald-900/50 text-emerald-300 border border-emerald-700/50'
+                    : 'bg-[var(--neutral-750)] text-muted'}
+                `}
+                title={event.subject}
+              >
+                {isMilestone && <Flag size={12} className="flex-shrink-0" />}
+                <span className="truncate">{event.subject}</span>
+              </div>
+            );
+          })}
 
           {/* Empty state */}
           {!raceWeekendInfo && events.length === 0 && (
