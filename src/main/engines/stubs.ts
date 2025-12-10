@@ -62,7 +62,6 @@ import type {
   TechnologyBreakthrough,
   DesignCompletion,
   DesignUpdate,
-  TestingProcessingInput,
   TestingUpdate,
 } from '../../shared/domain/engines';
 
@@ -1467,7 +1466,7 @@ export class StubTurnEngine implements ITurnEngine {
         const testingInput: TestingProcessingInput = {
           teamId: team.id,
           testSession: teamState.testSession,
-          mechanicCounts: teamState.staffCounts[Department.Mechanics] ?? {},
+          mechanicCounts: teamState.staffCounts[Department.Mechanics] ?? { trainee: 0, average: 0, good: 0, 'very-good': 0, excellent: 0 },
           facilities: team.factory.facilities,
           currentYearChassis: teamState.designState.currentYearChassis,
           initialChassisHandling: team.initialChassisHandling,

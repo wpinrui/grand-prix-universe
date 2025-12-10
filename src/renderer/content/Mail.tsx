@@ -42,6 +42,7 @@ const CATEGORY_FILTER_OPTIONS: DropdownOption<CategoryFilterValue>[] = [
   { value: EmailCategory.TechBreakthrough, label: 'Tech Breakthrough' },
   { value: EmailCategory.TechDevelopmentComplete, label: 'Tech Development' },
   { value: EmailCategory.HandlingSolutionComplete, label: 'Handling Solution' },
+  { value: EmailCategory.TestComplete, label: 'Testing' },
 ];
 
 // ===========================================
@@ -64,6 +65,10 @@ const CATEGORY_BADGE_CONFIG: Record<EmailCategory, { label: string; className: s
   [EmailCategory.HandlingSolutionComplete]: {
     label: 'Handling',
     className: 'bg-amber-600/20 text-amber-400',
+  },
+  [EmailCategory.TestComplete]: {
+    label: 'Testing',
+    className: 'bg-cyan-600/20 text-cyan-400',
   },
 };
 

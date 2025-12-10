@@ -5,7 +5,7 @@ import { SectionHeading, SummaryStat, ProgressBar, Dropdown, StaffAllocationSlid
 import type { DropdownOption } from '../components';
 import { ACCENT_CARD_STYLE, ACCENT_BORDERED_BUTTON_STYLE, GHOST_BORDERED_BUTTON_CLASSES } from '../utils/theme-styles';
 import { IpcChannels } from '../../shared/ipc';
-import { HandlingProblem, Department, type TestSession, type Driver } from '../../shared/domain';
+import { HandlingProblem, Department, type TestSession, type Driver, type StaffCounts } from '../../shared/domain';
 import {
   estimateTestCompletionDays,
   MAX_TEST_PROGRESS,
@@ -451,7 +451,8 @@ export function Testing() {
   const teamDrivers = gameState.drivers.filter((d) => d.teamId === playerTeam.id);
 
   // Get mechanic staff counts for estimation
-  const mechanicCounts = teamState.staffCounts[Department.Mechanics] ?? {};
+  const defaultStaffCounts: StaffCounts = { trainee: 0, average: 0, good: 0, 'very-good': 0, excellent: 0 };
+  const mechanicCounts = teamState.staffCounts[Department.Mechanics] ?? defaultStaffCounts;
   const mechanicCount = getMechanicCount(mechanicCounts);
 
   // Determine view state
@@ -516,7 +517,7 @@ export function Testing() {
   }, [setupDriverId, setupMechanics, queryClient]);
 
   const handleResetTestSession = useCallback(async () => {
-    await window.electronAPI.invoke(IpcChannels.TESTING_STOP, {});
+    await window.electronAPI.invoke(IpcChannels.TESTING_STOP);
     queryClient.invalidateQueries({ queryKey: queryKeys.gameState });
   }, [queryClient]);
 
