@@ -2199,14 +2199,12 @@ export const GameStateManager = {
     // 4. Apply stat improvements to cars
     // 5. Generate DRIVER_UNHAPPY event if override detected
 
-    // For now, just mark which cars got the part
-    if (choice === 'car1') {
-      pendingPart.installedOnCars.push(1);
-    } else if (choice === 'car2') {
-      pendingPart.installedOnCars.push(2);
-    } else {
-      // 'both'
-      pendingPart.installedOnCars.push(1, 2);
+    // For now, just mark which cars got the part (prevent duplicates)
+    const carsToInstall: (1 | 2)[] = choice === 'car1' ? [1] : choice === 'car2' ? [2] : [1, 2];
+    for (const car of carsToInstall) {
+      if (!pendingPart.installedOnCars.includes(car)) {
+        pendingPart.installedOnCars.push(car);
+      }
     }
 
     return state;
