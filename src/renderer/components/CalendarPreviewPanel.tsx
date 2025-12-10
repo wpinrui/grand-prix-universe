@@ -16,7 +16,7 @@ import { FlagIcon } from './FlagIcon';
 import { CALENDAR_PANEL_HEIGHT, ICON_BUTTON_GHOST_CLASSES, PANEL_TRANSLUCENT_BG_CLASSES, PANEL_FOOTER_CLASSES } from '../utils/theme-styles';
 
 /** Number of visible days in strip view */
-const VISIBLE_DAYS = 9;
+const VISIBLE_DAYS = 7;
 /** Extra days rendered on each side for smooth scrolling */
 const BUFFER_DAYS = 3;
 /** Total days rendered in strip */
@@ -31,7 +31,7 @@ const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 /**
  * Renders event summary for a day cell in month grid
- * Shows actual event subjects for better context
+ * Uses mini-badges matching DayCard styling for consistency
  */
 function EventsSummary({ events }: { events: CalendarEvent[] }) {
   const milestones = events.filter((e) => e.type === CalendarEventType.Milestone);
@@ -39,9 +39,12 @@ function EventsSummary({ events }: { events: CalendarEvent[] }) {
 
   return (
     <div className="space-y-0.5" title={events.map((e) => e.subject).join('\n')}>
-      {/* Show milestone subjects (green) */}
+      {/* Milestones - emerald badges */}
       {milestones.slice(0, 2).map((e) => (
-        <div key={e.id} className="text-xs truncate text-emerald-400">
+        <div
+          key={e.id}
+          className="text-xs truncate px-1 py-0.5 rounded bg-emerald-900/50 text-emerald-300 border border-emerald-700/50"
+        >
           {e.subject}
         </div>
       ))}
@@ -49,10 +52,13 @@ function EventsSummary({ events }: { events: CalendarEvent[] }) {
         <div className="text-xs text-emerald-400">+{milestones.length - 2} more</div>
       )}
 
-      {/* Show projection subjects (sky/blue, dimmer) */}
+      {/* Projections - sky badges with dashed border */}
       {projections.slice(0, 2).map((e) => (
-        <div key={e.id} className="text-xs truncate text-sky-400/70">
-          Est: {e.subject}
+        <div
+          key={e.id}
+          className="text-xs truncate px-1 py-0.5 rounded bg-sky-900/30 text-sky-300/80 border border-dashed border-sky-700/50"
+        >
+          {e.subject}
         </div>
       ))}
       {projections.length > 2 && (

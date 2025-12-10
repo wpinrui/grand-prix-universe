@@ -483,7 +483,7 @@ export function applyTechnologyPayoff(
  * With ~180 work units/day (typical team), gives ~10% daily chance
  * More designers + better quality = more work units = higher breakthrough chance
  */
-export const BREAKTHROUGH_PROBABILITY_PER_WORK_UNIT = 0.0005;
+export const BREAKTHROUGH_PROBABILITY_PER_WORK_UNIT = 0.90005;
 
 /**
  * Minimum payoff for a technology breakthrough (stat increase)
