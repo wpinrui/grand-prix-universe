@@ -13,8 +13,9 @@ import type {
   CarEngineState,
   EngineStats,
   Driver,
+  ManufacturerSpecState,
 } from '../../shared/domain';
-import { ENGINE_STAT_KEYS, getEffectiveEngineStats } from '../../shared/domain/engine-utils';
+import { ENGINE_STAT_KEYS, getEffectiveEngineStats, getSpecBonusesAsEngineStats } from '../../shared/domain/engine-utils';
 
 // ===========================================
 // TYPES
@@ -52,6 +53,7 @@ const NULL_CONTRACT_DATA = {
   contract: null,
   manufacturer: null,
   engineState: null,
+  specState: null,
   car1Driver: null,
   car2Driver: null,
 } as const;
@@ -200,6 +202,7 @@ interface CurrentContractTabProps {
   manufacturer: Manufacturer;
   contract: ActiveManufacturerContract;
   engineState: TeamEngineState;
+  specState: ManufacturerSpecState;
   currentSeason: number;
   car1Driver: Driver | null;
   car2Driver: Driver | null;
@@ -212,6 +215,7 @@ function CurrentContractTab({
   manufacturer,
   contract,
   engineState,
+  specState,
   currentSeason,
   car1Driver,
   car2Driver,
@@ -219,10 +223,9 @@ function CurrentContractTab({
   onBuyCustomisationPoints,
   onBuyOptimisation,
 }: CurrentContractTabProps) {
-  // For now, we don't have spec bonuses implemented - use empty array
-  // This will be populated when manufacturer spec releases are implemented
-  const specBonuses: EngineStats[] = [];
-  const latestSpec = 1; // Will come from game state when spec releases are implemented
+  // Get spec bonuses from manufacturer spec state
+  const specBonuses = getSpecBonusesAsEngineStats(specState);
+  const latestSpec = specState.latestSpecVersion;
 
   return (
     <div className="space-y-6">
@@ -364,7 +367,7 @@ export function Contracts() {
   const { gameState, playerTeam, isLoading, refreshGameState } = useDerivedGameState();
 
   // Get the player's engine contract and manufacturer
-  const { contract, manufacturer, engineState, car1Driver, car2Driver } = useMemo(() => {
+  const { contract, manufacturer, engineState, specState, car1Driver, car2Driver } = useMemo(() => {
     if (!gameState || !playerTeam) {
       return NULL_CONTRACT_DATA;
     }
@@ -385,6 +388,11 @@ export function Contracts() {
     const teamState = gameState.teamStates[playerTeamId];
     const teamEngineState = teamState?.engineState ?? null;
 
+    // Get manufacturer spec state
+    const manufacturerSpecState = gameState.manufacturerSpecs.find(
+      (s) => s.manufacturerId === engineContract.manufacturerId
+    ) ?? null;
+
     // Get drivers for the team
     const teamDrivers = gameState.drivers.filter((d) => d.teamId === playerTeamId);
     const driver1 = teamDrivers.find((d) => d.role === 'driver1') ?? teamDrivers[0] ?? null;
@@ -394,6 +402,7 @@ export function Contracts() {
       contract: engineContract,
       manufacturer: engineManufacturer ?? null,
       engineState: teamEngineState,
+      specState: manufacturerSpecState,
       car1Driver: driver1,
       car2Driver: driver2,
     };
@@ -436,7 +445,7 @@ export function Contracts() {
     );
   }
 
-  if (!gameState || !playerTeam || !contract || !manufacturer || !engineState) {
+  if (!gameState || !playerTeam || !contract || !manufacturer || !engineState || !specState) {
     return (
       <div className="p-4">
         <SectionHeading>Contracts</SectionHeading>
@@ -462,6 +471,7 @@ export function Contracts() {
           manufacturer={manufacturer}
           contract={contract}
           engineState={engineState}
+          specState={specState}
           currentSeason={currentSeason}
           car1Driver={car1Driver}
           car2Driver={car2Driver}
