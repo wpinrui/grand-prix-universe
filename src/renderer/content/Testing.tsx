@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useDerivedGameState, queryKeys } from '../hooks';
-import { SectionHeading, SummaryStat, ProgressBar, Dropdown } from '../components';
+import { SectionHeading, SummaryStat, ProgressBar, Dropdown, StaffAllocationSlider } from '../components';
 import type { DropdownOption } from '../components';
 import { ACCENT_CARD_STYLE, ACCENT_BORDERED_BUTTON_STYLE, GHOST_BORDERED_BUTTON_CLASSES } from '../utils/theme-styles';
 import { IpcChannels } from '../../shared/ipc';
@@ -50,12 +50,6 @@ const PROBLEM_DESCRIPTIONS: Record<HandlingProblem, string> = {
 /** Get total mechanic count from staff counts */
 function getMechanicCount(staffCounts: Record<string, number>): number {
   return Object.values(staffCounts).reduce((sum, count) => sum + count, 0);
-}
-
-/** Calculate allocation step as 100/N where N is number of mechanics */
-function getAllocationStep(mechanicCount: number): number {
-  if (mechanicCount <= 0) return 10; // Fallback
-  return Math.round(100 / mechanicCount);
 }
 
 function determineViewState(testSession: TestSession): TestingViewState {
@@ -123,8 +117,7 @@ interface SetupStateProps {
   onDriverChange: (driverId: string) => void;
   mechanicsAllocated: number;
   onMechanicsChange: (value: number) => void;
-  maxMechanics: number;
-  allocationStep: number;
+  mechanicCount: number;
   estimatedDays: number | null;
   onStartTest: () => void;
   onCancel: () => void;
@@ -136,8 +129,7 @@ function SetupState({
   onDriverChange,
   mechanicsAllocated,
   onMechanicsChange,
-  maxMechanics,
-  allocationStep,
+  mechanicCount,
   estimatedDays,
   onStartTest,
   onCancel,
@@ -179,23 +171,14 @@ function SetupState({
           </div>
 
           {/* Mechanic Allocation */}
-          <div>
-            <label className="block text-sm font-medium text-secondary mb-2">
-              Mechanic Allocation: {mechanicsAllocated}%
-            </label>
-            <input
-              type="range"
-              min={0}
-              max={maxMechanics}
-              step={allocationStep}
-              value={mechanicsAllocated}
-              onChange={(e) => onMechanicsChange(parseInt(e.target.value, 10))}
-              className="w-64 accent-[var(--accent-500)]"
-            />
-            <p className="text-xs text-muted mt-1">
-              Higher allocation = faster test completion.
-            </p>
-          </div>
+          <StaffAllocationSlider
+            id="mechanic-allocation"
+            value={mechanicsAllocated}
+            onChange={onMechanicsChange}
+            staffCount={mechanicCount}
+            label="Mechanic Allocation"
+            helperText="Higher allocation = faster test completion."
+          />
 
           {/* Estimated Time */}
           {estimatedDays !== null && mechanicsAllocated > 0 && (
@@ -430,10 +413,9 @@ export function Testing() {
   // Get team drivers for dropdown
   const teamDrivers = gameState.drivers.filter((d) => d.teamId === playerTeam.id);
 
-  // Get mechanic staff counts for estimation and allocation step
+  // Get mechanic staff counts for estimation
   const mechanicCounts = teamState.staffCounts[Department.Mechanics] ?? {};
   const mechanicCount = getMechanicCount(mechanicCounts);
-  const allocationStep = getAllocationStep(mechanicCount);
 
   // Determine view state
   const viewState = isInSetup ? 'setup' : determineViewState(testSession);
@@ -476,11 +458,10 @@ export function Testing() {
   // Handlers
   const handleStartSetup = useCallback(() => {
     setSetupDriverId(teamDrivers[0]?.id ?? null);
-    // Default to ~50% but snap to valid step value
-    const defaultAllocation = Math.round(50 / allocationStep) * allocationStep;
-    setSetupMechanics(Math.min(100, Math.max(allocationStep, defaultAllocation)));
+    // Default to 50% - slider will snap to nearest valid step
+    setSetupMechanics(50);
     setIsInSetup(true);
-  }, [teamDrivers, allocationStep]);
+  }, [teamDrivers]);
 
   const handleCancelSetup = useCallback(() => {
     setIsInSetup(false);
@@ -540,8 +521,7 @@ export function Testing() {
           onDriverChange={setSetupDriverId}
           mechanicsAllocated={setupMechanics}
           onMechanicsChange={setSetupMechanics}
-          maxMechanics={100}
-          allocationStep={allocationStep}
+          mechanicCount={mechanicCount}
           estimatedDays={estimatedDays}
           onStartTest={handleStartTest}
           onCancel={handleCancelSetup}
