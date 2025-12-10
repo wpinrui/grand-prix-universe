@@ -460,7 +460,7 @@ export function getFullDayName(date: GameDate): string {
  */
 export function formatDateGroupHeader(date: GameDate): string {
   const dayName = getFullDayName(date);
-  const monthName = MONTH_NAMES[date.month - 1];
+  const monthName = getMonthName(date);
   const dayWithSuffix = `${date.day}${getOrdinalSuffix(date.day)}`;
   return `${dayName} ${monthName} ${dayWithSuffix} ${date.year}`;
 }
