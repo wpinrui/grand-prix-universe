@@ -48,7 +48,7 @@ export function CalendarEventRow({ item, showCriticalBadge = false }: CalendarEv
 
       {/* Expanded body */}
       {isExpanded && item.body && (
-        <div className="pl-[4.25rem] pr-4 pb-4 text-sm text-secondary leading-relaxed">
+        <div className="pl-[10.25rem] pr-4 pb-4 text-sm text-secondary leading-relaxed">
           {item.body}
         </div>
       )}
