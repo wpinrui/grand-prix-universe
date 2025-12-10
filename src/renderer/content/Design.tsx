@@ -779,7 +779,7 @@ function CurrentYearChassisTab({
 
 interface TechnologyTabProps {
   designState: DesignState;
-  designerStaffCounts: StaffCounts;
+  allocationStep: number;
   onStartProject: (component: TechnologyComponent, attribute: TechnologyAttribute) => void;
   onCancelProject: (component: TechnologyComponent, attribute: TechnologyAttribute) => void;
   onSetAllocation: (
@@ -863,7 +863,7 @@ function TechAttributeCell({
 
 function TechnologyTab({
   designState,
-  designerStaffCounts,
+  allocationStep,
   onStartProject,
   onCancelProject,
   onSetAllocation,
@@ -882,10 +882,6 @@ function TechnologyTab({
     (sum, p) => sum + p.designersAssigned,
     0
   );
-
-  // Calculate allocation step based on designer count
-  const designerCount = getDesignerCount(designerStaffCounts);
-  const allocationStep = getAllocationStep(designerCount);
 
   return (
     <div className="space-y-6">
@@ -1097,7 +1093,7 @@ export function Design() {
       {activeTab === 'technology' && (
         <TechnologyTab
           designState={designState}
-          designerStaffCounts={designerStaffCounts}
+          allocationStep={allocationStep}
           onStartProject={handleStartTechProject}
           onCancelProject={handleCancelTechProject}
           onSetAllocation={handleSetTechAllocation}
