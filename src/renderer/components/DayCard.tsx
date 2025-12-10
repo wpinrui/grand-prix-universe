@@ -2,8 +2,8 @@ import type { GameDate, CalendarEvent } from '../../shared/domain';
 import { CalendarEventType } from '../../shared/domain';
 import { getShortDayName, getShortMonthName, type RaceSessionType } from '../../shared/utils/date-utils';
 import { FlagIcon } from './FlagIcon';
-import { Flag, Clock } from 'lucide-react';
-import { EVENT_BADGE_MILESTONE_CLASSES, EVENT_BADGE_PROJECTION_CLASSES, EVENT_BADGE_DEFAULT_CLASSES } from '../utils/theme-styles';
+import { Mail, Clock } from 'lucide-react';
+import { EVENT_BADGE_EMAIL_CLASSES, EVENT_BADGE_PROJECTION_CLASSES, EVENT_BADGE_DEFAULT_CLASSES } from '../utils/theme-styles';
 
 export interface RaceWeekendInfo {
   session: RaceSessionType;
@@ -67,10 +67,10 @@ export function DayCard({ date, isCurrent, isPast, events, raceWeekendInfo }: Da
 
           {/* Calendar events */}
           {events.map((event) => {
-            const isMilestone = event.type === CalendarEventType.Milestone;
+            const isEmail = event.type === CalendarEventType.Email;
             const isProjection = event.type === CalendarEventType.Projection;
-            const badgeClasses = isMilestone
-              ? EVENT_BADGE_MILESTONE_CLASSES
+            const badgeClasses = isEmail
+              ? EVENT_BADGE_EMAIL_CLASSES
               : isProjection
                 ? EVENT_BADGE_PROJECTION_CLASSES
                 : EVENT_BADGE_DEFAULT_CLASSES;
@@ -80,7 +80,7 @@ export function DayCard({ date, isCurrent, isPast, events, raceWeekendInfo }: Da
                 className={`mb-1.5 p-1.5 rounded text-xs flex items-center gap-1.5 ${badgeClasses}`}
                 title={isProjection ? `Est: ${event.subject}` : event.subject}
               >
-                {isMilestone && <Flag size={12} className="flex-shrink-0" />}
+                {isEmail && <Mail size={12} className="flex-shrink-0" />}
                 {isProjection && <Clock size={12} className="flex-shrink-0" />}
                 <span className="truncate">{event.subject}</span>
               </div>
