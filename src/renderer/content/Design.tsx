@@ -11,11 +11,13 @@ import {
   TechnologyAttribute,
   TechnologyProjectPhase,
   HandlingProblem,
+  Department,
   type ChassisDesign,
   type TechnologyDesignProject,
   type CurrentYearChassisState,
   type DesignState,
   type GameState,
+  type StaffCounts,
 } from '../../shared/domain';
 
 // ===========================================
@@ -76,7 +78,15 @@ const MAX_TECH_LEVEL = 100;
 const MAX_SOLUTION_PROGRESS = 10;
 const LEVEL_BAR_BOXES = 10; // Number of boxes in LevelBar visualization
 const LEVEL_BAR_STEP = MAX_TECH_LEVEL / LEVEL_BAR_BOXES; // 10 points per box
-const ALLOCATION_STEP = 10; // Increment/decrement step for designer allocation
+/** Calculate allocation step as 100/N where N is number of designers */
+function getDesignerCount(staffCounts: StaffCounts): number {
+  return Object.values(staffCounts).reduce((sum, count) => sum + count, 0);
+}
+
+function getAllocationStep(designerCount: number): number {
+  if (designerCount <= 0) return 10; // Fallback
+  return Math.round(100 / designerCount);
+}
 
 const PROBLEM_LABELS: Record<HandlingProblem, string> = {
   [HandlingProblem.OversteerFast]: 'Oversteer (Fast)',
@@ -317,6 +327,7 @@ interface DesignerAllocationPanelProps {
   chassisAllocation: number;
   maxAllocation: number;
   label: string;
+  step: number;
   onAllocationChange?: (newValue: number) => void;
 }
 
@@ -325,6 +336,7 @@ function DesignerAllocationPanel({
   chassisAllocation,
   maxAllocation,
   label,
+  step,
   onAllocationChange,
 }: DesignerAllocationPanelProps) {
   return (
@@ -347,6 +359,7 @@ function DesignerAllocationPanel({
               <AllocationControl
                 value={chassisAllocation}
                 maxValue={maxAllocation}
+                step={step}
                 onChange={onAllocationChange}
               />
             ) : (
@@ -391,15 +404,16 @@ function ChassisInfoPanel({ chassisName, stageName, efficiency }: ChassisInfoPan
 interface AllocationControlProps {
   value: number;
   maxValue: number;
+  step: number;
   onChange: (newValue: number) => void;
 }
 
-function AllocationControl({ value, maxValue, onChange }: AllocationControlProps) {
+function AllocationControl({ value, maxValue, step, onChange }: AllocationControlProps) {
   return (
     <div className="flex items-center justify-center gap-2">
       <button
         type="button"
-        onClick={() => onChange(Math.max(0, value - ALLOCATION_STEP))}
+        onClick={() => onChange(Math.max(0, value - step))}
         className="w-6 h-6 rounded bg-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-600)] cursor-pointer"
       >
         −
@@ -407,7 +421,7 @@ function AllocationControl({ value, maxValue, onChange }: AllocationControlProps
       <span className="font-mono text-primary w-8 text-center">{value}%</span>
       <button
         type="button"
-        onClick={() => onChange(Math.min(maxValue, value + ALLOCATION_STEP))}
+        onClick={() => onChange(Math.min(maxValue, value + step))}
         className="w-6 h-6 rounded bg-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-600)] cursor-pointer"
       >
         +
@@ -441,6 +455,7 @@ interface NextYearChassisTabProps {
   currentYear: number;
   designState: DesignState;
   regulationsAvailable: boolean;
+  allocationStep: number;
   onStartWork: () => void;
   onAllocationChange: (allocation: number) => void;
 }
@@ -450,6 +465,7 @@ function NextYearChassisTab({
   currentYear,
   designState,
   regulationsAvailable,
+  allocationStep,
   onStartWork,
   onAllocationChange,
 }: NextYearChassisTabProps) {
@@ -471,6 +487,7 @@ function NextYearChassisTab({
             chassisAllocation={0}
             maxAllocation={maxNextYearAllocation}
             label={chassisLabel}
+            step={allocationStep}
           />
           <ChassisInfoPanel chassisName={chassisName} stageName="Not Started" efficiency={0} />
         </div>
@@ -518,6 +535,7 @@ function NextYearChassisTab({
           chassisAllocation={allocation.nextYear}
           maxAllocation={maxNextYearAllocation}
           label={chassisLabel}
+          step={allocationStep}
           onAllocationChange={onAllocationChange}
         />
         <ChassisInfoPanel
@@ -597,9 +615,15 @@ interface CurrentYearChassisTabProps {
   chassisState: CurrentYearChassisState;
   currentYear: number;
   designState: DesignState;
+  allocationStep: number;
 }
 
-function CurrentYearChassisTab({ chassisState, currentYear, designState }: CurrentYearChassisTabProps) {
+function CurrentYearChassisTab({
+  chassisState,
+  currentYear,
+  designState,
+  allocationStep,
+}: CurrentYearChassisTabProps) {
   const problemMap = new Map(chassisState.problems.map((p) => [p.problem, p]));
 
   // Find the active problem being worked on, or first discovered unsolved problem
@@ -628,6 +652,7 @@ function CurrentYearChassisTab({ chassisState, currentYear, designState }: Curre
           chassisAllocation={allocation.currentYear}
           maxAllocation={maxCurrentYearAllocation}
           label={chassisLabel}
+          step={allocationStep}
         />
 
         {/* Chassis Info Panel */}
@@ -754,6 +779,7 @@ function CurrentYearChassisTab({ chassisState, currentYear, designState }: Curre
 
 interface TechnologyTabProps {
   designState: DesignState;
+  designerStaffCounts: StaffCounts;
   onStartProject: (component: TechnologyComponent, attribute: TechnologyAttribute) => void;
   onCancelProject: (component: TechnologyComponent, attribute: TechnologyAttribute) => void;
   onSetAllocation: (
@@ -789,6 +815,7 @@ interface TechAttributeCellProps {
   onToggleWork: () => void;
   allocation: number;
   maxAllocation: number;
+  step: number;
   onAllocationChange: (value: number) => void;
 }
 
@@ -799,6 +826,7 @@ function TechAttributeCell({
   onToggleWork,
   allocation,
   maxAllocation,
+  step,
   onAllocationChange,
 }: TechAttributeCellProps) {
   return (
@@ -822,6 +850,7 @@ function TechAttributeCell({
           <AllocationControl
             value={allocation}
             maxValue={maxAllocation}
+            step={step}
             onChange={onAllocationChange}
           />
         ) : (
@@ -834,6 +863,7 @@ function TechAttributeCell({
 
 function TechnologyTab({
   designState,
+  designerStaffCounts,
   onStartProject,
   onCancelProject,
   onSetAllocation,
@@ -852,6 +882,10 @@ function TechnologyTab({
     (sum, p) => sum + p.designersAssigned,
     0
   );
+
+  // Calculate allocation step based on designer count
+  const designerCount = getDesignerCount(designerStaffCounts);
+  const allocationStep = getAllocationStep(designerCount);
 
   return (
     <div className="space-y-6">
@@ -922,6 +956,7 @@ function TechnologyTab({
                     }
                     allocation={perfAlloc}
                     maxAllocation={maxPerfAlloc}
+                    step={allocationStep}
                     onAllocationChange={(val) =>
                       onSetAllocation(component, TechnologyAttribute.Performance, val)
                     }
@@ -937,6 +972,7 @@ function TechnologyTab({
                     }
                     allocation={relAlloc}
                     maxAllocation={maxRelAlloc}
+                    step={allocationStep}
                     onAllocationChange={(val) =>
                       onSetAllocation(component, TechnologyAttribute.Reliability, val)
                     }
@@ -1027,6 +1063,11 @@ export function Design() {
   const designState = teamState.designState;
   const currentYear = gameState.currentDate.year;
 
+  // Get designer staff counts and calculate allocation step
+  const designerStaffCounts = teamState.staffCounts[Department.Design];
+  const designerCount = getDesignerCount(designerStaffCounts);
+  const allocationStep = getAllocationStep(designerCount);
+
   return (
     <div>
       <TabBar tabs={getTabs(currentYear)} activeTab={activeTab} onTabChange={setActiveTab} />
@@ -1040,6 +1081,7 @@ export function Design() {
           currentYear={currentYear}
           designState={designState}
           regulationsAvailable={regulationsAvailable}
+          allocationStep={allocationStep}
           onStartWork={handleStartNextYearChassis}
           onAllocationChange={handleSetNextYearAllocation}
         />
@@ -1049,11 +1091,13 @@ export function Design() {
           chassisState={designState.currentYearChassis}
           currentYear={currentYear}
           designState={designState}
+          allocationStep={allocationStep}
         />
       )}
       {activeTab === 'technology' && (
         <TechnologyTab
           designState={designState}
+          designerStaffCounts={designerStaffCounts}
           onStartProject={handleStartTechProject}
           onCancelProject={handleCancelTechProject}
           onSetAllocation={handleSetTechAllocation}
