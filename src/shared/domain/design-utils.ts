@@ -29,6 +29,7 @@ import {
   TechnologyAttribute,
   HandlingProblem,
 } from './types';
+import { offsetDate } from '../utils/date-utils';
 
 // =============================================================================
 // CONSTANTS
@@ -1058,30 +1059,6 @@ export function calculateAverageDailyWorkUnits(
 }
 
 /**
- * Add days to a GameDate
- */
-function addDaysToDate(date: GameDate, days: number): GameDate {
-  // Simple implementation - doesn't handle month/year overflow perfectly
-  // but good enough for estimates
-  const daysInMonth = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-
-  let newDay = date.day + days;
-  let newMonth = date.month;
-  let newYear = date.year;
-
-  while (newDay > daysInMonth[newMonth]) {
-    newDay -= daysInMonth[newMonth];
-    newMonth++;
-    if (newMonth > 12) {
-      newMonth = 1;
-      newYear++;
-    }
-  }
-
-  return { year: newYear, month: newMonth, day: newDay };
-}
-
-/**
  * Estimate days remaining to complete a technology project in Development phase
  */
 export function estimateTechProjectDaysRemaining(
@@ -1168,7 +1145,7 @@ export function getProjectedMilestones(
         milestones.push({
           type: 'chassis-stage',
           description: `${CHASSIS_STAGE_DISPLAY_NAMES[currentStage.stage]} stage completion`,
-          estimatedDate: addDaysToDate(currentDate, daysRemaining),
+          estimatedDate: offsetDate(currentDate, daysRemaining),
           daysRemaining,
           stage: currentStage.stage,
         });
@@ -1185,7 +1162,7 @@ export function getProjectedMilestones(
         milestones.push({
           type: 'tech-development',
           description: `${TECH_COMPONENT_DISPLAY_NAMES[project.component]} ${attrName} (+${project.payoff ?? '?'})`,
-          estimatedDate: addDaysToDate(currentDate, daysRemaining),
+          estimatedDate: offsetDate(currentDate, daysRemaining),
           daysRemaining,
           component: project.component,
           attribute: project.attribute,
