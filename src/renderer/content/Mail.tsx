@@ -138,7 +138,7 @@ function SenderAvatar({ email, chiefs, teams, size = 32 }: SenderAvatarProps) {
 const MAX_MAIL_ITEMS = 50;
 
 // ===========================================
-// CATEGORY BADGE COMPONENT
+// BADGE COMPONENTS
 // ===========================================
 
 interface CategoryBadgeProps {
@@ -152,6 +152,14 @@ function CategoryBadge({ category }: CategoryBadgeProps) {
   return (
     <span className={`text-xs px-1.5 py-0.5 rounded ${config.className}`}>
       {config.label}
+    </span>
+  );
+}
+
+function ImportantBadge() {
+  return (
+    <span className="text-xs px-1.5 py-0.5 rounded bg-amber-600/20 text-amber-400">
+      Important
     </span>
   );
 }
@@ -198,9 +206,7 @@ function EmailListItem({ email, isSelected, onSelect, chiefs, teams }: EmailList
           {/* Category badge + Critical badge */}
           <div className="flex items-center gap-2 mt-1">
             <CategoryBadge category={email.emailCategory} />
-            {email.critical && (
-              <span className="text-xs px-1.5 py-0.5 rounded bg-amber-600/20 text-amber-400">Important</span>
-            )}
+            {email.critical && <ImportantBadge />}
           </div>
         </div>
       </div>
@@ -335,11 +341,7 @@ function EmailDetailPanel({ email, chiefs, teams }: EmailDetailPanelProps) {
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <CategoryBadge category={email.emailCategory} />
-                {email.critical && (
-                  <span className="px-2 py-0.5 text-xs font-medium bg-amber-600/20 text-amber-400 rounded">
-                    Important
-                  </span>
-                )}
+                {email.critical && <ImportantBadge />}
               </div>
             </div>
           </div>
