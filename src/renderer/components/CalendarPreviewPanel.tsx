@@ -13,7 +13,7 @@ import {
   getMonthName,
 } from '../../shared/utils/date-utils';
 import { FlagIcon } from './FlagIcon';
-import { CALENDAR_PANEL_HEIGHT, ICON_BUTTON_GHOST_CLASSES, PANEL_TRANSLUCENT_BG_CLASSES, PANEL_FOOTER_CLASSES } from '../utils/theme-styles';
+import { CALENDAR_PANEL_HEIGHT, ICON_BUTTON_GHOST_CLASSES, PANEL_TRANSLUCENT_BG_CLASSES, PANEL_FOOTER_CLASSES, EVENT_BADGE_MILESTONE_CLASSES, EVENT_BADGE_PROJECTION_CLASSES } from '../utils/theme-styles';
 
 /** Number of visible days in strip view */
 const VISIBLE_DAYS = 7;
@@ -43,7 +43,7 @@ function EventsSummary({ events }: { events: CalendarEvent[] }) {
       {milestones.slice(0, 2).map((e) => (
         <div
           key={e.id}
-          className="text-xs truncate px-1 py-0.5 rounded bg-emerald-900/50 text-emerald-300 border border-emerald-700/50"
+          className={`text-xs truncate px-1 py-0.5 rounded ${EVENT_BADGE_MILESTONE_CLASSES}`}
         >
           {e.subject}
         </div>
@@ -56,7 +56,7 @@ function EventsSummary({ events }: { events: CalendarEvent[] }) {
       {projections.slice(0, 2).map((e) => (
         <div
           key={e.id}
-          className="text-xs truncate px-1 py-0.5 rounded bg-sky-900/30 text-sky-300/80 border border-dashed border-sky-700/50"
+          className={`text-xs truncate px-1 py-0.5 rounded ${EVENT_BADGE_PROJECTION_CLASSES}`}
         >
           {e.subject}
         </div>
