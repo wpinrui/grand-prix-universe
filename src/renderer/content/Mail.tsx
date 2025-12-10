@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { User, ChevronDown, ChevronRight, Search, ArrowRight } from 'lucide-react';
 import { useDerivedGameState } from '../hooks';
 import { SectionHeading, Dropdown, EntityLink } from '../components';
-import { CalendarEventType, EmailCategory } from '../../shared/domain';
+import { CalendarEventType, EmailCategory, CHASSIS_STAGE_DISPLAY_NAMES, ChassisDesignStage } from '../../shared/domain';
 import { useEntityNavigation } from '../utils/entity-navigation';
 import type {
   CalendarEvent,
@@ -323,7 +323,47 @@ function EmailListPanel({
 // RICH DETAIL RENDERERS
 // ===========================================
 
-const CHASSIS_STAGES = ['Design', 'CFD', 'Model', 'Wind Tunnel'];
+// Ordered stage names for progress display
+const CHASSIS_STAGE_ORDER = [
+  ChassisDesignStage.Design,
+  ChassisDesignStage.CFD,
+  ChassisDesignStage.Model,
+  ChassisDesignStage.WindTunnel,
+];
+
+// Shared helper to find chief by ID
+function findChief(chiefId: string | undefined, chiefs: Chief[]): Chief | null {
+  return chiefId ? chiefs.find((c) => c.id === chiefId) ?? null : null;
+}
+
+// Shared component for chief designer link
+function ChiefDesignerLink({ chief }: { chief: Chief | null }) {
+  if (!chief) return null;
+  return (
+    <div className="text-sm text-secondary">
+      Chief Designer:{' '}
+      <EntityLink type="chief" id={chief.id}>
+        {chief.firstName} {chief.lastName}
+      </EntityLink>
+    </div>
+  );
+}
+
+// Shared component for View Design Screen button
+function ViewDesignButton() {
+  const navigateToEntity = useEntityNavigation();
+  return (
+    <button
+      type="button"
+      onClick={() => navigateToEntity('engineering-design', '')}
+      className="flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition-colors"
+      style={ACCENT_BORDERED_BUTTON_STYLE}
+    >
+      View Design Screen
+      <ArrowRight size={16} />
+    </button>
+  );
+}
 
 interface ChassisStageDetailProps {
   data: ChassisStageCompleteData;
@@ -331,8 +371,7 @@ interface ChassisStageDetailProps {
 }
 
 function ChassisStageDetail({ data, chiefs }: ChassisStageDetailProps) {
-  const navigateToEntity = useEntityNavigation();
-  const chief = data.chiefId ? chiefs.find((c) => c.id === data.chiefId) : null;
+  const chief = findChief(data.chiefId, chiefs);
 
   return (
     <div className="space-y-4">
@@ -340,9 +379,10 @@ function ChassisStageDetail({ data, chiefs }: ChassisStageDetailProps) {
       <div className="p-4 rounded-lg bg-[var(--neutral-800)]">
         <div className="text-xs text-muted mb-2">Chassis Design Progress</div>
         <div className="flex items-center gap-2">
-          {CHASSIS_STAGES.map((stage, idx) => {
+          {CHASSIS_STAGE_ORDER.map((stage, idx) => {
             const isComplete = idx <= data.completedStageIndex;
             const isCurrent = idx === data.completedStageIndex;
+            const stageName = CHASSIS_STAGE_DISPLAY_NAMES[stage];
             return (
               <div key={stage} className="flex-1">
                 <div
@@ -351,7 +391,7 @@ function ChassisStageDetail({ data, chiefs }: ChassisStageDetailProps) {
                   } ${isCurrent ? 'ring-2 ring-emerald-400' : ''}`}
                 />
                 <div className={`text-xs mt-1 text-center ${isComplete ? 'text-emerald-400' : 'text-muted'}`}>
-                  {stage}
+                  {stageName}
                 </div>
               </div>
             );
@@ -371,26 +411,8 @@ function ChassisStageDetail({ data, chiefs }: ChassisStageDetailProps) {
         </div>
       </div>
 
-      {/* Chief link */}
-      {chief && (
-        <div className="text-sm text-secondary">
-          Chief Designer:{' '}
-          <EntityLink type="chief" id={chief.id}>
-            {chief.firstName} {chief.lastName}
-          </EntityLink>
-        </div>
-      )}
-
-      {/* Action button */}
-      <button
-        type="button"
-        onClick={() => navigateToEntity('engineering-design', '')}
-        className="flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition-colors"
-        style={ACCENT_BORDERED_BUTTON_STYLE}
-      >
-        View Design Screen
-        <ArrowRight size={16} />
-      </button>
+      <ChiefDesignerLink chief={chief} />
+      <ViewDesignButton />
     </div>
   );
 }
@@ -401,8 +423,7 @@ interface TechBreakthroughDetailProps {
 }
 
 function TechBreakthroughDetail({ data, chiefs }: TechBreakthroughDetailProps) {
-  const navigateToEntity = useEntityNavigation();
-  const chief = data.chiefId ? chiefs.find((c) => c.id === data.chiefId) : null;
+  const chief = findChief(data.chiefId, chiefs);
 
   return (
     <div className="space-y-4">
@@ -421,26 +442,8 @@ function TechBreakthroughDetail({ data, chiefs }: TechBreakthroughDetailProps) {
         <div className="text-lg font-medium text-primary">~{data.estimatedDays} days</div>
       </div>
 
-      {/* Chief link */}
-      {chief && (
-        <div className="text-sm text-secondary">
-          Chief Designer:{' '}
-          <EntityLink type="chief" id={chief.id}>
-            {chief.firstName} {chief.lastName}
-          </EntityLink>
-        </div>
-      )}
-
-      {/* Action button */}
-      <button
-        type="button"
-        onClick={() => navigateToEntity('engineering-design', '')}
-        className="flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition-colors"
-        style={ACCENT_BORDERED_BUTTON_STYLE}
-      >
-        View Design Screen
-        <ArrowRight size={16} />
-      </button>
+      <ChiefDesignerLink chief={chief} />
+      <ViewDesignButton />
     </div>
   );
 }
@@ -451,8 +454,7 @@ interface TechDevelopmentDetailProps {
 }
 
 function TechDevelopmentDetail({ data, chiefs }: TechDevelopmentDetailProps) {
-  const navigateToEntity = useEntityNavigation();
-  const chief = data.chiefId ? chiefs.find((c) => c.id === data.chiefId) : null;
+  const chief = findChief(data.chiefId, chiefs);
 
   return (
     <div className="space-y-4">
@@ -482,26 +484,8 @@ function TechDevelopmentDetail({ data, chiefs }: TechDevelopmentDetailProps) {
         </div>
       </div>
 
-      {/* Chief link */}
-      {chief && (
-        <div className="text-sm text-secondary">
-          Chief Designer:{' '}
-          <EntityLink type="chief" id={chief.id}>
-            {chief.firstName} {chief.lastName}
-          </EntityLink>
-        </div>
-      )}
-
-      {/* Action button */}
-      <button
-        type="button"
-        onClick={() => navigateToEntity('engineering-design', '')}
-        className="flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition-colors"
-        style={ACCENT_BORDERED_BUTTON_STYLE}
-      >
-        View Design Screen
-        <ArrowRight size={16} />
-      </button>
+      <ChiefDesignerLink chief={chief} />
+      <ViewDesignButton />
     </div>
   );
 }
@@ -512,8 +496,7 @@ interface HandlingSolutionDetailProps {
 }
 
 function HandlingSolutionDetail({ data, chiefs }: HandlingSolutionDetailProps) {
-  const navigateToEntity = useEntityNavigation();
-  const chief = data.chiefId ? chiefs.find((c) => c.id === data.chiefId) : null;
+  const chief = findChief(data.chiefId, chiefs);
 
   return (
     <div className="space-y-4">
@@ -526,26 +509,8 @@ function HandlingSolutionDetail({ data, chiefs }: HandlingSolutionDetailProps) {
         </div>
       </div>
 
-      {/* Chief link */}
-      {chief && (
-        <div className="text-sm text-secondary">
-          Chief Designer:{' '}
-          <EntityLink type="chief" id={chief.id}>
-            {chief.firstName} {chief.lastName}
-          </EntityLink>
-        </div>
-      )}
-
-      {/* Action button */}
-      <button
-        type="button"
-        onClick={() => navigateToEntity('engineering-design', '')}
-        className="flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition-colors"
-        style={ACCENT_BORDERED_BUTTON_STYLE}
-      >
-        View Design Screen
-        <ArrowRight size={16} />
-      </button>
+      <ChiefDesignerLink chief={chief} />
+      <ViewDesignButton />
     </div>
   );
 }
