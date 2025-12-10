@@ -1,10 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useDerivedGameState } from '../hooks';
 import { SectionHeading, TabBar } from '../components';
 import type { Tab } from '../components';
 import { ACCENT_CARD_STYLE, GHOST_BORDERED_BUTTON_CLASSES } from '../utils/theme-styles';
 import { formatMoney } from '../utils/format';
 import { seasonToYear } from '../../shared/utils/date-utils';
+import { IpcChannels } from '../../shared/ipc';
 import type {
   Manufacturer,
   ActiveManufacturerContract,
@@ -202,6 +203,9 @@ interface CurrentContractTabProps {
   currentSeason: number;
   car1Driver: Driver | null;
   car2Driver: Driver | null;
+  onUpgradeCar: (carNumber: 1 | 2) => void;
+  onBuyCustomisationPoints: () => void;
+  onBuyOptimisation: () => void;
 }
 
 function CurrentContractTab({
@@ -211,6 +215,9 @@ function CurrentContractTab({
   currentSeason,
   car1Driver,
   car2Driver,
+  onUpgradeCar,
+  onBuyCustomisationPoints,
+  onBuyOptimisation,
 }: CurrentContractTabProps) {
   // For now, we don't have spec bonuses implemented - use empty array
   // This will be populated when manufacturer spec releases are implemented
@@ -265,8 +272,8 @@ function CurrentContractTab({
           baseStats={manufacturer.engineStats}
           specBonuses={specBonuses}
           latestSpec={latestSpec}
-          onUpgrade={() => {/* Will be implemented in PR 3 */}}
-          onCustomise={() => {/* Will be implemented in PR 3 */}}
+          onUpgrade={() => onUpgradeCar(1)}
+          onCustomise={() => {/* Customisation modal - future PR */}}
         />
         <CarEngineCard
           carNumber={2}
@@ -275,8 +282,8 @@ function CurrentContractTab({
           baseStats={manufacturer.engineStats}
           specBonuses={specBonuses}
           latestSpec={latestSpec}
-          onUpgrade={() => {/* Will be implemented in PR 3 */}}
-          onCustomise={() => {/* Will be implemented in PR 3 */}}
+          onUpgrade={() => onUpgradeCar(2)}
+          onCustomise={() => {/* Customisation modal - future PR */}}
         />
       </div>
 
@@ -288,15 +295,16 @@ function CurrentContractTab({
             title="Buy Customisation Points"
             description="Purchase flexibility points to reallocate engine stats (±10 max per stat)"
             cost={`${formatMoney(manufacturer.costs.customisationPoint)} per point`}
-            buttonLabel="Purchase"
-            disabled
+            buttonLabel="Buy 1 Point"
+            onClick={onBuyCustomisationPoints}
           />
           <ActionCard
             title="Pre-Season Optimisation"
             description="Tailor the engine to your car for a flat bonus to all stats next season"
             cost={formatMoney(manufacturer.costs.optimisation)}
             buttonLabel={engineState.optimisationPurchasedForNextSeason ? 'Purchased' : 'Purchase'}
-            disabled
+            disabled={engineState.optimisationPurchasedForNextSeason}
+            onClick={onBuyOptimisation}
           />
           <ActionCard
             title="Ad-Hoc Engine Upgrade"
@@ -353,7 +361,7 @@ function ComingSoonTab({ tabName }: { tabName: string }) {
 
 export function Contracts() {
   const [activeTab, setActiveTab] = useState<ContractsTab>('current');
-  const { gameState, playerTeam, isLoading } = useDerivedGameState();
+  const { gameState, playerTeam, isLoading, refreshGameState } = useDerivedGameState();
 
   // Get the player's engine contract and manufacturer
   const { contract, manufacturer, engineState, car1Driver, car2Driver } = useMemo(() => {
@@ -390,6 +398,34 @@ export function Contracts() {
       car2Driver: driver2,
     };
   }, [gameState, playerTeam]);
+
+  // Engine contract action handlers
+  const handleUpgradeCar = useCallback(async (carNumber: 1 | 2) => {
+    try {
+      await window.electronAPI.invoke(IpcChannels.ENGINE_BUY_UPGRADE, { carNumber });
+      refreshGameState();
+    } catch (error) {
+      console.error('Failed to upgrade engine:', error);
+    }
+  }, [refreshGameState]);
+
+  const handleBuyCustomisationPoints = useCallback(async () => {
+    try {
+      await window.electronAPI.invoke(IpcChannels.ENGINE_BUY_CUSTOMISATION_POINTS, { quantity: 1 });
+      refreshGameState();
+    } catch (error) {
+      console.error('Failed to buy customisation points:', error);
+    }
+  }, [refreshGameState]);
+
+  const handleBuyOptimisation = useCallback(async () => {
+    try {
+      await window.electronAPI.invoke(IpcChannels.ENGINE_BUY_OPTIMISATION);
+      refreshGameState();
+    } catch (error) {
+      console.error('Failed to buy optimisation:', error);
+    }
+  }, [refreshGameState]);
 
   if (isLoading) {
     return (
@@ -429,6 +465,9 @@ export function Contracts() {
           currentSeason={currentSeason}
           car1Driver={car1Driver}
           car2Driver={car2Driver}
+          onUpgradeCar={handleUpgradeCar}
+          onBuyCustomisationPoints={handleBuyCustomisationPoints}
+          onBuyOptimisation={handleBuyOptimisation}
         />
       )}
 
