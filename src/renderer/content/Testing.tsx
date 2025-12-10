@@ -140,7 +140,8 @@ function SetupState({
   );
 
   const hasDrivers = driverOptions.length > 0;
-  const canStart = selectedDriverId !== null && mechanicsAllocated > 0 && hasDrivers;
+  const hasMechanics = mechanicCount > 0;
+  const canStart = selectedDriverId !== null && mechanicsAllocated > 0 && hasDrivers && hasMechanics;
 
   // Calculate mechanic allocation numbers
   const mechanicsUsed = Math.round((mechanicsAllocated / 100) * mechanicCount);
@@ -198,14 +199,23 @@ function SetupState({
           </div>
 
           {/* Mechanic Allocation */}
-          <StaffAllocationSlider
-            id="mechanic-allocation"
-            value={mechanicsAllocated}
-            onChange={onMechanicsChange}
-            staffCount={mechanicCount}
-            label="Mechanic Allocation"
-            helperText="Higher allocation = faster test completion."
-          />
+          {hasMechanics ? (
+            <StaffAllocationSlider
+              id="mechanic-allocation"
+              value={mechanicsAllocated}
+              onChange={onMechanicsChange}
+              staffCount={mechanicCount}
+              label="Mechanic Allocation"
+              helperText="Higher allocation = faster test completion."
+            />
+          ) : (
+            <div>
+              <label className="block text-sm font-medium text-secondary mb-2">
+                Mechanic Allocation
+              </label>
+              <p className="text-sm text-red-400">No mechanics available. Hire mechanics first.</p>
+            </div>
+          )}
 
           {/* Estimated Time */}
           {estimatedDays !== null && mechanicsAllocated > 0 && (
@@ -505,13 +515,7 @@ export function Testing() {
     setIsInSetup(false);
   }, [setupDriverId, setupMechanics, queryClient]);
 
-  const handleStopTest = useCallback(async () => {
-    await window.electronAPI.invoke(IpcChannels.TESTING_STOP, {});
-    queryClient.invalidateQueries({ queryKey: queryKeys.gameState });
-  }, [queryClient]);
-
-  const handleDismissResults = useCallback(async () => {
-    // Reset test session to idle
+  const handleResetTestSession = useCallback(async () => {
     await window.electronAPI.invoke(IpcChannels.TESTING_STOP, {});
     queryClient.invalidateQueries({ queryKey: queryKeys.gameState });
   }, [queryClient]);
@@ -562,7 +566,7 @@ export function Testing() {
           progress={testSession.progress}
           estimatedDays={estimatedDays}
           testsCompleted={testSession.testsCompleted}
-          onStop={handleStopTest}
+          onStop={handleResetTestSession}
         />
       )}
 
@@ -572,7 +576,7 @@ export function Testing() {
           handlingPercent={handlingPercent}
           discoveredProblems={discoveredProblems}
           latestProblem={latestProblem}
-          onDismiss={handleDismissResults}
+          onDismiss={handleResetTestSession}
         />
       )}
     </div>
