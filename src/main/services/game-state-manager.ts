@@ -107,9 +107,12 @@ import type {
   HandlingSolutionCompleteData,
   TestCompleteData,
   PartReadyData,
+  PostRaceRepairData,
+  CarRepairCost,
   PendingPart,
+  DriverRaceResult,
 } from '../../shared/domain/types';
-import { PendingPartSource, DriverRole } from '../../shared/domain/types';
+import { PendingPartSource, DriverRole, RaceFinishStatus, PartsLogEntryType } from '../../shared/domain/types';
 import {
   getPreSeasonStartDate,
   getWeekNumber,
@@ -157,6 +160,10 @@ const FIRST_RACE_WEEK = 11;
 
 /** Default gap between races when schedule data unavailable (bi-weekly) */
 const DEFAULT_WEEKS_BETWEEN_RACES = 2;
+
+/** Post-Race Repair Costs - values per proposal.md, simplified for MVP */
+const REPAIR_COST_BASE = 50000; // Routine maintenance after every race
+const REPAIR_COST_DNF = 400000; // Additional cost when driver retires from race
 
 /** Auto-save interval in milliseconds (5 minutes) */
 const AUTO_SAVE_INTERVAL_MS = 5 * 60 * 1000;
@@ -1833,6 +1840,120 @@ function findCurrentRace(
 }
 
 /**
+ * Calculate repair cost for a single driver's race result
+ */
+function calculateCarRepairCost(
+  result: DriverRaceResult,
+  driver: Driver,
+  carNumber: 1 | 2
+): CarRepairCost {
+  const wasRetired = result.status === RaceFinishStatus.Retired;
+  const incidentCost = wasRetired ? REPAIR_COST_DNF : 0;
+
+  return {
+    carNumber,
+    driverId: driver.id,
+    driverName: `${driver.firstName} ${driver.lastName}`,
+    baseCost: REPAIR_COST_BASE,
+    incidentCost,
+    totalCost: REPAIR_COST_BASE + incidentCost,
+    wasRetired,
+  };
+}
+
+/**
+ * Process post-race repairs for all teams after a race.
+ * Deducts repair costs and sends email notification to player team.
+ */
+function processPostRaceRepairs(
+  state: GameState,
+  raceResult: RaceWeekendResult,
+  circuitId: string
+): void {
+  const circuit = state.circuits.find((c) => c.id === circuitId);
+  const circuitName = circuit?.name ?? 'Unknown Circuit';
+  const playerTeamId = state.player.teamId;
+
+  // Process each team
+  for (const team of state.teams) {
+    const teamState = state.teamStates[team.id];
+    if (!teamState) continue;
+
+    // Find drivers for this team (car 1 = first driver role, car 2 = second)
+    const teamDrivers = state.drivers.filter((d) => d.teamId === team.id && hasRaceSeat(d));
+    const car1Driver = teamDrivers.find((d) => d.role === DriverRole.First);
+    const car2Driver = teamDrivers.find((d) => d.role === DriverRole.Second);
+
+    if (!car1Driver || !car2Driver) continue;
+
+    // Find race results for each driver
+    const car1Result = raceResult.race.find((r) => r.driverId === car1Driver.id);
+    const car2Result = raceResult.race.find((r) => r.driverId === car2Driver.id);
+
+    if (!car1Result || !car2Result) continue;
+
+    // Calculate repair costs
+    const car1Repair = calculateCarRepairCost(car1Result, car1Driver, 1);
+    const car2Repair = calculateCarRepairCost(car2Result, car2Driver, 2);
+    const totalCost = car1Repair.totalCost + car2Repair.totalCost;
+
+    // Deduct from team budget
+    team.budget -= totalCost;
+
+    // Add to partsLog for both cars
+    const logEntryBase = {
+      date: { ...state.currentDate },
+      seasonNumber: state.currentSeason.seasonNumber,
+      type: PartsLogEntryType.Repair,
+      item: 'Post-Race Repair',
+    };
+
+    state.partsLog.push({
+      ...logEntryBase,
+      id: randomUUID(),
+      cost: car1Repair.totalCost,
+      driverId: car1Driver.id,
+      carNumber: 1,
+      repairDetails: car1Repair.wasRetired ? 'Race retirement' : 'Routine maintenance',
+    });
+
+    state.partsLog.push({
+      ...logEntryBase,
+      id: randomUUID(),
+      cost: car2Repair.totalCost,
+      driverId: car2Driver.id,
+      carNumber: 2,
+      repairDetails: car2Repair.wasRetired ? 'Race retirement' : 'Routine maintenance',
+    });
+
+    // Send email only for player team
+    if (team.id === playerTeamId) {
+      const emailData: PostRaceRepairData = {
+        category: EmailCategory.PostRaceRepair,
+        raceNumber: raceResult.raceNumber,
+        circuitName,
+        car1: car1Repair,
+        car2: car2Repair,
+        totalCost,
+      };
+
+      state.mail.push({
+        id: randomUUID(),
+        from: 'Finance Department',
+        subject: `Post-Race Repair Report - ${circuitName}`,
+        body:
+          `Race repairs have been completed for both cars after the ${circuitName} Grand Prix.\n\n` +
+          `Total cost: $${totalCost.toLocaleString()}`,
+        date: { ...state.currentDate },
+        read: false,
+        category: EmailCategory.PostRaceRepair,
+        data: emailData,
+      });
+    }
+  }
+}
+
+/**
  * Process a race weekend: generate result, apply changes, mark complete.
  * Called when the game is in RaceWeekend phase.
  */
@@ -1853,6 +1974,9 @@ function processRaceWeekend(state: GameState, currentRace: CalendarEntry): void 
 
   // Mark race as complete
   markRaceComplete(state, currentRace.circuitId, raceResult);
+
+  // Process post-race repairs for all teams
+  processPostRaceRepairs(state, raceResult, currentRace.circuitId);
 }
 
 /**

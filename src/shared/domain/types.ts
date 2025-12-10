@@ -835,6 +835,7 @@ export enum EmailCategory {
   HandlingSolutionComplete = 'handling-solution-complete',
   TestComplete = 'test-complete',
   PartReady = 'part-ready',
+  PostRaceRepair = 'post-race-repair',
 }
 
 /**
@@ -906,13 +907,34 @@ export interface PartReadyData {
   chiefId?: string;
 }
 
+/** Repair cost breakdown for a single car */
+export interface CarRepairCost {
+  carNumber: 1 | 2;
+  driverId: string;
+  driverName: string;
+  baseCost: number; // Routine maintenance
+  incidentCost: number; // Additional cost from DNF/crash
+  totalCost: number;
+  wasRetired: boolean; // True if driver retired from race
+}
+
+export interface PostRaceRepairData {
+  category: EmailCategory.PostRaceRepair;
+  raceNumber: number;
+  circuitName: string;
+  car1: CarRepairCost;
+  car2: CarRepairCost;
+  totalCost: number;
+}
+
 export type EmailData =
   | ChassisStageCompleteData
   | TechBreakthroughData
   | TechDevelopmentCompleteData
   | HandlingSolutionCompleteData
   | TestCompleteData
-  | PartReadyData;
+  | PartReadyData
+  | PostRaceRepairData;
 
 /**
  * CalendarEvent - An event displayed on the calendar strip
