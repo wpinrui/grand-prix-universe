@@ -22,6 +22,7 @@ import {
   type NewSeasonResult,
   type SimulationResult,
   type SimulationTickPayload,
+  type PartInstallationChoice,
 } from '../../shared/ipc';
 import type {
   TurnProcessingInput,
@@ -307,6 +308,7 @@ function createInitialTeamState(
     setupPoints: 0,
     testSession: createDefaultTestSession(),
     designState: createInitialDesignState(),
+    pendingParts: [],
   };
 }
 
@@ -2162,6 +2164,49 @@ export const GameStateManager = {
 
     if (teamState.testSession.active) {
       teamState.testSession.mechanicsAllocated = clampPercentage(allocation);
+    }
+
+    return state;
+  },
+
+  // ===========================================================================
+  // PARTS INSTALLATION
+  // ===========================================================================
+
+  /**
+   * Installs a pending part on the specified car(s).
+   * @param pendingPartId - ID of the pending part to install
+   * @param choice - Which car(s) to install on: 'car1', 'car2', or 'both'
+   */
+  installPart(pendingPartId: string, choice: PartInstallationChoice): GameState {
+    const state = GameStateManager.currentState;
+    if (!state) {
+      throw new Error('No active game');
+    }
+
+    const playerTeamId = state.player.teamId;
+    const teamState = state.teamStates[playerTeamId];
+    const pendingPart = teamState.pendingParts.find((p) => p.id === pendingPartId);
+
+    if (!pendingPart) {
+      throw new Error(`Pending part not found: ${pendingPartId}`);
+    }
+
+    // TODO: In future PRs, this will:
+    // 1. Deduct cost from team budget (based on choice)
+    // 2. Add PartsLogEntry to partsLog
+    // 3. Mark installedOnCars
+    // 4. Apply stat improvements to cars
+    // 5. Generate DRIVER_UNHAPPY event if override detected
+
+    // For now, just mark which cars got the part
+    if (choice === 'car1') {
+      pendingPart.installedOnCars.push(1);
+    } else if (choice === 'car2') {
+      pendingPart.installedOnCars.push(2);
+    } else {
+      // 'both'
+      pendingPart.installedOnCars.push(1, 2);
     }
 
     return state;

@@ -146,6 +146,23 @@ export interface SetCurrentYearAllocationParams {
 }
 
 // =============================================================================
+// PARTS INSTALLATION TYPES
+// =============================================================================
+
+/**
+ * Installation choice for a pending part
+ */
+export type PartInstallationChoice = 'car1' | 'car2' | 'both';
+
+/**
+ * Parameters for installing a pending part
+ */
+export interface InstallPartParams {
+  pendingPartId: string;
+  choice: PartInstallationChoice;
+}
+
+// =============================================================================
 // TESTING TYPES
 // =============================================================================
 
@@ -228,6 +245,9 @@ export const IpcChannels = {
   TESTING_START: 'testing:start',
   TESTING_STOP: 'testing:stop',
   TESTING_SET_ALLOCATION: 'testing:setAllocation',
+
+  // Parts Installation
+  PARTS_INSTALL: 'parts:install',
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];
@@ -404,6 +424,12 @@ export interface IpcInvokeMap {
   };
   [IpcChannels.TESTING_SET_ALLOCATION]: {
     args: [params: SetTestAllocationParams];
+    result: GameState;
+  };
+
+  // Parts Installation
+  [IpcChannels.PARTS_INSTALL]: {
+    args: [params: InstallPartParams];
     result: GameState;
   };
 }
