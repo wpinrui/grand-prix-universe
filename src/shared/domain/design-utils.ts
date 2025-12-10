@@ -522,6 +522,13 @@ export const BASE_DEVELOPMENT_WORK_UNITS = 2000;
 export const WORK_UNITS_PER_PAYOFF_POINT = 300;
 
 /**
+ * Approximate work units per day for a typical team
+ * Used for rough time estimates when detailed calculation isn't available
+ * Based on: ~300 staff ability × 50% allocation × 1.2 facility multiplier
+ */
+export const TYPICAL_WORK_UNITS_PER_DAY = 180;
+
+/**
  * Chief designer bonus to breakthrough probability (per point of ability)
  * A 100-ability chief adds 50% to breakthrough chance
  */

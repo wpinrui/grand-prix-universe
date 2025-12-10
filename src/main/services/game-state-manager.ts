@@ -93,6 +93,8 @@ import {
   HANDLING_PROBLEM_DISPLAY_NAMES,
   getProjectedMilestones,
   ChiefRole,
+  CHASSIS_STAGE_ORDER,
+  TYPICAL_WORK_UNITS_PER_DAY,
 } from '../../shared/domain';
 import type {
   EmailData,
@@ -1038,12 +1040,7 @@ function applyDesignUpdates(
     // Chassis stage completions
     for (const completion of update.chassisStageCompletions) {
       const stageName = CHASSIS_STAGE_DISPLAY_NAMES[completion.stage];
-      const stageIndex = [
-        ChassisDesignStage.Design,
-        ChassisDesignStage.CFD,
-        ChassisDesignStage.Model,
-        ChassisDesignStage.WindTunnel,
-      ].indexOf(completion.stage);
+      const stageIndex = CHASSIS_STAGE_ORDER.indexOf(completion.stage);
       const chassisYear = update.updatedDesignState.nextYearChassis?.targetYear ?? 0;
       const body = `The ${stageName} stage of next year's chassis design is now complete. ` +
         `The new efficiency rating is ${completion.newEfficiencyRating.toFixed(1)}. ` +
@@ -1079,8 +1076,7 @@ function applyDesignUpdates(
       const body = `Excellent news! Our research into ${techName} ${attrShortName} has yielded a breakthrough. ` +
         `We've discovered an improvement worth +${breakthrough.statIncrease} points. ` +
         `The development team is now working to implement this into a production-ready component.`;
-      // Estimate days from work units (rough estimate: ~180 work units/day for typical team)
-      const estimatedDays = Math.ceil(breakthrough.workUnitsRequired / 180);
+      const estimatedDays = Math.ceil(breakthrough.workUnitsRequired / TYPICAL_WORK_UNITS_PER_DAY);
       const data: TechBreakthroughData = {
         category: EmailCategory.TechBreakthrough,
         component: breakthrough.component,

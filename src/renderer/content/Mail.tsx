@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { User, ChevronDown, ChevronRight, Search, ArrowRight } from 'lucide-react';
 import { useDerivedGameState } from '../hooks';
 import { SectionHeading, Dropdown, EntityLink } from '../components';
-import { CalendarEventType, EmailCategory, CHASSIS_STAGE_DISPLAY_NAMES, ChassisDesignStage } from '../../shared/domain';
+import { CalendarEventType, EmailCategory, CHASSIS_STAGE_DISPLAY_NAMES, CHASSIS_STAGE_ORDER } from '../../shared/domain';
 import { useEntityNavigation } from '../utils/entity-navigation';
 import type {
   CalendarEvent,
@@ -323,14 +323,6 @@ function EmailListPanel({
 // RICH DETAIL RENDERERS
 // ===========================================
 
-// Ordered stage names for progress display
-const CHASSIS_STAGE_ORDER = [
-  ChassisDesignStage.Design,
-  ChassisDesignStage.CFD,
-  ChassisDesignStage.Model,
-  ChassisDesignStage.WindTunnel,
-];
-
 // Shared helper to find chief by ID
 function findChief(chiefId: string | undefined, chiefs: Chief[]): Chief | null {
   return chiefId ? chiefs.find((c) => c.id === chiefId) ?? null : null;
@@ -479,7 +471,7 @@ function TechDevelopmentDetail({ data, chiefs }: TechDevelopmentDetailProps) {
         <div className="h-2 bg-[var(--neutral-600)] rounded overflow-hidden">
           <div
             className="h-full bg-purple-500 transition-all"
-            style={{ width: `${data.newValue}%` }}
+            style={{ width: `${Math.min(data.newValue, 100)}%` }}
           />
         </div>
       </div>
