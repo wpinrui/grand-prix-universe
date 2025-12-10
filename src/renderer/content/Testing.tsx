@@ -177,7 +177,7 @@ function SetupState({
             onChange={onMechanicsChange}
             staffCount={mechanicCount}
             label="Mechanic Allocation"
-            helperText="Higher allocation = faster test completion."
+            helperText={`Using ${Math.round((mechanicsAllocated / 100) * mechanicCount)} of ${mechanicCount} mechanics (${mechanicCount - Math.round((mechanicsAllocated / 100) * mechanicCount)} remaining)`}
           />
 
           {/* Estimated Time */}
