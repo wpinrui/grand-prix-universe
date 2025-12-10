@@ -7,6 +7,13 @@
 import { app, ipcMain, shell } from 'electron';
 import * as path from 'path';
 import { IpcChannels } from '../../shared/ipc';
+import type {
+  StartTechProjectParams,
+  CancelTechProjectParams,
+  SetTechAllocationParams,
+  SetCurrentYearProblemParams,
+  SetCurrentYearAllocationParams,
+} from '../../shared/ipc';
 import type { NewGameParams, EventQuery } from '../../shared/domain';
 import { queryEvents } from '../../shared/domain';
 import { ConfigLoader, GameStateManager, SaveManager } from '../services';
@@ -143,4 +150,43 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IpcChannels.DESIGN_SET_NEXT_YEAR_ALLOCATION, (_event, allocation: number) => {
     return GameStateManager.setNextYearChassisAllocation(allocation);
   });
+
+  ipcMain.handle(
+    IpcChannels.DESIGN_START_TECH_PROJECT,
+    (_event, params: StartTechProjectParams) => {
+      return GameStateManager.startTechProject(params.component, params.attribute);
+    }
+  );
+
+  ipcMain.handle(
+    IpcChannels.DESIGN_CANCEL_TECH_PROJECT,
+    (_event, params: CancelTechProjectParams) => {
+      return GameStateManager.cancelTechProject(params.component, params.attribute);
+    }
+  );
+
+  ipcMain.handle(
+    IpcChannels.DESIGN_SET_TECH_ALLOCATION,
+    (_event, params: SetTechAllocationParams) => {
+      return GameStateManager.setTechAllocation(
+        params.component,
+        params.attribute,
+        params.allocation
+      );
+    }
+  );
+
+  ipcMain.handle(
+    IpcChannels.DESIGN_SET_CURRENT_YEAR_PROBLEM,
+    (_event, params: SetCurrentYearProblemParams) => {
+      return GameStateManager.setCurrentYearProblem(params.problem);
+    }
+  );
+
+  ipcMain.handle(
+    IpcChannels.DESIGN_SET_CURRENT_YEAR_ALLOCATION,
+    (_event, params: SetCurrentYearAllocationParams) => {
+      return GameStateManager.setCurrentYearAllocation(params.allocation);
+    }
+  );
 }

@@ -66,6 +66,7 @@ import type {
   TechnologyLevel,
   CurrentYearChassisState,
   HandlingProblemState,
+  TechnologyDesignProject,
 } from '../../shared/domain';
 import {
   GamePhase,
@@ -73,6 +74,8 @@ import {
   ManufacturerType,
   ManufacturerDealType,
   TechnologyComponent,
+  TechnologyAttribute,
+  TechnologyProjectPhase,
   HandlingProblem,
   ChassisDesignStage,
   hasRaceSeat,
@@ -210,6 +213,28 @@ const MAX_PERCENTAGE = 100;
  */
 function clampPercentage(value: number): number {
   return Math.max(0, Math.min(MAX_PERCENTAGE, value));
+}
+
+/**
+ * Gets the player's design state, throwing if no game is active.
+ * Used by design-related GameStateManager methods to reduce boilerplate.
+ */
+function getPlayerDesignState(): { state: GameState; designState: DesignState } {
+  const state = GameStateManager.currentState;
+  if (!state) {
+    throw new Error('No active game');
+  }
+  const playerTeamId = state.player.teamId;
+  const teamState = state.teamStates[playerTeamId];
+  return { state, designState: teamState.designState };
+}
+
+/**
+ * Creates a predicate for finding technology projects by component and attribute.
+ */
+function matchesTechProject(component: TechnologyComponent, attribute: TechnologyAttribute) {
+  return (p: TechnologyDesignProject): boolean =>
+    p.component === component && p.attribute === attribute;
 }
 
 /**
@@ -1420,14 +1445,7 @@ export const GameStateManager = {
    * Creates a new ChassisDesign if none exists.
    */
   startNextYearChassis(): GameState {
-    const state = GameStateManager.currentState;
-    if (!state) {
-      throw new Error('No active game');
-    }
-
-    const playerTeamId = state.playerInfo.teamId;
-    const teamState = state.teamStates[playerTeamId];
-    const designState = teamState.designState;
+    const { state, designState } = getPlayerDesignState();
 
     // Already started
     if (designState.nextYearChassis !== null) {
@@ -1459,22 +1477,137 @@ export const GameStateManager = {
    * @param allocation - Percentage of designers (0-100)
    */
   setNextYearChassisAllocation(allocation: number): GameState {
-    const state = GameStateManager.currentState;
-    if (!state) {
-      throw new Error('No active game');
-    }
-
-    const playerTeamId = state.playerInfo.teamId;
-    const teamState = state.teamStates[playerTeamId];
-    const designState = teamState.designState;
+    const { state, designState } = getPlayerDesignState();
 
     if (!designState.nextYearChassis) {
       throw new Error('No next year chassis design in progress');
     }
 
     // Clamp allocation to valid range
-    const clampedAllocation = Math.max(0, Math.min(100, allocation));
-    designState.nextYearChassis.designersAssigned = clampedAllocation;
+    designState.nextYearChassis.designersAssigned = clampPercentage(allocation);
+
+    return state;
+  },
+
+  /**
+   * Starts a technology design project in Discovery phase.
+   * @param component - Which technology component (brakes, gearbox, etc.)
+   * @param attribute - Which attribute (performance or reliability)
+   */
+  startTechProject(component: TechnologyComponent, attribute: TechnologyAttribute): GameState {
+    const { state, designState } = getPlayerDesignState();
+
+    // Check if project already exists for this component/attribute
+    const existingProject = designState.activeTechnologyProjects.find(
+      matchesTechProject(component, attribute)
+    );
+    if (existingProject) {
+      throw new Error(`Project already exists for ${component} ${attribute}`);
+    }
+
+    // Create new project in Discovery phase
+    const newProject: TechnologyDesignProject = {
+      component,
+      attribute,
+      phase: TechnologyProjectPhase.Discovery,
+      designersAssigned: 0,
+      startedAt: { ...state.currentDate },
+      payoff: null,
+      workUnitsRequired: null,
+      workUnitsCompleted: 0,
+    };
+
+    designState.activeTechnologyProjects.push(newProject);
+
+    return state;
+  },
+
+  /**
+   * Cancels a technology design project.
+   * @param component - Which technology component
+   * @param attribute - Which attribute
+   */
+  cancelTechProject(component: TechnologyComponent, attribute: TechnologyAttribute): GameState {
+    const { state, designState } = getPlayerDesignState();
+
+    const projectIndex = designState.activeTechnologyProjects.findIndex(
+      matchesTechProject(component, attribute)
+    );
+
+    if (projectIndex === -1) {
+      throw new Error(`No project found for ${component} ${attribute}`);
+    }
+
+    // Remove the project (sunk cost)
+    designState.activeTechnologyProjects.splice(projectIndex, 1);
+
+    return state;
+  },
+
+  /**
+   * Sets the designer allocation for a technology project.
+   * @param component - Which technology component
+   * @param attribute - Which attribute
+   * @param allocation - Percentage of designers (0-100)
+   */
+  setTechAllocation(
+    component: TechnologyComponent,
+    attribute: TechnologyAttribute,
+    allocation: number
+  ): GameState {
+    const { state, designState } = getPlayerDesignState();
+
+    const project = designState.activeTechnologyProjects.find(
+      matchesTechProject(component, attribute)
+    );
+
+    if (!project) {
+      throw new Error(`No project found for ${component} ${attribute}`);
+    }
+
+    // Clamp allocation to valid range
+    project.designersAssigned = clampPercentage(allocation);
+
+    return state;
+  },
+
+  /**
+   * Sets which handling problem to work on for current year chassis.
+   * @param problem - Which handling problem to work on, or null to stop
+   */
+  setCurrentYearProblem(problem: HandlingProblem | null): GameState {
+    const { state, designState } = getPlayerDesignState();
+
+    // If setting a problem, verify it's discovered
+    if (problem !== null) {
+      const problemState = designState.currentYearChassis.problems.find(
+        (p) => p.problem === problem
+      );
+      if (!problemState) {
+        throw new Error(`Unknown handling problem: ${problem}`);
+      }
+      if (!problemState.discovered) {
+        throw new Error(`Handling problem ${problem} has not been discovered yet`);
+      }
+      if (problemState.solutionDesigned) {
+        throw new Error(`Solution for ${problem} has already been designed`);
+      }
+    }
+
+    designState.currentYearChassis.activeDesignProblem = problem;
+
+    return state;
+  },
+
+  /**
+   * Sets the designer allocation for current year chassis work.
+   * @param allocation - Percentage of designers (0-100)
+   */
+  setCurrentYearAllocation(allocation: number): GameState {
+    const { state, designState } = getPlayerDesignState();
+
+    // Clamp allocation to valid range
+    designState.currentYearChassis.designersAssigned = clampPercentage(allocation);
 
     return state;
   },

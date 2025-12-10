@@ -21,6 +21,9 @@ import type {
   GameDate,
   GameEvent,
   EventQuery,
+  TechnologyComponent,
+  TechnologyAttribute,
+  HandlingProblem,
 } from './domain';
 import type { TurnBlocked, DayStopReason } from './domain/engines';
 
@@ -103,6 +106,45 @@ export interface SimulationResult {
   error?: string;
 }
 
+// =============================================================================
+// DESIGN TYPES
+// =============================================================================
+
+/**
+ * Identifies a technology project by component and attribute
+ */
+export interface TechProjectIdentifier {
+  component: TechnologyComponent;
+  attribute: TechnologyAttribute;
+}
+
+/** Parameters for starting a technology project */
+export type StartTechProjectParams = TechProjectIdentifier;
+
+/** Parameters for cancelling a technology project */
+export type CancelTechProjectParams = TechProjectIdentifier;
+
+/**
+ * Parameters for setting technology project allocation
+ */
+export interface SetTechAllocationParams extends TechProjectIdentifier {
+  allocation: number; // 0-100
+}
+
+/**
+ * Parameters for setting current year chassis problem to work on
+ */
+export interface SetCurrentYearProblemParams {
+  problem: HandlingProblem | null; // null = stop working on any problem
+}
+
+/**
+ * Parameters for setting current year chassis allocation
+ */
+export interface SetCurrentYearAllocationParams {
+  allocation: number; // 0-100
+}
+
 /**
  * Payload sent on each simulation tick (day advancement)
  * Pushed from main -> renderer via IPC event
@@ -157,6 +199,11 @@ export const IpcChannels = {
   // Design
   DESIGN_START_NEXT_YEAR: 'design:startNextYear',
   DESIGN_SET_NEXT_YEAR_ALLOCATION: 'design:setNextYearAllocation',
+  DESIGN_START_TECH_PROJECT: 'design:startTechProject',
+  DESIGN_CANCEL_TECH_PROJECT: 'design:cancelTechProject',
+  DESIGN_SET_TECH_ALLOCATION: 'design:setTechAllocation',
+  DESIGN_SET_CURRENT_YEAR_PROBLEM: 'design:setCurrentYearProblem',
+  DESIGN_SET_CURRENT_YEAR_ALLOCATION: 'design:setCurrentYearAllocation',
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];
@@ -299,6 +346,26 @@ export interface IpcInvokeMap {
   };
   [IpcChannels.DESIGN_SET_NEXT_YEAR_ALLOCATION]: {
     args: [allocation: number];
+    result: GameState;
+  };
+  [IpcChannels.DESIGN_START_TECH_PROJECT]: {
+    args: [params: StartTechProjectParams];
+    result: GameState;
+  };
+  [IpcChannels.DESIGN_CANCEL_TECH_PROJECT]: {
+    args: [params: CancelTechProjectParams];
+    result: GameState;
+  };
+  [IpcChannels.DESIGN_SET_TECH_ALLOCATION]: {
+    args: [params: SetTechAllocationParams];
+    result: GameState;
+  };
+  [IpcChannels.DESIGN_SET_CURRENT_YEAR_PROBLEM]: {
+    args: [params: SetCurrentYearProblemParams];
+    result: GameState;
+  };
+  [IpcChannels.DESIGN_SET_CURRENT_YEAR_ALLOCATION]: {
+    args: [params: SetCurrentYearAllocationParams];
     result: GameState;
   };
 }
