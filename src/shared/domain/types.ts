@@ -915,6 +915,43 @@ export interface CalendarEvent {
   data?: EmailData;  // Structured data for rich detail panel rendering
 }
 
+// -----------------------------------------------------------------------------
+// Parts & Repairs Log
+// -----------------------------------------------------------------------------
+
+/**
+ * PartsLogEntryType - Type of entry in the parts log
+ */
+export enum PartsLogEntryType {
+  Upgrade = 'upgrade',
+  Repair = 'repair',
+}
+
+/**
+ * PartsLogEntry - A single entry in the parts & repairs history log
+ *
+ * Records all part installations and repair costs for the Construction screen.
+ * Each part installation creates one or two entries (depending on rush option).
+ * Each post-race repair creates two entries (one per car).
+ */
+export interface PartsLogEntry {
+  id: string;
+  date: GameDate;
+  seasonNumber: number;
+  type: PartsLogEntryType;
+  /** Display name: "Brakes Performance +6" or "Post-Race Repair" */
+  item: string;
+  cost: number;
+  /** Driver assigned to this car at time of entry (for EntityLink) */
+  driverId: string;
+  /** Which car received the part/repair */
+  carNumber: 1 | 2;
+  /** True for "BOTH" installations (rush) */
+  rushed?: boolean;
+  /** For repairs: "Minor collision", "Routine", "DNF (crash)", etc. */
+  repairDetails?: string;
+}
+
 /**
  * PlayerInfo - Information about the human player
  */
@@ -1183,6 +1220,9 @@ export interface GameState {
   // Events (for Player Wiki, News, relationships, engine simulations)
   // See proposal.md > Events Infrastructure for full documentation
   events: GameEvent[];
+
+  // Parts & Repairs Log (for Construction screen history)
+  partsLog: PartsLogEntry[];
 
   // Game Rules (copied from config, could theoretically change)
   rules: GameRules;

@@ -661,6 +661,7 @@ function buildGameState(params: BuildGameStateParams): GameState {
 
     pastSeasons: [],
     events: [],
+    partsLog: [],
     rules,
   };
 }
