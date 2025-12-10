@@ -55,6 +55,8 @@ import type {
   TeamStateChange,
   ChampionshipStandings,
   ChassisStageCompletion,
+  TechnologyBreakthrough,
+  DesignCompletion,
 } from '../../shared/domain/engines';
 
 import type {
@@ -89,6 +91,10 @@ import {
 import {
   calculateDailyWorkUnits,
   processChassisDay,
+  processTechnologyProjectDay,
+  processCurrentYearChassisDay,
+  applyTechnologyPayoff,
+  HANDLING_SOLUTION_STAT_INCREASE,
 } from '../../shared/domain/design-utils';
 
 export class StubRaceEngine implements IRaceEngine {
@@ -108,6 +114,8 @@ export class StubDesignEngine implements IDesignEngine {
     // Start with unchanged state
     let updatedDesignState = { ...designState };
     const chassisStageCompletions: ChassisStageCompletion[] = [];
+    const breakthroughs: TechnologyBreakthrough[] = [];
+    const completions: DesignCompletion[] = [];
 
     // Process next year chassis if exists and has designers assigned
     if (designState.nextYearChassis && designState.nextYearChassis.designersAssigned > 0) {
@@ -139,10 +147,112 @@ export class StubDesignEngine implements IDesignEngine {
       }
     }
 
+    // Process technology projects
+    const updatedTechnologyProjects = [...designState.activeTechnologyProjects];
+    const projectsToRemove: number[] = [];
+
+    for (let i = 0; i < updatedTechnologyProjects.length; i++) {
+      const project = updatedTechnologyProjects[i];
+
+      // Calculate work units for this project
+      const workUnits = calculateDailyWorkUnits({
+        staffCounts: staffCounts.design,
+        facilities,
+        chiefDesigner,
+        percentAllocated: project.designersAssigned,
+      });
+
+      const result = processTechnologyProjectDay(
+        project,
+        workUnits,
+        chiefDesigner,
+        facilities
+      );
+
+      updatedTechnologyProjects[i] = result.updatedProject;
+
+      // Record breakthrough if discovered
+      if (result.breakthroughDiscovered && result.payoff !== null && result.workUnitsRequired !== null) {
+        breakthroughs.push({
+          component: project.component,
+          attribute: project.attribute,
+          statIncrease: result.payoff,
+          workUnitsRequired: result.workUnitsRequired,
+          estimatedCompletionDate: input.currentDate, // Simplified - real impl would calculate
+        });
+      }
+
+      // Record completion and mark for removal
+      if (result.developmentCompleted && result.payoff !== null) {
+        completions.push({
+          type: 'technology',
+          component: project.component,
+          attribute: project.attribute,
+          statIncrease: result.payoff,
+        });
+        projectsToRemove.push(i);
+
+        // Apply stat increase to technology levels
+        updatedDesignState = {
+          ...updatedDesignState,
+          technologyLevels: applyTechnologyPayoff(
+            updatedDesignState.technologyLevels,
+            project.component,
+            project.attribute,
+            result.payoff
+          ),
+        };
+      }
+    }
+
+    // Remove completed projects (iterate backwards to preserve indices)
+    for (let i = projectsToRemove.length - 1; i >= 0; i--) {
+      updatedTechnologyProjects.splice(projectsToRemove[i], 1);
+    }
+
+    updatedDesignState = {
+      ...updatedDesignState,
+      activeTechnologyProjects: updatedTechnologyProjects,
+    };
+
+    // Process current year chassis if has designers assigned
+    if (designState.currentYearChassis.designersAssigned > 0) {
+      const workUnits = calculateDailyWorkUnits({
+        staffCounts: staffCounts.design,
+        facilities,
+        chiefDesigner,
+        percentAllocated: designState.currentYearChassis.designersAssigned,
+      });
+
+      const currentYearResult = processCurrentYearChassisDay(
+        designState.currentYearChassis,
+        workUnits,
+        designState.currentYearChassis.accumulatedSolutionWorkUnits
+      );
+
+      // Persist accumulated work units to avoid losing partial progress
+      updatedDesignState = {
+        ...updatedDesignState,
+        currentYearChassis: {
+          ...currentYearResult.updatedState,
+          accumulatedSolutionWorkUnits: currentYearResult.accumulatedWorkUnits,
+        },
+      };
+
+      // Record handling solution completion
+      if (currentYearResult.completedSolution) {
+        completions.push({
+          type: 'handling-solution',
+          problem: currentYearResult.completedSolution,
+          statIncrease: HANDLING_SOLUTION_STAT_INCREASE,
+        });
+      }
+    }
+
     return {
       updatedDesignState,
-      breakthroughs: [], // Technology breakthroughs - future PR
-      completions: [], // Technology completions - future PR
+      breakthroughs,
+      completions,
       chassisStageCompletions,
     };
   }

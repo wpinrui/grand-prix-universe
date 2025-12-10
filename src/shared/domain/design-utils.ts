@@ -13,8 +13,20 @@ import type {
   StaffCounts,
   ChassisDesign,
   ChassisStageProgress,
+  TechnologyDesignProject,
+  TechnologyLevel,
+  HandlingProblemState,
+  CurrentYearChassisState,
 } from './types';
-import { ChassisDesignStage, FacilityType, StaffQuality } from './types';
+import {
+  ChassisDesignStage,
+  FacilityType,
+  StaffQuality,
+  TechnologyProjectPhase,
+  TechnologyComponent,
+  TechnologyAttribute,
+  HandlingProblem,
+} from './types';
 
 // =============================================================================
 // CONSTANTS
@@ -389,5 +401,555 @@ export function processChassisDay(
     completedStage,
     blocked: false,
     missingFacility: null,
+  };
+}
+
+// =============================================================================
+// TECHNOLOGY LEVEL HELPERS
+// =============================================================================
+
+/**
+ * Apply a technology payoff (stat increase) to technology levels
+ *
+ * @param technologyLevels - Current technology levels array
+ * @param component - The technology component to update
+ * @param attribute - Performance or Reliability
+ * @param payoff - Stat increase amount
+ * @returns New technology levels array with the update applied
+ */
+export function applyTechnologyPayoff(
+  technologyLevels: TechnologyLevel[],
+  component: TechnologyComponent,
+  attribute: TechnologyAttribute,
+  payoff: number
+): TechnologyLevel[] {
+  return technologyLevels.map((tech) => {
+    if (tech.component !== component) return tech;
+
+    if (attribute === TechnologyAttribute.Performance) {
+      return { ...tech, performance: Math.min(100, tech.performance + payoff) };
+    }
+    return { ...tech, reliability: Math.min(100, tech.reliability + payoff) };
+  });
+}
+
+// =============================================================================
+// TECHNOLOGY BREAKTHROUGH CONSTANTS
+// =============================================================================
+
+/**
+ * Base probability of discovering a breakthrough per day (with 100% allocation)
+ * A team with average setup (~5% daily chance) discovers a breakthrough every ~20 days
+ */
+export const BASE_BREAKTHROUGH_PROBABILITY = 0.05;
+
+/**
+ * Minimum payoff for a technology breakthrough (stat increase)
+ */
+export const MIN_BREAKTHROUGH_PAYOFF = 3;
+
+/**
+ * Maximum payoff for a technology breakthrough (stat increase)
+ */
+export const MAX_BREAKTHROUGH_PAYOFF = 12;
+
+/**
+ * Base work units required to complete breakthrough development
+ * Actual requirement varies based on payoff (higher payoff = more work)
+ */
+export const BASE_DEVELOPMENT_WORK_UNITS = 2000;
+
+/**
+ * Work units per payoff point (higher payoff = more development time)
+ */
+export const WORK_UNITS_PER_PAYOFF_POINT = 300;
+
+/**
+ * Chief designer bonus to breakthrough probability (per point of ability)
+ * A 100-ability chief adds 50% to breakthrough chance
+ */
+export const CHIEF_BREAKTHROUGH_PROBABILITY_BONUS = 0.005;
+
+/**
+ * Facility bonus to breakthrough probability (per facility level)
+ */
+export const FACILITY_BREAKTHROUGH_BONUS: Partial<Record<FacilityType, number>> = {
+  [FacilityType.CAD]: 0.01, // +1% per level
+  [FacilityType.Supercomputer]: 0.02, // +2% per level
+};
+
+/**
+ * Chief designer bonus to payoff (ability scaled)
+ * A 100-ability chief adds up to 3 extra payoff points
+ */
+export const CHIEF_MAX_PAYOFF_BONUS = 3;
+
+// =============================================================================
+// TECHNOLOGY BREAKTHROUGH FUNCTIONS
+// =============================================================================
+
+/**
+ * Calculate the daily probability of discovering a breakthrough
+ *
+ * @param percentAllocated - Designer capacity allocated to this project (0-100)
+ * @param chiefDesigner - Chief designer (null if position vacant)
+ * @param facilities - Factory facilities
+ * @returns Probability (0-1) of discovering a breakthrough today
+ */
+export function calculateBreakthroughProbability(
+  percentAllocated: number,
+  chiefDesigner: Chief | null,
+  facilities: Facility[]
+): number {
+  if (percentAllocated <= 0) return 0;
+
+  // Base probability scaled by allocation
+  let probability = BASE_BREAKTHROUGH_PROBABILITY * (percentAllocated / 100);
+
+  // Chief designer bonus
+  if (chiefDesigner) {
+    probability += chiefDesigner.ability * CHIEF_BREAKTHROUGH_PROBABILITY_BONUS;
+  }
+
+  // Facility bonuses
+  for (const facility of facilities) {
+    const bonus = FACILITY_BREAKTHROUGH_BONUS[facility.type];
+    if (bonus !== undefined && facility.quality > 0) {
+      probability += bonus * facility.quality;
+    }
+  }
+
+  return Math.min(1, probability); // Cap at 100%
+}
+
+/**
+ * Generate breakthrough parameters (payoff and work units required)
+ *
+ * @param chiefDesigner - Chief designer (null if position vacant)
+ * @param randomSeed - Optional seed for deterministic testing
+ * @returns Payoff amount and work units required
+ */
+export function generateBreakthroughParams(
+  chiefDesigner: Chief | null,
+  randomSeed?: number
+): { payoff: number; workUnitsRequired: number } {
+  const random = randomSeed !== undefined ? seededRandom(randomSeed) : Math.random();
+
+  // Calculate payoff range
+  let maxPayoff = MAX_BREAKTHROUGH_PAYOFF;
+  if (chiefDesigner) {
+    maxPayoff += Math.floor((chiefDesigner.ability / 100) * CHIEF_MAX_PAYOFF_BONUS);
+  }
+
+  // Random payoff in range
+  const payoff = MIN_BREAKTHROUGH_PAYOFF + Math.floor(random * (maxPayoff - MIN_BREAKTHROUGH_PAYOFF + 1));
+
+  // Work units scale with payoff
+  const workUnitsRequired = BASE_DEVELOPMENT_WORK_UNITS + payoff * WORK_UNITS_PER_PAYOFF_POINT;
+
+  return { payoff, workUnitsRequired };
+}
+
+/**
+ * Result of processing a day of technology project work
+ */
+export interface TechnologyProjectResult {
+  /** Updated project (with new work units, phase transition, etc.) */
+  updatedProject: TechnologyDesignProject;
+  /** True if breakthrough was discovered this day (Discovery → Development) */
+  breakthroughDiscovered: boolean;
+  /** True if development was completed this day */
+  developmentCompleted: boolean;
+  /** Payoff amount (only set if breakthrough discovered or development completed) */
+  payoff: number | null;
+  /** Work units required (only set if breakthrough discovered) */
+  workUnitsRequired: number | null;
+}
+
+/**
+ * Process a day of work on a technology project
+ *
+ * Handles both Discovery and Development phases:
+ * - Discovery: Daily probability check for breakthrough
+ * - Development: Work unit accumulation toward completion
+ *
+ * @param project - Current project state
+ * @param workUnits - Work units produced this day
+ * @param chiefDesigner - Chief designer (for breakthrough params)
+ * @param facilities - Factory facilities (for breakthrough probability)
+ * @param randomSeed - Optional seed for deterministic testing
+ * @returns Updated project state and events
+ */
+export function processTechnologyProjectDay(
+  project: TechnologyDesignProject,
+  workUnits: number,
+  chiefDesigner: Chief | null,
+  facilities: Facility[],
+  randomSeed?: number
+): TechnologyProjectResult {
+  const random = randomSeed !== undefined ? seededRandom(randomSeed) : Math.random();
+
+  // Discovery phase: check for breakthrough
+  if (project.phase === TechnologyProjectPhase.Discovery) {
+    const probability = calculateBreakthroughProbability(
+      project.designersAssigned,
+      chiefDesigner,
+      facilities
+    );
+
+    if (random < probability) {
+      // Breakthrough discovered! Generate params and transition to Development
+      const { payoff, workUnitsRequired } = generateBreakthroughParams(
+        chiefDesigner,
+        randomSeed !== undefined ? randomSeed + 1 : undefined
+      );
+
+      return {
+        updatedProject: {
+          ...project,
+          phase: TechnologyProjectPhase.Development,
+          payoff,
+          workUnitsRequired,
+          workUnitsCompleted: 0,
+        },
+        breakthroughDiscovered: true,
+        developmentCompleted: false,
+        payoff,
+        workUnitsRequired,
+      };
+    }
+
+    // No breakthrough yet
+    return {
+      updatedProject: project,
+      breakthroughDiscovered: false,
+      developmentCompleted: false,
+      payoff: null,
+      workUnitsRequired: null,
+    };
+  }
+
+  // Development phase: accumulate work units
+  const newWorkUnitsCompleted = project.workUnitsCompleted + workUnits;
+  const isComplete =
+    project.workUnitsRequired !== null && newWorkUnitsCompleted >= project.workUnitsRequired;
+
+  return {
+    updatedProject: {
+      ...project,
+      workUnitsCompleted: newWorkUnitsCompleted,
+    },
+    breakthroughDiscovered: false,
+    developmentCompleted: isComplete,
+    payoff: isComplete ? project.payoff : null,
+    workUnitsRequired: null,
+  };
+}
+
+// =============================================================================
+// CURRENT YEAR CHASSIS (HANDLING PROBLEMS) CONSTANTS
+// =============================================================================
+
+/**
+ * Work units required to earn 1 point of solution progress (0-10 scale)
+ * Same as chassis stage progress for consistency
+ */
+export const WORK_UNITS_PER_SOLUTION_POINT = 500;
+
+/**
+ * Maximum solution progress (10 points = solution designed)
+ */
+export const MAX_SOLUTION_PROGRESS = 10;
+
+/**
+ * Fixed stat improvement when a handling solution is completed
+ * Represents general handling improvement from fixing a problem
+ */
+export const HANDLING_SOLUTION_STAT_INCREASE = 5;
+
+// =============================================================================
+// CURRENT YEAR CHASSIS FUNCTIONS
+// =============================================================================
+
+/**
+ * Result of processing a day of handling problem solution work
+ */
+export interface HandlingSolutionResult {
+  /** Updated handling problem state */
+  updatedProblem: HandlingProblemState;
+  /** True if solution was completed this day */
+  solutionCompleted: boolean;
+}
+
+/**
+ * Process a day of work on a handling problem solution
+ *
+ * Unlike technology breakthroughs, handling solution progress is deterministic
+ * once a problem is discovered through testing.
+ *
+ * @param problem - Current problem state
+ * @param workUnits - Work units produced this day
+ * @param accumulatedWorkUnits - Previous accumulated work (partial progress)
+ * @returns Updated problem state and completion flag
+ */
+export function processHandlingSolutionDay(
+  problem: HandlingProblemState,
+  workUnits: number,
+  accumulatedWorkUnits: number
+): { result: HandlingSolutionResult; newAccumulatedWorkUnits: number } {
+  // Skip if not discovered or already designed
+  if (!problem.discovered || problem.solutionDesigned) {
+    return {
+      result: {
+        updatedProblem: problem,
+        solutionCompleted: false,
+      },
+      newAccumulatedWorkUnits: accumulatedWorkUnits,
+    };
+  }
+
+  // Accumulate work units
+  let accumulated = accumulatedWorkUnits + workUnits;
+  let progress = problem.solutionProgress;
+
+  // Convert accumulated work units to progress points
+  while (accumulated >= WORK_UNITS_PER_SOLUTION_POINT && progress < MAX_SOLUTION_PROGRESS) {
+    accumulated -= WORK_UNITS_PER_SOLUTION_POINT;
+    progress += 1;
+  }
+
+  // Check if solution just completed
+  const solutionCompleted = progress >= MAX_SOLUTION_PROGRESS && !problem.solutionDesigned;
+
+  return {
+    result: {
+      updatedProblem: {
+        ...problem,
+        solutionProgress: progress,
+        solutionDesigned: solutionCompleted || problem.solutionDesigned,
+      },
+      solutionCompleted,
+    },
+    newAccumulatedWorkUnits: accumulated,
+  };
+}
+
+/**
+ * Result of processing a day of current year chassis work
+ */
+export interface CurrentYearChassisResult {
+  /** Updated current year chassis state */
+  updatedState: CurrentYearChassisState;
+  /** Problem that had its solution completed this day, if any */
+  completedSolution: HandlingProblem | null;
+  /** Accumulated work units (for partial progress tracking) */
+  accumulatedWorkUnits: number;
+}
+
+/**
+ * Process a day of work on current year chassis improvements
+ *
+ * Works on the active design problem (if any) to create a solution.
+ *
+ * @param state - Current year chassis state
+ * @param workUnits - Work units produced this day
+ * @param accumulatedWorkUnits - Previous accumulated work (partial progress)
+ * @returns Updated state and any completion event
+ */
+export function processCurrentYearChassisDay(
+  state: CurrentYearChassisState,
+  workUnits: number,
+  accumulatedWorkUnits: number
+): CurrentYearChassisResult {
+  // No active problem being worked on
+  if (!state.activeDesignProblem) {
+    return {
+      updatedState: state,
+      completedSolution: null,
+      accumulatedWorkUnits,
+    };
+  }
+
+  // Find the problem being worked on
+  const problemIndex = state.problems.findIndex(
+    (p: HandlingProblemState) => p.problem === state.activeDesignProblem
+  );
+
+  if (problemIndex === -1) {
+    return {
+      updatedState: state,
+      completedSolution: null,
+      accumulatedWorkUnits,
+    };
+  }
+
+  const problem = state.problems[problemIndex];
+  const { result, newAccumulatedWorkUnits } = processHandlingSolutionDay(
+    problem,
+    workUnits,
+    accumulatedWorkUnits
+  );
+
+  // Update the problems array
+  const updatedProblems = [...state.problems];
+  updatedProblems[problemIndex] = result.updatedProblem;
+
+  // Clear active problem if solution completed
+  const newActiveDesignProblem = result.solutionCompleted ? null : state.activeDesignProblem;
+
+  return {
+    updatedState: {
+      ...state,
+      problems: updatedProblems,
+      activeDesignProblem: newActiveDesignProblem,
+    },
+    completedSolution: result.solutionCompleted ? problem.problem : null,
+    accumulatedWorkUnits: result.solutionCompleted ? 0 : newAccumulatedWorkUnits,
+  };
+}
+
+// =============================================================================
+// END-OF-SEASON NORMALIZATION CONSTANTS
+// =============================================================================
+
+/**
+ * Maximum stat value after normalization (best team on grid)
+ */
+export const NORMALIZATION_MAX = 60;
+
+/**
+ * Minimum stat value after normalization (worst team on grid)
+ */
+export const NORMALIZATION_MIN = 10;
+
+// =============================================================================
+// END-OF-SEASON NORMALIZATION FUNCTIONS
+// =============================================================================
+
+/**
+ * Normalize a single stat array to the 10-60 range
+ *
+ * Best value → 60, Worst value → 10, others proportionally distributed
+ *
+ * @param values - Array of stat values to normalize
+ * @returns Array of normalized values in the same order
+ */
+export function normalizeStats(values: number[]): number[] {
+  if (values.length === 0) return [];
+  if (values.length === 1) {
+    // Single team: give them middle-of-the-road stat
+    return [Math.round((NORMALIZATION_MAX + NORMALIZATION_MIN) / 2)];
+  }
+
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+
+  // All values equal: everyone gets middle stat
+  if (max === min) {
+    return values.map(() => Math.round((NORMALIZATION_MAX + NORMALIZATION_MIN) / 2));
+  }
+
+  // Normalize each value proportionally
+  return values.map((value) => {
+    const proportion = (value - min) / (max - min);
+    return Math.round(NORMALIZATION_MIN + proportion * (NORMALIZATION_MAX - NORMALIZATION_MIN));
+  });
+}
+
+/**
+ * Input for end-of-season normalization
+ */
+export interface NormalizationInput {
+  /** Team IDs in consistent order */
+  teamIds: string[];
+  /** Technology levels for each team (keyed by team ID) */
+  technologyLevels: Record<string, TechnologyLevel[]>;
+  /** Chassis efficiency for each team (keyed by team ID) */
+  chassisEfficiency: Record<string, number>;
+}
+
+/**
+ * Result of end-of-season normalization
+ */
+export interface NormalizationResult {
+  /** Normalized technology levels (keyed by team ID) */
+  normalizedTechnologyLevels: Record<string, TechnologyLevel[]>;
+  /** Normalized chassis efficiency (keyed by team ID) */
+  normalizedChassisEfficiency: Record<string, number>;
+}
+
+/**
+ * Perform end-of-season normalization on all teams' stats
+ *
+ * Normalizes:
+ * - Each technology component's Performance (independently)
+ * - Each technology component's Reliability (independently)
+ * - Chassis efficiency rating
+ *
+ * @param input - All teams' stats to normalize
+ * @returns Normalized stats for all teams
+ */
+export function performSeasonEndNormalization(input: NormalizationInput): NormalizationResult {
+  const { teamIds, technologyLevels, chassisEfficiency } = input;
+
+  if (teamIds.length === 0) {
+    return {
+      normalizedTechnologyLevels: {},
+      normalizedChassisEfficiency: {},
+    };
+  }
+
+  // Get all technology components from first team (assume all teams have same components)
+  const firstTeamTech = technologyLevels[teamIds[0]] || [];
+  const components = firstTeamTech.map((t) => t.component);
+
+  // Normalize each technology component's performance and reliability independently
+  const normalizedTechByComponent: Record<
+    TechnologyComponent,
+    { performances: number[]; reliabilities: number[] }
+  > = {} as Record<TechnologyComponent, { performances: number[]; reliabilities: number[] }>;
+
+  // Collect values for each component
+  for (const component of components) {
+    const performances: number[] = [];
+    const reliabilities: number[] = [];
+
+    for (const teamId of teamIds) {
+      const teamTech = technologyLevels[teamId] || [];
+      const tech = teamTech.find((t) => t.component === component);
+      performances.push(tech?.performance ?? 0);
+      reliabilities.push(tech?.reliability ?? 0);
+    }
+
+    normalizedTechByComponent[component] = {
+      performances: normalizeStats(performances),
+      reliabilities: normalizeStats(reliabilities),
+    };
+  }
+
+  // Normalize chassis efficiency
+  const chassisValues = teamIds.map((id) => chassisEfficiency[id] ?? 0);
+  const normalizedChassis = normalizeStats(chassisValues);
+
+  // Build result
+  const normalizedTechnologyLevels: Record<string, TechnologyLevel[]> = {};
+  const normalizedChassisEfficiency: Record<string, number> = {};
+
+  for (let i = 0; i < teamIds.length; i++) {
+    const teamId = teamIds[i];
+
+    // Build normalized technology levels for this team
+    normalizedTechnologyLevels[teamId] = components.map((component) => ({
+      component,
+      performance: normalizedTechByComponent[component].performances[i],
+      reliability: normalizedTechByComponent[component].reliabilities[i],
+    }));
+
+    normalizedChassisEfficiency[teamId] = normalizedChassis[i];
+  }
+
+  return {
+    normalizedTechnologyLevels,
+    normalizedChassisEfficiency,
   };
 }
