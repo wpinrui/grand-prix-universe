@@ -275,6 +275,44 @@ function getPlayerDesignState(): { state: GameState; designState: DesignState } 
 }
 
 /**
+ * Gets the player's engine contract context with all related entities.
+ * Used by engine purchase operations.
+ */
+function getPlayerEngineContext(): {
+  state: GameState;
+  playerTeam: Team;
+  teamState: TeamRuntimeState;
+  engineContract: ActiveManufacturerContract;
+  manufacturer: Manufacturer;
+} {
+  const state = GameStateManager.currentState;
+  if (!state) {
+    throw new Error('No active game');
+  }
+
+  const playerTeamId = state.player.teamId;
+  const playerTeam = state.teams.find((t) => t.id === playerTeamId);
+  const teamState = state.teamStates[playerTeamId];
+  if (!playerTeam || !teamState) {
+    throw new Error('Player team not found');
+  }
+
+  const engineContract = state.manufacturerContracts.find(
+    (c) => c.teamId === playerTeamId && c.type === 'engine'
+  );
+  if (!engineContract) {
+    throw new Error('No engine contract found');
+  }
+
+  const manufacturer = state.manufacturers.find((m) => m.id === engineContract.manufacturerId);
+  if (!manufacturer) {
+    throw new Error('Engine manufacturer not found');
+  }
+
+  return { state, playerTeam, teamState, engineContract, manufacturer };
+}
+
+/**
  * Creates a predicate for finding technology projects by component and attribute.
  */
 function matchesTechProject(component: TechnologyComponent, attribute: TechnologyAttribute) {
@@ -2495,31 +2533,7 @@ export const GameStateManager = {
    * @param carNumber - Which car to upgrade (1 or 2)
    */
   buyEngineUpgrade(carNumber: 1 | 2): GameState {
-    const state = GameStateManager.currentState;
-    if (!state) {
-      throw new Error('No active game');
-    }
-
-    const playerTeamId = state.player.teamId;
-    const playerTeam = state.teams.find((t) => t.id === playerTeamId);
-    const teamState = state.teamStates[playerTeamId];
-    if (!playerTeam || !teamState) {
-      throw new Error('Player team not found');
-    }
-
-    // Find the player's engine contract
-    const engineContract = state.manufacturerContracts.find(
-      (c) => c.teamId === playerTeamId && c.type === 'engine'
-    );
-    if (!engineContract) {
-      throw new Error('No engine contract found');
-    }
-
-    // Find the manufacturer
-    const manufacturer = state.manufacturers.find((m) => m.id === engineContract.manufacturerId);
-    if (!manufacturer) {
-      throw new Error('Engine manufacturer not found');
-    }
+    const { state, playerTeam, teamState, manufacturer } = getPlayerEngineContext();
 
     // Calculate cost (use pre-negotiated if available, otherwise ad-hoc)
     let cost: number;
@@ -2552,35 +2566,11 @@ export const GameStateManager = {
    * @param quantity - Number of points to purchase
    */
   buyCustomisationPoints(quantity: number): GameState {
-    const state = GameStateManager.currentState;
-    if (!state) {
-      throw new Error('No active game');
-    }
-
     if (quantity <= 0) {
       throw new Error('Quantity must be positive');
     }
 
-    const playerTeamId = state.player.teamId;
-    const playerTeam = state.teams.find((t) => t.id === playerTeamId);
-    const teamState = state.teamStates[playerTeamId];
-    if (!playerTeam || !teamState) {
-      throw new Error('Player team not found');
-    }
-
-    // Find the player's engine contract
-    const engineContract = state.manufacturerContracts.find(
-      (c) => c.teamId === playerTeamId && c.type === 'engine'
-    );
-    if (!engineContract) {
-      throw new Error('No engine contract found');
-    }
-
-    // Find the manufacturer
-    const manufacturer = state.manufacturers.find((m) => m.id === engineContract.manufacturerId);
-    if (!manufacturer) {
-      throw new Error('Engine manufacturer not found');
-    }
+    const { state, playerTeam, teamState, manufacturer } = getPlayerEngineContext();
 
     // Calculate total cost
     const cost = manufacturer.costs.customisationPoint * quantity;
@@ -2604,16 +2594,7 @@ export const GameStateManager = {
    * @param customisation - The new customisation values for each stat
    */
   applyEngineCustomisation(carNumber: 1 | 2, customisation: EngineCustomisation): GameState {
-    const state = GameStateManager.currentState;
-    if (!state) {
-      throw new Error('No active game');
-    }
-
-    const playerTeamId = state.player.teamId;
-    const teamState = state.teamStates[playerTeamId];
-    if (!teamState) {
-      throw new Error('Player team not found');
-    }
+    const { state, teamState } = getPlayerEngineContext();
 
     // Validate the customisation is within limits
     if (!isValidCustomisation(customisation, teamState.engineState.customisationPointsOwned)) {
@@ -2635,35 +2616,11 @@ export const GameStateManager = {
    * Applies a flat bonus to all engine stats for the next year.
    */
   buyEngineOptimisation(): GameState {
-    const state = GameStateManager.currentState;
-    if (!state) {
-      throw new Error('No active game');
-    }
-
-    const playerTeamId = state.player.teamId;
-    const playerTeam = state.teams.find((t) => t.id === playerTeamId);
-    const teamState = state.teamStates[playerTeamId];
-    if (!playerTeam || !teamState) {
-      throw new Error('Player team not found');
-    }
+    const { state, playerTeam, teamState, manufacturer } = getPlayerEngineContext();
 
     // Check if already purchased
     if (teamState.engineState.optimisationPurchasedForNextSeason) {
       throw new Error('Optimisation already purchased for next season');
-    }
-
-    // Find the player's engine contract
-    const engineContract = state.manufacturerContracts.find(
-      (c) => c.teamId === playerTeamId && c.type === 'engine'
-    );
-    if (!engineContract) {
-      throw new Error('No engine contract found');
-    }
-
-    // Find the manufacturer
-    const manufacturer = state.manufacturers.find((m) => m.id === engineContract.manufacturerId);
-    if (!manufacturer) {
-      throw new Error('Engine manufacturer not found');
     }
 
     // Calculate cost

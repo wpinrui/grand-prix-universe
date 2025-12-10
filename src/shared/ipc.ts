@@ -24,6 +24,7 @@ import type {
   TechnologyComponent,
   TechnologyAttribute,
   HandlingProblem,
+  EngineCustomisation,
 } from './domain';
 import type { TurnBlocked, DayStopReason } from './domain/engines';
 
@@ -185,13 +186,7 @@ export interface BuyCustomisationPointsParams {
  */
 export interface ApplyCustomisationParams {
   carNumber: 1 | 2;
-  customisation: {
-    power: number;
-    fuelEfficiency: number;
-    reliability: number;
-    heat: number;
-    predictability: number;
-  };
+  customisation: EngineCustomisation;
 }
 
 // =============================================================================
