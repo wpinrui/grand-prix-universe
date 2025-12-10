@@ -111,27 +111,23 @@ export interface SimulationResult {
 // =============================================================================
 
 /**
- * Parameters for starting a technology project
+ * Identifies a technology project by component and attribute
  */
-export interface StartTechProjectParams {
+export interface TechProjectIdentifier {
   component: TechnologyComponent;
   attribute: TechnologyAttribute;
 }
 
-/**
- * Parameters for cancelling a technology project
- */
-export interface CancelTechProjectParams {
-  component: TechnologyComponent;
-  attribute: TechnologyAttribute;
-}
+/** Parameters for starting a technology project */
+export type StartTechProjectParams = TechProjectIdentifier;
+
+/** Parameters for cancelling a technology project */
+export type CancelTechProjectParams = TechProjectIdentifier;
 
 /**
  * Parameters for setting technology project allocation
  */
-export interface SetTechAllocationParams {
-  component: TechnologyComponent;
-  attribute: TechnologyAttribute;
+export interface SetTechAllocationParams extends TechProjectIdentifier {
   allocation: number; // 0-100
 }
 
