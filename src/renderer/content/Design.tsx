@@ -8,9 +8,11 @@ import { IpcChannels } from '../../shared/ipc';
 import {
   ChassisDesignStage,
   TechnologyComponent,
+  TechnologyAttribute,
+  TechnologyProjectPhase,
   HandlingProblem,
   type ChassisDesign,
-  type TechnologyLevel,
+  type TechnologyDesignProject,
   type CurrentYearChassisState,
   type DesignState,
   type GameState,
@@ -751,43 +753,200 @@ function CurrentYearChassisTab({ chassisState, currentYear, designState }: Curre
 }
 
 interface TechnologyTabProps {
-  levels: TechnologyLevel[];
+  designState: DesignState;
+  onStartProject: (component: TechnologyComponent, attribute: TechnologyAttribute) => void;
+  onCancelProject: (component: TechnologyComponent, attribute: TechnologyAttribute) => void;
+  onSetAllocation: (
+    component: TechnologyComponent,
+    attribute: TechnologyAttribute,
+    allocation: number
+  ) => void;
 }
 
-function TechnologyTab({ levels }: TechnologyTabProps) {
-  const levelMap = new Map(levels.map((l) => [l.component, l]));
+const PHASE_LABELS: Record<TechnologyProjectPhase, string> = {
+  [TechnologyProjectPhase.Discovery]: 'Brainstorming',
+  [TechnologyProjectPhase.Development]: 'Development',
+};
+
+function getProjectStatus(project: TechnologyDesignProject | undefined): string {
+  if (!project) return '---';
+  if (project.phase === TechnologyProjectPhase.Discovery) {
+    return PHASE_LABELS[project.phase];
+  }
+  // Development phase - show progress percentage and payoff
+  const progress =
+    project.workUnitsRequired && project.workUnitsRequired > 0
+      ? Math.round((project.workUnitsCompleted / project.workUnitsRequired) * 100)
+      : 0;
+  const payoffText = project.payoff ? ` (+${project.payoff})` : '';
+  return `Dev ${progress}%${payoffText}`;
+}
+
+interface TechAttributeCellProps {
+  level: number;
+  project: TechnologyDesignProject | undefined;
+  isWorking: boolean;
+  onToggleWork: () => void;
+  allocation: number;
+  maxAllocation: number;
+  onAllocationChange: (value: number) => void;
+}
+
+function TechAttributeCell({
+  level,
+  project,
+  isWorking,
+  onToggleWork,
+  allocation,
+  maxAllocation,
+  onAllocationChange,
+}: TechAttributeCellProps) {
+  return (
+    <>
+      {/* Level */}
+      <td className="py-2 text-center font-mono text-primary w-14">{level}</td>
+      {/* Work checkbox */}
+      <td className="py-2 text-center w-12">
+        <input
+          type="checkbox"
+          checked={isWorking}
+          onChange={onToggleWork}
+          className="w-4 h-4 cursor-pointer accent-amber-500"
+        />
+      </td>
+      {/* Status */}
+      <td className="py-2 text-center text-secondary text-xs w-28">{getProjectStatus(project)}</td>
+      {/* Allocation */}
+      <td className="py-2 w-24">
+        {isWorking ? (
+          <AllocationControl
+            value={allocation}
+            maxValue={maxAllocation}
+            onChange={onAllocationChange}
+          />
+        ) : (
+          <span className="text-muted text-center block">---</span>
+        )}
+      </td>
+    </>
+  );
+}
+
+function TechnologyTab({
+  designState,
+  onStartProject,
+  onCancelProject,
+  onSetAllocation,
+}: TechnologyTabProps) {
+  const levelMap = new Map(designState.technologyLevels.map((l) => [l.component, l]));
+
+  // Create a map of active projects by component+attribute key
+  const projectMap = new Map<string, TechnologyDesignProject>();
+  for (const project of designState.activeTechnologyProjects) {
+    const key = `${project.component}-${project.attribute}`;
+    projectMap.set(key, project);
+  }
+
+  const allocation = calculateAllocationBreakdown(designState);
+  const totalTechAllocation = designState.activeTechnologyProjects.reduce(
+    (sum, p) => sum + p.designersAssigned,
+    0
+  );
 
   return (
-    <div className="grid grid-cols-4 gap-4">
-      {TECH_ORDER.map((component) => {
-        const level = levelMap.get(component);
-        const perf = level?.performance ?? 0;
-        const rel = level?.reliability ?? 0;
+    <div className="space-y-6">
+      {/* Designer Allocation Summary */}
+      <div className="card p-4">
+        <SectionHeading>Designer Allocation</SectionHeading>
+        <div className="mt-4 space-y-2">
+          <AllocationRow label="Available" value={allocation.available} isHighlighted />
+          <AllocationRow label="Technology Total" value={totalTechAllocation} />
+        </div>
+      </div>
 
-        return (
-          <div key={component} className="card p-4">
-            <div className="text-sm font-semibold text-primary mb-4">
-              {TECH_LABELS[component]}
-            </div>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between text-xs text-muted mb-2">
-                  <span>Performance</span>
-                  <span className="font-mono">{perf}/{MAX_TECH_LEVEL}</span>
-                </div>
-                <LevelBar value={perf} />
-              </div>
-              <div>
-                <div className="flex justify-between text-xs text-muted mb-2">
-                  <span>Reliability</span>
-                  <span className="font-mono">{rel}/{MAX_TECH_LEVEL}</span>
-                </div>
-                <LevelBar value={rel} />
-              </div>
-            </div>
-          </div>
-        );
-      })}
+      {/* Technology Components Table */}
+      <div className="card p-4">
+        <SectionHeading>Technology Components</SectionHeading>
+        <table className="w-full text-sm mt-4">
+          <thead>
+            <tr className="text-muted text-xs border-b border-subtle">
+              <th className="text-left py-2 w-28">Component</th>
+              <th className="text-center py-2 w-14" colSpan={4}>
+                Performance
+              </th>
+              <th className="text-center py-2 w-14" colSpan={4}>
+                Reliability
+              </th>
+            </tr>
+            <tr className="text-muted text-xs border-b border-subtle">
+              <th></th>
+              <th className="text-center py-1 w-14">Lvl</th>
+              <th className="text-center py-1 w-12">Work</th>
+              <th className="text-center py-1 w-28">Status</th>
+              <th className="text-center py-1 w-24">Alloc</th>
+              <th className="text-center py-1 w-14">Lvl</th>
+              <th className="text-center py-1 w-12">Work</th>
+              <th className="text-center py-1 w-28">Status</th>
+              <th className="text-center py-1 w-24">Alloc</th>
+            </tr>
+          </thead>
+          <tbody>
+            {TECH_ORDER.map((component) => {
+              const level = levelMap.get(component);
+              const perfLevel = level?.performance ?? 0;
+              const relLevel = level?.reliability ?? 0;
+
+              const perfKey = `${component}-${TechnologyAttribute.Performance}`;
+              const relKey = `${component}-${TechnologyAttribute.Reliability}`;
+              const perfProject = projectMap.get(perfKey);
+              const relProject = projectMap.get(relKey);
+
+              const perfAlloc = perfProject?.designersAssigned ?? 0;
+              const relAlloc = relProject?.designersAssigned ?? 0;
+
+              // Max allocation = current allocation + available
+              const maxPerfAlloc = perfAlloc + allocation.available;
+              const maxRelAlloc = relAlloc + allocation.available;
+
+              return (
+                <tr key={component} className="border-b border-subtle last:border-0">
+                  <td className="py-2 text-secondary">{TECH_LABELS[component]}</td>
+                  <TechAttributeCell
+                    level={perfLevel}
+                    project={perfProject}
+                    isWorking={!!perfProject}
+                    onToggleWork={() =>
+                      perfProject
+                        ? onCancelProject(component, TechnologyAttribute.Performance)
+                        : onStartProject(component, TechnologyAttribute.Performance)
+                    }
+                    allocation={perfAlloc}
+                    maxAllocation={maxPerfAlloc}
+                    onAllocationChange={(val) =>
+                      onSetAllocation(component, TechnologyAttribute.Performance, val)
+                    }
+                  />
+                  <TechAttributeCell
+                    level={relLevel}
+                    project={relProject}
+                    isWorking={!!relProject}
+                    onToggleWork={() =>
+                      relProject
+                        ? onCancelProject(component, TechnologyAttribute.Reliability)
+                        : onStartProject(component, TechnologyAttribute.Reliability)
+                    }
+                    allocation={relAlloc}
+                    maxAllocation={maxRelAlloc}
+                    onAllocationChange={(val) =>
+                      onSetAllocation(component, TechnologyAttribute.Reliability, val)
+                    }
+                  />
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -817,6 +976,40 @@ export function Design() {
         IpcChannels.DESIGN_SET_NEXT_YEAR_ALLOCATION,
         allocation
       );
+      queryClient.setQueryData<GameState | null>(queryKeys.gameState, newState);
+    },
+    [queryClient]
+  );
+
+  const handleStartTechProject = useCallback(
+    async (component: TechnologyComponent, attribute: TechnologyAttribute) => {
+      const newState = await window.electronAPI.invoke(IpcChannels.DESIGN_START_TECH_PROJECT, {
+        component,
+        attribute,
+      });
+      queryClient.setQueryData<GameState | null>(queryKeys.gameState, newState);
+    },
+    [queryClient]
+  );
+
+  const handleCancelTechProject = useCallback(
+    async (component: TechnologyComponent, attribute: TechnologyAttribute) => {
+      const newState = await window.electronAPI.invoke(IpcChannels.DESIGN_CANCEL_TECH_PROJECT, {
+        component,
+        attribute,
+      });
+      queryClient.setQueryData<GameState | null>(queryKeys.gameState, newState);
+    },
+    [queryClient]
+  );
+
+  const handleSetTechAllocation = useCallback(
+    async (component: TechnologyComponent, attribute: TechnologyAttribute, allocation: number) => {
+      const newState = await window.electronAPI.invoke(IpcChannels.DESIGN_SET_TECH_ALLOCATION, {
+        component,
+        attribute,
+        allocation,
+      });
       queryClient.setQueryData<GameState | null>(queryKeys.gameState, newState);
     },
     [queryClient]
@@ -858,7 +1051,14 @@ export function Design() {
           designState={designState}
         />
       )}
-      {activeTab === 'technology' && <TechnologyTab levels={designState.technologyLevels} />}
+      {activeTab === 'technology' && (
+        <TechnologyTab
+          designState={designState}
+          onStartProject={handleStartTechProject}
+          onCancelProject={handleCancelTechProject}
+          onSetAllocation={handleSetTechAllocation}
+        />
+      )}
     </div>
   );
 }
