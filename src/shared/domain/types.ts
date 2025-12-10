@@ -858,6 +858,7 @@ export enum EmailCategory {
   TestComplete = 'test-complete',
   PartReady = 'part-ready',
   PostRaceRepair = 'post-race-repair',
+  SpecRelease = 'spec-release',
 }
 
 /**
@@ -949,6 +950,23 @@ export interface PostRaceRepairData {
   totalCost: number;
 }
 
+/** Stat improvement included in a spec release */
+export interface SpecReleaseStatChange {
+  stat: keyof SpecBonus;
+  statName: string; // Display name (e.g., "Power")
+  improvement: number; // e.g., +3
+}
+
+export interface SpecReleaseData {
+  category: EmailCategory.SpecRelease;
+  manufacturerId: string;
+  manufacturerName: string;
+  newSpecVersion: number; // e.g., 2 for "Spec 2.0"
+  statChanges: SpecReleaseStatChange[];
+  /** True if the player's team uses this manufacturer */
+  affectsPlayer: boolean;
+}
+
 export type EmailData =
   | ChassisStageCompleteData
   | TechBreakthroughData
@@ -956,7 +974,8 @@ export type EmailData =
   | HandlingSolutionCompleteData
   | TestCompleteData
   | PartReadyData
-  | PostRaceRepairData;
+  | PostRaceRepairData
+  | SpecReleaseData;
 
 /**
  * CalendarEvent - An event displayed on the calendar strip
@@ -1241,6 +1260,30 @@ export interface CarEngineState {
 }
 
 /**
+ * SpecBonus - Stat bonuses provided by a spec version upgrade
+ * All values are positive numbers representing stat improvements
+ */
+export interface SpecBonus {
+  power: number;
+  fuelEfficiency: number;
+  reliability: number;
+  heat: number;
+  predictability: number;
+}
+
+/**
+ * ManufacturerSpecState - Tracks spec versions and bonuses for a manufacturer
+ * Used globally in GameState to track what specs are available from each supplier
+ */
+export interface ManufacturerSpecState {
+  manufacturerId: string;
+  /** Current latest spec version (1 = base spec at season start) */
+  latestSpecVersion: number;
+  /** Cumulative bonuses for each spec version (index 0 = spec 2 bonuses, etc.) */
+  specBonuses: SpecBonus[];
+}
+
+/**
  * TeamEngineState - Team-level engine state
  * Tracks both cars' engines plus team-wide engine resources
  */
@@ -1350,6 +1393,9 @@ export interface GameState {
   // Active Contracts
   sponsorDeals: ActiveSponsorDeal[];
   manufacturerContracts: ActiveManufacturerContract[];
+
+  // Engine Manufacturer Spec Versions (global tracking per manufacturer)
+  manufacturerSpecs: ManufacturerSpecState[];
 
   // Historical Data (for career stats, Player Wiki)
   pastSeasons: SeasonData[];
