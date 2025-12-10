@@ -233,7 +233,7 @@ export function getRandomVariance(seed?: number): number {
  * Simple seeded random for deterministic testing
  * Uses a basic linear congruential generator
  */
-function seededRandom(seed: number): number {
+export function seededRandom(seed: number): number {
   const x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
