@@ -10,7 +10,6 @@ import type {
   IRaceEngine,
   IDesignEngine,
   ITestingEngine,
-  IConstructionEngine,
   IDevelopmentEngine,
   IStaffEngine,
   IFinancialEngine,
@@ -29,8 +28,6 @@ import type {
   TestingProcessingInput,
   TestingProcessingResult,
   TestCompletion,
-  ConstructionInput,
-  ConstructionResult,
   DevelopmentInput,
   DevelopmentResult,
   StaffInput,
@@ -371,12 +368,6 @@ export class StubTestingEngine implements ITestingEngine {
       problemDiscovered,
     };
     return { updatedTestSession: resetSession, completion };
-  }
-}
-
-export class StubConstructionEngine implements IConstructionEngine {
-  processConstruction(_input: ConstructionInput): ConstructionResult {
-    return {};
   }
 }
 
