@@ -199,7 +199,7 @@ function EmailListItem({ email, isSelected, onSelect, chiefs, teams }: EmailList
           <div className="flex items-center gap-2 mt-1">
             <CategoryBadge category={email.emailCategory} />
             {email.critical && (
-              <span className="text-xs text-amber-400">Important</span>
+              <span className="text-xs px-1.5 py-0.5 rounded bg-amber-600/20 text-amber-400">Important</span>
             )}
           </div>
         </div>
