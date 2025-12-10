@@ -73,13 +73,13 @@ const CLICK_OUTSIDE_DELAY_MS = 100;
 
 /**
  * Get extended array of days for smooth scrolling
- * Centers the given date in the visible area
+ * Anchor date becomes the first visible day
  */
-function getExtendedDays(centerDate: GameDate): GameDate[] {
+function getExtendedDays(anchorDate: GameDate): GameDate[] {
   const days: GameDate[] = [];
-  // Center today: put it at position BUFFER_DAYS + floor(VISIBLE_DAYS/2)
-  const startOffset = -(BUFFER_DAYS + Math.floor(VISIBLE_DAYS / 2));
-  let date = offsetDate(centerDate, startOffset);
+  // Anchor date becomes the first visible day (at index BUFFER_DAYS)
+  const startOffset = -BUFFER_DAYS;
+  let date = offsetDate(anchorDate, startOffset);
   for (let i = 0; i < TOTAL_DAYS; i++) {
     days.push(date);
     date = offsetDate(date, 1);
