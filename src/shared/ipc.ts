@@ -24,6 +24,7 @@ import type {
   TechnologyComponent,
   TechnologyAttribute,
   HandlingProblem,
+  EngineCustomisation,
 } from './domain';
 import type { TurnBlocked, DayStopReason } from './domain/engines';
 
@@ -163,6 +164,32 @@ export interface InstallPartParams {
 }
 
 // =============================================================================
+// ENGINE CONTRACTS TYPES
+// =============================================================================
+
+/**
+ * Parameters for buying an engine upgrade for a specific car
+ */
+export interface BuyEngineUpgradeParams {
+  carNumber: 1 | 2;
+}
+
+/**
+ * Parameters for buying customisation points
+ */
+export interface BuyCustomisationPointsParams {
+  quantity: number;
+}
+
+/**
+ * Parameters for applying customisation to a car's engine
+ */
+export interface ApplyCustomisationParams {
+  carNumber: 1 | 2;
+  customisation: EngineCustomisation;
+}
+
+// =============================================================================
 // TESTING TYPES
 // =============================================================================
 
@@ -248,6 +275,12 @@ export const IpcChannels = {
 
   // Parts Installation
   PARTS_INSTALL: 'parts:install',
+
+  // Engine Contracts
+  ENGINE_BUY_UPGRADE: 'engine:buyUpgrade',
+  ENGINE_BUY_CUSTOMISATION_POINTS: 'engine:buyCustomisationPoints',
+  ENGINE_APPLY_CUSTOMISATION: 'engine:applyCustomisation',
+  ENGINE_BUY_OPTIMISATION: 'engine:buyOptimisation',
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];
@@ -430,6 +463,24 @@ export interface IpcInvokeMap {
   // Parts Installation
   [IpcChannels.PARTS_INSTALL]: {
     args: [params: InstallPartParams];
+    result: GameState;
+  };
+
+  // Engine Contracts
+  [IpcChannels.ENGINE_BUY_UPGRADE]: {
+    args: [params: BuyEngineUpgradeParams];
+    result: GameState;
+  };
+  [IpcChannels.ENGINE_BUY_CUSTOMISATION_POINTS]: {
+    args: [params: BuyCustomisationPointsParams];
+    result: GameState;
+  };
+  [IpcChannels.ENGINE_APPLY_CUSTOMISATION]: {
+    args: [params: ApplyCustomisationParams];
+    result: GameState;
+  };
+  [IpcChannels.ENGINE_BUY_OPTIMISATION]: {
+    args: [];
     result: GameState;
   };
 }

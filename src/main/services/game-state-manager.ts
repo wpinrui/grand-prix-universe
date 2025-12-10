@@ -71,6 +71,7 @@ import type {
   CurrentYearChassisState,
   HandlingProblemState,
   TechnologyDesignProject,
+  EngineCustomisation,
 } from '../../shared/domain';
 import {
   GamePhase,
@@ -121,7 +122,11 @@ import {
   offsetDate,
   isSameDay,
 } from '../../shared/utils/date-utils';
-import { createDefaultTeamEngineState } from '../../shared/domain/engine-utils';
+import {
+  createDefaultTeamEngineState,
+  isValidCustomisation,
+  MAX_CUSTOMISATION_PER_STAT,
+} from '../../shared/domain/engine-utils';
 
 /** Current save format version */
 const SAVE_VERSION = '1.0.0';
@@ -267,6 +272,44 @@ function getPlayerDesignState(): { state: GameState; designState: DesignState } 
   const playerTeamId = state.player.teamId;
   const teamState = state.teamStates[playerTeamId];
   return { state, designState: teamState.designState };
+}
+
+/**
+ * Gets the player's engine contract context with all related entities.
+ * Used by engine purchase operations.
+ */
+function getPlayerEngineContext(): {
+  state: GameState;
+  playerTeam: Team;
+  teamState: TeamRuntimeState;
+  engineContract: ActiveManufacturerContract;
+  manufacturer: Manufacturer;
+} {
+  const state = GameStateManager.currentState;
+  if (!state) {
+    throw new Error('No active game');
+  }
+
+  const playerTeamId = state.player.teamId;
+  const playerTeam = state.teams.find((t) => t.id === playerTeamId);
+  const teamState = state.teamStates[playerTeamId];
+  if (!playerTeam || !teamState) {
+    throw new Error('Player team not found');
+  }
+
+  const engineContract = state.manufacturerContracts.find(
+    (c) => c.teamId === playerTeamId && c.type === 'engine'
+  );
+  if (!engineContract) {
+    throw new Error('No engine contract found');
+  }
+
+  const manufacturer = state.manufacturers.find((m) => m.id === engineContract.manufacturerId);
+  if (!manufacturer) {
+    throw new Error('Engine manufacturer not found');
+  }
+
+  return { state, playerTeam, teamState, engineContract, manufacturer };
 }
 
 /**
@@ -2477,6 +2520,120 @@ export const GameStateManager = {
         pendingPart.installedOnCars.push(car);
       }
     }
+
+    return state;
+  },
+
+  // ===========================================================================
+  // ENGINE CONTRACTS
+  // ===========================================================================
+
+  /**
+   * Purchases a fresh engine with the latest spec for a specific car.
+   * @param carNumber - Which car to upgrade (1 or 2)
+   */
+  buyEngineUpgrade(carNumber: 1 | 2): GameState {
+    const { state, playerTeam, teamState, manufacturer } = getPlayerEngineContext();
+
+    // Calculate cost (use pre-negotiated if available, otherwise ad-hoc)
+    let cost: number;
+    if (teamState.engineState.preNegotiatedUpgrades > 0) {
+      // Free upgrade from contract bundle
+      teamState.engineState.preNegotiatedUpgrades -= 1;
+      cost = 0;
+    } else {
+      // Ad-hoc purchase
+      cost = manufacturer.costs.upgrade;
+    }
+
+    // Check budget (if cost > 0)
+    if (cost > 0 && playerTeam.budget < cost) {
+      throw new Error('Insufficient budget for engine upgrade');
+    }
+
+    // Deduct cost
+    playerTeam.budget -= cost;
+
+    // Upgrade the car's engine to spec 1 (placeholder - spec releases not yet implemented)
+    const carEngine = carNumber === 1 ? teamState.engineState.car1Engine : teamState.engineState.car2Engine;
+    carEngine.specVersion = 1; // Will be set to latest spec when spec releases are implemented
+
+    return state;
+  },
+
+  /**
+   * Purchases customisation points for engine tuning.
+   * @param quantity - Number of points to purchase
+   */
+  buyCustomisationPoints(quantity: number): GameState {
+    if (quantity <= 0) {
+      throw new Error('Quantity must be positive');
+    }
+
+    const { state, playerTeam, teamState, manufacturer } = getPlayerEngineContext();
+
+    // Calculate total cost
+    const cost = manufacturer.costs.customisationPoint * quantity;
+
+    // Check budget
+    if (playerTeam.budget < cost) {
+      throw new Error('Insufficient budget for customisation points');
+    }
+
+    // Deduct cost and add points
+    playerTeam.budget -= cost;
+    teamState.engineState.customisationPointsOwned += quantity;
+
+    return state;
+  },
+
+  /**
+   * Applies customisation tuning to a car's engine.
+   * Each stat can be adjusted from -10 to +10 from base.
+   * @param carNumber - Which car to customise (1 or 2)
+   * @param customisation - The new customisation values for each stat
+   */
+  applyEngineCustomisation(carNumber: 1 | 2, customisation: EngineCustomisation): GameState {
+    const { state, teamState } = getPlayerEngineContext();
+
+    // Validate the customisation is within limits
+    if (!isValidCustomisation(customisation, teamState.engineState.customisationPointsOwned)) {
+      throw new Error(
+        `Invalid customisation: each stat must be between -${MAX_CUSTOMISATION_PER_STAT} and +${MAX_CUSTOMISATION_PER_STAT}, ` +
+        `and total adjustments cannot exceed ${teamState.engineState.customisationPointsOwned} points`
+      );
+    }
+
+    // Apply the customisation to the specified car
+    const carEngine = carNumber === 1 ? teamState.engineState.car1Engine : teamState.engineState.car2Engine;
+    carEngine.customisation = { ...customisation };
+
+    return state;
+  },
+
+  /**
+   * Purchases the pre-season optimisation package for next season.
+   * Applies a flat bonus to all engine stats for the next year.
+   */
+  buyEngineOptimisation(): GameState {
+    const { state, playerTeam, teamState, manufacturer } = getPlayerEngineContext();
+
+    // Check if already purchased
+    if (teamState.engineState.optimisationPurchasedForNextSeason) {
+      throw new Error('Optimisation already purchased for next season');
+    }
+
+    // Calculate cost
+    const cost = manufacturer.costs.optimisation;
+
+    // Check budget
+    if (playerTeam.budget < cost) {
+      throw new Error('Insufficient budget for optimisation');
+    }
+
+    // Deduct cost and mark as purchased
+    playerTeam.budget -= cost;
+    teamState.engineState.optimisationPurchasedForNextSeason = true;
 
     return state;
   },

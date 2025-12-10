@@ -16,10 +16,11 @@ interface DerivedGameState {
   playerTeam: Team | null;
   nextRace: CalendarEntry | null;
   nextRaceCircuit: Circuit | null;
+  refreshGameState: () => void;
 }
 
 export function useDerivedGameState(): DerivedGameState {
-  const { data: gameState, isLoading } = useGameState();
+  const { data: gameState, isLoading, refetch } = useGameState();
 
   const playerTeam = useMemo(() => {
     if (!gameState) return null;
@@ -42,5 +43,6 @@ export function useDerivedGameState(): DerivedGameState {
     playerTeam,
     nextRace,
     nextRaceCircuit,
+    refreshGameState: refetch,
   };
 }

@@ -15,6 +15,9 @@ import type {
   SetCurrentYearAllocationParams,
   StartTestSessionParams,
   InstallPartParams,
+  BuyEngineUpgradeParams,
+  BuyCustomisationPointsParams,
+  ApplyCustomisationParams,
 } from '../../shared/ipc';
 import type { NewGameParams, EventQuery } from '../../shared/domain';
 import { queryEvents } from '../../shared/domain';
@@ -208,5 +211,28 @@ export function registerIpcHandlers(): void {
   // Parts installation handlers
   ipcMain.handle(IpcChannels.PARTS_INSTALL, (_event, params: InstallPartParams) => {
     return GameStateManager.installPart(params.pendingPartId, params.choice);
+  });
+
+  // Engine contract handlers
+  ipcMain.handle(IpcChannels.ENGINE_BUY_UPGRADE, (_event, params: BuyEngineUpgradeParams) => {
+    return GameStateManager.buyEngineUpgrade(params.carNumber);
+  });
+
+  ipcMain.handle(
+    IpcChannels.ENGINE_BUY_CUSTOMISATION_POINTS,
+    (_event, params: BuyCustomisationPointsParams) => {
+      return GameStateManager.buyCustomisationPoints(params.quantity);
+    }
+  );
+
+  ipcMain.handle(
+    IpcChannels.ENGINE_APPLY_CUSTOMISATION,
+    (_event, params: ApplyCustomisationParams) => {
+      return GameStateManager.applyEngineCustomisation(params.carNumber, params.customisation);
+    }
+  );
+
+  ipcMain.handle(IpcChannels.ENGINE_BUY_OPTIMISATION, () => {
+    return GameStateManager.buyEngineOptimisation();
   });
 }
