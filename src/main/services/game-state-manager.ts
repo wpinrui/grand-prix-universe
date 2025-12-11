@@ -770,7 +770,8 @@ interface SponsorContractResult {
   sponsorId: string;
   teamId: string;
   tier: SponsorTier;
-  annualPayment: number;
+  signingBonus: number;
+  monthlyPayment: number;
   contractDuration: number;
   startSeason: number;
   endSeason: number;
@@ -799,8 +800,8 @@ function createSponsorContractFromNegotiation(
     sponsorId: sponsor.id,
     teamId: negotiation.teamId,
     tier: sponsor.tier,
-    annualPayment: terms.annualPayment,
-    bonusLevel: 0, // Default to 0 for now, can be negotiated later
+    signingBonus: terms.signingBonus,
+    monthlyPayment: terms.monthlyPayment,
     guaranteed: !terms.exitClausePosition, // If no exit clause, payment is guaranteed
     startSeason,
     endSeason,
@@ -813,7 +814,8 @@ function createSponsorContractFromNegotiation(
     sponsorId: sponsor.id,
     teamId: negotiation.teamId,
     tier: sponsor.tier,
-    annualPayment: terms.annualPayment,
+    signingBonus: terms.signingBonus,
+    monthlyPayment: terms.monthlyPayment,
     contractDuration: terms.duration,
     startSeason,
     endSeason,
@@ -835,7 +837,8 @@ function generateSponsorSigningEvent(
 
   const tierName = getSponsorTierDisplayName(result.tier);
   const headline = `${team.name} announces ${sponsor.name} as ${tierName}`;
-  const body = `${team.name} has signed ${sponsor.name} as their ${tierName} in a ${result.contractDuration}-year deal worth $${(result.annualPayment / 1_000_000).toFixed(1)}M per season.`;
+  const annualValue = result.monthlyPayment * 12;
+  const body = `${team.name} has signed ${sponsor.name} as their ${tierName} in a ${result.contractDuration}-year deal worth $${(annualValue / 1_000_000).toFixed(1)}M per season.`;
 
   // News headline (visible to everyone)
   state.calendarEvents.push({
@@ -1183,8 +1186,8 @@ function createInitialSponsorDeals(
         sponsorId,
         teamId: team.id,
         tier: sponsor.tier,
-        annualPayment: sponsor.payment,
-        bonusLevel: INITIAL_BONUS_LEVEL,
+        signingBonus: 0, // Initial deals have no signing bonus
+        monthlyPayment: sponsor.baseMonthlyPayment,
         guaranteed: false,
         startSeason: seasonNumber,
         endSeason: seasonNumber + DEFAULT_CONTRACT_DURATION - 1,
@@ -3191,11 +3194,10 @@ function createSponsorOutreachNegotiation(
         roundNumber: 1,
         offeredBy: 'counterparty',
         terms: {
-          annualPayment: sponsor.payment,
+          signingBonus: sponsor.baseMonthlyPayment * 2, // 2 months as signing bonus
+          monthlyPayment: sponsor.baseMonthlyPayment,
           duration: DEFAULT_SPONSOR_OUTREACH_DURATION,
           placement: getPlacementForTier(sponsor.tier),
-          pointsBonus: 0,
-          winBonus: 0,
           exitClausePosition: undefined,
         } as SponsorContractTerms,
         offeredDate: state.currentDate,
@@ -3275,7 +3277,7 @@ function processSponsorOutreach(state: GameState): boolean {
           date: currentDate,
           type: CalendarEventType.Email,
           subject: `${sponsor.name} interested in ${tierName} deal`,
-          body: `${sponsor.name} has approached your team about becoming a ${tierName}. They are offering $${(sponsor.payment / 1_000_000).toFixed(1)}M per season for a ${DEFAULT_SPONSOR_OUTREACH_DURATION}-year deal. Review the offer in your negotiations.`,
+          body: `${sponsor.name} has approached your team about becoming a ${tierName}. They are offering $${((sponsor.baseMonthlyPayment * 12) / 1_000_000).toFixed(1)}M per season for a ${DEFAULT_SPONSOR_OUTREACH_DURATION}-year deal. Review the offer in your negotiations.`,
           critical: true,
         });
       }

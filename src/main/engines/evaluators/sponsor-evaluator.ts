@@ -4,10 +4,12 @@
  * Evaluates contract offers from the sponsor's perspective.
  * Sponsors assess team reputation, performance potential, and brand fit.
  *
+ * Payment model: signingBonus (one-time) + monthlyPayment (recurring)
+ *
  * Key mechanics:
  * - minReputation soft gate: Below threshold = demanding terms, not rejection
  * - rivalGroup hard rejection: Cannot have competing brands on same car
- * - Counter strategy: Reduce base payment, increase performance bonuses
+ * - Counter strategy: Adjust signing bonus and monthly payment
  * - Exit clauses: Sponsors can demand early exit if team underperforms
  */
 
@@ -72,18 +74,13 @@ const DISCOUNT_MULTIPLIER_FLOOR = 0.7; // At most 30% discount from base
 // Counter-Offer Strategy
 // -----------------------------------------------------------------------------
 
-/** Base reduction to annual payment when countering (shift to performance) */
-const BASE_PAYMENT_REDUCTION = 0.15; // 15% reduction in base payment
+/** Base reduction to monthly payment when countering */
+const BASE_PAYMENT_REDUCTION = 0.10; // 10% reduction in monthly payment
 
-/** Points bonus per championship point (scaled by tier) */
-const TITLE_POINTS_BONUS_PER_POINT = 50_000; // $50k per point for title
-const MAJOR_POINTS_BONUS_PER_POINT = 25_000; // $25k per point for major
-const MINOR_POINTS_BONUS_PER_POINT = 10_000; // $10k per point for minor
-
-/** Win bonus amounts by tier */
-const TITLE_WIN_BONUS = 1_000_000; // $1M per win
-const MAJOR_WIN_BONUS = 500_000; // $500k per win
-const MINOR_WIN_BONUS = 200_000; // $200k per win
+/** Signing bonus as multiplier of monthly payment (by tier) */
+const TITLE_SIGNING_BONUS_MONTHS = 3; // 3 months of payment as signing bonus
+const MAJOR_SIGNING_BONUS_MONTHS = 2; // 2 months
+const MINOR_SIGNING_BONUS_MONTHS = 1; // 1 month
 
 /** Maximum contract duration sponsors will accept */
 const MAX_CONTRACT_DURATION = 3;
@@ -192,21 +189,21 @@ export function calculateSponsorValuation(
   const isBelowHardGate = reputationRatio < HARD_GATE_MULTIPLIER;
   const isBelowSoftGate = reputationRatio < SOFT_GATE_MULTIPLIER;
 
-  // Calculate willing payment
-  let willingPayment = sponsor.payment;
+  // Calculate willing payment (monthly)
+  let willingPayment = sponsor.baseMonthlyPayment;
 
   if (reputationRatio >= PREMIUM_REPUTATION_THRESHOLD) {
     // Premium team - sponsor pays more for exposure
     const premiumFactor = Math.min(reputationRatio - 1, MAX_PREMIUM_MULTIPLIER - 1);
-    willingPayment = sponsor.payment * (1 + premiumFactor);
+    willingPayment = sponsor.baseMonthlyPayment * (1 + premiumFactor);
   } else if (reputationRatio < 1.0) {
     // Below threshold - sponsor pays less
     const discountFactor = Math.max(reputationRatio, DISCOUNT_MULTIPLIER_FLOOR);
-    willingPayment = sponsor.payment * discountFactor;
+    willingPayment = sponsor.baseMonthlyPayment * discountFactor;
   }
 
   // Calculate protection level (0-1)
-  // Higher = more protective terms (exit clause, shorter duration, more bonuses)
+  // Higher = more protective terms (exit clause, shorter duration, lower signing bonus)
   let protectionLevel = 0;
   if (isBelowSoftGate) {
     // Scale from 0 at soft gate to 1 at hard gate
@@ -229,41 +226,40 @@ export function calculateSponsorValuation(
 // =============================================================================
 
 /**
- * Get performance bonus amounts based on sponsor tier.
+ * Get signing bonus multiplier based on sponsor tier.
+ * Returns number of months of payment as signing bonus.
  */
-function getBonusesByTier(tier: SponsorTier): { pointsBonus: number; winBonus: number } {
+function getSigningBonusMonths(tier: SponsorTier): number {
   switch (tier) {
     case SponsorTier.Title:
-      return { pointsBonus: TITLE_POINTS_BONUS_PER_POINT, winBonus: TITLE_WIN_BONUS };
+      return TITLE_SIGNING_BONUS_MONTHS;
     case SponsorTier.Major:
-      return { pointsBonus: MAJOR_POINTS_BONUS_PER_POINT, winBonus: MAJOR_WIN_BONUS };
+      return MAJOR_SIGNING_BONUS_MONTHS;
     case SponsorTier.Minor:
     default:
-      return { pointsBonus: MINOR_POINTS_BONUS_PER_POINT, winBonus: MINOR_WIN_BONUS };
+      return MINOR_SIGNING_BONUS_MONTHS;
   }
 }
 
 /**
- * Generate counter-offer terms that shift risk to the team.
- * Strategy: Reduce base payment, increase performance bonuses.
+ * Generate counter-offer terms.
+ * Strategy: Adjust monthly payment and signing bonus based on team reputation.
  */
 function generateCounterTerms(
   currentTerms: SponsorContractTerms,
   sponsor: Sponsor,
   valuation: SponsorValuation
 ): SponsorContractTerms {
-  // Calculate base payment reduction
+  // Calculate monthly payment reduction
   // More protection = larger reduction
   const paymentReduction = BASE_PAYMENT_REDUCTION * (1 + valuation.protectionLevel);
-  const reducedPayment = Math.round(valuation.willingPayment * (1 - paymentReduction));
+  const reducedMonthlyPayment = Math.round(valuation.willingPayment * (1 - paymentReduction));
 
-  // Get performance bonuses based on tier
-  const baseBonuses = getBonusesByTier(sponsor.tier);
-
-  // Scale bonuses by protection level (more risk shift for borderline teams)
-  const bonusMultiplier = 1 + valuation.protectionLevel * 0.5; // Up to 50% higher bonuses
-  const pointsBonus = Math.round(baseBonuses.pointsBonus * bonusMultiplier);
-  const winBonus = Math.round(baseBonuses.winBonus * bonusMultiplier);
+  // Calculate signing bonus based on tier and protection level
+  const baseSigningBonusMonths = getSigningBonusMonths(sponsor.tier);
+  // Reduce signing bonus for risky teams (more protection = less upfront)
+  const signingBonusMultiplier = 1 - valuation.protectionLevel * 0.5; // Up to 50% less signing bonus
+  const signingBonus = Math.round(reducedMonthlyPayment * baseSigningBonusMonths * signingBonusMultiplier);
 
   // Calculate exit clause if below soft gate
   let exitClausePosition: number | undefined;
@@ -285,11 +281,10 @@ function generateCounterTerms(
   duration = Math.min(duration, MAX_CONTRACT_DURATION);
 
   return {
-    annualPayment: reducedPayment,
+    signingBonus,
+    monthlyPayment: reducedMonthlyPayment,
     duration,
     placement: currentTerms.placement,
-    pointsBonus,
-    winBonus,
     exitClausePosition,
   };
 }
@@ -381,7 +376,7 @@ export function evaluateSponsorOffer(input: SponsorEvaluationInput): Negotiation
   // ==========================================================================
   // Evaluate the offered payment
   // ==========================================================================
-  const offeredPayment = terms.annualPayment;
+  const offeredPayment = terms.monthlyPayment;
   const paymentRatio = offeredPayment / valuation.willingPayment;
 
   // ==========================================================================

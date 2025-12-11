@@ -5,7 +5,7 @@
       "name": "Aramco",
       "industry": "oil-gas",
       "tier": "title",
-      "payment": 60000000,
+      "baseMonthlyPayment": 5000000,
       "minReputation": 85,
       "rivalGroup": "oil-companies",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/b/ba/Aramco_logo.svg/200px-Aramco_logo.svg.png"
@@ -15,7 +15,7 @@
       "name": "Petronas",
       "industry": "oil-gas",
       "tier": "title",
-      "payment": 55000000,
+      "baseMonthlyPayment": 4583333,
       "minReputation": 82,
       "rivalGroup": "oil-companies",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Petronas_2013_logo.svg/200px-Petronas_2013_logo.svg.png"
@@ -25,7 +25,7 @@
       "name": "Oracle",
       "industry": "technology",
       "tier": "title",
-      "payment": 50000000,
+      "baseMonthlyPayment": 4166667,
       "minReputation": 80,
       "rivalGroup": "enterprise-software",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Oracle_logo.svg/200px-Oracle_logo.svg.png"
@@ -35,7 +35,7 @@
       "name": "Santander",
       "industry": "finance",
       "tier": "title",
-      "payment": 45000000,
+      "baseMonthlyPayment": 3750000,
       "minReputation": 75,
       "rivalGroup": "banks",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Banco_Santander_Logotipo.svg/200px-Banco_Santander_Logotipo.svg.png"
@@ -45,7 +45,7 @@
       "name": "Vodafone",
       "industry": "telecommunications",
       "tier": "title",
-      "payment": 48000000,
+      "baseMonthlyPayment": 4000000,
       "minReputation": 78,
       "rivalGroup": "mobile-carriers",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Vodafone_icon.svg/200px-Vodafone_icon.svg.png"
@@ -55,7 +55,7 @@
       "name": "AT&T",
       "industry": "telecommunications",
       "tier": "title",
-      "payment": 46000000,
+      "baseMonthlyPayment": 3833333,
       "minReputation": 76,
       "rivalGroup": "mobile-carriers",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/AT%26T_logo_2016.svg/200px-AT%26T_logo_2016.svg.png"
@@ -65,7 +65,7 @@
       "name": "Cognizant",
       "industry": "technology",
       "tier": "title",
-      "payment": 42000000,
+      "baseMonthlyPayment": 3500000,
       "minReputation": 72,
       "rivalGroup": null,
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Cognizant_logo_2022.svg/200px-Cognizant_logo_2022.svg.png"
@@ -75,7 +75,7 @@
       "name": "Shell",
       "industry": "oil-gas",
       "tier": "title",
-      "payment": 52000000,
+      "baseMonthlyPayment": 4333333,
       "minReputation": 80,
       "rivalGroup": "oil-companies",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/e/e8/Shell_logo.svg/200px-Shell_logo.svg.png"
@@ -85,7 +85,7 @@
       "name": "Mastercard",
       "industry": "payments",
       "tier": "title",
-      "payment": 40000000,
+      "baseMonthlyPayment": 3333333,
       "minReputation": 70,
       "rivalGroup": "payment-networks",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/200px-Mastercard-logo.svg.png"
@@ -95,7 +95,7 @@
       "name": "BWT",
       "industry": "water-technology",
       "tier": "title",
-      "payment": 35000000,
+      "baseMonthlyPayment": 2916667,
       "minReputation": 65,
       "rivalGroup": null,
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/BWT_logo.svg/200px-BWT_logo.svg.png"
@@ -105,7 +105,7 @@
       "name": "HP",
       "industry": "technology",
       "tier": "title",
-      "payment": 38000000,
+      "baseMonthlyPayment": 3166667,
       "minReputation": 68,
       "rivalGroup": "computer-hardware",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/HP_logo_2012.svg/200px-HP_logo_2012.svg.png"
@@ -115,7 +115,7 @@
       "name": "Salesforce",
       "industry": "technology",
       "tier": "title",
-      "payment": 44000000,
+      "baseMonthlyPayment": 3666667,
       "minReputation": 74,
       "rivalGroup": "enterprise-software",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Salesforce.com_logo.svg/200px-Salesforce.com_logo.svg.png"
@@ -125,7 +125,7 @@
       "name": "IBM",
       "industry": "technology",
       "tier": "title",
-      "payment": 48000000,
+      "baseMonthlyPayment": 4000000,
       "minReputation": 78,
       "rivalGroup": "enterprise-software",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/IBM_logo.svg/200px-IBM_logo.svg.png"
@@ -135,7 +135,7 @@
       "name": "SAP",
       "industry": "technology",
       "tier": "title",
-      "payment": 46000000,
+      "baseMonthlyPayment": 3833333,
       "minReputation": 76,
       "rivalGroup": "enterprise-software",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/SAP_2011_logo.svg/200px-SAP_2011_logo.svg.png"
@@ -145,7 +145,7 @@
       "name": "Accenture",
       "industry": "consulting",
       "tier": "title",
-      "payment": 44000000,
+      "baseMonthlyPayment": 3666667,
       "minReputation": 74,
       "rivalGroup": "consulting",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Accenture.svg/200px-Accenture.svg.png"
@@ -155,7 +155,7 @@
       "name": "BP",
       "industry": "oil-gas",
       "tier": "title",
-      "payment": 50000000,
+      "baseMonthlyPayment": 4166667,
       "minReputation": 80,
       "rivalGroup": "oil-companies",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/d/d2/BP_Helios_logo.svg/200px-BP_Helios_logo.svg.png"
@@ -165,7 +165,7 @@
       "name": "Chevron",
       "industry": "oil-gas",
       "tier": "title",
-      "payment": 48000000,
+      "baseMonthlyPayment": 4000000,
       "minReputation": 78,
       "rivalGroup": "oil-companies",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/Chevron_Logo.svg/200px-Chevron_Logo.svg.png"
@@ -175,7 +175,7 @@
       "name": "ExxonMobil",
       "industry": "oil-gas",
       "tier": "title",
-      "payment": 52000000,
+      "baseMonthlyPayment": 4333333,
       "minReputation": 80,
       "rivalGroup": "oil-companies",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/ExxonMobil_Logo.svg/200px-ExxonMobil_Logo.svg.png"
@@ -185,7 +185,7 @@
       "name": "AWS",
       "industry": "technology",
       "tier": "major",
-      "payment": 25000000,
+      "baseMonthlyPayment": 2083333,
       "minReputation": 65,
       "rivalGroup": "cloud-providers",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Amazon_Web_Services_Logo.svg/200px-Amazon_Web_Services_Logo.svg.png"
@@ -195,7 +195,7 @@
       "name": "Microsoft",
       "industry": "technology",
       "tier": "major",
-      "payment": 24000000,
+      "baseMonthlyPayment": 2000000,
       "minReputation": 63,
       "rivalGroup": "cloud-providers",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Microsoft_logo_%282012%29.svg/200px-Microsoft_logo_%282012%29.svg.png"
@@ -205,7 +205,7 @@
       "name": "Google Cloud",
       "industry": "technology",
       "tier": "major",
-      "payment": 22000000,
+      "baseMonthlyPayment": 1833333,
       "minReputation": 60,
       "rivalGroup": "cloud-providers",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Google_Cloud_logo.svg/200px-Google_Cloud_logo.svg.png"
@@ -215,7 +215,7 @@
       "name": "Dell Technologies",
       "industry": "technology",
       "tier": "major",
-      "payment": 18000000,
+      "baseMonthlyPayment": 1500000,
       "minReputation": 55,
       "rivalGroup": "computer-hardware",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Dell_Logo.png/200px-Dell_Logo.png"
@@ -225,7 +225,7 @@
       "name": "Lenovo",
       "industry": "technology",
       "tier": "major",
-      "payment": 16000000,
+      "baseMonthlyPayment": 1333333,
       "minReputation": 52,
       "rivalGroup": "computer-hardware",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Lenovo_logo_2015.svg/200px-Lenovo_logo_2015.svg.png"
@@ -235,7 +235,7 @@
       "name": "AMD",
       "industry": "technology",
       "tier": "major",
-      "payment": 15000000,
+      "baseMonthlyPayment": 1250000,
       "minReputation": 50,
       "rivalGroup": "chip-makers",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/AMD_Logo.svg/200px-AMD_Logo.svg.png"
@@ -245,7 +245,7 @@
       "name": "Intel",
       "industry": "technology",
       "tier": "major",
-      "payment": 16000000,
+      "baseMonthlyPayment": 1333333,
       "minReputation": 52,
       "rivalGroup": "chip-makers",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Intel-logo.svg/200px-Intel-logo.svg.png"
@@ -255,7 +255,7 @@
       "name": "Cisco",
       "industry": "technology",
       "tier": "major",
-      "payment": 14000000,
+      "baseMonthlyPayment": 1166667,
       "minReputation": 48,
       "rivalGroup": null,
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Cisco_logo_blue_2016.svg/200px-Cisco_logo_blue_2016.svg.png"
@@ -265,7 +265,7 @@
       "name": "NVIDIA",
       "industry": "technology",
       "tier": "major",
-      "payment": 22000000,
+      "baseMonthlyPayment": 1833333,
       "minReputation": 62,
       "rivalGroup": "chip-makers",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Nvidia_logo.svg/200px-Nvidia_logo.svg.png"
@@ -275,7 +275,7 @@
       "name": "Adobe",
       "industry": "technology",
       "tier": "major",
-      "payment": 18000000,
+      "baseMonthlyPayment": 1500000,
       "minReputation": 55,
       "rivalGroup": null,
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Adobe_Corporate_Logo.svg/200px-Adobe_Corporate_Logo.svg.png"
@@ -285,7 +285,7 @@
       "name": "Netflix",
       "industry": "entertainment",
       "tier": "major",
-      "payment": 20000000,
+      "baseMonthlyPayment": 1666667,
       "minReputation": 58,
       "rivalGroup": "streaming",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Netflix_2015_logo.svg/200px-Netflix_2015_logo.svg.png"
@@ -295,7 +295,7 @@
       "name": "Spotify",
       "industry": "entertainment",
       "tier": "major",
-      "payment": 16000000,
+      "baseMonthlyPayment": 1333333,
       "minReputation": 52,
       "rivalGroup": "streaming",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Spotify_icon.svg/200px-Spotify_icon.svg.png"
@@ -305,7 +305,7 @@
       "name": "PayPal",
       "industry": "payments",
       "tier": "major",
-      "payment": 18000000,
+      "baseMonthlyPayment": 1500000,
       "minReputation": 55,
       "rivalGroup": "digital-payments",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/PayPal.svg/200px-PayPal.svg.png"
@@ -315,7 +315,7 @@
       "name": "Goldman Sachs",
       "industry": "finance",
       "tier": "major",
-      "payment": 22000000,
+      "baseMonthlyPayment": 1833333,
       "minReputation": 65,
       "rivalGroup": "investment-banks",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/Goldman_Sachs.svg/200px-Goldman_Sachs.svg.png"
@@ -325,7 +325,7 @@
       "name": "JPMorgan Chase",
       "industry": "finance",
       "tier": "major",
-      "payment": 24000000,
+      "baseMonthlyPayment": 2000000,
       "minReputation": 68,
       "rivalGroup": "investment-banks",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/J_P_Morgan_Logo_2008_1.svg/200px-J_P_Morgan_Logo_2008_1.svg.png"
@@ -335,7 +335,7 @@
       "name": "Barclays",
       "industry": "finance",
       "tier": "major",
-      "payment": 18000000,
+      "baseMonthlyPayment": 1500000,
       "minReputation": 55,
       "rivalGroup": "banks",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/7/7e/Barclays_logo.svg/200px-Barclays_logo.svg.png"
@@ -345,7 +345,7 @@
       "name": "Deloitte",
       "industry": "consulting",
       "tier": "major",
-      "payment": 20000000,
+      "baseMonthlyPayment": 1666667,
       "minReputation": 60,
       "rivalGroup": "consulting",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Deloitte.svg/200px-Deloitte.svg.png"
@@ -355,7 +355,7 @@
       "name": "KPMG",
       "industry": "consulting",
       "tier": "major",
-      "payment": 18000000,
+      "baseMonthlyPayment": 1500000,
       "minReputation": 55,
       "rivalGroup": "consulting",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/KPMG_logo.svg/200px-KPMG_logo.svg.png"
@@ -365,7 +365,7 @@
       "name": "PwC",
       "industry": "consulting",
       "tier": "major",
-      "payment": 18000000,
+      "baseMonthlyPayment": 1500000,
       "minReputation": 55,
       "rivalGroup": "consulting",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/PricewaterhouseCoopers_Logo.svg/200px-PricewaterhouseCoopers_Logo.svg.png"
@@ -375,7 +375,7 @@
       "name": "EY",
       "industry": "consulting",
       "tier": "major",
-      "payment": 17000000,
+      "baseMonthlyPayment": 1416667,
       "minReputation": 52,
       "rivalGroup": "consulting",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/EY_logo_2019.svg/200px-EY_logo_2019.svg.png"
@@ -385,7 +385,7 @@
       "name": "Emirates",
       "industry": "aviation",
       "tier": "major",
-      "payment": 22000000,
+      "baseMonthlyPayment": 1833333,
       "minReputation": 62,
       "rivalGroup": "airlines",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Emirates_logo.svg/200px-Emirates_logo.svg.png"
@@ -395,7 +395,7 @@
       "name": "Qatar Airways",
       "industry": "aviation",
       "tier": "major",
-      "payment": 20000000,
+      "baseMonthlyPayment": 1666667,
       "minReputation": 58,
       "rivalGroup": "airlines",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/9/9b/Qatar_Airways_Logo.svg/200px-Qatar_Airways_Logo.svg.png"
@@ -405,7 +405,7 @@
       "name": "Etihad Airways",
       "industry": "aviation",
       "tier": "major",
-      "payment": 18000000,
+      "baseMonthlyPayment": 1500000,
       "minReputation": 55,
       "rivalGroup": "airlines",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Etihad-airways-logo.svg/200px-Etihad-airways-logo.svg.png"
@@ -415,7 +415,7 @@
       "name": "Lufthansa",
       "industry": "aviation",
       "tier": "major",
-      "payment": 16000000,
+      "baseMonthlyPayment": 1333333,
       "minReputation": 52,
       "rivalGroup": "airlines",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Lufthansa_Logo_2018.svg/200px-Lufthansa_Logo_2018.svg.png"
@@ -425,7 +425,7 @@
       "name": "British Airways",
       "industry": "aviation",
       "tier": "major",
-      "payment": 17000000,
+      "baseMonthlyPayment": 1416667,
       "minReputation": 54,
       "rivalGroup": "airlines",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/4/42/British_Airways_Logo.svg/200px-British_Airways_Logo.svg.png"
@@ -435,7 +435,7 @@
       "name": "Singapore Airlines",
       "industry": "aviation",
       "tier": "major",
-      "payment": 18000000,
+      "baseMonthlyPayment": 1500000,
       "minReputation": 56,
       "rivalGroup": "airlines",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/6/6b/Singapore_Airlines_Logo_2.svg/200px-Singapore_Airlines_Logo_2.svg.png"
@@ -445,7 +445,7 @@
       "name": "Rolex",
       "industry": "luxury",
       "tier": "major",
-      "payment": 20000000,
+      "baseMonthlyPayment": 1666667,
       "minReputation": 70,
       "rivalGroup": "watches",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/9/95/Rolex_logo.svg/200px-Rolex_logo.svg.png"
@@ -455,7 +455,7 @@
       "name": "TAG Heuer",
       "industry": "luxury",
       "tier": "major",
-      "payment": 16000000,
+      "baseMonthlyPayment": 1333333,
       "minReputation": 58,
       "rivalGroup": "watches",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Tag-heuer.svg/200px-Tag-heuer.svg.png"
@@ -465,7 +465,7 @@
       "name": "IWC Schaffhausen",
       "industry": "luxury",
       "tier": "major",
-      "payment": 14000000,
+      "baseMonthlyPayment": 1166667,
       "minReputation": 55,
       "rivalGroup": "watches",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/IWC_Schaffhausen_logo.svg/200px-IWC_Schaffhausen_logo.svg.png"
@@ -475,7 +475,7 @@
       "name": "Richard Mille",
       "industry": "luxury",
       "tier": "major",
-      "payment": 18000000,
+      "baseMonthlyPayment": 1500000,
       "minReputation": 65,
       "rivalGroup": "watches",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Richard_Mille_logo.svg/200px-Richard_Mille_logo.svg.png"
@@ -485,7 +485,7 @@
       "name": "Omega",
       "industry": "luxury",
       "tier": "major",
-      "payment": 18000000,
+      "baseMonthlyPayment": 1500000,
       "minReputation": 62,
       "rivalGroup": "watches",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Omega_Logo.svg/200px-Omega_Logo.svg.png"
@@ -495,7 +495,7 @@
       "name": "Hublot",
       "industry": "luxury",
       "tier": "major",
-      "payment": 16000000,
+      "baseMonthlyPayment": 1333333,
       "minReputation": 58,
       "rivalGroup": "watches",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Hublot_logo.svg/200px-Hublot_logo.svg.png"
@@ -505,7 +505,7 @@
       "name": "TotalEnergies",
       "industry": "oil-gas",
       "tier": "major",
-      "payment": 16000000,
+      "baseMonthlyPayment": 1333333,
       "minReputation": 55,
       "rivalGroup": "lubricants",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/5/5a/TotalEnergies_logo.svg/200px-TotalEnergies_logo.svg.png"
@@ -515,7 +515,7 @@
       "name": "Red Bull",
       "industry": "beverages",
       "tier": "major",
-      "payment": 20000000,
+      "baseMonthlyPayment": 1666667,
       "minReputation": 60,
       "rivalGroup": "energy-drinks",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/1/13/Red_Bull.svg/200px-Red_Bull.svg.png"
@@ -525,7 +525,7 @@
       "name": "Monster Energy",
       "industry": "beverages",
       "tier": "major",
-      "payment": 18000000,
+      "baseMonthlyPayment": 1500000,
       "minReputation": 55,
       "rivalGroup": "energy-drinks",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/1/1e/Monster_Energy_logo.svg/200px-Monster_Energy_logo.svg.png"
@@ -535,7 +535,7 @@
       "name": "Heineken",
       "industry": "beverages",
       "tier": "major",
-      "payment": 15000000,
+      "baseMonthlyPayment": 1250000,
       "minReputation": 50,
       "rivalGroup": "beer",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Heineken_logo.svg/200px-Heineken_logo.svg.png"
@@ -545,7 +545,7 @@
       "name": "Peroni",
       "industry": "beverages",
       "tier": "major",
-      "payment": 12000000,
+      "baseMonthlyPayment": 1000000,
       "minReputation": 45,
       "rivalGroup": "beer",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Peroni_Nastro_Azzurro_Logo.svg/200px-Peroni_Nastro_Azzurro_Logo.svg.png"
@@ -555,7 +555,7 @@
       "name": "DHL",
       "industry": "logistics",
       "tier": "major",
-      "payment": 16000000,
+      "baseMonthlyPayment": 1333333,
       "minReputation": 52,
       "rivalGroup": "logistics",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/DHL_Logo.svg/200px-DHL_Logo.svg.png"
@@ -565,7 +565,7 @@
       "name": "FedEx",
       "industry": "logistics",
       "tier": "major",
-      "payment": 15000000,
+      "baseMonthlyPayment": 1250000,
       "minReputation": 50,
       "rivalGroup": "logistics",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/FedEx_Corporation_-_2016_Logo.svg/200px-FedEx_Corporation_-_2016_Logo.svg.png"
@@ -575,7 +575,7 @@
       "name": "UPS",
       "industry": "logistics",
       "tier": "major",
-      "payment": 14000000,
+      "baseMonthlyPayment": 1166667,
       "minReputation": 48,
       "rivalGroup": "logistics",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/United_Parcel_Service_logo_2014.svg/200px-United_Parcel_Service_logo_2014.svg.png"
@@ -585,7 +585,7 @@
       "name": "Puma",
       "industry": "apparel",
       "tier": "major",
-      "payment": 12000000,
+      "baseMonthlyPayment": 1000000,
       "minReputation": 45,
       "rivalGroup": "sportswear",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/d/da/Puma_complete_logo.svg/200px-Puma_complete_logo.svg.png"
@@ -595,7 +595,7 @@
       "name": "UBS",
       "industry": "finance",
       "tier": "major",
-      "payment": 18000000,
+      "baseMonthlyPayment": 1500000,
       "minReputation": 58,
       "rivalGroup": "banks",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/UBS_Logo.svg/200px-UBS_Logo.svg.png"
@@ -605,7 +605,7 @@
       "name": "HSBC",
       "industry": "finance",
       "tier": "major",
-      "payment": 16000000,
+      "baseMonthlyPayment": 1333333,
       "minReputation": 55,
       "rivalGroup": "banks",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/HSBC_logo_%282018%29.svg/200px-HSBC_logo_%282018%29.svg.png"
@@ -615,7 +615,7 @@
       "name": "Mobil 1",
       "industry": "oil-gas",
       "tier": "major",
-      "payment": 14000000,
+      "baseMonthlyPayment": 1166667,
       "minReputation": 50,
       "rivalGroup": "lubricants",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Mobil1_logo.svg/200px-Mobil1_logo.svg.png"
@@ -625,7 +625,7 @@
       "name": "Castrol",
       "industry": "oil-gas",
       "tier": "major",
-      "payment": 13000000,
+      "baseMonthlyPayment": 1083333,
       "minReputation": 48,
       "rivalGroup": "lubricants",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/7/7e/Castrol_logo.svg/200px-Castrol_logo.svg.png"
@@ -635,7 +635,7 @@
       "name": "Coca-Cola",
       "industry": "beverages",
       "tier": "minor",
-      "payment": 8000000,
+      "baseMonthlyPayment": 666667,
       "minReputation": 40,
       "rivalGroup": "soft-drinks",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Coca-Cola_logo.svg/200px-Coca-Cola_logo.svg.png"
@@ -645,7 +645,7 @@
       "name": "Pepsi",
       "industry": "beverages",
       "tier": "minor",
-      "payment": 7500000,
+      "baseMonthlyPayment": 625000,
       "minReputation": 38,
       "rivalGroup": "soft-drinks",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Pepsi_2023.svg/200px-Pepsi_2023.svg.png"
@@ -655,7 +655,7 @@
       "name": "Nike",
       "industry": "apparel",
       "tier": "minor",
-      "payment": 8000000,
+      "baseMonthlyPayment": 666667,
       "minReputation": 40,
       "rivalGroup": "sportswear",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Logo_NIKE.svg/200px-Logo_NIKE.svg.png"
@@ -665,7 +665,7 @@
       "name": "Adidas",
       "industry": "apparel",
       "tier": "minor",
-      "payment": 7500000,
+      "baseMonthlyPayment": 625000,
       "minReputation": 38,
       "rivalGroup": "sportswear",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Adidas_Logo.svg/200px-Adidas_Logo.svg.png"
@@ -675,7 +675,7 @@
       "name": "Visa",
       "industry": "payments",
       "tier": "minor",
-      "payment": 7000000,
+      "baseMonthlyPayment": 583333,
       "minReputation": 35,
       "rivalGroup": "payment-networks",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/200px-Visa_Inc._logo.svg.png"
@@ -685,7 +685,7 @@
       "name": "American Express",
       "industry": "payments",
       "tier": "minor",
-      "payment": 6500000,
+      "baseMonthlyPayment": 541667,
       "minReputation": 35,
       "rivalGroup": "payment-networks",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/American_Express_logo_%282018%29.svg/200px-American_Express_logo_%282018%29.svg.png"
@@ -695,7 +695,7 @@
       "name": "Allianz",
       "industry": "insurance",
       "tier": "minor",
-      "payment": 6000000,
+      "baseMonthlyPayment": 500000,
       "minReputation": 32,
       "rivalGroup": "insurance",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Allianz_logo.svg/200px-Allianz_logo.svg.png"
@@ -705,7 +705,7 @@
       "name": "AXA",
       "industry": "insurance",
       "tier": "minor",
-      "payment": 5500000,
+      "baseMonthlyPayment": 458333,
       "minReputation": 30,
       "rivalGroup": "insurance",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/AXA_Logo.svg/200px-AXA_Logo.svg.png"
@@ -715,7 +715,7 @@
       "name": "Pirelli",
       "industry": "tyres",
       "tier": "minor",
-      "payment": 6000000,
+      "baseMonthlyPayment": 500000,
       "minReputation": 32,
       "rivalGroup": null,
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Pirelli_logo.svg/200px-Pirelli_logo.svg.png"
@@ -725,7 +725,7 @@
       "name": "Brembo",
       "industry": "components",
       "tier": "minor",
-      "payment": 5000000,
+      "baseMonthlyPayment": 416667,
       "minReputation": 28,
       "rivalGroup": null,
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Brembo.svg/200px-Brembo.svg.png"
@@ -735,7 +735,7 @@
       "name": "Ray-Ban",
       "industry": "luxury",
       "tier": "minor",
-      "payment": 5500000,
+      "baseMonthlyPayment": 458333,
       "minReputation": 30,
       "rivalGroup": "eyewear",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Ray-Ban_logo.svg/200px-Ray-Ban_logo.svg.png"
@@ -745,7 +745,7 @@
       "name": "Oakley",
       "industry": "luxury",
       "tier": "minor",
-      "payment": 5000000,
+      "baseMonthlyPayment": 416667,
       "minReputation": 28,
       "rivalGroup": "eyewear",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Oakley_logo.svg/200px-Oakley_logo.svg.png"
@@ -755,7 +755,7 @@
       "name": "Sony",
       "industry": "consumer-electronics",
       "tier": "minor",
-      "payment": 6000000,
+      "baseMonthlyPayment": 500000,
       "minReputation": 32,
       "rivalGroup": "consumer-electronics",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Sony_logo.svg/200px-Sony_logo.svg.png"
@@ -765,7 +765,7 @@
       "name": "Samsung",
       "industry": "consumer-electronics",
       "tier": "minor",
-      "payment": 6500000,
+      "baseMonthlyPayment": 541667,
       "minReputation": 35,
       "rivalGroup": "consumer-electronics",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Samsung_Logo.svg/200px-Samsung_Logo.svg.png"
@@ -775,7 +775,7 @@
       "name": "LG",
       "industry": "consumer-electronics",
       "tier": "minor",
-      "payment": 5000000,
+      "baseMonthlyPayment": 416667,
       "minReputation": 28,
       "rivalGroup": "consumer-electronics",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/LG_logo_%282015%29.svg/200px-LG_logo_%282015%29.svg.png"
@@ -785,7 +785,7 @@
       "name": "Panasonic",
       "industry": "consumer-electronics",
       "tier": "minor",
-      "payment": 4500000,
+      "baseMonthlyPayment": 375000,
       "minReputation": 25,
       "rivalGroup": "consumer-electronics",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Panasonic_logo_%28Blue%29.svg/200px-Panasonic_logo_%28Blue%29.svg.png"
@@ -795,7 +795,7 @@
       "name": "Beats by Dre",
       "industry": "consumer-electronics",
       "tier": "minor",
-      "payment": 4000000,
+      "baseMonthlyPayment": 333333,
       "minReputation": 22,
       "rivalGroup": "headphones",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Beats_Electronics_logo.svg/200px-Beats_Electronics_logo.svg.png"
@@ -805,7 +805,7 @@
       "name": "Bose",
       "industry": "consumer-electronics",
       "tier": "minor",
-      "payment": 4500000,
+      "baseMonthlyPayment": 375000,
       "minReputation": 25,
       "rivalGroup": "headphones",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Bose_logo.svg/200px-Bose_logo.svg.png"
@@ -815,7 +815,7 @@
       "name": "Snapchat",
       "industry": "technology",
       "tier": "minor",
-      "payment": 5000000,
+      "baseMonthlyPayment": 416667,
       "minReputation": 28,
       "rivalGroup": "social-media",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/a/ad/Snapchat_logo.svg/200px-Snapchat_logo.svg.png"
@@ -825,7 +825,7 @@
       "name": "TikTok",
       "industry": "technology",
       "tier": "minor",
-      "payment": 5500000,
+      "baseMonthlyPayment": 458333,
       "minReputation": 30,
       "rivalGroup": "social-media",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/a/a9/TikTok_logo.svg/200px-TikTok_logo.svg.png"
@@ -835,7 +835,7 @@
       "name": "X",
       "industry": "technology",
       "tier": "minor",
-      "payment": 4500000,
+      "baseMonthlyPayment": 375000,
       "minReputation": 25,
       "rivalGroup": "social-media",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/X_logo_2023.svg/200px-X_logo_2023.svg.png"
@@ -845,7 +845,7 @@
       "name": "Logitech",
       "industry": "technology",
       "tier": "minor",
-      "payment": 3500000,
+      "baseMonthlyPayment": 291667,
       "minReputation": 20,
       "rivalGroup": "gaming-peripherals",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Logitech_logo.svg/200px-Logitech_logo.svg.png"
@@ -855,7 +855,7 @@
       "name": "Razer",
       "industry": "technology",
       "tier": "minor",
-      "payment": 3000000,
+      "baseMonthlyPayment": 250000,
       "minReputation": 18,
       "rivalGroup": "gaming-peripherals",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/4/40/Razer_snake_logo.svg/200px-Razer_snake_logo.svg.png"
@@ -865,7 +865,7 @@
       "name": "SteelSeries",
       "industry": "technology",
       "tier": "minor",
-      "payment": 2500000,
+      "baseMonthlyPayment": 208333,
       "minReputation": 15,
       "rivalGroup": "gaming-peripherals",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/SteelSeries_logo.svg/200px-SteelSeries_logo.svg.png"
@@ -875,7 +875,7 @@
       "name": "Kaspersky",
       "industry": "technology",
       "tier": "minor",
-      "payment": 4000000,
+      "baseMonthlyPayment": 333333,
       "minReputation": 22,
       "rivalGroup": "cybersecurity",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Kaspersky_Lab_logo.svg/200px-Kaspersky_Lab_logo.svg.png"
@@ -885,7 +885,7 @@
       "name": "Norton",
       "industry": "technology",
       "tier": "minor",
-      "payment": 3500000,
+      "baseMonthlyPayment": 291667,
       "minReputation": 20,
       "rivalGroup": "cybersecurity",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/NortonLifeLock_Company_Logo.svg/200px-NortonLifeLock_Company_Logo.svg.png"
@@ -895,7 +895,7 @@
       "name": "CrowdStrike",
       "industry": "technology",
       "tier": "minor",
-      "payment": 4500000,
+      "baseMonthlyPayment": 375000,
       "minReputation": 25,
       "rivalGroup": "cybersecurity",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/CrowdStrike_logo.svg/200px-CrowdStrike_logo.svg.png"
@@ -905,7 +905,7 @@
       "name": "Palo Alto Networks",
       "industry": "technology",
       "tier": "minor",
-      "payment": 4000000,
+      "baseMonthlyPayment": 333333,
       "minReputation": 22,
       "rivalGroup": "cybersecurity",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Palo_Alto_Networks_2020_Logo.svg/200px-Palo_Alto_Networks_2020_Logo.svg.png"
@@ -915,7 +915,7 @@
       "name": "3M",
       "industry": "industrial",
       "tier": "minor",
-      "payment": 4000000,
+      "baseMonthlyPayment": 333333,
       "minReputation": 22,
       "rivalGroup": null,
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/3M_wordmark.svg/200px-3M_wordmark.svg.png"
@@ -925,7 +925,7 @@
       "name": "Hilton",
       "industry": "hospitality",
       "tier": "minor",
-      "payment": 5000000,
+      "baseMonthlyPayment": 416667,
       "minReputation": 28,
       "rivalGroup": "hotels",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Hilton_Hotels_%26_Resorts_logo.svg/200px-Hilton_Hotels_%26_Resorts_logo.svg.png"
@@ -935,7 +935,7 @@
       "name": "Marriott",
       "industry": "hospitality",
       "tier": "minor",
-      "payment": 5500000,
+      "baseMonthlyPayment": 458333,
       "minReputation": 30,
       "rivalGroup": "hotels",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Marriott_hotels_logo14.svg/200px-Marriott_hotels_logo14.svg.png"
@@ -945,7 +945,7 @@
       "name": "Crowne Plaza",
       "industry": "hospitality",
       "tier": "minor",
-      "payment": 4000000,
+      "baseMonthlyPayment": 333333,
       "minReputation": 22,
       "rivalGroup": "hotels",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Crowne_Plaza_logo_2022.svg/200px-Crowne_Plaza_logo_2022.svg.png"
@@ -955,7 +955,7 @@
       "name": "Airbnb",
       "industry": "hospitality",
       "tier": "minor",
-      "payment": 5000000,
+      "baseMonthlyPayment": 416667,
       "minReputation": 28,
       "rivalGroup": "hotels",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Airbnb_Logo_B%C3%A9lo.svg/200px-Airbnb_Logo_B%C3%A9lo.svg.png"
@@ -965,7 +965,7 @@
       "name": "Evian",
       "industry": "beverages",
       "tier": "minor",
-      "payment": 3000000,
+      "baseMonthlyPayment": 250000,
       "minReputation": 18,
       "rivalGroup": "bottled-water",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Evian_2019.svg/200px-Evian_2019.svg.png"
@@ -975,7 +975,7 @@
       "name": "Volvic",
       "industry": "beverages",
       "tier": "minor",
-      "payment": 2500000,
+      "baseMonthlyPayment": 208333,
       "minReputation": 15,
       "rivalGroup": "bottled-water",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Volvic_logo.svg/200px-Volvic_logo.svg.png"
@@ -985,7 +985,7 @@
       "name": "Gatorade",
       "industry": "beverages",
       "tier": "minor",
-      "payment": 4000000,
+      "baseMonthlyPayment": 333333,
       "minReputation": 22,
       "rivalGroup": "sports-drinks",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/a/a0/Gatorade_logo.svg/200px-Gatorade_logo.svg.png"
@@ -995,7 +995,7 @@
       "name": "Powerade",
       "industry": "beverages",
       "tier": "minor",
-      "payment": 3500000,
+      "baseMonthlyPayment": 291667,
       "minReputation": 20,
       "rivalGroup": "sports-drinks",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/b/b3/Powerade_logo.svg/200px-Powerade_logo.svg.png"
@@ -1005,7 +1005,7 @@
       "name": "Under Armour",
       "industry": "apparel",
       "tier": "minor",
-      "payment": 4500000,
+      "baseMonthlyPayment": 375000,
       "minReputation": 25,
       "rivalGroup": "sportswear",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Under_armour_logo.svg/200px-Under_armour_logo.svg.png"
@@ -1015,7 +1015,7 @@
       "name": "Alpinestars",
       "industry": "apparel",
       "tier": "minor",
-      "payment": 3000000,
+      "baseMonthlyPayment": 250000,
       "minReputation": 18,
       "rivalGroup": "racing-gear",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Alpinestars_logo.svg/200px-Alpinestars_logo.svg.png"
@@ -1025,7 +1025,7 @@
       "name": "Sparco",
       "industry": "apparel",
       "tier": "minor",
-      "payment": 2500000,
+      "baseMonthlyPayment": 208333,
       "minReputation": 15,
       "rivalGroup": "racing-gear",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Sparco_logo.svg/200px-Sparco_logo.svg.png"
@@ -1035,7 +1035,7 @@
       "name": "OMP Racing",
       "industry": "apparel",
       "tier": "minor",
-      "payment": 2000000,
+      "baseMonthlyPayment": 166667,
       "minReputation": 12,
       "rivalGroup": "racing-gear",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/OMP_logo.svg/200px-OMP_logo.svg.png"
@@ -1045,7 +1045,7 @@
       "name": "T-Mobile",
       "industry": "telecommunications",
       "tier": "minor",
-      "payment": 5000000,
+      "baseMonthlyPayment": 416667,
       "minReputation": 28,
       "rivalGroup": "mobile-carriers",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/T-Mobile_logo.svg/200px-T-Mobile_logo.svg.png"
@@ -1055,7 +1055,7 @@
       "name": "Verizon",
       "industry": "telecommunications",
       "tier": "minor",
-      "payment": 5500000,
+      "baseMonthlyPayment": 458333,
       "minReputation": 30,
       "rivalGroup": "mobile-carriers",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Verizon_2015_logo_-vector.svg/200px-Verizon_2015_logo_-vector.svg.png"
@@ -1065,7 +1065,7 @@
       "name": "Uber",
       "industry": "technology",
       "tier": "minor",
-      "payment": 5000000,
+      "baseMonthlyPayment": 416667,
       "minReputation": 28,
       "rivalGroup": "rideshare",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Uber_logo_2018.svg/200px-Uber_logo_2018.svg.png"
@@ -1075,7 +1075,7 @@
       "name": "Zoom",
       "industry": "technology",
       "tier": "minor",
-      "payment": 4500000,
+      "baseMonthlyPayment": 375000,
       "minReputation": 25,
       "rivalGroup": "video-conferencing",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Zoom_Logo_2022.svg/200px-Zoom_Logo_2022.svg.png"
@@ -1085,7 +1085,7 @@
       "name": "Slack",
       "industry": "technology",
       "tier": "minor",
-      "payment": 4000000,
+      "baseMonthlyPayment": 333333,
       "minReputation": 22,
       "rivalGroup": null,
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Slack_icon_2019.svg/200px-Slack_icon_2019.svg.png"
@@ -1095,7 +1095,7 @@
       "name": "LinkedIn",
       "industry": "technology",
       "tier": "minor",
-      "payment": 4500000,
+      "baseMonthlyPayment": 375000,
       "minReputation": 25,
       "rivalGroup": "social-media",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/LinkedIn_logo_initials.png/200px-LinkedIn_logo_initials.png"
@@ -1105,7 +1105,7 @@
       "name": "Stripe",
       "industry": "payments",
       "tier": "minor",
-      "payment": 5000000,
+      "baseMonthlyPayment": 416667,
       "minReputation": 28,
       "rivalGroup": "digital-payments",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Stripe_Logo%2C_revised_2016.svg/200px-Stripe_Logo%2C_revised_2016.svg.png"
@@ -1115,7 +1115,7 @@
       "name": "Block",
       "industry": "payments",
       "tier": "minor",
-      "payment": 4500000,
+      "baseMonthlyPayment": 375000,
       "minReputation": 25,
       "rivalGroup": "digital-payments",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Block%2C_Inc._logo.svg/200px-Block%2C_Inc._logo.svg.png"
@@ -1125,7 +1125,7 @@
       "name": "Coinbase",
       "industry": "finance",
       "tier": "minor",
-      "payment": 5500000,
+      "baseMonthlyPayment": 458333,
       "minReputation": 30,
       "rivalGroup": "crypto",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Coinbase.svg/200px-Coinbase.svg.png"
@@ -1135,7 +1135,7 @@
       "name": "Nestlé",
       "industry": "food",
       "tier": "minor",
-      "payment": 6000000,
+      "baseMonthlyPayment": 500000,
       "minReputation": 32,
       "rivalGroup": null,
       "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/d/d8/Nestl%C3%A9.svg/200px-Nestl%C3%A9.svg.png"
@@ -1145,7 +1145,7 @@
       "name": "Unilever",
       "industry": "consumer-goods",
       "tier": "minor",
-      "payment": 5500000,
+      "baseMonthlyPayment": 458333,
       "minReputation": 30,
       "rivalGroup": null,
       "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/1/18/Unilever_logo.svg/200px-Unilever_logo.svg.png"
@@ -1155,7 +1155,7 @@
       "name": "Procter & Gamble",
       "industry": "consumer-goods",
       "tier": "minor",
-      "payment": 5500000,
+      "baseMonthlyPayment": 458333,
       "minReputation": 30,
       "rivalGroup": null,
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/P%26G_logo.png/200px-P%26G_logo.png"
@@ -1165,7 +1165,7 @@
       "name": "L'Oréal",
       "industry": "beauty",
       "tier": "minor",
-      "payment": 5000000,
+      "baseMonthlyPayment": 416667,
       "minReputation": 28,
       "rivalGroup": "beauty",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/L%27Or%C3%A9al_logo.svg/200px-L%27Or%C3%A9al_logo.svg.png"
@@ -1175,7 +1175,7 @@
       "name": "LVMH",
       "industry": "luxury",
       "tier": "minor",
-      "payment": 6500000,
+      "baseMonthlyPayment": 541667,
       "minReputation": 35,
       "rivalGroup": "luxury-conglomerates",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/LVMH_logo.svg/200px-LVMH_logo.svg.png"
@@ -1185,7 +1185,7 @@
       "name": "Hermès",
       "industry": "luxury",
       "tier": "minor",
-      "payment": 6000000,
+      "baseMonthlyPayment": 500000,
       "minReputation": 35,
       "rivalGroup": "luxury-fashion",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Herm%C3%A8s_logo.svg/200px-Herm%C3%A8s_logo.svg.png"
@@ -1195,7 +1195,7 @@
       "name": "Cartier",
       "industry": "luxury",
       "tier": "minor",
-      "payment": 5500000,
+      "baseMonthlyPayment": 458333,
       "minReputation": 32,
       "rivalGroup": "watches",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Cartier_Logo.svg/200px-Cartier_Logo.svg.png"
@@ -1205,7 +1205,7 @@
       "name": "Breitling",
       "industry": "luxury",
       "tier": "minor",
-      "payment": 5000000,
+      "baseMonthlyPayment": 416667,
       "minReputation": 30,
       "rivalGroup": "watches",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Breitling_SA_logo.svg/200px-Breitling_SA_logo.svg.png"
@@ -1215,7 +1215,7 @@
       "name": "Longines",
       "industry": "luxury",
       "tier": "minor",
-      "payment": 4500000,
+      "baseMonthlyPayment": 375000,
       "minReputation": 28,
       "rivalGroup": "watches",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Longines_logo.svg/200px-Longines_logo.svg.png"
@@ -1225,7 +1225,7 @@
       "name": "Tissot",
       "industry": "luxury",
       "tier": "minor",
-      "payment": 4000000,
+      "baseMonthlyPayment": 333333,
       "minReputation": 25,
       "rivalGroup": "watches",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Tissot_Logo.svg/200px-Tissot_Logo.svg.png"
@@ -1235,7 +1235,7 @@
       "name": "Swatch",
       "industry": "luxury",
       "tier": "minor",
-      "payment": 3500000,
+      "baseMonthlyPayment": 291667,
       "minReputation": 22,
       "rivalGroup": "watches",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Swatch_Logo.svg/200px-Swatch_Logo.svg.png"
@@ -1245,7 +1245,7 @@
       "name": "Canon",
       "industry": "consumer-electronics",
       "tier": "minor",
-      "payment": 5000000,
+      "baseMonthlyPayment": 416667,
       "minReputation": 28,
       "rivalGroup": "cameras",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Canon_wordmark.svg/200px-Canon_wordmark.svg.png"
@@ -1255,7 +1255,7 @@
       "name": "Nikon",
       "industry": "consumer-electronics",
       "tier": "minor",
-      "payment": 4500000,
+      "baseMonthlyPayment": 375000,
       "minReputation": 25,
       "rivalGroup": "cameras",
       "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Nikon_Logo.svg/200px-Nikon_Logo.svg.png"
