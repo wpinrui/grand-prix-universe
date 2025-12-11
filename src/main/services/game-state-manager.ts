@@ -115,7 +115,7 @@ import type {
   SpecReleaseData,
   SpecReleaseStatChange,
 } from '../../shared/domain/types';
-import { PendingPartSource, DriverRole, RaceFinishStatus, PartsLogEntryType } from '../../shared/domain/types';
+import { PendingPartSource, DriverRole, RaceFinishStatus, PartsLogEntryType, NegotiationStatus } from '../../shared/domain/types';
 import {
   getPreSeasonStartDate,
   getWeekNumber,
@@ -138,6 +138,7 @@ import {
   generateEstimatedPower,
   getEffectiveEngineStats,
   getSpecBonusesAsEngineStats,
+  createNegotiation,
 } from '../../shared/domain/engine-utils';
 
 /** Current save format version */
@@ -741,6 +742,7 @@ function buildGameState(params: BuildGameStateParams): GameState {
     manufacturerContracts,
     manufacturerSpecs,
     engineAnalytics,
+    engineNegotiations: [],
 
     pastSeasons: [],
     events: [],
@@ -2805,6 +2807,84 @@ export const GameStateManager = {
     // Deduct cost and mark as purchased
     playerTeam.budget -= cost;
     teamState.engineState.optimisationPurchasedForNextSeason = true;
+
+    return state;
+  },
+
+  /**
+   * Starts a negotiation with a manufacturer for next season's engine supply.
+   */
+  startEngineNegotiation(manufacturerId: string): GameState {
+    const state = getGameState();
+    if (!state) throw new Error('No game in progress');
+
+    const playerTeamId = state.playerTeamId;
+
+    // Check if already negotiating with this manufacturer
+    const existing = state.engineNegotiations.find(
+      (n) => n.teamId === playerTeamId && n.manufacturerId === manufacturerId
+    );
+    if (existing) {
+      throw new Error('Already negotiating with this manufacturer');
+    }
+
+    // Create new negotiation
+    const negotiation = createNegotiation(
+      playerTeamId,
+      manufacturerId,
+      state.currentDate,
+      state.seasonNumber + 1
+    );
+
+    state.engineNegotiations.push(negotiation);
+
+    return state;
+  },
+
+  /**
+   * Responds to a contract offer (accept, reject, or counter).
+   */
+  respondToEngineOffer(
+    negotiationId: string,
+    offerId: string,
+    response: 'accept' | 'reject' | 'counter',
+    counterTerms?: {
+      annualCost: number;
+      duration: number;
+      upgradesIncluded: number;
+      customisationPointsIncluded: number;
+      optimisationIncluded: boolean;
+    }
+  ): GameState {
+    const state = getGameState();
+    if (!state) throw new Error('No game in progress');
+
+    // Find the negotiation by checking for matching offer
+    const negotiation = state.engineNegotiations.find((n) =>
+      n.offers.some((o) => o.id === offerId)
+    );
+
+    if (!negotiation) {
+      throw new Error('Negotiation not found');
+    }
+
+    const offer = negotiation.offers.find((o) => o.id === offerId);
+    if (!offer) {
+      throw new Error('Offer not found');
+    }
+
+    if (response === 'accept') {
+      negotiation.status = NegotiationStatus.Accepted;
+      // Contract signing will be handled by a separate system
+    } else if (response === 'reject') {
+      negotiation.status = NegotiationStatus.Rejected;
+    } else if (response === 'counter') {
+      if (!counterTerms) {
+        throw new Error('Counter terms required for counter offer');
+      }
+      negotiation.status = NegotiationStatus.CounterPending;
+      negotiation.playerCounterTerms = counterTerms;
+    }
 
     return state;
   },
