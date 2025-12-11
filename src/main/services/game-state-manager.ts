@@ -133,6 +133,11 @@ import {
   generateSpecBonus,
   ENGINE_STAT_KEYS,
   ENGINE_STAT_DISPLAY_NAMES,
+  createInitialEngineAnalytics,
+  calculateTruePower,
+  generateEstimatedPower,
+  getEffectiveEngineStats,
+  getSpecBonusesAsEngineStats,
 } from '../../shared/domain/engine-utils';
 
 /** Current save format version */
@@ -688,6 +693,9 @@ function buildGameState(params: BuildGameStateParams): GameState {
     .filter((m) => m.type === ManufacturerType.Engine)
     .map((m) => createInitialSpecState(m.id));
 
+  // Create initial engine analytics (empty - data collected after each race)
+  const engineAnalytics = createInitialEngineAnalytics(teams.map((t) => t.id));
+
   // Create initial cars (2 per team)
   const cars = createInitialCars(teams);
 
@@ -732,6 +740,7 @@ function buildGameState(params: BuildGameStateParams): GameState {
     sponsorDeals,
     manufacturerContracts,
     manufacturerSpecs,
+    engineAnalytics,
 
     pastSeasons: [],
     events: [],
@@ -2097,6 +2106,60 @@ function processPostRaceRepairs(
 }
 
 /**
+ * Generate engine analytics data for all teams after a race.
+ * Each team gets an estimated power value with ±8% error.
+ */
+function generateEngineAnalyticsData(state: GameState, raceNumber: number): void {
+  for (const team of state.teams) {
+    // Get the team's engine contract
+    const contract = state.manufacturerContracts.find(
+      (c) => c.teamId === team.id && c.type === ManufacturerType.Engine
+    );
+    if (!contract) continue;
+
+    // Get manufacturer base stats
+    const manufacturer = state.manufacturers.find((m) => m.id === contract.manufacturerId);
+    if (!manufacturer) continue;
+
+    // Get manufacturer spec state
+    const specState = state.manufacturerSpecs.find((s) => s.manufacturerId === manufacturer.id);
+    if (!specState) continue;
+
+    // Get team engine state (use car1 as representative - or average both?)
+    const teamState = state.teamStates[team.id];
+    if (!teamState) continue;
+
+    // Calculate effective stats for car1 (representative)
+    const effectiveStats = getEffectiveEngineStats(
+      manufacturer.engineStats,
+      teamState.engineState.car1Engine.specVersion,
+      getSpecBonusesAsEngineStats(specState),
+      teamState.engineState.car1Engine.customisation
+    );
+
+    // Calculate true power and generate estimated value with error
+    const truePower = calculateTruePower(effectiveStats);
+    const estimatedPower = generateEstimatedPower(truePower);
+
+    // Find or create analytics entry for this team
+    const analyticsIndex = state.engineAnalytics.findIndex((a) => a.teamId === team.id);
+    if (analyticsIndex === -1) {
+      // Create new entry if not found
+      state.engineAnalytics.push({
+        teamId: team.id,
+        dataPoints: [{ raceNumber, estimatedPower }],
+      });
+    } else {
+      // Add data point to existing entry
+      state.engineAnalytics[analyticsIndex].dataPoints.push({
+        raceNumber,
+        estimatedPower,
+      });
+    }
+  }
+}
+
+/**
  * Process a race weekend: generate result, apply changes, mark complete.
  * Called when the game is in RaceWeekend phase.
  */
@@ -2120,6 +2183,9 @@ function processRaceWeekend(state: GameState, currentRace: CalendarEntry): void 
 
   // Process post-race repairs for all teams
   processPostRaceRepairs(state, raceResult, currentRace.circuitId);
+
+  // Generate engine analytics data for all teams
+  generateEngineAnalyticsData(state, currentRace.raceNumber);
 }
 
 /**
