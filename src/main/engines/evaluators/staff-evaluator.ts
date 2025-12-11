@@ -448,7 +448,7 @@ export function getChiefRoleDisplayName(role: ChiefRole): string {
     case ChiefRole.Mechanic:
       return 'Chief Mechanic';
     case ChiefRole.Commercial:
-      return 'Chief Commercial';
+      return 'Commercial Director';
     default:
       return 'Chief';
   }

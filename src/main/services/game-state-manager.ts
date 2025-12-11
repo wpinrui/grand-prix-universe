@@ -17,6 +17,7 @@ import {
   MIN_DESPERATION_MULTIPLIER,
   DESPERATION_MULTIPLIER_RANGE,
   evaluateStaffApproach,
+  getChiefRoleDisplayName,
 } from '../engines/evaluators';
 import {
   IpcEvents,
@@ -629,21 +630,6 @@ function createStaffContractFromNegotiation(
   };
 }
 
-/**
- * Get the display name for a chief role.
- */
-function getChiefRoleDisplayName(role: ChiefRole): string {
-  switch (role) {
-    case ChiefRole.Designer:
-      return 'Chief Designer';
-    case ChiefRole.Mechanic:
-      return 'Chief Mechanic';
-    case ChiefRole.Commercial:
-      return 'Commercial Director';
-    default:
-      return 'Chief';
-  }
-}
 
 /**
  * Generate news headline and email for a staff signing.
@@ -2747,6 +2733,9 @@ function teamDriverCommittedElsewhere(state: GameState, teamId: string, forSeaso
 const STAFF_OUTREACH_START_MONTH = 5;
 const STAFF_OUTREACH_END_MONTH = 6;
 
+/** Buyout cost multiplier when staff approaches new team while under contract */
+const STAFF_BUYOUT_SALARY_MULTIPLIER = 0.5;
+
 /**
  * Check if staff has already approached this team
  */
@@ -2835,15 +2824,11 @@ function processStaffOutreach(state: GameState): boolean {
               salary: approachResult.proposedSalary,
               duration: approachResult.proposedDuration,
               signingBonus: 0,
-              buyoutRequired: chief.teamId ? Math.round(chief.salary * 0.5) : 0, // 50% of current salary as buyout
+              buyoutRequired: chief.teamId ? Math.round(chief.salary * STAFF_BUYOUT_SALARY_MULTIPLIER) : 0,
               bonusPercent: 10, // 10% performance bonus
             } as StaffContractTerms,
             offeredDate: { ...currentDate },
-            expiresDate: {
-              year: currentDate.year,
-              month: currentDate.month + 1,
-              day: currentDate.day,
-            },
+            expiresDate: offsetDate(currentDate, 30),
           },
         ],
       };
