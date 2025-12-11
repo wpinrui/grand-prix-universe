@@ -1799,7 +1799,6 @@ function checkPendingParts(state: GameState, currentDate: GameDate): boolean {
 /**
  * Process spec releases for all engine manufacturers
  * Each manufacturer has a daily probability of releasing a new spec
- * Returns true if any spec was released (for potential news generation)
  */
 function processSpecReleases(state: GameState, currentDate: GameDate): void {
   // Only process during racing season (not pre-season or post-season)
