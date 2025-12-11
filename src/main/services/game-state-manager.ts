@@ -126,6 +126,7 @@ import {
   PartsLogEntryType,
   NegotiationPhase,
   StakeholderType,
+  EntityType,
   type EmailData,
   type ChassisStageCompleteData,
   type TechBreakthroughData,
@@ -174,6 +175,8 @@ import {
   getCurrentManufacturer,
   OFFER_EXPIRY_DAYS,
   LATE_SEASON_MONTH,
+  DEFAULT_MAX_ROUNDS,
+  DEFAULT_RELATIONSHIP_SCORE,
 } from '../../shared/domain/engine-utils';
 import { evaluateDriverApproach } from '../engines/evaluators/team-evaluator';
 
@@ -689,7 +692,7 @@ function generateStaffSigningEvent(
       type: 'STAFF_HIRED',
       date: { ...state.currentDate },
       involvedEntities: [
-        { type: 'staff', id: chief.id },
+        { type: EntityType.Staff, id: chief.id },
         teamRef(newTeam.id),
         ...(oldTeam ? [teamRef(oldTeam.id)] : []),
       ],
@@ -2970,6 +2973,11 @@ function processStaffOutreach(state: GameState): boolean {
             expiresDate: offsetDate(currentDate, 30),
           },
         ],
+        currentRound: 1,
+        maxRounds: DEFAULT_MAX_ROUNDS,
+        relationshipScoreBefore: DEFAULT_RELATIONSHIP_SCORE,
+        hasCompetingOffer: false,
+        isProactiveOutreach: true,
       };
 
       state.negotiations.push(negotiation);
@@ -3186,8 +3194,8 @@ function createSponsorOutreachNegotiation(
     forSeason,
     stakeholderType: StakeholderType.Sponsor,
     phase: NegotiationPhase.ResponseReceived, // Sponsor initiated, awaiting player response
-    startDate: state.currentDate,
-    initiatedBy: 'counterparty',
+    startedDate: { ...state.currentDate },
+    lastActivityDate: { ...state.currentDate },
     sponsorId: sponsor.id,
     rounds: [
       {
@@ -3204,6 +3212,11 @@ function createSponsorOutreachNegotiation(
         expiresDate: offsetDate(state.currentDate, 14),
       },
     ],
+    currentRound: 1,
+    maxRounds: DEFAULT_MAX_ROUNDS,
+    relationshipScoreBefore: DEFAULT_RELATIONSHIP_SCORE,
+    hasCompetingOffer: false,
+    isProactiveOutreach: true,
   };
 }
 

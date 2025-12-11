@@ -42,7 +42,9 @@ export interface ColorPalette {
  * Get a contrasting text color (white or black) for a given background
  */
 function getContrastColor(background: string): string {
+  // eslint-disable-next-line import/no-named-as-default-member
   const whiteContrast = chroma.contrast(background, 'white');
+  // eslint-disable-next-line import/no-named-as-default-member
   const blackContrast = chroma.contrast(background, 'black');
   return whiteContrast >= blackContrast ? '#ffffff' : '#000000';
 }
