@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { useDerivedGameState } from '../hooks';
 import { SectionHeading, TabBar } from '../components';
 import type { Tab } from '../components';
-import { ACCENT_CARD_STYLE, GHOST_BORDERED_BUTTON_CLASSES } from '../utils/theme-styles';
+import { ACCENT_CARD_STYLE, GHOST_BORDERED_BUTTON_CLASSES, PRIMARY_BUTTON_CLASSES } from '../utils/theme-styles';
 import { formatMoney } from '../utils/format';
 import { seasonToYear } from '../../shared/utils/date-utils';
 import { IpcChannels } from '../../shared/ipc';
@@ -704,7 +704,7 @@ function ActiveNegotiationCard({
           <div className="flex gap-2">
             <button
               type="button"
-              className="flex-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium cursor-pointer"
+              className={`${PRIMARY_BUTTON_CLASSES} flex-1 cursor-pointer`}
               onClick={() => onRespondToOffer(latestOffer.id, 'accept')}
             >
               Accept Offer
