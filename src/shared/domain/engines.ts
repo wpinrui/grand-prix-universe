@@ -690,6 +690,12 @@ export interface NegotiationProcessingInput {
   /** All drivers (for driver negotiations) */
   drivers: Driver[];
 
+  /** Driver runtime states (for desperation multiplier) */
+  driverStates: Record<string, DriverRuntimeState>;
+
+  /** Constructor championship standings: teamId → position (1-indexed) */
+  constructorStandings: Map<string, number>;
+
   /** All chiefs (for staff negotiations) */
   chiefs: Chief[];
 

@@ -14,6 +14,10 @@ import { SaveManager } from './save-manager';
 import { EngineManager } from '../engines/engine-manager';
 import { generateStubRaceResult } from '../engines/stubs';
 import {
+  MIN_DESPERATION_MULTIPLIER,
+  DESPERATION_MULTIPLIER_RANGE,
+} from '../engines/evaluators';
+import {
   IpcEvents,
   type IpcEventPayloads,
   type SaveResult,
@@ -493,8 +497,15 @@ function matchesTechProject(component: TechnologyComponent, attribute: Technolog
 
 /**
  * Creates initial runtime state for a driver
+ * desperationMultiplier is randomized per driver (MIN to MIN+RANGE)
+ * Lower values = more willing to accept worse contract offers
  */
 function createInitialDriverState(): DriverRuntimeState {
+  // Random desperation multiplier using constants from driver-evaluator
+  // Lower = more desperate, higher = more demanding
+  const desperationMultiplier =
+    MIN_DESPERATION_MULTIPLIER + Math.random() * DESPERATION_MULTIPLIER_RANGE;
+
   return {
     morale: INITIAL_MORALE,
     fitness: INITIAL_FITNESS,
@@ -504,6 +515,7 @@ function createInitialDriverState(): DriverRuntimeState {
     isAngry: false,
     engineUnitsUsed: 0,
     gearboxRaceCount: 0,
+    desperationMultiplier,
   };
 }
 
@@ -2063,11 +2075,21 @@ function buildNegotiationInput(state: GameState): NegotiationProcessingInput {
     .filter((c) => c.type === ManufacturerType.Engine && c.endSeason >= nextSeason)
     .map((c) => c.teamId);
 
+  // Build constructor standings map from current season data
+  const constructorStandings = new Map<string, number>();
+  if (state.currentSeason.constructorStandings) {
+    state.currentSeason.constructorStandings.forEach((standing, index) => {
+      constructorStandings.set(standing.teamId, index + 1); // 1-indexed position
+    });
+  }
+
   return {
     negotiations: state.negotiations,
     currentDate: state.currentDate,
     teams: state.teams,
     drivers: state.drivers,
+    driverStates: state.driverStates,
+    constructorStandings,
     chiefs: state.chiefs,
     manufacturers: state.manufacturers,
     activeManufacturerContracts: state.manufacturerContracts,

@@ -22,8 +22,10 @@ import type {
 import type {
   Negotiation,
   ManufacturerNegotiation,
+  DriverNegotiation,
   NegotiationRound,
   GameDate,
+  DriverContractTerms,
 } from '../../shared/domain/types';
 import {
   StakeholderType,
@@ -31,7 +33,11 @@ import {
   ResponseType,
   ResponseTone,
 } from '../../shared/domain';
-import { evaluateManufacturerOffer } from './evaluators';
+import {
+  evaluateManufacturerOffer,
+  evaluateDriverOffer,
+  MAX_DESPERATION_MULTIPLIER,
+} from './evaluators';
 import { offsetDate } from '../../shared/utils/date-utils';
 
 // =============================================================================
@@ -46,6 +52,9 @@ const DEFAULT_EXPIRATION_DAYS = 14;
 
 /** Default relationship score when not specified (neutral) */
 const DEFAULT_RELATIONSHIP_SCORE = 50;
+
+/** Maximum rounds before negotiations typically fail */
+const MAX_NEGOTIATION_ROUNDS = 5;
 
 // =============================================================================
 // DATE HELPERS
@@ -118,11 +127,63 @@ function dispatchToEvaluator(
       });
     }
 
-    case StakeholderType.Driver:
+    case StakeholderType.Driver: {
+      const driverNegotiation = negotiation as DriverNegotiation;
+      const driver = input.drivers.find((d) => d.id === driverNegotiation.driverId);
+      const offeringTeam = input.teams.find((t) => t.id === negotiation.teamId);
+
+      if (!driver || !offeringTeam) {
+        return {
+          responseType: ResponseType.Reject,
+          counterTerms: null,
+          responseTone: ResponseTone.Professional,
+          responseDelayDays: DEFAULT_RESPONSE_DELAY_DAYS,
+          isNewsworthy: false,
+          relationshipChange: 0,
+        };
+      }
+
+      // Get offered terms from the last round
+      const lastRound = negotiation.rounds[negotiation.rounds.length - 1];
+      const terms = lastRound.terms as DriverContractTerms;
+
+      // Get driver's desperation multiplier from runtime state
+      const driverState = input.driverStates[driver.id];
+      const desperationMultiplier =
+        driverState?.desperationMultiplier ?? MAX_DESPERATION_MULTIPLIER;
+
+      // Calculate available seats: teams with fewer than 2 drivers
+      const teamDriverCounts = new Map<string, number>();
+      for (const d of input.drivers) {
+        if (d.teamId) {
+          teamDriverCounts.set(d.teamId, (teamDriverCounts.get(d.teamId) ?? 0) + 1);
+        }
+      }
+      const availableSeats = input.teams.reduce((count, team) => {
+        const driverCount = teamDriverCounts.get(team.id) ?? 0;
+        return count + Math.max(0, 2 - driverCount);
+      }, 0);
+
+      return evaluateDriverOffer({
+        driver,
+        offeringTeam,
+        offeredSalary: terms.salary,
+        offeredDuration: terms.duration,
+        allDrivers: input.drivers,
+        allTeams: input.teams,
+        constructorStandings: input.constructorStandings,
+        availableSeats,
+        currentRound: negotiation.rounds.length,
+        maxRounds: MAX_NEGOTIATION_ROUNDS,
+        desperationMultiplier,
+        gameYear: input.currentDate.year,
+      });
+    }
+
     case StakeholderType.Staff:
     case StakeholderType.Sponsor:
       // Stub: Accept with default delay
-      // TODO: Implement driver, staff, and sponsor evaluators
+      // TODO: Implement staff and sponsor evaluators
       return {
         responseType: ResponseType.Accept,
         counterTerms: null,

@@ -13,6 +13,7 @@
  */
 
 import type { Driver, Team, CareerSeasonRecord } from '../../../shared/domain/types';
+import { DriverRole } from '../../../shared/domain/types';
 import type { NegotiationEvaluationResult } from '../../../shared/domain/engines';
 import { ResponseType, ResponseTone } from '../../../shared/domain';
 
@@ -71,6 +72,27 @@ const MANY_SEATS_THRESHOLD = 5;
 
 /** Multiplier for asking more than required salary when countering a good offer */
 const COUNTER_ASK_MULTIPLIER = 1.1;
+
+/** Threshold below which personal desperation multiplier triggers desperation behavior */
+const PERSONAL_DESPERATION_THRESHOLD = 0.8;
+
+/**
+ * Minimum desperation multiplier value (most desperate drivers)
+ * Exported for use by game-state-manager when initializing driver states
+ */
+export const MIN_DESPERATION_MULTIPLIER = 0.7;
+
+/**
+ * Desperation multiplier range (random value between MIN and MIN + RANGE)
+ * Exported for use by game-state-manager when initializing driver states
+ */
+export const DESPERATION_MULTIPLIER_RANGE = 0.3;
+
+/**
+ * Maximum desperation multiplier value (least desperate drivers)
+ * Used as fallback when driver state is missing
+ */
+export const MAX_DESPERATION_MULTIPLIER = 1.0;
 
 // =============================================================================
 // PERCEIVED VALUE CALCULATION
@@ -213,11 +235,12 @@ function calculateTeamQualityMultiplier(
 /**
  * Calculate career weight based on driver age.
  * Higher weight = more focused on money than performance.
+ * @param driver - The driver to calculate career weight for
+ * @param gameYear - The current in-game year (not real-world year)
  */
-function calculateCareerWeight(driver: Driver): number {
+function calculateCareerWeight(driver: Driver, gameYear: number): number {
   const birthYear = new Date(driver.dateOfBirth).getFullYear();
-  const currentYear = new Date().getFullYear(); // TODO: Use game year
-  const age = currentYear - birthYear;
+  const age = gameYear - birthYear;
 
   if (age < YOUNG_AGE_THRESHOLD) {
     return 0.3; // Young: 70% performance focus
@@ -245,6 +268,10 @@ export interface DriverEvaluationInput {
   availableSeats: number; // How many open seats remain on grid
   currentRound: number;
   maxRounds: number;
+  /** Driver's personal desperation multiplier (0.7-1.0, lower = more willing to accept less) */
+  desperationMultiplier: number;
+  /** Current in-game year (for age/career stage calculations) */
+  gameYear: number;
 }
 
 /**
@@ -261,24 +288,31 @@ export function evaluateDriverOffer(input: DriverEvaluationInput): NegotiationEv
     availableSeats,
     currentRound,
     maxRounds,
+    desperationMultiplier,
+    gameYear,
   } = input;
 
   // Calculate key metrics
   const marketValue = calculateMarketValue(driver, allDrivers);
   const driverAbility = calculateDriverAbility(driver);
   const teamQuality = calculateTeamQuality(offeringTeam, allTeams, constructorStandings);
-  const careerWeight = calculateCareerWeight(driver);
+  const careerWeight = calculateCareerWeight(driver, gameYear);
 
   // Calculate required salary based on team quality gap
-  const multiplier = calculateTeamQualityMultiplier(driverAbility, teamQuality, careerWeight);
-  const requiredSalary = marketValue * multiplier;
+  const teamQualityMultiplier = calculateTeamQualityMultiplier(driverAbility, teamQuality, careerWeight);
+  const baseRequiredSalary = marketValue * teamQualityMultiplier;
+
+  // Apply personal desperation multiplier (0.7-1.0)
+  // Lower multiplier = driver willing to accept less money
+  const requiredSalary = baseRequiredSalary * desperationMultiplier;
 
   // Calculate salary ratio
   const salaryRatio = offeredSalary / requiredSalary;
 
-  // Determine desperation level
-  const isDesperate = availableSeats <= DESPERATION_SEAT_THRESHOLD;
+  // Determine market desperation (few seats available)
+  const isMarketDesperate = availableSeats <= DESPERATION_SEAT_THRESHOLD;
   const isLateRound = currentRound >= maxRounds - 1;
+  const isDesperate = isMarketDesperate || desperationMultiplier < PERSONAL_DESPERATION_THRESHOLD;
 
   // Decision logic
   let responseType: ResponseType;
@@ -329,12 +363,12 @@ export function evaluateDriverOffer(input: DriverEvaluationInput): NegotiationEv
     responseType,
     counterTerms: counterSalary
       ? {
-          // Driver contract terms (simplified - just salary/duration for now)
-          annualCost: counterSalary,
+          salary: counterSalary,
           duration: input.offeredDuration,
-          upgradesIncluded: 0,
-          customisationPointsIncluded: 0,
-          optimisationIncluded: false,
+          signingBonus: 0,
+          performanceBonusPercent: 0,
+          releaseClause: 0,
+          driverStatus: DriverRole.Equal,
         }
       : null,
     responseTone,
