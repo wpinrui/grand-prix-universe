@@ -206,9 +206,11 @@ export type OfferResponse = 'accept' | 'reject' | 'counter';
  * Parameters for responding to a contract offer
  */
 export interface RespondToOfferParams {
-  offerId: string;
+  negotiationId: string;
   response: OfferResponse;
   counterTerms?: ContractTerms;
+  /** If true, marks this as a "take it or leave it" offer */
+  isUltimatum?: boolean;
 }
 
 // =============================================================================

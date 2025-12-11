@@ -248,9 +248,10 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IpcChannels.ENGINE_RESPOND_TO_OFFER, (_event, params: RespondToOfferParams) => {
     return GameStateManager.respondToEngineOffer(
-      params.offerId,
+      params.negotiationId,
       params.response,
-      params.counterTerms
+      params.counterTerms,
+      params.isUltimatum
     );
   });
 }

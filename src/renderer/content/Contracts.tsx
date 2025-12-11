@@ -9,7 +9,8 @@ import { IpcChannels } from '../../shared/ipc';
 import {
   DriverRole,
   ManufacturerType,
-  NegotiationStatus,
+  NegotiationPhase,
+  StakeholderType,
   type Manufacturer,
   type ActiveManufacturerContract,
   type TeamEngineState,
@@ -20,7 +21,8 @@ import {
   type Team,
   type TeamEngineAnalytics,
   type GameState,
-  type EngineNegotiation,
+  type ManufacturerNegotiation,
+  type ContractTerms,
 } from '../../shared/domain';
 import {
   ENGINE_STAT_KEYS,
@@ -568,22 +570,20 @@ interface NegotiationTabProps {
   playerTeamId: string;
   currentSeason: number;
   onStartNegotiation: (manufacturerId: string) => void;
-  onRespondToOffer: (offerId: string, response: 'accept' | 'reject') => void;
+  onRespondToOffer: (negotiationId: string, response: 'accept' | 'reject') => void;
 }
 
-/** Get status label and color for negotiation status */
-function getNegotiationStatusDisplay(status: NegotiationStatus): { label: string; colorClass: string } {
-  switch (status) {
-    case NegotiationStatus.AwaitingOffer:
+/** Get status label and color for negotiation phase */
+function getNegotiationPhaseDisplay(phase: NegotiationPhase): { label: string; colorClass: string } {
+  switch (phase) {
+    case NegotiationPhase.AwaitingResponse:
       return { label: 'Awaiting Response', colorClass: 'text-amber-400' };
-    case NegotiationStatus.OfferReceived:
-      return { label: 'Offer Received', colorClass: 'text-emerald-400' };
-    case NegotiationStatus.CounterPending:
-      return { label: 'Counter Pending', colorClass: 'text-amber-400' };
-    case NegotiationStatus.Accepted:
-      return { label: 'Accepted', colorClass: 'text-emerald-400' };
-    case NegotiationStatus.Rejected:
-      return { label: 'Rejected', colorClass: 'text-red-400' };
+    case NegotiationPhase.ResponseReceived:
+      return { label: 'Response Received', colorClass: 'text-emerald-400' };
+    case NegotiationPhase.Completed:
+      return { label: 'Completed', colorClass: 'text-emerald-400' };
+    case NegotiationPhase.Failed:
+      return { label: 'Failed', colorClass: 'text-red-400' };
     default:
       return { label: 'Unknown', colorClass: 'text-neutral-400' };
   }
@@ -635,9 +635,9 @@ function ManufacturerRow({
 }
 
 interface ActiveNegotiationCardProps {
-  negotiation: EngineNegotiation;
+  negotiation: ManufacturerNegotiation;
   manufacturer: Manufacturer;
-  onRespondToOffer: (offerId: string, response: 'accept' | 'reject') => void;
+  onRespondToOffer: (negotiationId: string, response: 'accept' | 'reject') => void;
 }
 
 function ActiveNegotiationCard({
@@ -645,8 +645,14 @@ function ActiveNegotiationCard({
   manufacturer,
   onRespondToOffer,
 }: ActiveNegotiationCardProps) {
-  const statusDisplay = getNegotiationStatusDisplay(negotiation.status);
-  const latestOffer = negotiation.offers[negotiation.offers.length - 1];
+  const phaseDisplay = getNegotiationPhaseDisplay(negotiation.phase);
+  const latestRound = negotiation.rounds[negotiation.rounds.length - 1];
+  // Get terms from the latest round (either player's offer or counterparty's response)
+  const latestTerms: ContractTerms | null = latestRound?.terms ?? null;
+  // Check if the latest round was from counterparty (we can respond)
+  const canRespond = latestRound?.offeredBy === 'counterparty' &&
+    negotiation.phase !== NegotiationPhase.Completed &&
+    negotiation.phase !== NegotiationPhase.Failed;
 
   return (
     <div className="card p-4" style={ACCENT_CARD_STYLE}>
@@ -655,57 +661,65 @@ function ActiveNegotiationCard({
           <h3 className="text-lg font-semibold text-primary">{manufacturer.name}</h3>
           <p className="text-sm text-muted">
             Negotiating for {seasonToYear(negotiation.forSeason)} season
+            {negotiation.rounds.length > 1 && ` (Round ${negotiation.currentRound})`}
           </p>
         </div>
-        <span className={`text-sm font-medium ${statusDisplay.colorClass}`}>
-          {statusDisplay.label}
+        <span className={`text-sm font-medium ${phaseDisplay.colorClass}`}>
+          {phaseDisplay.label}
         </span>
       </div>
 
-      {negotiation.status === NegotiationStatus.AwaitingOffer && (
+      {negotiation.phase === NegotiationPhase.AwaitingResponse && (
         <div className="bg-neutral-800/50 rounded-lg p-4 text-center">
           <p className="text-muted text-sm">
-            Waiting for {manufacturer.name} to respond with an offer...
+            Waiting for {manufacturer.name} to respond to your offer...
           </p>
           <p className="text-xs text-neutral-500 mt-2">
             The manufacturer will respond within a few days.
           </p>
+          {latestTerms && (
+            <div className="mt-3 text-left text-xs text-muted">
+              <span className="font-medium">Your offer:</span> {formatCurrency(latestTerms.annualCost)}/year for {latestTerms.duration} year(s)
+            </div>
+          )}
         </div>
       )}
 
-      {negotiation.status === NegotiationStatus.OfferReceived && latestOffer && (
+      {canRespond && latestTerms && (
         <div className="space-y-4">
           <div className="bg-neutral-800/50 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-primary mb-3">Contract Offer</h4>
+            <h4 className="text-sm font-medium text-primary mb-3">
+              {latestRound.isUltimatum ? '⚠️ Final Offer' : 'Counter Offer'}
+            </h4>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <span className="text-muted">Annual Cost:</span>
                 <span className="text-primary ml-2 font-medium">
-                  {formatCurrency(latestOffer.terms.annualCost)}
+                  {formatCurrency(latestTerms.annualCost)}
                 </span>
               </div>
               <div>
                 <span className="text-muted">Duration:</span>
                 <span className="text-primary ml-2 font-medium">
-                  {latestOffer.terms.duration} year{latestOffer.terms.duration !== 1 ? 's' : ''}
+                  {latestTerms.duration} year{latestTerms.duration !== 1 ? 's' : ''}
                 </span>
               </div>
               <div>
                 <span className="text-muted">Upgrades Included:</span>
                 <span className="text-primary ml-2 font-medium">
-                  {latestOffer.terms.upgradesIncluded}/year
+                  {latestTerms.upgradesIncluded}/year
                 </span>
               </div>
               <div>
                 <span className="text-muted">Customisation Points:</span>
                 <span className="text-primary ml-2 font-medium">
-                  {latestOffer.terms.customisationPointsIncluded}
+                  {latestTerms.customisationPointsIncluded}
                 </span>
               </div>
               <div className="col-span-2">
                 <span className="text-muted">Optimisation:</span>
-                <span className={`ml-2 font-medium ${latestOffer.terms.optimisationIncluded ? 'text-emerald-400' : 'text-neutral-500'}`}>
-                  {latestOffer.terms.optimisationIncluded ? 'Included' : 'Not Included'}
+                <span className={`ml-2 font-medium ${latestTerms.optimisationIncluded ? 'text-emerald-400' : 'text-neutral-500'}`}>
+                  {latestTerms.optimisationIncluded ? 'Included' : 'Not Included'}
                 </span>
               </div>
             </div>
@@ -715,14 +729,14 @@ function ActiveNegotiationCard({
             <button
               type="button"
               className={`${PRIMARY_BUTTON_CLASSES} flex-1 cursor-pointer`}
-              onClick={() => onRespondToOffer(latestOffer.id, 'accept')}
+              onClick={() => onRespondToOffer(negotiation.id, 'accept')}
             >
               Accept Offer
             </button>
             <button
               type="button"
               className={`${GHOST_BORDERED_BUTTON_CLASSES} flex-1 cursor-pointer`}
-              onClick={() => onRespondToOffer(latestOffer.id, 'reject')}
+              onClick={() => onRespondToOffer(negotiation.id, 'reject')}
             >
               Reject
             </button>
@@ -730,7 +744,7 @@ function ActiveNegotiationCard({
         </div>
       )}
 
-      {negotiation.status === NegotiationStatus.Accepted && (
+      {negotiation.phase === NegotiationPhase.Completed && (
         <div className="bg-emerald-900/20 border border-emerald-600/30 rounded-lg p-4 text-center">
           <p className="text-emerald-400 font-medium">
             Contract signed! Your new engine supplier for {seasonToYear(negotiation.forSeason)}.
@@ -738,7 +752,7 @@ function ActiveNegotiationCard({
         </div>
       )}
 
-      {negotiation.status === NegotiationStatus.Rejected && (
+      {negotiation.phase === NegotiationPhase.Failed && (
         <div className="bg-red-900/20 border border-red-600/30 rounded-lg p-4 text-center">
           <p className="text-red-400 font-medium">
             Negotiation ended. You can start a new negotiation with another manufacturer.
@@ -759,9 +773,12 @@ function NegotiationTab({
 }: NegotiationTabProps) {
   const engineManufacturers = manufacturers.filter((m) => m.type === ManufacturerType.Engine);
 
-  // Get player's active negotiations
-  const activeNegotiations = gameState.engineNegotiations.filter(
-    (n) => n.teamId === playerTeamId && n.status !== NegotiationStatus.Rejected
+  // Get player's active manufacturer negotiations
+  const activeNegotiations = gameState.negotiations.filter(
+    (n): n is ManufacturerNegotiation =>
+      n.stakeholderType === StakeholderType.Manufacturer &&
+      n.teamId === playerTeamId &&
+      n.phase !== NegotiationPhase.Failed
   );
 
   // Check if contract is expiring
@@ -959,9 +976,9 @@ export function Contracts() {
     }
   }, [refreshGameState]);
 
-  const handleRespondToOffer = useCallback(async (offerId: string, response: 'accept' | 'reject') => {
+  const handleRespondToOffer = useCallback(async (negotiationId: string, response: 'accept' | 'reject') => {
     try {
-      await window.electronAPI.invoke(IpcChannels.ENGINE_RESPOND_TO_OFFER, { offerId, response });
+      await window.electronAPI.invoke(IpcChannels.ENGINE_RESPOND_TO_OFFER, { negotiationId, response });
       refreshGameState();
     } catch (error) {
       console.error('Failed to respond to offer:', error);
