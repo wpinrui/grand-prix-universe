@@ -21,7 +21,14 @@
       "reputation": 99,
       "salary": 55000000,
       "contractEnd": 5,
-      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/M/MAXVER01_Max_Verstappen/maxver01.png"
+      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/M/MAXVER01_Max_Verstappen/maxver01.png",
+      "careerHistory": [
+        { "season": 2024, "teamId": "red-bull-racing", "driverPoints": 437, "teamPoints": 589 },
+        { "season": 2023, "teamId": "red-bull-racing", "driverPoints": 575, "teamPoints": 860 },
+        { "season": 2022, "teamId": "red-bull-racing", "driverPoints": 454, "teamPoints": 759 },
+        { "season": 2021, "teamId": "red-bull-racing", "driverPoints": 395, "teamPoints": 585 },
+        { "season": 2020, "teamId": "red-bull-racing", "driverPoints": 214, "teamPoints": 319 }
+      ]
     },
     {
       "id": "charles-leclerc",
@@ -44,7 +51,14 @@
       "reputation": 92,
       "salary": 25000000,
       "contractEnd": 4,
-      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/C/CHALEC01_Charles_Leclerc/chalec01.png"
+      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/C/CHALEC01_Charles_Leclerc/chalec01.png",
+      "careerHistory": [
+        { "season": 2024, "teamId": "ferrari", "driverPoints": 356, "teamPoints": 652 },
+        { "season": 2023, "teamId": "ferrari", "driverPoints": 206, "teamPoints": 406 },
+        { "season": 2022, "teamId": "ferrari", "driverPoints": 308, "teamPoints": 554 },
+        { "season": 2021, "teamId": "ferrari", "driverPoints": 159, "teamPoints": 323 },
+        { "season": 2020, "teamId": "ferrari", "driverPoints": 98, "teamPoints": 131 }
+      ]
     },
     {
       "id": "lando-norris",
@@ -67,7 +81,14 @@
       "reputation": 91,
       "salary": 20000000,
       "contractEnd": 3,
-      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LANNOR01_Lando_Norris/lannor01.png"
+      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LANNOR01_Lando_Norris/lannor01.png",
+      "careerHistory": [
+        { "season": 2024, "teamId": "mclaren", "driverPoints": 374, "teamPoints": 666 },
+        { "season": 2023, "teamId": "mclaren", "driverPoints": 205, "teamPoints": 302 },
+        { "season": 2022, "teamId": "mclaren", "driverPoints": 122, "teamPoints": 159 },
+        { "season": 2021, "teamId": "mclaren", "driverPoints": 160, "teamPoints": 275 },
+        { "season": 2020, "teamId": "mclaren", "driverPoints": 97, "teamPoints": 202 }
+      ]
     },
     {
       "id": "george-russell",
@@ -90,7 +111,14 @@
       "reputation": 88,
       "salary": 15000000,
       "contractEnd": 3,
-      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/G/GEORUS01_George_Russell/georus01.png"
+      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/G/GEORUS01_George_Russell/georus01.png",
+      "careerHistory": [
+        { "season": 2024, "teamId": "mercedes", "driverPoints": 245, "teamPoints": 468 },
+        { "season": 2023, "teamId": "mercedes", "driverPoints": 175, "teamPoints": 409 },
+        { "season": 2022, "teamId": "mercedes", "driverPoints": 275, "teamPoints": 515 },
+        { "season": 2021, "teamId": "williams", "driverPoints": 16, "teamPoints": 23 },
+        { "season": 2020, "teamId": "williams", "driverPoints": 3, "teamPoints": 0 }
+      ]
     },
     {
       "id": "oscar-piastri",
@@ -113,7 +141,11 @@
       "reputation": 85,
       "salary": 8000000,
       "contractEnd": 2,
-      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/O/OSCPIA01_Oscar_Piastri/oscpia01.png"
+      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/O/OSCPIA01_Oscar_Piastri/oscpia01.png",
+      "careerHistory": [
+        { "season": 2024, "teamId": "mclaren", "driverPoints": 292, "teamPoints": 666 },
+        { "season": 2023, "teamId": "mclaren", "driverPoints": 97, "teamPoints": 302 }
+      ]
     },
     {
       "id": "lewis-hamilton",
@@ -136,7 +168,14 @@
       "reputation": 98,
       "salary": 50000000,
       "contractEnd": 3,
-      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LEWHAM01_Lewis_Hamilton/lewham01.png"
+      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LEWHAM01_Lewis_Hamilton/lewham01.png",
+      "careerHistory": [
+        { "season": 2024, "teamId": "mercedes", "driverPoints": 223, "teamPoints": 468 },
+        { "season": 2023, "teamId": "mercedes", "driverPoints": 234, "teamPoints": 409 },
+        { "season": 2022, "teamId": "mercedes", "driverPoints": 240, "teamPoints": 515 },
+        { "season": 2021, "teamId": "mercedes", "driverPoints": 387, "teamPoints": 613 },
+        { "season": 2020, "teamId": "mercedes", "driverPoints": 347, "teamPoints": 573 }
+      ]
     },
     {
       "id": "carlos-sainz",
@@ -159,7 +198,14 @@
       "reputation": 86,
       "salary": 10000000,
       "contractEnd": 3,
-      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/C/CARSAI01_Carlos_Sainz/carsai01.png"
+      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/C/CARSAI01_Carlos_Sainz/carsai01.png",
+      "careerHistory": [
+        { "season": 2024, "teamId": "ferrari", "driverPoints": 290, "teamPoints": 652 },
+        { "season": 2023, "teamId": "ferrari", "driverPoints": 200, "teamPoints": 406 },
+        { "season": 2022, "teamId": "ferrari", "driverPoints": 246, "teamPoints": 554 },
+        { "season": 2021, "teamId": "ferrari", "driverPoints": 164, "teamPoints": 323 },
+        { "season": 2020, "teamId": "mclaren", "driverPoints": 105, "teamPoints": 202 }
+      ]
     },
     {
       "id": "fernando-alonso",
@@ -182,7 +228,13 @@
       "reputation": 95,
       "salary": 18000000,
       "contractEnd": 2,
-      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/F/FERALO01_Fernando_Alonso/feralo01.png"
+      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/F/FERALO01_Fernando_Alonso/feralo01.png",
+      "careerHistory": [
+        { "season": 2024, "teamId": "aston-martin", "driverPoints": 70, "teamPoints": 94 },
+        { "season": 2023, "teamId": "aston-martin", "driverPoints": 206, "teamPoints": 280 },
+        { "season": 2022, "teamId": "alpine", "driverPoints": 81, "teamPoints": 173 },
+        { "season": 2021, "teamId": "alpine", "driverPoints": 81, "teamPoints": 155 }
+      ]
     },
     {
       "id": "nico-hulkenberg",
@@ -205,7 +257,11 @@
       "reputation": 75,
       "salary": 5000000,
       "contractEnd": 2,
-      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/N/NICHUL01_Nico_Hulkenberg/nichul01.png"
+      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/N/NICHUL01_Nico_Hulkenberg/nichul01.png",
+      "careerHistory": [
+        { "season": 2024, "teamId": "haas", "driverPoints": 41, "teamPoints": 58 },
+        { "season": 2023, "teamId": "haas", "driverPoints": 9, "teamPoints": 12 }
+      ]
     },
     {
       "id": "alex-albon",
@@ -228,7 +284,13 @@
       "reputation": 79,
       "salary": 5000000,
       "contractEnd": 3,
-      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/A/ALEALB01_Alexander_Albon/alealb01.png"
+      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/A/ALEALB01_Alexander_Albon/alealb01.png",
+      "careerHistory": [
+        { "season": 2024, "teamId": "williams", "driverPoints": 12, "teamPoints": 17 },
+        { "season": 2023, "teamId": "williams", "driverPoints": 27, "teamPoints": 28 },
+        { "season": 2022, "teamId": "williams", "driverPoints": 4, "teamPoints": 8 },
+        { "season": 2020, "teamId": "red-bull-racing", "driverPoints": 105, "teamPoints": 319 }
+      ]
     },
     {
       "id": "kimi-antonelli",
@@ -274,7 +336,14 @@
       "reputation": 77,
       "salary": 6000000,
       "contractEnd": 3,
-      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/P/PIEGAS01_Pierre_Gasly/piegas01.png"
+      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/P/PIEGAS01_Pierre_Gasly/piegas01.png",
+      "careerHistory": [
+        { "season": 2024, "teamId": "alpine", "driverPoints": 42, "teamPoints": 65 },
+        { "season": 2023, "teamId": "alpine", "driverPoints": 62, "teamPoints": 120 },
+        { "season": 2022, "teamId": "racing-bulls", "driverPoints": 23, "teamPoints": 35 },
+        { "season": 2021, "teamId": "racing-bulls", "driverPoints": 110, "teamPoints": 142 },
+        { "season": 2020, "teamId": "racing-bulls", "driverPoints": 75, "teamPoints": 107 }
+      ]
     },
     {
       "id": "valtteri-bottas",
@@ -296,7 +365,14 @@
       "reputation": 70,
       "salary": 0,
       "contractEnd": 0,
-      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/V/VALBOT01_Valtteri_Bottas/valbot01.png"
+      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/V/VALBOT01_Valtteri_Bottas/valbot01.png",
+      "careerHistory": [
+        { "season": 2024, "teamId": "kick-sauber", "driverPoints": 0, "teamPoints": 4 },
+        { "season": 2023, "teamId": "kick-sauber", "driverPoints": 10, "teamPoints": 16 },
+        { "season": 2022, "teamId": "kick-sauber", "driverPoints": 49, "teamPoints": 55 },
+        { "season": 2021, "teamId": "mercedes", "driverPoints": 226, "teamPoints": 613 },
+        { "season": 2020, "teamId": "mercedes", "driverPoints": 223, "teamPoints": 573 }
+      ]
     },
     {
       "id": "oliver-bearman",
@@ -342,7 +418,14 @@
       "reputation": 73,
       "salary": 4000000,
       "contractEnd": 2,
-      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/E/ESTOCO01_Esteban_Ocon/estoco01.png"
+      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/E/ESTOCO01_Esteban_Ocon/estoco01.png",
+      "careerHistory": [
+        { "season": 2024, "teamId": "alpine", "driverPoints": 23, "teamPoints": 65 },
+        { "season": 2023, "teamId": "alpine", "driverPoints": 58, "teamPoints": 120 },
+        { "season": 2022, "teamId": "alpine", "driverPoints": 92, "teamPoints": 173 },
+        { "season": 2021, "teamId": "alpine", "driverPoints": 74, "teamPoints": 155 },
+        { "season": 2020, "teamId": "alpine", "driverPoints": 62, "teamPoints": 181 }
+      ]
     },
     {
       "id": "isack-hadjar",
@@ -387,7 +470,14 @@
       "reputation": 72,
       "salary": 0,
       "contractEnd": 0,
-      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/S/SERPER01_Sergio_Perez/serper01.png"
+      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/S/SERPER01_Sergio_Perez/serper01.png",
+      "careerHistory": [
+        { "season": 2024, "teamId": "red-bull-racing", "driverPoints": 152, "teamPoints": 589 },
+        { "season": 2023, "teamId": "red-bull-racing", "driverPoints": 285, "teamPoints": 860 },
+        { "season": 2022, "teamId": "red-bull-racing", "driverPoints": 305, "teamPoints": 759 },
+        { "season": 2021, "teamId": "red-bull-racing", "driverPoints": 190, "teamPoints": 585 },
+        { "season": 2020, "teamId": "aston-martin", "driverPoints": 125, "teamPoints": 195 }
+      ]
     },
     {
       "id": "yuki-tsunoda",
@@ -410,7 +500,13 @@
       "reputation": 74,
       "salary": 3000000,
       "contractEnd": 2,
-      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/Y/YUKTSU01_Yuki_Tsunoda/yuktsu01.png"
+      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/Y/YUKTSU01_Yuki_Tsunoda/yuktsu01.png",
+      "careerHistory": [
+        { "season": 2024, "teamId": "racing-bulls", "driverPoints": 30, "teamPoints": 46 },
+        { "season": 2023, "teamId": "racing-bulls", "driverPoints": 17, "teamPoints": 25 },
+        { "season": 2022, "teamId": "racing-bulls", "driverPoints": 12, "teamPoints": 35 },
+        { "season": 2021, "teamId": "racing-bulls", "driverPoints": 32, "teamPoints": 142 }
+      ]
     },
     {
       "id": "liam-lawson",
@@ -479,7 +575,14 @@
       "reputation": 55,
       "salary": 1000000,
       "contractEnd": 2,
-      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LANSTR01_Lance_Stroll/lanstr01.png"
+      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LANSTR01_Lance_Stroll/lanstr01.png",
+      "careerHistory": [
+        { "season": 2024, "teamId": "aston-martin", "driverPoints": 24, "teamPoints": 94 },
+        { "season": 2023, "teamId": "aston-martin", "driverPoints": 74, "teamPoints": 280 },
+        { "season": 2022, "teamId": "aston-martin", "driverPoints": 18, "teamPoints": 55 },
+        { "season": 2021, "teamId": "aston-martin", "driverPoints": 34, "teamPoints": 77 },
+        { "season": 2020, "teamId": "aston-martin", "driverPoints": 75, "teamPoints": 195 }
+      ]
     },
     {
       "id": "jack-doohan",
@@ -524,7 +627,14 @@
       "reputation": 75,
       "salary": 0,
       "contractEnd": 0,
-      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/D/DANRIC01_Daniel_Ricciardo/danric01.png"
+      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/D/DANRIC01_Daniel_Ricciardo/danric01.png",
+      "careerHistory": [
+        { "season": 2024, "teamId": "racing-bulls", "driverPoints": 12, "teamPoints": 46 },
+        { "season": 2023, "teamId": "racing-bulls", "driverPoints": 6, "teamPoints": 25 },
+        { "season": 2022, "teamId": "mclaren", "driverPoints": 37, "teamPoints": 159 },
+        { "season": 2021, "teamId": "mclaren", "driverPoints": 115, "teamPoints": 275 },
+        { "season": 2020, "teamId": "alpine", "driverPoints": 119, "teamPoints": 181 }
+      ]
     },
     {
       "id": "nico-rosberg",
@@ -656,7 +766,14 @@
       "reputation": 62,
       "salary": 0,
       "contractEnd": 0,
-      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/K/KEVMAG01_Kevin_Magnussen/kevmag01.png"
+      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/K/KEVMAG01_Kevin_Magnussen/kevmag01.png",
+      "careerHistory": [
+        { "season": 2024, "teamId": "haas", "driverPoints": 16, "teamPoints": 58 },
+        { "season": 2023, "teamId": "haas", "driverPoints": 3, "teamPoints": 12 },
+        { "season": 2022, "teamId": "haas", "driverPoints": 25, "teamPoints": 37 },
+        { "season": 2021, "teamId": "haas", "driverPoints": 0, "teamPoints": 0 },
+        { "season": 2020, "teamId": "haas", "driverPoints": 1, "teamPoints": 3 }
+      ]
     },
     {
       "id": "mick-schumacher",
@@ -700,7 +817,12 @@
       "reputation": 55,
       "salary": 0,
       "contractEnd": 0,
-      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/G/GUAZHO01_Guanyu_Zhou/guazho01.png"
+      "photoUrl": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/G/GUAZHO01_Guanyu_Zhou/guazho01.png",
+      "careerHistory": [
+        { "season": 2024, "teamId": "kick-sauber", "driverPoints": 4, "teamPoints": 4 },
+        { "season": 2023, "teamId": "kick-sauber", "driverPoints": 6, "teamPoints": 16 },
+        { "season": 2022, "teamId": "kick-sauber", "driverPoints": 6, "teamPoints": 55 }
+      ]
     },
     {
       "id": "nicholas-latifi",

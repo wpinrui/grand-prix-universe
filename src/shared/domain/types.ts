@@ -350,6 +350,17 @@ export interface DriverAttributes {
 }
 
 /**
+ * CareerSeasonRecord - Historical season performance for perceived market value calculation
+ * Used to calculate a driver's contribution ratio (driver points / team points) over time
+ */
+export interface CareerSeasonRecord {
+  season: number; // Calendar year (e.g., 2024)
+  teamId: string; // Team they drove for that season
+  driverPoints: number; // Their WDC points that season
+  teamPoints: number; // Their team's total WCC points that season
+}
+
+/**
  * Driver - A racing driver or test driver
  */
 export interface Driver {
@@ -366,6 +377,7 @@ export interface Driver {
   reputation: number; // 0-100, market value (results-biased, recency-biased)
   salary: number; // per-season salary in dollars
   contractEnd: number; // season number when contract expires
+  careerHistory?: CareerSeasonRecord[]; // Past 5 years max, for perceived market value
 }
 
 /**

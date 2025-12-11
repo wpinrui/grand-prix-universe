@@ -6,9 +6,9 @@
  *
  * Currently implemented:
  * - ManufacturerEvaluator: Engine supplier contract evaluation
+ * - DriverEvaluator: Driver contract evaluation (perceived market value system)
  *
  * Future evaluators:
- * - DriverEvaluator: Driver contract evaluation
  * - StaffEvaluator: Staff contract evaluation
  * - SponsorEvaluator: Sponsor contract evaluation
  */
@@ -17,3 +17,10 @@ export {
   evaluateManufacturerOffer,
   type ManufacturerEvaluationInput,
 } from './manufacturer-evaluator';
+
+export {
+  evaluateDriverOffer,
+  calculatePerceivedValue,
+  calculateMarketValue,
+  type DriverEvaluationInput,
+} from './driver-evaluator';
