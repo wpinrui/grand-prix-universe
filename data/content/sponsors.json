@@ -7,7 +7,8 @@
       "tier": "title",
       "payment": 60000000,
       "minReputation": 85,
-      "rivalGroup": "oil-companies"
+      "rivalGroup": "oil-companies",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/b/ba/Aramco_logo.svg/200px-Aramco_logo.svg.png"
     },
     {
       "id": "petronas",
@@ -16,7 +17,8 @@
       "tier": "title",
       "payment": 55000000,
       "minReputation": 82,
-      "rivalGroup": "oil-companies"
+      "rivalGroup": "oil-companies",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Petronas_2013_logo.svg/200px-Petronas_2013_logo.svg.png"
     },
     {
       "id": "oracle",
@@ -25,7 +27,8 @@
       "tier": "title",
       "payment": 50000000,
       "minReputation": 80,
-      "rivalGroup": "enterprise-software"
+      "rivalGroup": "enterprise-software",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Oracle_logo.svg/200px-Oracle_logo.svg.png"
     },
     {
       "id": "santander",
@@ -34,7 +37,8 @@
       "tier": "title",
       "payment": 45000000,
       "minReputation": 75,
-      "rivalGroup": "banks"
+      "rivalGroup": "banks",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Banco_Santander_Logotipo.svg/200px-Banco_Santander_Logotipo.svg.png"
     },
     {
       "id": "vodafone",
@@ -43,7 +47,8 @@
       "tier": "title",
       "payment": 48000000,
       "minReputation": 78,
-      "rivalGroup": "mobile-carriers"
+      "rivalGroup": "mobile-carriers",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Vodafone_icon.svg/200px-Vodafone_icon.svg.png"
     },
     {
       "id": "att",
@@ -52,7 +57,8 @@
       "tier": "title",
       "payment": 46000000,
       "minReputation": 76,
-      "rivalGroup": "mobile-carriers"
+      "rivalGroup": "mobile-carriers",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/AT%26T_logo_2016.svg/200px-AT%26T_logo_2016.svg.png"
     },
     {
       "id": "cognizant",
@@ -61,7 +67,8 @@
       "tier": "title",
       "payment": 42000000,
       "minReputation": 72,
-      "rivalGroup": null
+      "rivalGroup": null,
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Cognizant_logo_2022.svg/200px-Cognizant_logo_2022.svg.png"
     },
     {
       "id": "shell",
@@ -70,7 +77,8 @@
       "tier": "title",
       "payment": 52000000,
       "minReputation": 80,
-      "rivalGroup": "oil-companies"
+      "rivalGroup": "oil-companies",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/e/e8/Shell_logo.svg/200px-Shell_logo.svg.png"
     },
     {
       "id": "mastercard",
@@ -79,7 +87,8 @@
       "tier": "title",
       "payment": 40000000,
       "minReputation": 70,
-      "rivalGroup": "payment-networks"
+      "rivalGroup": "payment-networks",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/200px-Mastercard-logo.svg.png"
     },
     {
       "id": "bwt",
@@ -88,7 +97,8 @@
       "tier": "title",
       "payment": 35000000,
       "minReputation": 65,
-      "rivalGroup": null
+      "rivalGroup": null,
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/BWT_logo.svg/200px-BWT_logo.svg.png"
     },
     {
       "id": "hp",
@@ -97,7 +107,8 @@
       "tier": "title",
       "payment": 38000000,
       "minReputation": 68,
-      "rivalGroup": "computer-hardware"
+      "rivalGroup": "computer-hardware",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/HP_logo_2012.svg/200px-HP_logo_2012.svg.png"
     },
     {
       "id": "salesforce",
@@ -106,7 +117,8 @@
       "tier": "title",
       "payment": 44000000,
       "minReputation": 74,
-      "rivalGroup": "enterprise-software"
+      "rivalGroup": "enterprise-software",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Salesforce.com_logo.svg/200px-Salesforce.com_logo.svg.png"
     },
     {
       "id": "aws",
@@ -115,7 +127,8 @@
       "tier": "major",
       "payment": 25000000,
       "minReputation": 65,
-      "rivalGroup": "cloud-providers"
+      "rivalGroup": "cloud-providers",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Amazon_Web_Services_Logo.svg/200px-Amazon_Web_Services_Logo.svg.png"
     },
     {
       "id": "microsoft",
@@ -124,7 +137,8 @@
       "tier": "major",
       "payment": 24000000,
       "minReputation": 63,
-      "rivalGroup": "cloud-providers"
+      "rivalGroup": "cloud-providers",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Microsoft_logo_%282012%29.svg/200px-Microsoft_logo_%282012%29.svg.png"
     },
     {
       "id": "google-cloud",
@@ -133,7 +147,8 @@
       "tier": "major",
       "payment": 22000000,
       "minReputation": 60,
-      "rivalGroup": "cloud-providers"
+      "rivalGroup": "cloud-providers",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Google_Cloud_logo.svg/200px-Google_Cloud_logo.svg.png"
     },
     {
       "id": "dell",
@@ -142,7 +157,8 @@
       "tier": "major",
       "payment": 18000000,
       "minReputation": 55,
-      "rivalGroup": "computer-hardware"
+      "rivalGroup": "computer-hardware",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Dell_Logo.png/200px-Dell_Logo.png"
     },
     {
       "id": "lenovo",
@@ -151,7 +167,8 @@
       "tier": "major",
       "payment": 16000000,
       "minReputation": 52,
-      "rivalGroup": "computer-hardware"
+      "rivalGroup": "computer-hardware",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Lenovo_logo_2015.svg/200px-Lenovo_logo_2015.svg.png"
     },
     {
       "id": "amd",
@@ -160,7 +177,8 @@
       "tier": "major",
       "payment": 15000000,
       "minReputation": 50,
-      "rivalGroup": "chip-makers"
+      "rivalGroup": "chip-makers",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/AMD_Logo.svg/200px-AMD_Logo.svg.png"
     },
     {
       "id": "intel",
@@ -169,7 +187,8 @@
       "tier": "major",
       "payment": 16000000,
       "minReputation": 52,
-      "rivalGroup": "chip-makers"
+      "rivalGroup": "chip-makers",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Intel-logo.svg/200px-Intel-logo.svg.png"
     },
     {
       "id": "cisco",
@@ -178,7 +197,8 @@
       "tier": "major",
       "payment": 14000000,
       "minReputation": 48,
-      "rivalGroup": null
+      "rivalGroup": null,
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Cisco_logo_blue_2016.svg/200px-Cisco_logo_blue_2016.svg.png"
     },
     {
       "id": "emirates",
@@ -187,7 +207,8 @@
       "tier": "major",
       "payment": 22000000,
       "minReputation": 62,
-      "rivalGroup": "airlines"
+      "rivalGroup": "airlines",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Emirates_logo.svg/200px-Emirates_logo.svg.png"
     },
     {
       "id": "qatar-airways",
@@ -196,7 +217,8 @@
       "tier": "major",
       "payment": 20000000,
       "minReputation": 58,
-      "rivalGroup": "airlines"
+      "rivalGroup": "airlines",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/9/9b/Qatar_Airways_Logo.svg/200px-Qatar_Airways_Logo.svg.png"
     },
     {
       "id": "etihad",
@@ -205,7 +227,8 @@
       "tier": "major",
       "payment": 18000000,
       "minReputation": 55,
-      "rivalGroup": "airlines"
+      "rivalGroup": "airlines",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Etihad-airways-logo.svg/200px-Etihad-airways-logo.svg.png"
     },
     {
       "id": "rolex",
@@ -214,7 +237,8 @@
       "tier": "major",
       "payment": 20000000,
       "minReputation": 70,
-      "rivalGroup": "watches"
+      "rivalGroup": "watches",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/9/95/Rolex_logo.svg/200px-Rolex_logo.svg.png"
     },
     {
       "id": "tag-heuer",
@@ -223,7 +247,8 @@
       "tier": "major",
       "payment": 16000000,
       "minReputation": 58,
-      "rivalGroup": "watches"
+      "rivalGroup": "watches",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Tag-heuer.svg/200px-Tag-heuer.svg.png"
     },
     {
       "id": "iwc",
@@ -232,7 +257,8 @@
       "tier": "major",
       "payment": 14000000,
       "minReputation": 55,
-      "rivalGroup": "watches"
+      "rivalGroup": "watches",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/IWC_Schaffhausen_logo.svg/200px-IWC_Schaffhausen_logo.svg.png"
     },
     {
       "id": "richard-mille",
@@ -241,7 +267,8 @@
       "tier": "major",
       "payment": 18000000,
       "minReputation": 65,
-      "rivalGroup": "watches"
+      "rivalGroup": "watches",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Richard_Mille_logo.svg/200px-Richard_Mille_logo.svg.png"
     },
     {
       "id": "red-bull",
@@ -250,7 +277,8 @@
       "tier": "major",
       "payment": 20000000,
       "minReputation": 60,
-      "rivalGroup": "energy-drinks"
+      "rivalGroup": "energy-drinks",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/1/13/Red_Bull.svg/200px-Red_Bull.svg.png"
     },
     {
       "id": "monster-energy",
@@ -259,7 +287,8 @@
       "tier": "major",
       "payment": 18000000,
       "minReputation": 55,
-      "rivalGroup": "energy-drinks"
+      "rivalGroup": "energy-drinks",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/1/1e/Monster_Energy_logo.svg/200px-Monster_Energy_logo.svg.png"
     },
     {
       "id": "heineken",
@@ -268,7 +297,8 @@
       "tier": "major",
       "payment": 15000000,
       "minReputation": 50,
-      "rivalGroup": "beer"
+      "rivalGroup": "beer",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Heineken_logo.svg/200px-Heineken_logo.svg.png"
     },
     {
       "id": "peroni",
@@ -277,7 +307,8 @@
       "tier": "major",
       "payment": 12000000,
       "minReputation": 45,
-      "rivalGroup": "beer"
+      "rivalGroup": "beer",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Peroni_Nastro_Azzurro_Logo.svg/200px-Peroni_Nastro_Azzurro_Logo.svg.png"
     },
     {
       "id": "dhl",
@@ -286,7 +317,8 @@
       "tier": "major",
       "payment": 16000000,
       "minReputation": 52,
-      "rivalGroup": "logistics"
+      "rivalGroup": "logistics",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/DHL_Logo.svg/200px-DHL_Logo.svg.png"
     },
     {
       "id": "fedex",
@@ -295,7 +327,8 @@
       "tier": "major",
       "payment": 15000000,
       "minReputation": 50,
-      "rivalGroup": "logistics"
+      "rivalGroup": "logistics",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/FedEx_Corporation_-_2016_Logo.svg/200px-FedEx_Corporation_-_2016_Logo.svg.png"
     },
     {
       "id": "ups",
@@ -304,7 +337,8 @@
       "tier": "major",
       "payment": 14000000,
       "minReputation": 48,
-      "rivalGroup": "logistics"
+      "rivalGroup": "logistics",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/United_Parcel_Service_logo_2014.svg/200px-United_Parcel_Service_logo_2014.svg.png"
     },
     {
       "id": "puma",
@@ -313,7 +347,8 @@
       "tier": "major",
       "payment": 12000000,
       "minReputation": 45,
-      "rivalGroup": "sportswear"
+      "rivalGroup": "sportswear",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/d/da/Puma_complete_logo.svg/200px-Puma_complete_logo.svg.png"
     },
     {
       "id": "ubs",
@@ -322,7 +357,8 @@
       "tier": "major",
       "payment": 18000000,
       "minReputation": 58,
-      "rivalGroup": "banks"
+      "rivalGroup": "banks",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/UBS_Logo.svg/200px-UBS_Logo.svg.png"
     },
     {
       "id": "hsbc",
@@ -331,7 +367,8 @@
       "tier": "major",
       "payment": 16000000,
       "minReputation": 55,
-      "rivalGroup": "banks"
+      "rivalGroup": "banks",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/HSBC_logo_%282018%29.svg/200px-HSBC_logo_%282018%29.svg.png"
     },
     {
       "id": "mobil-1",
@@ -340,7 +377,8 @@
       "tier": "major",
       "payment": 14000000,
       "minReputation": 50,
-      "rivalGroup": "lubricants"
+      "rivalGroup": "lubricants",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Mobil1_logo.svg/200px-Mobil1_logo.svg.png"
     },
     {
       "id": "castrol",
@@ -349,7 +387,8 @@
       "tier": "major",
       "payment": 13000000,
       "minReputation": 48,
-      "rivalGroup": "lubricants"
+      "rivalGroup": "lubricants",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/7/7e/Castrol_logo.svg/200px-Castrol_logo.svg.png"
     },
     {
       "id": "coca-cola",
@@ -358,7 +397,8 @@
       "tier": "minor",
       "payment": 8000000,
       "minReputation": 40,
-      "rivalGroup": "soft-drinks"
+      "rivalGroup": "soft-drinks",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Coca-Cola_logo.svg/200px-Coca-Cola_logo.svg.png"
     },
     {
       "id": "pepsi",
@@ -367,7 +407,8 @@
       "tier": "minor",
       "payment": 7500000,
       "minReputation": 38,
-      "rivalGroup": "soft-drinks"
+      "rivalGroup": "soft-drinks",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Pepsi_2023.svg/200px-Pepsi_2023.svg.png"
     },
     {
       "id": "nike",
@@ -376,7 +417,8 @@
       "tier": "minor",
       "payment": 8000000,
       "minReputation": 40,
-      "rivalGroup": "sportswear"
+      "rivalGroup": "sportswear",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Logo_NIKE.svg/200px-Logo_NIKE.svg.png"
     },
     {
       "id": "adidas",
@@ -385,7 +427,8 @@
       "tier": "minor",
       "payment": 7500000,
       "minReputation": 38,
-      "rivalGroup": "sportswear"
+      "rivalGroup": "sportswear",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Adidas_Logo.svg/200px-Adidas_Logo.svg.png"
     },
     {
       "id": "visa",
@@ -394,7 +437,8 @@
       "tier": "minor",
       "payment": 7000000,
       "minReputation": 35,
-      "rivalGroup": "payment-networks"
+      "rivalGroup": "payment-networks",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/200px-Visa_Inc._logo.svg.png"
     },
     {
       "id": "american-express",
@@ -403,7 +447,8 @@
       "tier": "minor",
       "payment": 6500000,
       "minReputation": 35,
-      "rivalGroup": "payment-networks"
+      "rivalGroup": "payment-networks",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/American_Express_logo_%282018%29.svg/200px-American_Express_logo_%282018%29.svg.png"
     },
     {
       "id": "allianz",
@@ -412,7 +457,8 @@
       "tier": "minor",
       "payment": 6000000,
       "minReputation": 32,
-      "rivalGroup": "insurance"
+      "rivalGroup": "insurance",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Allianz_logo.svg/200px-Allianz_logo.svg.png"
     },
     {
       "id": "axa",
@@ -421,7 +467,8 @@
       "tier": "minor",
       "payment": 5500000,
       "minReputation": 30,
-      "rivalGroup": "insurance"
+      "rivalGroup": "insurance",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/AXA_Logo.svg/200px-AXA_Logo.svg.png"
     },
     {
       "id": "pirelli",
@@ -430,7 +477,8 @@
       "tier": "minor",
       "payment": 6000000,
       "minReputation": 32,
-      "rivalGroup": null
+      "rivalGroup": null,
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Pirelli_logo.svg/200px-Pirelli_logo.svg.png"
     },
     {
       "id": "brembo",
@@ -439,7 +487,8 @@
       "tier": "minor",
       "payment": 5000000,
       "minReputation": 28,
-      "rivalGroup": null
+      "rivalGroup": null,
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Brembo.svg/200px-Brembo.svg.png"
     },
     {
       "id": "ray-ban",
@@ -448,7 +497,8 @@
       "tier": "minor",
       "payment": 5500000,
       "minReputation": 30,
-      "rivalGroup": "eyewear"
+      "rivalGroup": "eyewear",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Ray-Ban_logo.svg/200px-Ray-Ban_logo.svg.png"
     },
     {
       "id": "oakley",
@@ -457,7 +507,8 @@
       "tier": "minor",
       "payment": 5000000,
       "minReputation": 28,
-      "rivalGroup": "eyewear"
+      "rivalGroup": "eyewear",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Oakley_logo.svg/200px-Oakley_logo.svg.png"
     },
     {
       "id": "sony",
@@ -466,7 +517,8 @@
       "tier": "minor",
       "payment": 6000000,
       "minReputation": 32,
-      "rivalGroup": "consumer-electronics"
+      "rivalGroup": "consumer-electronics",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Sony_logo.svg/200px-Sony_logo.svg.png"
     },
     {
       "id": "samsung",
@@ -475,7 +527,8 @@
       "tier": "minor",
       "payment": 6500000,
       "minReputation": 35,
-      "rivalGroup": "consumer-electronics"
+      "rivalGroup": "consumer-electronics",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Samsung_Logo.svg/200px-Samsung_Logo.svg.png"
     },
     {
       "id": "lg",
@@ -484,7 +537,8 @@
       "tier": "minor",
       "payment": 5000000,
       "minReputation": 28,
-      "rivalGroup": "consumer-electronics"
+      "rivalGroup": "consumer-electronics",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/LG_logo_%282015%29.svg/200px-LG_logo_%282015%29.svg.png"
     },
     {
       "id": "panasonic",
@@ -493,7 +547,8 @@
       "tier": "minor",
       "payment": 4500000,
       "minReputation": 25,
-      "rivalGroup": "consumer-electronics"
+      "rivalGroup": "consumer-electronics",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Panasonic_logo_%28Blue%29.svg/200px-Panasonic_logo_%28Blue%29.svg.png"
     },
     {
       "id": "beats",
@@ -502,7 +557,8 @@
       "tier": "minor",
       "payment": 4000000,
       "minReputation": 22,
-      "rivalGroup": "headphones"
+      "rivalGroup": "headphones",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Beats_Electronics_logo.svg/200px-Beats_Electronics_logo.svg.png"
     },
     {
       "id": "bose",
@@ -511,7 +567,8 @@
       "tier": "minor",
       "payment": 4500000,
       "minReputation": 25,
-      "rivalGroup": "headphones"
+      "rivalGroup": "headphones",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Bose_logo.svg/200px-Bose_logo.svg.png"
     },
     {
       "id": "snapchat",
@@ -520,7 +577,8 @@
       "tier": "minor",
       "payment": 5000000,
       "minReputation": 28,
-      "rivalGroup": "social-media"
+      "rivalGroup": "social-media",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/a/ad/Snapchat_logo.svg/200px-Snapchat_logo.svg.png"
     },
     {
       "id": "tiktok",
@@ -529,7 +587,8 @@
       "tier": "minor",
       "payment": 5500000,
       "minReputation": 30,
-      "rivalGroup": "social-media"
+      "rivalGroup": "social-media",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/a/a9/TikTok_logo.svg/200px-TikTok_logo.svg.png"
     },
     {
       "id": "x",
@@ -538,7 +597,8 @@
       "tier": "minor",
       "payment": 4500000,
       "minReputation": 25,
-      "rivalGroup": "social-media"
+      "rivalGroup": "social-media",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/X_logo_2023.svg/200px-X_logo_2023.svg.png"
     },
     {
       "id": "logitech",
@@ -547,7 +607,8 @@
       "tier": "minor",
       "payment": 3500000,
       "minReputation": 20,
-      "rivalGroup": "gaming-peripherals"
+      "rivalGroup": "gaming-peripherals",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Logitech_logo.svg/200px-Logitech_logo.svg.png"
     },
     {
       "id": "razer",
@@ -556,7 +617,8 @@
       "tier": "minor",
       "payment": 3000000,
       "minReputation": 18,
-      "rivalGroup": "gaming-peripherals"
+      "rivalGroup": "gaming-peripherals",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/4/40/Razer_snake_logo.svg/200px-Razer_snake_logo.svg.png"
     },
     {
       "id": "steelseries",
@@ -565,7 +627,8 @@
       "tier": "minor",
       "payment": 2500000,
       "minReputation": 15,
-      "rivalGroup": "gaming-peripherals"
+      "rivalGroup": "gaming-peripherals",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/SteelSeries_logo.svg/200px-SteelSeries_logo.svg.png"
     },
     {
       "id": "kaspersky",
@@ -574,7 +637,8 @@
       "tier": "minor",
       "payment": 4000000,
       "minReputation": 22,
-      "rivalGroup": "cybersecurity"
+      "rivalGroup": "cybersecurity",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Kaspersky_Lab_logo.svg/200px-Kaspersky_Lab_logo.svg.png"
     },
     {
       "id": "norton",
@@ -583,7 +647,8 @@
       "tier": "minor",
       "payment": 3500000,
       "minReputation": 20,
-      "rivalGroup": "cybersecurity"
+      "rivalGroup": "cybersecurity",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/NortonLifeLock_Company_Logo.svg/200px-NortonLifeLock_Company_Logo.svg.png"
     },
     {
       "id": "3m",
@@ -592,7 +657,8 @@
       "tier": "minor",
       "payment": 4000000,
       "minReputation": 22,
-      "rivalGroup": null
+      "rivalGroup": null,
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/3M_wordmark.svg/200px-3M_wordmark.svg.png"
     },
     {
       "id": "hilton",
@@ -601,7 +667,8 @@
       "tier": "minor",
       "payment": 5000000,
       "minReputation": 28,
-      "rivalGroup": "hotels"
+      "rivalGroup": "hotels",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Hilton_Hotels_%26_Resorts_logo.svg/200px-Hilton_Hotels_%26_Resorts_logo.svg.png"
     },
     {
       "id": "marriott",
@@ -610,7 +677,8 @@
       "tier": "minor",
       "payment": 5500000,
       "minReputation": 30,
-      "rivalGroup": "hotels"
+      "rivalGroup": "hotels",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Marriott_hotels_logo14.svg/200px-Marriott_hotels_logo14.svg.png"
     },
     {
       "id": "crowne-plaza",
@@ -619,7 +687,8 @@
       "tier": "minor",
       "payment": 4000000,
       "minReputation": 22,
-      "rivalGroup": "hotels"
+      "rivalGroup": "hotels",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Crowne_Plaza_logo_2022.svg/200px-Crowne_Plaza_logo_2022.svg.png"
     },
     {
       "id": "evian",
@@ -628,7 +697,8 @@
       "tier": "minor",
       "payment": 3000000,
       "minReputation": 18,
-      "rivalGroup": "bottled-water"
+      "rivalGroup": "bottled-water",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Evian_2019.svg/200px-Evian_2019.svg.png"
     },
     {
       "id": "volvic",
@@ -637,7 +707,8 @@
       "tier": "minor",
       "payment": 2500000,
       "minReputation": 15,
-      "rivalGroup": "bottled-water"
+      "rivalGroup": "bottled-water",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Volvic_logo.svg/200px-Volvic_logo.svg.png"
     },
     {
       "id": "gatorade",
@@ -646,7 +717,8 @@
       "tier": "minor",
       "payment": 4000000,
       "minReputation": 22,
-      "rivalGroup": "sports-drinks"
+      "rivalGroup": "sports-drinks",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/a/a0/Gatorade_logo.svg/200px-Gatorade_logo.svg.png"
     },
     {
       "id": "powerade",
@@ -655,7 +727,8 @@
       "tier": "minor",
       "payment": 3500000,
       "minReputation": 20,
-      "rivalGroup": "sports-drinks"
+      "rivalGroup": "sports-drinks",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/b/b3/Powerade_logo.svg/200px-Powerade_logo.svg.png"
     },
     {
       "id": "under-armour",
@@ -664,7 +737,8 @@
       "tier": "minor",
       "payment": 4500000,
       "minReputation": 25,
-      "rivalGroup": "sportswear"
+      "rivalGroup": "sportswear",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Under_armour_logo.svg/200px-Under_armour_logo.svg.png"
     },
     {
       "id": "alpinestars",
@@ -673,7 +747,8 @@
       "tier": "minor",
       "payment": 3000000,
       "minReputation": 18,
-      "rivalGroup": "racing-gear"
+      "rivalGroup": "racing-gear",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Alpinestars_logo.svg/200px-Alpinestars_logo.svg.png"
     },
     {
       "id": "sparco",
@@ -682,7 +757,8 @@
       "tier": "minor",
       "payment": 2500000,
       "minReputation": 15,
-      "rivalGroup": "racing-gear"
+      "rivalGroup": "racing-gear",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Sparco_logo.svg/200px-Sparco_logo.svg.png"
     },
     {
       "id": "omp",
@@ -691,7 +767,8 @@
       "tier": "minor",
       "payment": 2000000,
       "minReputation": 12,
-      "rivalGroup": "racing-gear"
+      "rivalGroup": "racing-gear",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/OMP_logo.svg/200px-OMP_logo.svg.png"
     },
     {
       "id": "t-mobile",
@@ -700,7 +777,8 @@
       "tier": "minor",
       "payment": 5000000,
       "minReputation": 28,
-      "rivalGroup": "mobile-carriers"
+      "rivalGroup": "mobile-carriers",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/T-Mobile_logo.svg/200px-T-Mobile_logo.svg.png"
     },
     {
       "id": "verizon",
@@ -709,7 +787,8 @@
       "tier": "minor",
       "payment": 5500000,
       "minReputation": 30,
-      "rivalGroup": "mobile-carriers"
+      "rivalGroup": "mobile-carriers",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Verizon_2015_logo_-vector.svg/200px-Verizon_2015_logo_-vector.svg.png"
     }
   ]
 }
