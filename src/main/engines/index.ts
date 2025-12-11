@@ -23,6 +23,9 @@ export {
   StubNegotiationEngine,
 } from './stubs';
 
+// Full engine implementations
+export { NegotiationEngine } from './negotiation-engine';
+
 // Stakeholder evaluators for negotiation engine
 export {
   evaluateManufacturerOffer,

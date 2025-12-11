@@ -35,8 +35,8 @@ import {
   StubDriverPerformanceEngine,
   StubRegulationEngine,
   StubTurnEngine,
-  StubNegotiationEngine,
 } from './stubs';
+import { NegotiationEngine } from './negotiation-engine';
 
 export class EngineManager {
   race: IRaceEngine = new StubRaceEngine();
@@ -51,5 +51,5 @@ export class EngineManager {
   driverPerformance: IDriverPerformanceEngine = new StubDriverPerformanceEngine();
   regulation: IRegulationEngine = new StubRegulationEngine();
   turn: ITurnEngine = new StubTurnEngine();
-  negotiation: INegotiationEngine = new StubNegotiationEngine();
+  negotiation: INegotiationEngine = new NegotiationEngine();
 }
