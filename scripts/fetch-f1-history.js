@@ -176,8 +176,27 @@ async function fetchConstructorStandings(season) {
   return teamPoints;
 }
 
+// Fetch driver standings for championship position
+async function fetchDriverStandings(season) {
+  const url = `${API_BASE}/${season}/driverStandings.json`;
+  const data = await fetchJson(url);
+
+  const standings = data.MRData.StandingsTable.StandingsLists[0]?.DriverStandings || [];
+  const driverPositions = {};
+
+  for (const standing of standings) {
+    const ergastDriverId = standing.Driver.driverId;
+    const ourDriverId = DRIVER_ID_MAP[ergastDriverId];
+    if (ourDriverId) {
+      driverPositions[ourDriverId] = parseInt(standing.position);
+    }
+  }
+
+  return driverPositions;
+}
+
 // Process race results into our format
-function processSeasonData(races, teamPoints, season) {
+function processSeasonData(races, teamPoints, driverPositions, season) {
   // Build driver season data
   const driverSeasons = {};
 
@@ -233,10 +252,11 @@ function processSeasonData(races, teamPoints, season) {
     }
   }
 
-  // Add team points to each driver's season
+  // Add team points and championship position to each driver's season
   for (const driverId of Object.keys(driverSeasons)) {
     const driverSeason = driverSeasons[driverId];
     driverSeason.teamTotalPoints = teamPoints[driverSeason.teamId] || 0;
+    driverSeason.championshipPosition = driverPositions[driverId] || null;
   }
 
   return driverSeasons;
@@ -256,7 +276,10 @@ async function main() {
       const teamPoints = await fetchConstructorStandings(season);
       await sleep(2000);
 
-      const seasonData = processSeasonData(races, teamPoints, season);
+      const driverPositions = await fetchDriverStandings(season);
+      await sleep(2000);
+
+      const seasonData = processSeasonData(races, teamPoints, driverPositions, season);
 
       // Merge into allDriverData
       for (const [driverId, data] of Object.entries(seasonData)) {

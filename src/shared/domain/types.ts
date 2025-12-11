@@ -371,6 +371,7 @@ export interface CareerSeasonRecord {
   races: HistoricalRaceResult[]; // Individual race results
   totalPoints: number; // Driver's total WDC points that season
   teamTotalPoints: number; // Team's total WCC points that season
+  championshipPosition?: number; // Final WDC position
 }
 
 /**

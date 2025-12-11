@@ -384,10 +384,10 @@ function F1CareerHistoryPanel({ careerHistory, teams }: F1CareerHistoryPanelProp
   // Build team name lookup
   const teamNames = useMemo(() => new Map(teams.map((t) => [t.id, t.name])), [teams]);
 
-  // Sort by season descending (most recent first)
+  // Sort by season ascending (oldest first)
   const sortedHistory = useMemo(() => {
     if (!careerHistory || careerHistory.length === 0) return [];
-    return [...careerHistory].sort((a, b) => b.season - a.season);
+    return [...careerHistory].sort((a, b) => a.season - b.season);
   }, [careerHistory]);
 
   // Find max races across all seasons for column count
@@ -441,6 +441,7 @@ function F1CareerHistoryPanel({ careerHistory, teams }: F1CareerHistoryPanelProp
                 </th>
               ))}
               <th className="w-14 px-3 py-2 text-right">Pts</th>
+              <th className="w-10 px-2 py-2 text-center">Pos</th>
             </tr>
           </thead>
           <tbody className={TABLE_BODY_CLASS}>
@@ -468,6 +469,25 @@ function F1CareerHistoryPanel({ careerHistory, teams }: F1CareerHistoryPanelProp
                 })}
                 <td className="w-14 px-3 py-2 text-right font-bold tabular-nums">
                   {season.totalPoints}
+                </td>
+                <td className="w-10 px-2 py-1 text-center">
+                  {season.championshipPosition ? (
+                    <div
+                      className={`w-8 h-6 text-xs rounded flex items-center justify-center mx-auto font-bold ${
+                        season.championshipPosition === 1
+                          ? 'bg-amber-400/80 text-amber-950'
+                          : season.championshipPosition === 2
+                            ? 'bg-gray-300/70 text-gray-800'
+                            : season.championshipPosition === 3
+                              ? 'bg-orange-500/60 text-orange-100'
+                              : 'text-muted'
+                      }`}
+                    >
+                      {season.championshipPosition}
+                    </div>
+                  ) : (
+                    <span className="text-muted">-</span>
+                  )}
                 </td>
               </tr>
             ))}
