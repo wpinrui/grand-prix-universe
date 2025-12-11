@@ -3,7 +3,7 @@
  * Displays comprehensive driver information in FM24-inspired layout.
  * Used by WorldDrivers page.
  */
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import {
   PersonHeader,
   AttributeBar,
@@ -12,7 +12,6 @@ import {
   ContractPanel,
   type ContractRelationship,
 } from './PersonProfileCards';
-import { Dropdown } from './Dropdown';
 import { SectionHeading } from './SectionHeading';
 import { DRIVER_ROLE_LABELS, formatOrdinal, pluralize } from '../utils/format';
 import { seasonToYear } from '../../shared/utils/date-utils';
@@ -382,34 +381,18 @@ interface F1CareerHistoryPanelProps {
 }
 
 function F1CareerHistoryPanel({ careerHistory, teams }: F1CareerHistoryPanelProps) {
+  // Build team name lookup
+  const teamNames = useMemo(() => new Map(teams.map((t) => [t.id, t.name])), [teams]);
+
   // Sort by season descending (most recent first)
   const sortedHistory = useMemo(() => {
     if (!careerHistory || careerHistory.length === 0) return [];
     return [...careerHistory].sort((a, b) => b.season - a.season);
   }, [careerHistory]);
 
-  // Build season options for dropdown
-  const seasonOptions = useMemo(() => {
-    return sortedHistory.map((s) => ({
-      value: String(s.season),
-      label: `${s.season}`,
-    }));
-  }, [sortedHistory]);
-
-  // State for selected season
-  const [selectedSeasonValue, setSelectedSeasonValue] = useState<string>(
-    sortedHistory.length > 0 ? String(sortedHistory[0].season) : ''
-  );
-
-  // Build team name lookup
-  const teamNames = useMemo(() => new Map(teams.map((t) => [t.id, t.name])), [teams]);
-
   if (!careerHistory || careerHistory.length === 0) {
-    return null; // Don't show panel if no F1 history
+    return null;
   }
-
-  // Get selected season data
-  const selectedSeason = sortedHistory.find((s) => String(s.season) === selectedSeasonValue);
 
   // Calculate career totals
   const totalRaces = sortedHistory.reduce((sum, s) => sum + s.races.length, 0);
@@ -423,96 +406,65 @@ function F1CareerHistoryPanel({ careerHistory, teams }: F1CareerHistoryPanelProp
     0
   );
 
-  // Calculate selected season stats
-  const seasonStats = selectedSeason
-    ? {
-        races: selectedSeason.races.length,
-        points: selectedSeason.totalPoints,
-        wins: selectedSeason.races.filter((r) => r.position === 1).length,
-        podiums: selectedSeason.races.filter((r) => r.position !== null && r.position <= 3).length,
-        dnfs: selectedSeason.races.filter((r) => r.position === null).length,
-      }
-    : null;
-
   return (
     <div className="space-y-4">
-      {/* Header with Season Selector */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold text-primary">Career Results</h3>
-          <p className="text-sm text-muted">
-            {totalRaces} races · {totalWins} wins · {totalPodiums} podiums · {totalPoints.toFixed(0)} pts
-          </p>
-        </div>
-        {seasonOptions.length > 0 && (
-          <div className="w-32">
-            <Dropdown
-              value={selectedSeasonValue}
-              onChange={setSelectedSeasonValue}
-              options={seasonOptions}
-            />
+      {/* Career Totals Header */}
+      <div className="grid grid-cols-4 gap-4">
+        {[
+          { label: 'Races', value: totalRaces },
+          { label: 'Wins', value: totalWins, color: 'text-amber-400' },
+          { label: 'Podiums', value: totalPodiums, color: 'text-emerald-400' },
+          { label: 'Points', value: totalPoints.toFixed(0) },
+        ].map(({ label, value, color }) => (
+          <div key={label} className="card p-4 text-center">
+            <div className={`text-3xl font-bold tabular-nums ${color ?? 'text-primary'}`}>{value}</div>
+            <div className="text-sm text-muted uppercase">{label}</div>
           </div>
-        )}
+        ))}
       </div>
 
-      {/* Season Stats Summary */}
-      {seasonStats && (
-        <div className="grid grid-cols-5 gap-4">
-          {[
-            { label: 'Races', value: seasonStats.races },
-            { label: 'Points', value: seasonStats.points },
-            { label: 'Wins', value: seasonStats.wins },
-            { label: 'Podiums', value: seasonStats.podiums },
-            { label: 'DNFs', value: seasonStats.dnfs },
-          ].map(({ label, value }) => (
-            <div key={label} className="card p-4 text-center">
-              <div className="text-3xl font-bold text-primary tabular-nums">{value}</div>
-              <div className="text-sm text-muted uppercase">{label}</div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Results Grid */}
-      {selectedSeason && (
-        <div className="card overflow-hidden overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className={TABLE_HEADER_CLASS}>
-              <tr className={TABLE_HEADER_ROW_CLASS}>
-                <th className="min-w-[180px] px-3 py-3 text-left">Team</th>
-                {selectedSeason.races.map((race) => (
-                  <th key={race.round} className="w-9 px-0.5 py-2 text-center">
-                    <span className="text-xs text-muted" title={race.name}>
-                      R{race.round}
-                    </span>
-                  </th>
-                ))}
-                <th className="w-14 px-3 py-3 text-right">Pts</th>
-              </tr>
-            </thead>
-            <tbody className={TABLE_BODY_CLASS}>
-              <tr>
-                <td className="min-w-[180px] px-3 py-2 whitespace-nowrap text-secondary">
-                  {teamNames.get(selectedSeason.teamId) ?? selectedSeason.teamId}
-                </td>
-                {selectedSeason.races.map((race) => (
-                  <td key={race.round} className="w-9 px-0.5 py-1 text-center">
-                    <div
-                      className={`w-8 h-6 text-xs rounded flex items-center justify-center mx-auto ${getHistoricalPositionStyle(race.position)}`}
-                      title={`${race.name}: ${race.position !== null ? `P${race.position}` : 'DNF'} - ${race.points} pts (${race.status})`}
-                    >
-                      {race.position ?? 'X'}
-                    </div>
+      {/* All Seasons - Stacked */}
+      <div className="space-y-4">
+        {sortedHistory.map((season) => (
+          <div key={season.season} className="card overflow-hidden overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className={TABLE_HEADER_CLASS}>
+                <tr className={TABLE_HEADER_ROW_CLASS}>
+                  <th className="w-16 px-3 py-2 text-left font-bold text-primary">{season.season}</th>
+                  {season.races.map((race) => (
+                    <th key={race.round} className="w-9 px-0.5 py-2 text-center">
+                      <span className="text-xs text-muted" title={race.name}>
+                        R{race.round}
+                      </span>
+                    </th>
+                  ))}
+                  <th className="w-14 px-3 py-2 text-right">Pts</th>
+                </tr>
+              </thead>
+              <tbody className={TABLE_BODY_CLASS}>
+                <tr>
+                  <td className="w-16 px-3 py-2 whitespace-nowrap text-secondary text-xs">
+                    {teamNames.get(season.teamId) ?? season.teamId}
                   </td>
-                ))}
-                <td className="w-14 px-3 py-2 text-right font-bold tabular-nums">
-                  {selectedSeason.totalPoints}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      )}
+                  {season.races.map((race) => (
+                    <td key={race.round} className="w-9 px-0.5 py-1 text-center">
+                      <div
+                        className={`w-8 h-6 text-xs rounded flex items-center justify-center mx-auto ${getHistoricalPositionStyle(race.position)}`}
+                        title={`${race.name}: ${race.position !== null ? `P${race.position}` : 'DNF'} - ${race.points} pts (${race.status})`}
+                      >
+                        {race.position ?? 'X'}
+                      </div>
+                    </td>
+                  ))}
+                  <td className="w-14 px-3 py-2 text-right font-bold tabular-nums">
+                    {season.totalPoints}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
