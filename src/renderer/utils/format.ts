@@ -192,6 +192,38 @@ export function formatSavedAt(save: SaveSlotInfo): string {
 }
 
 // ===========================================
+// HISTORICAL RACE STATUS HELPERS
+// ===========================================
+
+/**
+ * Check if a historical race status indicates retirement/DNF
+ * Used for displaying career history from real F1 data (Ergast API format)
+ */
+export function isHistoricalRetiredStatus(status: string): boolean {
+  return status !== 'Finished' && !status.includes('Lap');
+}
+
+/**
+ * Get Tailwind classes for historical position styling (career history tables)
+ * Matches FIA Results styling with podium colors and points position highlighting
+ * @param position - Finishing position (null if DNF)
+ * @param status - Ergast API status string
+ * @param pointsPositions - Number of positions that score points (default 10 for F1)
+ */
+export function getHistoricalPositionStyle(
+  position: number | null,
+  status: string,
+  pointsPositions = 10
+): string {
+  if (isHistoricalRetiredStatus(status)) return 'bg-purple-600/50 text-purple-200';
+  if (position === 1) return 'bg-amber-400/80 text-amber-950 font-bold';
+  if (position === 2) return 'bg-gray-300/70 text-gray-800 font-bold';
+  if (position === 3) return 'bg-orange-500/60 text-orange-100 font-bold';
+  if (position !== null && position <= pointsPositions) return 'bg-[#99b382] text-neutral-900';
+  return 'bg-[var(--neutral-700)]/50 text-muted';
+}
+
+// ===========================================
 // SAVE GROUPING
 // ===========================================
 

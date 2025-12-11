@@ -7,7 +7,6 @@ import { useDerivedGameState } from '../../hooks';
 import {
   DriverProfileContent,
   extractRecentResults,
-  extractCareerHistory,
   getContractRelationship,
 } from '../../components';
 import type { Driver, DriverStanding, Team } from '../../../shared/domain';
@@ -107,13 +106,6 @@ export function WorldDrivers({ initialDriverId }: WorldDriversProps) {
   // Extract recent race results
   const recentResults = extractRecentResults(selectedDriver.id, gameState.currentSeason);
 
-  // Extract career history from past seasons
-  const careerHistory = extractCareerHistory(
-    selectedDriver.id,
-    gameState.pastSeasons,
-    gameState.teams
-  );
-
   // Handle contract talks (placeholder for now)
   const handleEnterContractTalks = () => {
     // TODO: Navigate to contract negotiation screen
@@ -129,7 +121,6 @@ export function WorldDrivers({ initialDriverId }: WorldDriversProps) {
         driverState={driverState}
         currentSeason={gameState.currentSeason.seasonNumber}
         recentResults={recentResults}
-        careerHistory={careerHistory}
         contractRelationship={getContractRelationship(selectedDriver.teamId, playerTeam.id)}
         teamColors={teamColors}
         onEnterContractTalks={handleEnterContractTalks}

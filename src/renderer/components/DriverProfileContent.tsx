@@ -13,7 +13,13 @@ import {
   type ContractRelationship,
 } from './PersonProfileCards';
 import { SectionHeading } from './SectionHeading';
-import { DRIVER_ROLE_LABELS, formatOrdinal, pluralize } from '../utils/format';
+import {
+  DRIVER_ROLE_LABELS,
+  formatOrdinal,
+  pluralize,
+  isHistoricalRetiredStatus,
+  getHistoricalPositionStyle,
+} from '../utils/format';
 import { seasonToYear } from '../../shared/utils/date-utils';
 import {
   TABLE_HEADER_CLASS,
@@ -302,84 +308,9 @@ export interface SeasonSummary {
   wins: number;
 }
 
-interface CareerHistoryPanelProps {
-  seasonHistory: SeasonSummary[];
-}
-
-function _CareerHistoryPanel({ seasonHistory }: CareerHistoryPanelProps) {
-  if (seasonHistory.length === 0) {
-    return (
-      <StatPanel title="Career History">
-        <p className="text-muted text-sm">No career history available</p>
-      </StatPanel>
-    );
-  }
-
-  // Calculate career totals
-  const careerWins = seasonHistory.reduce((sum, s) => sum + s.wins, 0);
-  const careerPoints = seasonHistory.reduce((sum, s) => sum + s.points, 0);
-  const bestPosition = Math.min(...seasonHistory.map((s) => s.position));
-
-  return (
-    <StatPanel title="Career History">
-      {/* Career Totals */}
-      <div className="grid grid-cols-3 gap-4 mb-4 pb-4 border-b border-[var(--neutral-700)]">
-        <div className="text-center">
-          <div className="text-lg font-bold text-primary">{careerWins}</div>
-          <div className="text-xs text-muted">Career Wins</div>
-        </div>
-        <div className="text-center">
-          <div className="text-lg font-bold text-primary">{careerPoints}</div>
-          <div className="text-xs text-muted">Career Points</div>
-        </div>
-        <div className="text-center">
-          <div className="text-lg font-bold text-primary">{formatOrdinal(bestPosition)}</div>
-          <div className="text-xs text-muted">Best Finish</div>
-        </div>
-      </div>
-
-      {/* Season by Season */}
-      <div className="space-y-2 max-h-48 overflow-y-auto">
-        {seasonHistory.map((season) => (
-          <div
-            key={season.seasonNumber}
-            className="flex items-center justify-between py-1 text-sm"
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-muted w-16">Season {season.seasonNumber}</span>
-              <span className="text-secondary">{season.teamName}</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-primary font-medium">{formatOrdinal(season.position)}</span>
-              <span className="text-muted">{season.points} pts</span>
-              {season.wins > 0 && <span className="text-amber-400">{season.wins}W</span>}
-            </div>
-          </div>
-        ))}
-      </div>
-    </StatPanel>
-  );
-}
-
 // ===========================================
 // F1 CAREER HISTORY PANEL (REAL-WORLD DATA)
 // ===========================================
-
-/** Check if a status indicates retirement/DNF */
-function isRetiredStatus(status: string): boolean {
-  return status !== 'Finished' && !status.includes('Lap');
-}
-
-/** Get position style for historical results (matching FIA Results page) */
-function getHistoricalPositionStyle(position: number | null, status: string): string {
-  // DNF/Ret - purple (check status, not just null position)
-  if (isRetiredStatus(status)) return 'bg-purple-600/50 text-purple-200';
-  if (position === 1) return 'bg-amber-400/80 text-amber-950 font-bold';
-  if (position === 2) return 'bg-gray-300/70 text-gray-800 font-bold';
-  if (position === 3) return 'bg-orange-500/60 text-orange-100 font-bold';
-  if (position !== null && position <= 10) return 'bg-[#99b382] text-neutral-900';
-  return 'bg-[var(--neutral-700)]/50 text-muted';
-}
 
 interface F1CareerHistoryPanelProps {
   careerHistory: CareerSeasonRecord[] | undefined;
@@ -462,7 +393,7 @@ function F1CareerHistoryPanel({ careerHistory, teams }: F1CareerHistoryPanelProp
                   if (!race) {
                     return <td key={i} className="px-0.5 py-1 text-center" />;
                   }
-                  const isRetired = isRetiredStatus(race.status);
+                  const isRetired = isHistoricalRetiredStatus(race.status);
                   return (
                     <td key={i} className="px-0.5 py-1 text-center">
                       <div
@@ -517,8 +448,6 @@ interface DriverProfileContentProps {
   currentSeason: number;
   /** Recent race results for form display */
   recentResults: RecentRaceResult[];
-  /** Past season summaries for career history */
-  careerHistory: SeasonSummary[];
   /** Relationship to the player's team */
   contractRelationship: ContractRelationship;
   /** Team colors for faces.js (if no photo) */
@@ -540,7 +469,6 @@ export function DriverProfileContent({
   driverState,
   currentSeason,
   recentResults,
-  careerHistory: _careerHistory, // Unused - using driver.careerHistory instead
   contractRelationship,
   teamColors,
   onEnterContractTalks,

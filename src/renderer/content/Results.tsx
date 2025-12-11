@@ -4,6 +4,10 @@ import { SectionHeading, HeaderCell, Dropdown } from '../components';
 import { FlagIcon } from '../components/FlagIcon';
 import { seasonToYear } from '../../shared/utils/date-utils';
 import {
+  isHistoricalRetiredStatus,
+  getHistoricalPositionStyle,
+} from '../utils/format';
+import {
   TABLE_CELL_BASE,
   TABLE_HEADER_CLASS,
   TABLE_HEADER_ROW_CLASS,
@@ -787,23 +791,6 @@ interface SeasonOption {
   year: number;
 }
 
-/** Check if a status indicates retirement/DNF */
-function isRetiredStatus(status: string): boolean {
-  const finishedStatuses = ['Finished', '+1 Lap', '+2 Laps', '+3 Laps', '+4 Laps', '+5 Laps', '+6 Laps'];
-  return !finishedStatuses.some((s) => status.includes(s) || status.includes('Lap'));
-}
-
-/** Get position style for historical results */
-function getHistoricalPositionStyle(position: number | null, status: string, pointsPositions: number): string {
-  // DNF/Ret - purple (check status, not just null position)
-  if (isRetiredStatus(status)) return 'bg-purple-600/50 text-purple-200';
-  if (position === 1) return 'bg-amber-400/80 text-amber-950 font-bold';
-  if (position === 2) return 'bg-gray-300/70 text-gray-800 font-bold';
-  if (position === 3) return 'bg-orange-500/60 text-orange-100 font-bold';
-  if (position !== null && position <= pointsPositions) return 'bg-[#99b382] text-neutral-900';
-  return 'bg-[var(--neutral-700)]/50 text-muted';
-}
-
 /** Cell for historical race result */
 interface HistoricalResultCellProps {
   result: HistoricalRaceResult;
@@ -811,7 +798,7 @@ interface HistoricalResultCellProps {
 }
 
 function HistoricalResultCell({ result, pointsPositions }: HistoricalResultCellProps) {
-  const isRetired = isRetiredStatus(result.status);
+  const isRetired = isHistoricalRetiredStatus(result.status);
   const style = getHistoricalPositionStyle(result.position, result.status, pointsPositions);
   const text = isRetired ? 'Ret' : String(result.position);
 
