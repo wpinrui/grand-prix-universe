@@ -112,6 +112,8 @@ import type {
   CarRepairCost,
   PendingPart,
   DriverRaceResult,
+  SpecReleaseData,
+  SpecReleaseStatChange,
 } from '../../shared/domain/types';
 import { PendingPartSource, DriverRole, RaceFinishStatus, PartsLogEntryType } from '../../shared/domain/types';
 import {
@@ -126,6 +128,11 @@ import {
   createDefaultTeamEngineState,
   isValidCustomisation,
   MAX_CUSTOMISATION_PER_STAT,
+  createInitialSpecState,
+  shouldReleaseSpec,
+  generateSpecBonus,
+  ENGINE_STAT_KEYS,
+  ENGINE_STAT_DISPLAY_NAMES,
 } from '../../shared/domain/engine-utils';
 
 /** Current save format version */
@@ -676,6 +683,11 @@ function buildGameState(params: BuildGameStateParams): GameState {
     seasonNumber
   );
 
+  // Create initial manufacturer spec states (all start at spec 1 with no bonuses)
+  const manufacturerSpecs = manufacturers
+    .filter((m) => m.type === ManufacturerType.Engine)
+    .map((m) => createInitialSpecState(m.id));
+
   // Create initial cars (2 per team)
   const cars = createInitialCars(teams);
 
@@ -719,6 +731,7 @@ function buildGameState(params: BuildGameStateParams): GameState {
 
     sponsorDeals,
     manufacturerContracts,
+    manufacturerSpecs,
 
     pastSeasons: [],
     events: [],
@@ -1784,6 +1797,95 @@ function checkPendingParts(state: GameState, currentDate: GameDate): boolean {
 }
 
 /**
+ * Process spec releases for all engine manufacturers
+ * Each manufacturer has a daily probability of releasing a new spec
+ */
+function processSpecReleases(state: GameState, currentDate: GameDate): void {
+  // Only process during racing season (not pre-season or post-season)
+  if (state.phase === GamePhase.PreSeason || state.phase === GamePhase.PostSeason) {
+    return;
+  }
+
+  const playerTeamId = state.player.teamId;
+  const playerEngineContract = state.manufacturerContracts.find(
+    (c) => c.teamId === playerTeamId && c.type === ManufacturerType.Engine
+  );
+
+  for (const specState of state.manufacturerSpecs) {
+    const manufacturer = state.manufacturers.find((m) => m.id === specState.manufacturerId);
+    if (!manufacturer) continue;
+
+    // Check if this manufacturer releases a spec today
+    if (!shouldReleaseSpec(manufacturer.reputation)) continue;
+
+    // Generate the new spec bonuses
+    const newBonus = generateSpecBonus(manufacturer.reputation);
+    specState.latestSpecVersion += 1;
+    specState.specBonuses.push(newBonus);
+
+    // Build stat changes for the email
+    const statChanges: SpecReleaseStatChange[] = [];
+    for (const key of ENGINE_STAT_KEYS) {
+      if (newBonus[key] > 0) {
+        statChanges.push({
+          stat: key,
+          statName: ENGINE_STAT_DISPLAY_NAMES[key],
+          improvement: newBonus[key],
+        });
+      }
+    }
+
+    // Build common fields for the event
+    const statSummary = statChanges.map((s) => `${s.statName} +${s.improvement}`).join(', ');
+    const subject = `${manufacturer.name} releases Spec ${specState.latestSpecVersion}.0`;
+
+    // Check if this affects the player's team
+    const affectsPlayer = playerEngineContract?.manufacturerId === manufacturer.id;
+
+    // Create email for player if it affects them, news headline otherwise
+    if (affectsPlayer) {
+      const data: SpecReleaseData = {
+        category: EmailCategory.SpecRelease,
+        manufacturerId: manufacturer.id,
+        manufacturerName: manufacturer.name,
+        newSpecVersion: specState.latestSpecVersion,
+        statChanges,
+        affectsPlayer: true,
+      };
+
+      const body = `${manufacturer.name} has released a new engine specification! ` +
+        `Spec ${specState.latestSpecVersion}.0 brings improvements to: ${statSummary}. ` +
+        `This upgrade is now available for purchase for your cars.`;
+
+      state.calendarEvents.push({
+        id: randomUUID(),
+        date: currentDate,
+        type: CalendarEventType.Email,
+        subject,
+        body,
+        critical: false, // Not critical - player can continue simulation
+        emailCategory: EmailCategory.SpecRelease,
+        sender: `${manufacturer.name} Technical Department`,
+        data,
+      });
+    } else {
+      // News headline for other manufacturers' spec releases
+      const body = `${manufacturer.name} has released a new engine specification. ` +
+        `The update brings improvements to: ${statSummary}.`;
+
+      state.calendarEvents.push({
+        id: randomUUID(),
+        date: currentDate,
+        type: CalendarEventType.Headline,
+        subject,
+        body,
+        critical: false,
+      });
+    }
+  }
+}
+
+/**
  * Apply turn processing result to game state (mutates state)
  * Returns true if player team had a design milestone or test completion (for auto-stop)
  */
@@ -1801,6 +1903,9 @@ function applyTurnResult(state: GameState, result: TurnProcessingResult): boolea
 
   // Check for pending parts that are ready
   const playerHadReadyPart = checkPendingParts(state, result.newDate);
+
+  // Process manufacturer spec releases
+  processSpecReleases(state, result.newDate);
 
   // Update projected milestone dates based on current progress
   updateProjectedMilestones(state);

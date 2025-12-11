@@ -8,6 +8,8 @@ import type {
   CarEngineState,
   TeamEngineState,
   Manufacturer,
+  ManufacturerSpecState,
+  SpecBonus,
 } from './types';
 
 /**
@@ -20,6 +22,17 @@ export const ENGINE_STAT_KEYS: (keyof EngineStats)[] = [
   'heat',
   'predictability',
 ];
+
+/**
+ * Display names for engine stats (for UI and emails)
+ */
+export const ENGINE_STAT_DISPLAY_NAMES: Record<keyof EngineStats, string> = {
+  power: 'Power',
+  fuelEfficiency: 'Fuel Efficiency',
+  reliability: 'Reliability',
+  heat: 'Heat Management',
+  predictability: 'Predictability',
+};
 
 /**
  * Maximum customisation adjustment per stat (prevents min-maxing)
@@ -250,4 +263,107 @@ export function evolveEngineStats(stats: EngineStats): EngineStats {
   }
 
   return evolved;
+}
+
+// =============================================================================
+// SPEC RELEASE FUNCTIONS
+// =============================================================================
+
+/**
+ * Base probability per day for any manufacturer to release a new spec
+ * Higher quality manufacturers have slightly higher probability
+ */
+export const BASE_SPEC_RELEASE_PROBABILITY_PER_DAY = 0.005; // ~0.5% per day
+
+/**
+ * Maximum stat improvement per spec release (per stat)
+ */
+export const MAX_SPEC_IMPROVEMENT_PER_STAT = 5;
+
+// Reputation thresholds for spec release mechanics
+/** Minimum reputation for 3 stats to improve per spec (vs 2) */
+export const REPUTATION_THRESHOLD_THREE_STATS = 70;
+/** Minimum reputation for +1 bonus improvement per stat */
+export const REPUTATION_THRESHOLD_BONUS_IMPROVEMENT = 80;
+/** Minimum reputation for 1.2x spec release probability */
+export const REPUTATION_THRESHOLD_MEDIUM_PROBABILITY = 60;
+/** Minimum reputation for 1.5x spec release probability */
+export const REPUTATION_THRESHOLD_HIGH_PROBABILITY = 80;
+
+/**
+ * Creates a default (zeroed) spec bonus object
+ */
+export function createDefaultSpecBonus(): SpecBonus {
+  return {
+    power: 0,
+    fuelEfficiency: 0,
+    reliability: 0,
+    heat: 0,
+    predictability: 0,
+  };
+}
+
+/**
+ * Creates the initial spec state for a manufacturer
+ * Starts at spec version 1 with no bonuses (base stats from manufacturer)
+ */
+export function createInitialSpecState(manufacturerId: string): ManufacturerSpecState {
+  return {
+    manufacturerId,
+    latestSpecVersion: 1,
+    specBonuses: [],
+  };
+}
+
+/**
+ * Generates random spec bonuses for a new spec version
+ * Higher reputation manufacturers get slightly better bonuses
+ *
+ * @param reputation - Manufacturer reputation (0-100)
+ * @returns SpecBonus with random improvements for 2-3 stats
+ */
+export function generateSpecBonus(reputation: number): SpecBonus {
+  const bonus = createDefaultSpecBonus();
+
+  // Better manufacturers get more stats improved (2-3)
+  const statsToImprove = reputation >= REPUTATION_THRESHOLD_THREE_STATS ? 3 : 2;
+
+  // Shuffle stats to pick random ones
+  const shuffledStats = [...ENGINE_STAT_KEYS].sort(() => Math.random() - 0.5);
+  const selectedStats = shuffledStats.slice(0, statsToImprove);
+
+  for (const stat of selectedStats) {
+    // Base improvement 1-3, higher reputation gets +1
+    const baseImprovement = Math.floor(Math.random() * 3) + 1;
+    const reputationBonus = reputation >= REPUTATION_THRESHOLD_BONUS_IMPROVEMENT ? 1 : 0;
+    bonus[stat] = Math.min(baseImprovement + reputationBonus, MAX_SPEC_IMPROVEMENT_PER_STAT);
+  }
+
+  return bonus;
+}
+
+/**
+ * Checks if a manufacturer should release a new spec today
+ * Probability is modified by manufacturer reputation
+ *
+ * @param reputation - Manufacturer reputation (0-100)
+ * @returns True if a spec should be released
+ */
+export function shouldReleaseSpec(reputation: number): boolean {
+  // Reputation modifier: higher reputation gets bonus probability
+  const reputationModifier =
+    reputation >= REPUTATION_THRESHOLD_HIGH_PROBABILITY ? 1.5 :
+    reputation >= REPUTATION_THRESHOLD_MEDIUM_PROBABILITY ? 1.2 :
+    1.0;
+  const adjustedProbability = BASE_SPEC_RELEASE_PROBABILITY_PER_DAY * reputationModifier;
+  return Math.random() < adjustedProbability;
+}
+
+/**
+ * Gets the spec bonuses array from ManufacturerSpecState as EngineStats[]
+ * Used by getEffectiveEngineStats which expects EngineStats[]
+ * Note: SpecBonus and EngineStats are structurally identical, so this is just a type cast
+ */
+export function getSpecBonusesAsEngineStats(specState: ManufacturerSpecState): EngineStats[] {
+  return specState.specBonuses;
 }
