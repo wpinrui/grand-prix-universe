@@ -1450,20 +1450,9 @@ export interface SponsorContractTerms {
 
 /**
  * EngineContractTerms - Contract terms for engine supply
- * (Alias for existing ContractTerms for backwards compatibility)
+ * Type alias for existing ContractTerms (legacy type defined below)
  */
-export interface EngineContractTerms {
-  /** Annual fee (positive = team pays, negative = works deal pays team) */
-  annualCost: number;
-  /** Contract duration in seasons */
-  duration: number;
-  /** Pre-paid engine upgrades included per season */
-  upgradesIncluded: number;
-  /** Customisation points included */
-  customisationPointsIncluded: number;
-  /** Whether optimisation package is included */
-  optimisationIncluded: boolean;
-}
+export type EngineContractTerms = ContractTerms;
 
 /**
  * AnyContractTerms - Union of all stakeholder-specific contract terms
