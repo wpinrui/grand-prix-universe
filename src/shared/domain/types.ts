@@ -1315,11 +1315,282 @@ export interface TeamEngineAnalytics {
 }
 
 // =============================================================================
-// ENGINE CONTRACT NEGOTIATION TYPES
+// GENERIC CONTRACT NEGOTIATION TYPES
 // =============================================================================
+// Universal negotiation system for all stakeholder types (drivers, staff,
+// sponsors, engine suppliers). Each stakeholder shares the same state machine
+// but has unique contract terms and evaluation criteria.
+// See proposal.md → "Contract Negotiations System" for full specification.
+
+/**
+ * StakeholderType - The type of entity being negotiated with
+ * Each type has different contract terms and evaluation criteria
+ */
+export enum StakeholderType {
+  /** Engine manufacturer (power units) */
+  Manufacturer = 'manufacturer',
+  /** Racing driver */
+  Driver = 'driver',
+  /** Key personnel (chiefs, engineers) */
+  Staff = 'staff',
+  /** Financial sponsor */
+  Sponsor = 'sponsor',
+}
+
+/**
+ * NegotiationPhase - The current phase of a negotiation
+ * Represents the state machine for all contract negotiations
+ */
+export enum NegotiationPhase {
+  /** Player has initiated contact, waiting for counterparty response */
+  AwaitingResponse = 'awaiting-response',
+  /** Counterparty has responded, player can act */
+  ResponseReceived = 'response-received',
+  /** Negotiation complete, deal signed */
+  Completed = 'completed',
+  /** Negotiation ended without deal (rejected or expired) */
+  Failed = 'failed',
+}
+
+/**
+ * ResponseType - How the counterparty responds to an offer
+ */
+export enum ResponseType {
+  /** Accepts the terms as offered */
+  Accept = 'accept',
+  /** Proposes modified terms */
+  Counter = 'counter',
+  /** Declines to continue negotiating */
+  Reject = 'reject',
+  /** Needs more time to consider (delays response) */
+  NeedTime = 'need-time',
+}
+
+/**
+ * ResponseTone - The emotional tone of a response (affects relationship)
+ */
+export enum ResponseTone {
+  /** Very positive, excited about the opportunity */
+  Enthusiastic = 'enthusiastic',
+  /** Neutral, businesslike */
+  Professional = 'professional',
+  /** Unhappy with the offer, but still engaged */
+  Disappointed = 'disappointed',
+  /** Offended by the offer, relationship damaged */
+  Insulted = 'insulted',
+}
+
+// -----------------------------------------------------------------------------
+// Stakeholder-Specific Contract Terms
+// -----------------------------------------------------------------------------
+
+/**
+ * DriverContractTerms - Contract terms for signing a driver
+ */
+export interface DriverContractTerms {
+  /** Annual salary */
+  salary: number;
+  /** Contract duration in seasons (1-5) */
+  duration: number;
+  /** One-time signing bonus */
+  signingBonus: number;
+  /** Percentage of prize money as performance bonus (0-100) */
+  performanceBonusPercent: number;
+  /** Buyout clause amount (paid to release driver early) */
+  releaseClause: number;
+  /** Guaranteed driver status (Lead/Equal/Support role) */
+  driverStatus: DriverRole;
+}
+
+/**
+ * StaffContractTerms - Contract terms for hiring key personnel
+ */
+export interface StaffContractTerms {
+  /** Annual salary */
+  salary: number;
+  /** Contract duration in seasons (1-4) */
+  duration: number;
+  /** One-time signing bonus */
+  signingBonus: number;
+  /** Buyout clause to poach from another team (if applicable) */
+  buyoutRequired: number;
+  /** Performance bonus (percentage of salary tied to results) */
+  bonusPercent: number;
+}
+
+/**
+ * SponsorPlacement - Where sponsor branding appears
+ */
+export enum SponsorPlacement {
+  /** Title sponsor - name in team name */
+  Primary = 'primary',
+  /** Major sponsor - prominent logo placement */
+  Secondary = 'secondary',
+  /** Minor sponsor - small logo */
+  Tertiary = 'tertiary',
+}
+
+/**
+ * SponsorContractTerms - Contract terms for sponsor deals
+ */
+export interface SponsorContractTerms {
+  /** Annual payment to team */
+  annualPayment: number;
+  /** Contract duration in seasons (1-3) */
+  duration: number;
+  /** Branding placement level */
+  placement: SponsorPlacement;
+  /** Bonus payment per championship point */
+  pointsBonus: number;
+  /** Bonus payment per race win */
+  winBonus: number;
+  /** Championship position below which sponsor can exit early */
+  exitClausePosition?: number;
+}
+
+/**
+ * EngineContractTerms - Contract terms for engine supply
+ * (Alias for existing ContractTerms for backwards compatibility)
+ */
+export interface EngineContractTerms {
+  /** Annual fee (positive = team pays, negative = works deal pays team) */
+  annualCost: number;
+  /** Contract duration in seasons */
+  duration: number;
+  /** Pre-paid engine upgrades included per season */
+  upgradesIncluded: number;
+  /** Customisation points included */
+  customisationPointsIncluded: number;
+  /** Whether optimisation package is included */
+  optimisationIncluded: boolean;
+}
+
+/**
+ * AnyContractTerms - Union of all stakeholder-specific contract terms
+ */
+export type AnyContractTerms =
+  | DriverContractTerms
+  | StaffContractTerms
+  | SponsorContractTerms
+  | EngineContractTerms;
+
+// -----------------------------------------------------------------------------
+// Negotiation Round & State
+// -----------------------------------------------------------------------------
+
+/**
+ * NegotiationRound - A single round of back-and-forth in a negotiation
+ * Each offer/counter-offer creates a new round
+ */
+export interface NegotiationRound<T extends AnyContractTerms = AnyContractTerms> {
+  /** Round number (1-based) */
+  roundNumber: number;
+  /** Who made this offer */
+  offeredBy: 'player' | 'counterparty';
+  /** The contract terms offered in this round */
+  terms: T;
+  /** Date the offer was made */
+  offeredDate: GameDate;
+  /** Date offer expires (counterparty won't wait forever) */
+  expiresDate: GameDate;
+  /** Response received (if any) */
+  responseType?: ResponseType;
+  /** Tone of the response (affects relationship) */
+  responseTone?: ResponseTone;
+  /** Date response was received */
+  responseDate?: GameDate;
+}
+
+/**
+ * BaseNegotiation - Common fields for all negotiation types
+ * Extended by stakeholder-specific negotiation interfaces
+ */
+export interface BaseNegotiation<T extends AnyContractTerms = AnyContractTerms> {
+  /** Unique negotiation ID */
+  id: string;
+  /** Type of stakeholder being negotiated with */
+  stakeholderType: StakeholderType;
+  /** Team initiating/participating in negotiation */
+  teamId: string;
+  /** Current phase of the negotiation */
+  phase: NegotiationPhase;
+  /** Which season this contract would apply to */
+  forSeason: number;
+  /** Date negotiation started */
+  startedDate: GameDate;
+  /** Date of last activity (offer/response) */
+  lastActivityDate: GameDate;
+  /** All rounds of this negotiation */
+  rounds: NegotiationRound<T>[];
+  /** Current round number */
+  currentRound: number;
+  /** Maximum rounds before counterparty walks away (personality-driven) */
+  maxRounds: number;
+  /** Relationship score at start of negotiation (0-100) */
+  relationshipScoreBefore: number;
+  /** Whether counterparty mentioned competing interest */
+  hasCompetingOffer: boolean;
+  /** Whether this was initiated by counterparty (proactive outreach) */
+  isProactiveOutreach: boolean;
+}
+
+/**
+ * DriverNegotiation - Negotiation for signing a driver
+ */
+export interface DriverNegotiation extends BaseNegotiation<DriverContractTerms> {
+  stakeholderType: StakeholderType.Driver;
+  /** ID of the driver being negotiated with */
+  driverId: string;
+}
+
+/**
+ * StaffNegotiation - Negotiation for hiring key personnel
+ */
+export interface StaffNegotiation extends BaseNegotiation<StaffContractTerms> {
+  stakeholderType: StakeholderType.Staff;
+  /** ID of the staff member being negotiated with */
+  staffId: string;
+  /** Role being offered */
+  role: ChiefRole;
+}
+
+/**
+ * SponsorNegotiation - Negotiation for sponsor deal
+ */
+export interface SponsorNegotiation extends BaseNegotiation<SponsorContractTerms> {
+  stakeholderType: StakeholderType.Sponsor;
+  /** ID of the sponsor being negotiated with */
+  sponsorId: string;
+}
+
+/**
+ * ManufacturerNegotiation - Negotiation for engine supply contract
+ */
+export interface ManufacturerNegotiation extends BaseNegotiation<EngineContractTerms> {
+  stakeholderType: StakeholderType.Manufacturer;
+  /** ID of the manufacturer being negotiated with */
+  manufacturerId: string;
+}
+
+/**
+ * Negotiation - Discriminated union of all negotiation types
+ * Use stakeholderType to narrow the type
+ */
+export type Negotiation =
+  | DriverNegotiation
+  | StaffNegotiation
+  | SponsorNegotiation
+  | ManufacturerNegotiation;
+
+// =============================================================================
+// ENGINE CONTRACT NEGOTIATION TYPES (LEGACY)
+// =============================================================================
+// These types are kept for backwards compatibility with existing engine
+// negotiation implementation. Will be migrated to generic system in PR 5.
 
 /**
  * NegotiationStatus - State of an engine contract negotiation
+ * @deprecated Use NegotiationPhase for new code
  */
 export enum NegotiationStatus {
   /** No active negotiation */
