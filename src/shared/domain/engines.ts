@@ -667,6 +667,9 @@ export interface NegotiationEvaluationResult {
 
   /** Relationship score change from this interaction */
   relationshipChange: number;
+
+  /** If true, this is a "take it or leave it" final offer - no more counters allowed */
+  isUltimatum?: boolean;
 }
 
 /**
