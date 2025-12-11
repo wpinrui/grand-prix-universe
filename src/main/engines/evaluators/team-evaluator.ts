@@ -33,9 +33,16 @@ const ROOKIE_HISTORY_THRESHOLD = 2;
 const SHORT_CONTRACT = 1;
 const MEDIUM_CONTRACT = 2;
 
+/** Attractiveness comparison thresholds */
+const UPGRADE_THRESHOLD = 0.05; // 5% better to be considered an upgrade
+const SIMILAR_THRESHOLD = 0.1; // Within 10% to be considered similar (potentially cheaper)
+
 // =============================================================================
 // AGE MULTIPLIER TABLE
 // =============================================================================
+
+/** Age bracket type for type-safe table lookup */
+type AgeBracket = 'young' | 'prime' | 'mature' | 'veteran';
 
 /**
  * Age multiplier matrix: [age bracket][contract duration] -> multiplier
@@ -47,7 +54,7 @@ const MEDIUM_CONTRACT = 2;
  *
  * Duration: 1 year, 2 years, 3+ years
  */
-const AGE_MULTIPLIER_TABLE: Record<string, [number, number, number]> = {
+const AGE_MULTIPLIER_TABLE: Record<AgeBracket, [number, number, number]> = {
   young: [0.95, 1.0, 1.1], // Young: slight penalty on short, bonus on long
   prime: [1.0, 1.0, 1.0], // Prime: neutral
   mature: [1.0, 0.95, 0.9], // Mature: slight penalty on longer deals
@@ -57,6 +64,13 @@ const AGE_MULTIPLIER_TABLE: Record<string, [number, number, number]> = {
 // =============================================================================
 // HELPER FUNCTIONS
 // =============================================================================
+
+/**
+ * Clamp a value to the 0-1 range
+ */
+function clamp01(value: number): number {
+  return Math.max(0, Math.min(1, value));
+}
 
 /**
  * Simple hash function for seeded randomness
@@ -76,7 +90,7 @@ function hashString(str: string): number {
 /**
  * Get age bracket for a driver
  */
-function getAgeBracket(age: number): 'young' | 'prime' | 'mature' | 'veteran' {
+function getAgeBracket(age: number): AgeBracket {
   if (age < YOUNG_AGE_THRESHOLD) return 'young';
   if (age < PRIME_AGE_THRESHOLD) return 'prime';
   if (age < VETERAN_AGE_THRESHOLD) return 'mature';
@@ -152,7 +166,6 @@ export interface DriverAttractivenessInput {
   teamPrincipalId: string;
   gameYear: number;
   contractYears: number;
-  allDrivers: Driver[]; // Needed for percentile calculation
 }
 
 export interface RankedDriver {
@@ -173,7 +186,7 @@ export interface RankedDriver {
  * @returns Attractiveness score (0-1 scale)
  */
 export function calculateDriverAttractiveness(input: DriverAttractivenessInput): number {
-  const { driver, teamPrincipalId, gameYear, contractYears, allDrivers: _allDrivers } = input;
+  const { driver, teamPrincipalId, gameYear, contractYears } = input;
 
   let baseAttractiveness: number;
 
@@ -183,13 +196,12 @@ export function calculateDriverAttractiveness(input: DriverAttractivenessInput):
     const normalizedSum = attrSum / 700; // 0-1 scale
 
     // Generate team-principal-specific error for this driver
+    // Convert 0-1 seed to symmetric -1 to +1 range, then scale by error range
     const errorSeed = hashString(`${teamPrincipalId}-${driver.id}`);
-    const errorDirection = errorSeed < 0.5 ? -1 : 1;
-    const errorMagnitude = errorSeed * ROOKIE_ERROR_RANGE; // 0 to 0.1
-    const error = errorDirection * errorMagnitude;
+    const error = (errorSeed * 2 - 1) * ROOKIE_ERROR_RANGE; // -0.1 to +0.1
 
     // Apply error to normalized sum, clamped to 0-1
-    baseAttractiveness = Math.max(0, Math.min(1, normalizedSum + error));
+    baseAttractiveness = clamp01(normalizedSum + error);
   } else {
     // Experienced driver: use perceived value
     baseAttractiveness = calculatePerceivedValue(driver.careerHistory);
@@ -200,7 +212,7 @@ export function calculateDriverAttractiveness(input: DriverAttractivenessInput):
   const ageMultiplier = getAgeMultiplier(age, contractYears);
 
   // Final attractiveness, clamped to 0-1
-  return Math.max(0, Math.min(1, baseAttractiveness * ageMultiplier));
+  return clamp01(baseAttractiveness * ageMultiplier);
 }
 
 // =============================================================================
@@ -311,7 +323,6 @@ export function getTeamShortlist(input: TeamShortlistInput): RankedDriver[] {
       teamPrincipalId: teamPrincipal.id,
       gameYear,
       contractYears: defaultContractDuration,
-      allDrivers,
     });
 
     return {
@@ -384,7 +395,6 @@ export function evaluateDriverApproach(input: TeamEvaluationInput): TeamEvaluati
     teamPrincipalId: teamPrincipal.id,
     gameYear,
     contractYears: proposedDuration,
-    allDrivers,
   });
 
   // Calculate current drivers' attractiveness
@@ -394,7 +404,6 @@ export function evaluateDriverApproach(input: TeamEvaluationInput): TeamEvaluati
       teamPrincipalId: teamPrincipal.id,
       gameYear,
       contractYears: proposedDuration,
-      allDrivers,
     })
   );
 
@@ -429,9 +438,8 @@ export function evaluateDriverApproach(input: TeamEvaluationInput): TeamEvaluati
 
   // Check if approaching driver is better than any current driver
   const worstCurrentAttractiveness = Math.min(...currentDriversAttractiveness, Infinity);
-  const upgradeThreshold = 0.05; // 5% better to be considered an upgrade
 
-  if (approacherAttractiveness > worstCurrentAttractiveness + upgradeThreshold) {
+  if (approacherAttractiveness > worstCurrentAttractiveness + UPGRADE_THRESHOLD) {
     return {
       interested: true,
       reason: 'upgrade',
@@ -441,9 +449,7 @@ export function evaluateDriverApproach(input: TeamEvaluationInput): TeamEvaluati
   }
 
   // Check if similar but potentially cheaper
-  // "Similar" = within 10% of worst current driver
-  const similarThreshold = 0.1;
-  if (approacherAttractiveness >= worstCurrentAttractiveness - similarThreshold) {
+  if (approacherAttractiveness >= worstCurrentAttractiveness - SIMILAR_THRESHOLD) {
     return {
       interested: true,
       reason: 'cheaper',
