@@ -23,6 +23,7 @@ import type {
   Negotiation,
   ManufacturerNegotiation,
   DriverNegotiation,
+  SponsorNegotiation,
   StaffNegotiation,
   NegotiationRound,
   GameDate,
@@ -38,6 +39,7 @@ import {
 import {
   evaluateManufacturerOffer,
   evaluateDriverOffer,
+  evaluateSponsorOffer,
   evaluateStaffOffer,
   MAX_DESPERATION_MULTIPLIER,
 } from './evaluators';
@@ -216,17 +218,41 @@ function dispatchToEvaluator(
       });
     }
 
-    case StakeholderType.Sponsor:
-      // Stub: Accept with default delay
-      // TODO: Implement sponsor evaluator
-      return {
-        responseType: ResponseType.Accept,
-        counterTerms: null,
-        responseTone: ResponseTone.Professional,
-        responseDelayDays: DEFAULT_RESPONSE_DELAY_DAYS,
-        isNewsworthy: false,
-        relationshipChange: 0,
-      };
+    case StakeholderType.Sponsor: {
+      const sponsorNegotiation = negotiation as SponsorNegotiation;
+      const sponsor = input.sponsors.find((s) => s.id === sponsorNegotiation.sponsorId);
+      const team = input.teams.find((t) => t.id === negotiation.teamId);
+
+      if (!sponsor || !team) {
+        return {
+          responseType: ResponseType.Reject,
+          counterTerms: null,
+          responseTone: ResponseTone.Professional,
+          responseDelayDays: DEFAULT_RESPONSE_DELAY_DAYS,
+          isNewsworthy: false,
+          relationshipChange: 0,
+        };
+      }
+
+      const relationshipScore =
+        input.relationshipScores[sponsorNegotiation.sponsorId] ?? DEFAULT_RELATIONSHIP_SCORE;
+
+      // Calculate team position from constructor standings
+      const teamPosition = input.constructorStandings.get(team.id) ?? input.teams.length;
+      const totalTeams = input.teams.length;
+
+      return evaluateSponsorOffer({
+        negotiation: sponsorNegotiation,
+        sponsor,
+        team,
+        allTeams: input.teams,
+        allSponsors: input.sponsors,
+        existingSponsorDeals: input.activeSponsorDeals.filter((d) => d.teamId === team.id),
+        relationshipScore,
+        teamPosition,
+        totalTeams,
+      });
+    }
 
     default:
       // Unknown type - reject

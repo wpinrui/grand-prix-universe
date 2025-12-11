@@ -25,6 +25,7 @@ import type {
   ActiveSponsorDeal,
   ActiveManufacturerContract,
   Manufacturer,
+  Sponsor,
   DriverStanding,
   ConstructorStanding,
   RaceWeekendResult,
@@ -710,6 +711,12 @@ export interface NegotiationProcessingInput {
 
   /** Relationship scores by entity ID (entityId -> score 0-100) */
   relationshipScores: Record<string, number>;
+
+  /** All sponsors (for sponsor negotiations) */
+  sponsors: Sponsor[];
+
+  /** Active sponsor deals for the player's team */
+  activeSponsorDeals: ActiveSponsorDeal[];
 }
 
 /**
