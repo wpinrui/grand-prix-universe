@@ -24,5 +24,6 @@ export {
   calculateMarketValue,
   MIN_DESPERATION_MULTIPLIER,
   DESPERATION_MULTIPLIER_RANGE,
+  MAX_DESPERATION_MULTIPLIER,
   type DriverEvaluationInput,
 } from './driver-evaluator';

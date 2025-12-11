@@ -83,10 +83,16 @@ const PERSONAL_DESPERATION_THRESHOLD = 0.8;
 export const MIN_DESPERATION_MULTIPLIER = 0.7;
 
 /**
- * Desperation multiplier range (random value between MIN and MIN + RANGE = 1.0)
+ * Desperation multiplier range (random value between MIN and MIN + RANGE)
  * Exported for use by game-state-manager when initializing driver states
  */
 export const DESPERATION_MULTIPLIER_RANGE = 0.3;
+
+/**
+ * Maximum desperation multiplier value (least desperate drivers)
+ * Used as fallback when driver state is missing
+ */
+export const MAX_DESPERATION_MULTIPLIER = 1.0;
 
 // =============================================================================
 // PERCEIVED VALUE CALCULATION

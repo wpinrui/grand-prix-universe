@@ -33,7 +33,11 @@ import {
   ResponseType,
   ResponseTone,
 } from '../../shared/domain';
-import { evaluateManufacturerOffer, evaluateDriverOffer } from './evaluators';
+import {
+  evaluateManufacturerOffer,
+  evaluateDriverOffer,
+  MAX_DESPERATION_MULTIPLIER,
+} from './evaluators';
 import { offsetDate } from '../../shared/utils/date-utils';
 
 // =============================================================================
@@ -145,7 +149,8 @@ function dispatchToEvaluator(
 
       // Get driver's desperation multiplier from runtime state
       const driverState = input.driverStates[driver.id];
-      const desperationMultiplier = driverState?.desperationMultiplier ?? 1.0;
+      const desperationMultiplier =
+        driverState?.desperationMultiplier ?? MAX_DESPERATION_MULTIPLIER;
 
       // Calculate available seats: teams with fewer than 2 drivers
       const teamDriverCounts = new Map<string, number>();
