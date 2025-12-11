@@ -65,9 +65,10 @@ interface DriverRowProps {
   driver: Driver | undefined;
   team: Team | undefined;
   isPlayerTeam: boolean;
+  onDriverClick?: () => void;
 }
 
-function DriverRow({ standing, driver, team, isPlayerTeam }: DriverRowProps) {
+function DriverRow({ standing, driver, team, isPlayerTeam, onDriverClick }: DriverRowProps) {
   const styles = getHighlightedRowStyles(isPlayerTeam);
   const driverName = driver
     ? `${driver.firstName} ${driver.lastName}`
@@ -77,9 +78,14 @@ function DriverRow({ standing, driver, team, isPlayerTeam }: DriverRowProps) {
     <tr className={styles.rowClass} style={styles.rowStyle}>
       <PositionCell position={standing.position} />
       <td className={TABLE_CELL_BASE}>
-        <span className="font-semibold text-primary" style={styles.nameStyle}>
+        <button
+          type="button"
+          onClick={onDriverClick}
+          className="font-semibold text-primary hover:underline cursor-pointer"
+          style={styles.nameStyle}
+        >
           {driverName}
-        </span>
+        </button>
       </td>
       <td className={`${TABLE_CELL_BASE} text-secondary`}>{team?.name ?? standing.teamId}</td>
       <PointsCell points={standing.points} />
@@ -121,7 +127,11 @@ function ConstructorRow({ standing, team, isPlayerTeam }: ConstructorRowProps) {
 // MAIN COMPONENT
 // ===========================================
 
-export function Championship() {
+interface ChampionshipProps {
+  onNavigateToDriver?: (driverId: string) => void;
+}
+
+export function Championship({ onNavigateToDriver }: ChampionshipProps) {
   const { gameState, playerTeam } = useDerivedGameState();
 
   if (!gameState || !playerTeam) {
@@ -166,6 +176,7 @@ export function Championship() {
                   driver={getDriver(standing.driverId)}
                   team={getTeam(standing.teamId)}
                   isPlayerTeam={standing.teamId === playerTeam.id}
+                  onDriverClick={() => onNavigateToDriver?.(standing.driverId)}
                 />
               ))}
             </tbody>

@@ -3,6 +3,7 @@
  * Displays comprehensive driver information in FM24-inspired layout.
  * Used by WorldDrivers page.
  */
+import { useMemo } from 'react';
 import {
   PersonHeader,
   AttributeBar,
@@ -12,8 +13,20 @@ import {
   type ContractRelationship,
 } from './PersonProfileCards';
 import { SectionHeading } from './SectionHeading';
-import { DRIVER_ROLE_LABELS, formatOrdinal, pluralize } from '../utils/format';
+import {
+  DRIVER_ROLE_LABELS,
+  formatOrdinal,
+  pluralize,
+  isHistoricalRetiredStatus,
+  getHistoricalPositionStyle,
+  getChampionshipPositionStyle,
+} from '../utils/format';
 import { seasonToYear } from '../../shared/utils/date-utils';
+import {
+  TABLE_HEADER_CLASS,
+  TABLE_HEADER_ROW_CLASS,
+  TABLE_BODY_CLASS,
+} from '../utils/theme-styles';
 import type { TeamColors } from '../utils/face-generator';
 import type {
   Driver,
@@ -22,6 +35,7 @@ import type {
   DriverRuntimeState,
   SeasonData,
   RaceFinishStatus,
+  CareerSeasonRecord,
 } from '../../shared/domain';
 
 // ===========================================
@@ -284,73 +298,122 @@ function FormPanel({ recentResults }: FormPanelProps) {
 }
 
 // ===========================================
-// CAREER HISTORY PANEL
+// F1 CAREER HISTORY PANEL (REAL-WORLD DATA)
 // ===========================================
 
-export interface SeasonSummary {
-  seasonNumber: number;
-  teamName: string;
-  position: number;
-  points: number;
-  wins: number;
+interface F1CareerHistoryPanelProps {
+  careerHistory: CareerSeasonRecord[] | undefined;
+  teams: Team[];
 }
 
-interface CareerHistoryPanelProps {
-  seasonHistory: SeasonSummary[];
-}
+function F1CareerHistoryPanel({ careerHistory, teams }: F1CareerHistoryPanelProps) {
+  // Build team name lookup
+  const teamNames = useMemo(() => new Map(teams.map((t) => [t.id, t.name])), [teams]);
 
-function CareerHistoryPanel({ seasonHistory }: CareerHistoryPanelProps) {
-  if (seasonHistory.length === 0) {
-    return (
-      <StatPanel title="Career History">
-        <p className="text-muted text-sm">No career history available</p>
-      </StatPanel>
-    );
+  // Sort by season ascending (oldest first)
+  const sortedHistory = useMemo(() => {
+    if (!careerHistory || careerHistory.length === 0) return [];
+    return [...careerHistory].sort((a, b) => a.season - b.season);
+  }, [careerHistory]);
+
+  // Find max races across all seasons for column count
+  const maxRaces = useMemo(() => {
+    return sortedHistory.reduce((max, s) => Math.max(max, s.races.length), 0);
+  }, [sortedHistory]);
+
+  if (!careerHistory || careerHistory.length === 0) {
+    return null;
   }
 
   // Calculate career totals
-  const careerWins = seasonHistory.reduce((sum, s) => sum + s.wins, 0);
-  const careerPoints = seasonHistory.reduce((sum, s) => sum + s.points, 0);
-  const bestPosition = Math.min(...seasonHistory.map((s) => s.position));
+  const totalRaces = sortedHistory.reduce((sum, s) => sum + s.races.length, 0);
+  const totalPoints = sortedHistory.reduce((sum, s) => sum + s.totalPoints, 0);
+  const totalWins = sortedHistory.reduce(
+    (sum, s) => sum + s.races.filter((r) => r.position === 1).length,
+    0
+  );
+  const totalPodiums = sortedHistory.reduce(
+    (sum, s) => sum + s.races.filter((r) => r.position !== null && r.position <= 3).length,
+    0
+  );
 
   return (
-    <StatPanel title="Career History">
-      {/* Career Totals */}
-      <div className="grid grid-cols-3 gap-4 mb-4 pb-4 border-b border-[var(--neutral-700)]">
-        <div className="text-center">
-          <div className="text-lg font-bold text-primary">{careerWins}</div>
-          <div className="text-xs text-muted">Career Wins</div>
-        </div>
-        <div className="text-center">
-          <div className="text-lg font-bold text-primary">{careerPoints}</div>
-          <div className="text-xs text-muted">Career Points</div>
-        </div>
-        <div className="text-center">
-          <div className="text-lg font-bold text-primary">{formatOrdinal(bestPosition)}</div>
-          <div className="text-xs text-muted">Best Finish</div>
-        </div>
-      </div>
-
-      {/* Season by Season */}
-      <div className="space-y-2 max-h-48 overflow-y-auto">
-        {seasonHistory.map((season) => (
-          <div
-            key={season.seasonNumber}
-            className="flex items-center justify-between py-1 text-sm"
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-muted w-16">Season {season.seasonNumber}</span>
-              <span className="text-secondary">{season.teamName}</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-primary font-medium">{formatOrdinal(season.position)}</span>
-              <span className="text-muted">{season.points} pts</span>
-              {season.wins > 0 && <span className="text-amber-400">{season.wins}W</span>}
-            </div>
+    <div className="space-y-4">
+      {/* Career Totals Header */}
+      <div className="grid grid-cols-4 gap-4">
+        {[
+          { label: 'Races', value: totalRaces },
+          { label: 'Wins', value: totalWins, color: 'text-amber-400' },
+          { label: 'Podiums', value: totalPodiums, color: 'text-emerald-400' },
+          { label: 'Points', value: totalPoints.toFixed(0) },
+        ].map(({ label, value, color }) => (
+          <div key={label} className="card p-4 text-center">
+            <div className={`text-3xl font-bold tabular-nums ${color ?? 'text-primary'}`}>{value}</div>
+            <div className="text-sm text-muted uppercase">{label}</div>
           </div>
         ))}
       </div>
-    </StatPanel>
+
+      {/* Single Table with All Seasons */}
+      <div className="card overflow-hidden overflow-x-auto">
+        <table className="w-full text-sm table-fixed">
+          <thead className={TABLE_HEADER_CLASS}>
+            <tr className={TABLE_HEADER_ROW_CLASS}>
+              <th className="w-[60px] px-3 py-2 text-left">Year</th>
+              <th className="w-[140px] px-3 py-2 text-left">Team</th>
+              {Array.from({ length: maxRaces }, (_, i) => (
+                <th key={i} className="px-0.5 py-2 text-center">
+                  <span className="text-xs text-muted">R{i + 1}</span>
+                </th>
+              ))}
+              <th className="w-[50px] px-2 py-2 text-right">Pts</th>
+              <th className="w-[60px] px-2 py-2 text-center">Pos</th>
+            </tr>
+          </thead>
+          <tbody className={TABLE_BODY_CLASS}>
+            {sortedHistory.map((season) => (
+              <tr key={season.season} className="border-b border-[var(--neutral-700)]">
+                <td className="px-3 py-2 font-bold text-primary">{season.season}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-secondary text-xs truncate">
+                  {teamNames.get(season.teamId) ?? season.teamId}
+                </td>
+                {Array.from({ length: maxRaces }, (_, i) => {
+                  const race = season.races.find((r) => r.round === i + 1);
+                  if (!race) {
+                    return <td key={i} className="px-0.5 py-1 text-center" />;
+                  }
+                  const isRetired = isHistoricalRetiredStatus(race.status);
+                  return (
+                    <td key={i} className="px-0.5 py-1 text-center">
+                      <div
+                        className={`h-6 text-xs rounded flex items-center justify-center ${getHistoricalPositionStyle(race.position, race.status)}`}
+                        title={`${race.name}: ${isRetired ? 'Ret' : `P${race.position}`} - ${race.points} pts (${race.status})`}
+                      >
+                        {isRetired ? 'Ret' : race.position}
+                      </div>
+                    </td>
+                  );
+                })}
+                <td className="px-2 py-2 text-right font-bold tabular-nums">
+                  {season.totalPoints}
+                </td>
+                <td className="px-2 py-1 text-center">
+                  {season.championshipPosition ? (
+                    <div
+                      className={`h-6 text-xs rounded flex items-center justify-center ${getChampionshipPositionStyle(season.championshipPosition)}`}
+                    >
+                      {formatOrdinal(season.championshipPosition)}
+                    </div>
+                  ) : (
+                    <span className="text-muted">-</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }
 
@@ -366,8 +429,6 @@ interface DriverProfileContentProps {
   currentSeason: number;
   /** Recent race results for form display */
   recentResults: RecentRaceResult[];
-  /** Past season summaries for career history */
-  careerHistory: SeasonSummary[];
   /** Relationship to the player's team */
   contractRelationship: ContractRelationship;
   /** Team colors for faces.js (if no photo) */
@@ -378,6 +439,8 @@ interface DriverProfileContentProps {
   allDrivers?: Driver[];
   /** Called when driver selection changes */
   onDriverSelect?: (driverId: string) => void;
+  /** All teams for F1 career history display */
+  allTeams?: Team[];
 }
 
 export function DriverProfileContent({
@@ -387,12 +450,12 @@ export function DriverProfileContent({
   driverState,
   currentSeason,
   recentResults,
-  careerHistory,
   contractRelationship,
   teamColors,
   onEnterContractTalks,
   allDrivers,
   onDriverSelect,
+  allTeams,
 }: DriverProfileContentProps) {
   const age = calculateAge(driver.dateOfBirth, currentSeason);
   const fullName = `${driver.firstName} ${driver.lastName}`;
@@ -443,13 +506,20 @@ export function DriverProfileContent({
         </div>
       </div>
 
-      {/* Status & History Section */}
-      <SectionHeading>Status & History</SectionHeading>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Status Section */}
+      <SectionHeading>Status</SectionHeading>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <DriverStatePanel driverState={driverState} />
         <FormPanel recentResults={recentResults} />
-        <CareerHistoryPanel seasonHistory={careerHistory} />
       </div>
+
+      {/* Career Results Section */}
+      {driver.careerHistory && driver.careerHistory.length > 0 && (
+        <>
+          <SectionHeading>Career</SectionHeading>
+          <F1CareerHistoryPanel careerHistory={driver.careerHistory} teams={allTeams ?? []} />
+        </>
+      )}
     </div>
   );
 }
@@ -483,36 +553,4 @@ export function extractRecentResults(
   }
 
   return results;
-}
-
-/**
- * Extract career history for a driver from past seasons
- */
-export function extractCareerHistory(
-  driverId: string,
-  pastSeasons: SeasonData[],
-  teams: Team[]
-): SeasonSummary[] {
-  const history: SeasonSummary[] = [];
-
-  // Build team lookup
-  const teamMap = new Map(teams.map((t) => [t.id, t.name]));
-
-  for (const season of pastSeasons) {
-    const standing = season.driverStandings.find((s) => s.driverId === driverId);
-    if (standing) {
-      history.push({
-        seasonNumber: season.seasonNumber,
-        teamName: teamMap.get(standing.teamId) ?? 'Unknown',
-        position: standing.position,
-        points: standing.points,
-        wins: standing.wins,
-      });
-    }
-  }
-
-  // Sort by season number (oldest first)
-  history.sort((a, b) => a.seasonNumber - b.seasonNumber);
-
-  return history;
 }
