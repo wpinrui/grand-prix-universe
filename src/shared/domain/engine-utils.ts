@@ -15,9 +15,11 @@ import type {
   ActiveManufacturerContract,
   ContractTerms,
   ManufacturerNegotiation,
+  DriverNegotiation,
+  DriverContractTerms,
   GameDate,
 } from './types';
-import { ManufacturerType, NegotiationPhase, StakeholderType } from './types';
+import { ManufacturerType, NegotiationPhase, StakeholderType, DriverRole } from './types';
 import { offsetDate } from '../utils/date-utils';
 
 /**
@@ -796,4 +798,71 @@ export function getCurrentManufacturer(
     (c) => c.teamId === teamId && c.type === ManufacturerType.Engine
   );
   return engineContract?.manufacturerId ?? null;
+}
+
+// =============================================================================
+// DRIVER NEGOTIATION UTILITIES
+// =============================================================================
+
+/**
+ * Default driver contract terms for initial outreach
+ */
+export function generateDefaultDriverTerms(
+  currentSalary: number,
+  driverRole: DriverRole
+): DriverContractTerms {
+  return {
+    salary: currentSalary,
+    duration: DEFAULT_CONTRACT_DURATION,
+    signingBonus: 0,
+    performanceBonusPercent: 0,
+    releaseClause: Math.round(currentSalary * 2), // 2x salary buyout
+    driverStatus: driverRole,
+  };
+}
+
+/**
+ * Creates a driver outreach negotiation (driver initiates contact with team)
+ * Used when a driver approaches a team based on various triggers
+ *
+ * @param teamId - Team being approached
+ * @param driverId - Driver initiating contact
+ * @param forSeason - Season the contract would start
+ * @param currentDate - Current game date
+ * @param initialTerms - Driver's expected terms
+ * @returns A new DriverNegotiation with the driver as initiator
+ */
+export function createDriverOutreach(
+  teamId: string,
+  driverId: string,
+  forSeason: number,
+  currentDate: GameDate,
+  initialTerms: DriverContractTerms
+): DriverNegotiation {
+  const expiresDate = offsetDate(currentDate, OFFER_EXPIRY_DAYS);
+
+  return {
+    id: `neg-drv-${driverId}-${teamId}-${Date.now()}`,
+    stakeholderType: StakeholderType.Driver,
+    teamId,
+    driverId,
+    phase: NegotiationPhase.ResponseReceived, // Team needs to respond (driver initiated)
+    forSeason,
+    startedDate: { ...currentDate },
+    lastActivityDate: { ...currentDate },
+    rounds: [
+      {
+        roundNumber: 1,
+        offeredBy: 'counterparty', // Driver initiated contact
+        terms: initialTerms,
+        offeredDate: { ...currentDate },
+        expiresDate,
+      },
+    ],
+    currentRound: 1,
+    maxRounds: DEFAULT_MAX_ROUNDS,
+    relationshipScoreBefore: DEFAULT_RELATIONSHIP_SCORE,
+    hasCompetingOffer: false,
+    isProactiveOutreach: true,
+  };
 }
