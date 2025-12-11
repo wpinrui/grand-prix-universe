@@ -121,7 +121,7 @@ export function WorldDrivers({ initialDriverId }: WorldDriversProps) {
   };
 
   return (
-    <div className="max-w-6xl">
+    <div>
       <DriverProfileContent
         driver={selectedDriver}
         team={driverTeam}
