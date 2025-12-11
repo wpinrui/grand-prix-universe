@@ -390,6 +390,11 @@ function F1CareerHistoryPanel({ careerHistory, teams }: F1CareerHistoryPanelProp
     return [...careerHistory].sort((a, b) => b.season - a.season);
   }, [careerHistory]);
 
+  // Find max races across all seasons for column count
+  const maxRaces = useMemo(() => {
+    return sortedHistory.reduce((max, s) => Math.max(max, s.races.length), 0);
+  }, [sortedHistory]);
+
   if (!careerHistory || careerHistory.length === 0) {
     return null;
   }
@@ -423,31 +428,35 @@ function F1CareerHistoryPanel({ careerHistory, teams }: F1CareerHistoryPanelProp
         ))}
       </div>
 
-      {/* All Seasons - Stacked */}
-      <div className="space-y-4">
-        {sortedHistory.map((season) => (
-          <div key={season.season} className="card overflow-hidden overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className={TABLE_HEADER_CLASS}>
-                <tr className={TABLE_HEADER_ROW_CLASS}>
-                  <th className="w-16 px-3 py-2 text-left font-bold text-primary">{season.season}</th>
-                  {season.races.map((race) => (
-                    <th key={race.round} className="w-9 px-0.5 py-2 text-center">
-                      <span className="text-xs text-muted" title={race.name}>
-                        R{race.round}
-                      </span>
-                    </th>
-                  ))}
-                  <th className="w-14 px-3 py-2 text-right">Pts</th>
-                </tr>
-              </thead>
-              <tbody className={TABLE_BODY_CLASS}>
-                <tr>
-                  <td className="w-16 px-3 py-2 whitespace-nowrap text-secondary text-xs">
-                    {teamNames.get(season.teamId) ?? season.teamId}
-                  </td>
-                  {season.races.map((race) => (
-                    <td key={race.round} className="w-9 px-0.5 py-1 text-center">
+      {/* Single Table with All Seasons */}
+      <div className="card overflow-hidden overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className={TABLE_HEADER_CLASS}>
+            <tr className={TABLE_HEADER_ROW_CLASS}>
+              <th className="w-14 px-3 py-2 text-left">Year</th>
+              <th className="min-w-[140px] px-3 py-2 text-left">Team</th>
+              {Array.from({ length: maxRaces }, (_, i) => (
+                <th key={i} className="w-9 px-0.5 py-2 text-center">
+                  <span className="text-xs text-muted">R{i + 1}</span>
+                </th>
+              ))}
+              <th className="w-14 px-3 py-2 text-right">Pts</th>
+            </tr>
+          </thead>
+          <tbody className={TABLE_BODY_CLASS}>
+            {sortedHistory.map((season) => (
+              <tr key={season.season} className="border-b border-[var(--neutral-700)]">
+                <td className="w-14 px-3 py-2 font-bold text-primary">{season.season}</td>
+                <td className="min-w-[140px] px-3 py-2 whitespace-nowrap text-secondary text-xs">
+                  {teamNames.get(season.teamId) ?? season.teamId}
+                </td>
+                {Array.from({ length: maxRaces }, (_, i) => {
+                  const race = season.races.find((r) => r.round === i + 1);
+                  if (!race) {
+                    return <td key={i} className="w-9 px-0.5 py-1 text-center" />;
+                  }
+                  return (
+                    <td key={i} className="w-9 px-0.5 py-1 text-center">
                       <div
                         className={`w-8 h-6 text-xs rounded flex items-center justify-center mx-auto ${getHistoricalPositionStyle(race.position)}`}
                         title={`${race.name}: ${race.position !== null ? `P${race.position}` : 'DNF'} - ${race.points} pts (${race.status})`}
@@ -455,15 +464,15 @@ function F1CareerHistoryPanel({ careerHistory, teams }: F1CareerHistoryPanelProp
                         {race.position ?? 'X'}
                       </div>
                     </td>
-                  ))}
-                  <td className="w-14 px-3 py-2 text-right font-bold tabular-nums">
-                    {season.totalPoints}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        ))}
+                  );
+                })}
+                <td className="w-14 px-3 py-2 text-right font-bold tabular-nums">
+                  {season.totalPoints}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
