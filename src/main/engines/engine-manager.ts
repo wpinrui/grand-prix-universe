@@ -19,6 +19,7 @@ import type {
   IDriverPerformanceEngine,
   IRegulationEngine,
   ITurnEngine,
+  INegotiationEngine,
 } from '../../shared/domain/engines';
 
 import {
@@ -34,6 +35,7 @@ import {
   StubDriverPerformanceEngine,
   StubRegulationEngine,
   StubTurnEngine,
+  StubNegotiationEngine,
 } from './stubs';
 
 export class EngineManager {
@@ -49,4 +51,5 @@ export class EngineManager {
   driverPerformance: IDriverPerformanceEngine = new StubDriverPerformanceEngine();
   regulation: IRegulationEngine = new StubRegulationEngine();
   turn: ITurnEngine = new StubTurnEngine();
+  negotiation: INegotiationEngine = new StubNegotiationEngine();
 }

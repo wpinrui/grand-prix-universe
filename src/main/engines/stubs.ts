@@ -19,6 +19,7 @@ import type {
   IDriverPerformanceEngine,
   IRegulationEngine,
   ITurnEngine,
+  INegotiationEngine,
   QualifyingInput,
   QualifyingResult,
   RaceInput,
@@ -60,6 +61,10 @@ import type {
   DesignCompletion,
   DesignUpdate,
   TestingUpdate,
+  NegotiationEvaluationInput,
+  NegotiationEvaluationResult,
+  NegotiationProcessingInput,
+  NegotiationProcessingResult,
 } from '../../shared/domain/engines';
 
 import type {
@@ -86,6 +91,8 @@ import {
   ConstructorStanding,
   hasRaceSeat,
   ChiefRole,
+  ResponseType,
+  ResponseTone,
 } from '../../shared/domain';
 import {
   getWeekNumber,
@@ -1516,6 +1523,43 @@ export class StubTurnEngine implements ITurnEngine {
       retiredChiefIds: determineChiefRetirements(chiefs),
       newCalendar: generateNewCalendar(circuits),
       resetDriverStates: generateResetDriverStates(drivers),
+    };
+  }
+}
+
+// =============================================================================
+// STUB NEGOTIATION ENGINE
+// =============================================================================
+
+/**
+ * StubNegotiationEngine - Placeholder implementation
+ *
+ * For MVP, this accepts all offers immediately.
+ * Will be replaced with full negotiation logic in later PRs.
+ */
+export class StubNegotiationEngine implements INegotiationEngine {
+  /**
+   * Evaluate a single offer - stub always accepts
+   */
+  evaluateOffer(_input: NegotiationEvaluationInput): NegotiationEvaluationResult {
+    // Stub: Accept immediately with professional tone, 2-day delay
+    return {
+      responseType: ResponseType.Accept,
+      counterTerms: null,
+      responseTone: ResponseTone.Professional,
+      responseDelayDays: 2,
+      isNewsworthy: false,
+      relationshipChange: 0,
+    };
+  }
+
+  /**
+   * Process all negotiations for a day - stub returns no updates
+   */
+  processDay(_input: NegotiationProcessingInput): NegotiationProcessingResult {
+    // Stub: No updates - negotiations will be processed by legacy system until migration
+    return {
+      updates: [],
     };
   }
 }
