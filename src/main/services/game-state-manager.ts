@@ -2341,22 +2341,24 @@ function getConstructorStandingsMap(state: GameState): Map<string, number> {
 }
 
 /**
+ * Get race drivers for a team (excludes test drivers)
+ */
+function getTeamRaceDrivers(state: GameState, teamId: string): Driver[] {
+  return state.drivers.filter((d) => d.teamId === teamId && d.role !== DriverRole.Test);
+}
+
+/**
  * Check if team has a vacant seat (fewer than 2 race drivers)
  */
 function teamHasVacancy(state: GameState, teamId: string): boolean {
-  const raceDrivers = state.drivers.filter(
-    (d) => d.teamId === teamId && d.role !== DriverRole.Test
-  );
-  return raceDrivers.length < 2;
+  return getTeamRaceDrivers(state, teamId).length < 2;
 }
 
 /**
  * Check if any of team's drivers have committed elsewhere
  */
 function teamDriverCommittedElsewhere(state: GameState, teamId: string, forSeason: number): boolean {
-  const teamDrivers = state.drivers.filter(
-    (d) => d.teamId === teamId && d.role !== DriverRole.Test
-  );
+  const teamDrivers = getTeamRaceDrivers(state, teamId);
 
   // Check if any driver has an accepted negotiation with another team
   for (const driver of teamDrivers) {
@@ -2393,7 +2395,7 @@ function processDriverOutreach(state: GameState): boolean {
   // Only process during the outreach window (July-December)
   if (month < DRIVER_OUTREACH_START_MONTH) return false;
 
-  // Process weekly on day 1 to avoid daily spam
+  // Process bi-weekly (1st and 15th) to avoid daily spam
   if (day !== 1 && day !== 15) return false;
 
   const constructorStandings = getConstructorStandingsMap(state);
@@ -2440,9 +2442,7 @@ function processDriverOutreach(state: GameState): boolean {
       if (!principal) continue;
 
       // Get team's current drivers
-      const currentDrivers = state.drivers.filter(
-        (d) => d.teamId === team.id && d.role !== DriverRole.Test
-      );
+      const currentDrivers = getTeamRaceDrivers(state, team.id);
 
       // Check if team has vacancy (driver committed elsewhere)
       const hasVacancy =
