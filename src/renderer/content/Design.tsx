@@ -1043,7 +1043,7 @@ export function Design() {
 
   return (
     <div>
-      <TabBar tabs={getTabs(currentYear)} activeTab={activeTab} onTabChange={setActiveTab} />
+      <TabBar tabs={getTabs(currentYear)} activeTab={activeTab} onTabChange={(tab) => setActiveTab(tab)} />
 
       {activeTab === 'summary' && (
         <SummaryTab designState={designState} currentYear={currentYear} />

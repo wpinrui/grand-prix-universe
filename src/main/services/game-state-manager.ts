@@ -72,6 +72,8 @@ import type {
   HandlingProblemState,
   TechnologyDesignProject,
   EngineCustomisation,
+  EngineNegotiation,
+  ContractOffer,
 } from '../../shared/domain';
 import {
   GamePhase,
@@ -1209,7 +1211,7 @@ function applyDesignUpdates(
     for (const completion of update.chassisStageCompletions) {
       const stageName = CHASSIS_STAGE_DISPLAY_NAMES[completion.stage];
       const stageIndex = CHASSIS_STAGE_ORDER.indexOf(completion.stage);
-      const chassisYear = update.updatedDesignState.nextYearChassis?.targetYear ?? 0;
+      const chassisYear = update.updatedDesignState.nextYearChassis?.targetSeason ?? 0;
       const body = `The ${stageName} stage of next year's chassis design is now complete. ` +
         `The new efficiency rating is ${completion.newEfficiencyRating.toFixed(1)}. ` +
         `We can now proceed to the next phase of development.`;
@@ -2095,16 +2097,17 @@ function processPostRaceRepairs(
         totalCost,
       };
 
-      state.mail.push({
+      state.calendarEvents.push({
         id: randomUUID(),
-        from: 'Finance Department',
+        date: { ...state.currentDate },
+        type: CalendarEventType.Email,
         subject: `Post-Race Repair Report - ${circuitName}`,
+        critical: false,
+        emailCategory: EmailCategory.PostRaceRepair,
+        sender: 'Finance Department',
         body:
           `Race repairs have been completed for both cars after the ${circuitName} Grand Prix.\n\n` +
           `Total cost: $${totalCost.toLocaleString()}`,
-        date: { ...state.currentDate },
-        read: false,
-        category: EmailCategory.PostRaceRepair,
         data: emailData,
       });
     }
@@ -2819,14 +2822,14 @@ export const GameStateManager = {
    * Starts a negotiation with a manufacturer for next season's engine supply.
    */
   startEngineNegotiation(manufacturerId: string): GameState {
-    const state = getGameState();
+    const state = GameStateManager.currentState;
     if (!state) throw new Error('No game in progress');
 
-    const playerTeamId = state.playerTeamId;
+    const playerTeamId = state.player.teamId;
 
     // Check if already negotiating with this manufacturer
     const existing = state.engineNegotiations.find(
-      (n) => n.teamId === playerTeamId && n.manufacturerId === manufacturerId
+      (n: EngineNegotiation) => n.teamId === playerTeamId && n.manufacturerId === manufacturerId
     );
     if (existing) {
       throw new Error('Already negotiating with this manufacturer');
@@ -2836,7 +2839,7 @@ export const GameStateManager = {
     const negotiation = createNegotiation(
       playerTeamId,
       manufacturerId,
-      state.seasonNumber + 1,
+      state.currentSeason.seasonNumber + 1,
       state.currentDate
     );
 
@@ -2853,19 +2856,19 @@ export const GameStateManager = {
     response: 'accept' | 'reject' | 'counter',
     counterTerms?: ContractTerms
   ): GameState {
-    const state = getGameState();
+    const state = GameStateManager.currentState;
     if (!state) throw new Error('No game in progress');
 
     // Find the negotiation by checking for matching offer
-    const negotiation = state.engineNegotiations.find((n) =>
-      n.offers.some((o) => o.id === offerId)
+    const negotiation = state.engineNegotiations.find((n: EngineNegotiation) =>
+      n.offers.some((o: ContractOffer) => o.id === offerId)
     );
 
     if (!negotiation) {
       throw new Error('Negotiation not found');
     }
 
-    const offer = negotiation.offers.find((o) => o.id === offerId);
+    const offer = negotiation.offers.find((o: ContractOffer) => o.id === offerId);
     if (!offer) {
       throw new Error('Offer not found');
     }

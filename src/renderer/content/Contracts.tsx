@@ -7,6 +7,7 @@ import { formatCurrency } from '../utils/format';
 import { seasonToYear } from '../../shared/utils/date-utils';
 import { IpcChannels } from '../../shared/ipc';
 import {
+  DriverRole,
   ManufacturerType,
   NegotiationStatus,
   type Manufacturer,
@@ -64,14 +65,23 @@ const STAT_DESCRIPTIONS: Record<keyof EngineStats, string> = {
   predictability: 'Consistency and driver error reduction',
 };
 
-const NULL_CONTRACT_DATA = {
+interface EngineContractData {
+  contract: ActiveManufacturerContract | null;
+  manufacturer: Manufacturer | null;
+  engineState: TeamEngineState | null;
+  specState: ManufacturerSpecState | null;
+  car1Driver: Driver | null;
+  car2Driver: Driver | null;
+}
+
+const NULL_CONTRACT_DATA: EngineContractData = {
   contract: null,
   manufacturer: null,
   engineState: null,
   specState: null,
   car1Driver: null,
   car2Driver: null,
-} as const;
+};
 
 // ===========================================
 // HELPER FUNCTIONS
@@ -899,8 +909,8 @@ export function Contracts() {
 
     // Get drivers for the team
     const teamDrivers = gameState.drivers.filter((d) => d.teamId === playerTeamId);
-    const driver1 = teamDrivers.find((d) => d.role === 'driver1') ?? teamDrivers[0] ?? null;
-    const driver2 = teamDrivers.find((d) => d.role === 'driver2') ?? teamDrivers[1] ?? null;
+    const driver1 = teamDrivers.find((d) => d.role === DriverRole.First) ?? teamDrivers[0] ?? null;
+    const driver2 = teamDrivers.find((d) => d.role === DriverRole.Second) ?? teamDrivers[1] ?? null;
 
     return {
       contract: engineContract,

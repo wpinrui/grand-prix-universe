@@ -584,7 +584,7 @@ export function WorldStats() {
           <Dropdown
             options={STAT_OPTIONS}
             value={selectedStat}
-            onChange={setSelectedStat}
+            onChange={(v) => setSelectedStat(v)}
             className="w-56"
           />
         </div>
@@ -593,7 +593,7 @@ export function WorldStats() {
           <Dropdown
             options={TIME_SCALE_OPTIONS}
             value={timeScale}
-            onChange={setTimeScale}
+            onChange={(v) => setTimeScale(v)}
             className="w-40"
           />
         </div>
@@ -617,7 +617,7 @@ export function WorldStats() {
         </div>
         <div className="ml-auto">
           <label className={CONTROL_LABEL_CLASSES}>View</label>
-          <TabBar tabs={TAB_OPTIONS} activeTab={activeView} onTabChange={setActiveView} />
+          <TabBar tabs={TAB_OPTIONS} activeTab={activeView} onTabChange={(tab) => setActiveView(tab)} />
         </div>
       </div>
 

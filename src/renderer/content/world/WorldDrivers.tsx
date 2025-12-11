@@ -10,7 +10,7 @@ import {
   extractCareerHistory,
   getContractRelationship,
 } from '../../components';
-import type { DriverStanding } from '../../../shared/domain';
+import type { Driver, DriverStanding, Team } from '../../../shared/domain';
 import { FREE_AGENT_COLORS } from '../../utils/face-generator';
 
 interface WorldDriversProps {
@@ -33,7 +33,7 @@ export function WorldDrivers({ initialDriverId }: WorldDriversProps) {
   // Build sorted drivers list and lookup maps
   const { sortedDrivers, driverStandingsMap, teamMap } = useMemo(() => {
     if (!gameState) {
-      return { sortedDrivers: [], driverStandingsMap: new Map(), teamMap: new Map() };
+      return { sortedDrivers: [] as Driver[], driverStandingsMap: new Map<string, DriverStanding>(), teamMap: new Map<string, Team>() };
     }
 
     // Build standings map

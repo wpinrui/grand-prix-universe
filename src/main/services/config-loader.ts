@@ -181,7 +181,7 @@ export const ConfigLoader = {
   },
 
   getTeamById(id: string): Team | undefined {
-    return this.getTeams().find((team) => team.id === id);
+    return this.getTeams().find((team: Team) => team.id === id);
   },
 
   getDrivers(): Driver[] {
@@ -189,11 +189,11 @@ export const ConfigLoader = {
   },
 
   getDriverById(id: string): Driver | undefined {
-    return this.getDrivers().find((driver) => driver.id === id);
+    return this.getDrivers().find((driver: Driver) => driver.id === id);
   },
 
   getDriversByTeamId(teamId: string): Driver[] {
-    return this.getDrivers().filter((driver) => driver.teamId === teamId);
+    return this.getDrivers().filter((driver: Driver) => driver.teamId === teamId);
   },
 
   getCircuits(): Circuit[] {
@@ -201,7 +201,7 @@ export const ConfigLoader = {
   },
 
   getCircuitById(id: string): Circuit | undefined {
-    return this.getCircuits().find((circuit) => circuit.id === id);
+    return this.getCircuits().find((circuit: Circuit) => circuit.id === id);
   },
 
   getSponsors(): Sponsor[] {
@@ -209,7 +209,7 @@ export const ConfigLoader = {
   },
 
   getSponsorById(id: string): Sponsor | undefined {
-    return this.getSponsors().find((sponsor) => sponsor.id === id);
+    return this.getSponsors().find((sponsor: Sponsor) => sponsor.id === id);
   },
 
   getManufacturers(): Manufacturer[] {
@@ -221,7 +221,7 @@ export const ConfigLoader = {
   },
 
   getManufacturerById(id: string): Manufacturer | undefined {
-    return this.getManufacturers().find((manufacturer) => manufacturer.id === id);
+    return this.getManufacturers().find((manufacturer: Manufacturer) => manufacturer.id === id);
   },
 
   getChiefs(): Chief[] {
@@ -229,7 +229,7 @@ export const ConfigLoader = {
   },
 
   getChiefById(id: string): Chief | undefined {
-    return this.getChiefs().find((chief) => chief.id === id);
+    return this.getChiefs().find((chief: Chief) => chief.id === id);
   },
 
   getPrincipals(): TeamPrincipal[] {
@@ -241,11 +241,11 @@ export const ConfigLoader = {
   },
 
   getPrincipalById(id: string): TeamPrincipal | undefined {
-    return this.getPrincipals().find((principal) => principal.id === id);
+    return this.getPrincipals().find((principal: TeamPrincipal) => principal.id === id);
   },
 
   getPrincipalByTeamId(teamId: string): TeamPrincipal | undefined {
-    return this.getPrincipals().find((principal) => principal.teamId === teamId);
+    return this.getPrincipals().find((principal: TeamPrincipal) => principal.teamId === teamId);
   },
 
   getRaceSchedule(): RaceScheduleEntry[] {
@@ -283,7 +283,7 @@ export const ConfigLoader = {
     }
 
     // Find season-specific regulations, fall back to default
-    const seasonRegs = regulations.seasons.find((s) => s.season === season);
+    const seasonRegs = regulations.seasons.find((s: SeasonRegulations) => s.season === season);
     return seasonRegs ?? regulations.default;
   },
 
@@ -301,7 +301,7 @@ export const ConfigLoader = {
     }
 
     const validIds = new Set(Object.values(TyreCompound));
-    configCache.compounds = compounds.filter((c) => {
+    configCache.compounds = compounds.filter((c: TyreCompoundConfig) => {
       const isValid = validIds.has(c.id);
       if (!isValid) {
         console.warn(`Invalid compound ID "${c.id}" - must match TyreCompound enum`);
@@ -309,11 +309,11 @@ export const ConfigLoader = {
       return isValid;
     });
 
-    return configCache.compounds;
+    return configCache.compounds as TyreCompoundConfig[];
   },
 
   getCompoundById(id: TyreCompound): TyreCompoundConfig | undefined {
-    return this.getCompounds().find((compound) => compound.id === id);
+    return this.getCompounds().find((compound: TyreCompoundConfig) => compound.id === id);
   },
 
   clearCache(): void {
