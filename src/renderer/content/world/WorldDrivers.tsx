@@ -135,6 +135,7 @@ export function WorldDrivers({ initialDriverId }: WorldDriversProps) {
         onEnterContractTalks={handleEnterContractTalks}
         allDrivers={sortedDrivers}
         onDriverSelect={setSelectedDriverId}
+        allTeams={gameState.teams}
       />
     </div>
   );
