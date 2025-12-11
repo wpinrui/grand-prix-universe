@@ -69,8 +69,20 @@ const MAX_DESPERATION_DISCOUNT = 0.20;
 /** Strategic value discount for top teams */
 const STRATEGIC_VALUE_DISCOUNT = 0.08;
 
+/** Threshold for strategic value to be considered "top team" (0-1 scale) */
+const STRATEGIC_VALUE_THRESHOLD = 0.7;
+
+/** Threshold for desperation to be considered "desperate" (0-1 scale) */
+const DESPERATION_THRESHOLD = 0.3;
+
 /** Concession rate per round (how much they move toward floor) */
 const BASE_CONCESSION_RATE = 0.20;
+
+/** Multiplier for threshold when player makes great concession */
+const GREAT_CONCESSION_THRESHOLD_MULTIPLIER = 0.95;
+
+/** Divisor for calculating round factor (accept lower prices in later rounds) */
+const ROUND_FACTOR_DIVISOR = 4;
 
 // =============================================================================
 // TYPES
@@ -132,6 +144,22 @@ function calculateManufacturerCost(
     (terms.optimisationIncluded ? costs.optimisation : 0);
 
   return yearlyCost * terms.duration;
+}
+
+/**
+ * Calculate the floor price (absolute minimum the manufacturer will accept)
+ * Applies desperation and strategic value discounts to the secret margin
+ */
+function calculateFloorPrice(
+  cost: number,
+  secretMinMargin: number,
+  desperation: number,
+  strategicValue: number
+): number {
+  const desperationDiscount = desperation * MAX_DESPERATION_DISCOUNT;
+  const strategicDiscount = strategicValue > STRATEGIC_VALUE_THRESHOLD ? STRATEGIC_VALUE_DISCOUNT : 0;
+  const adjustedMinMargin = Math.max(1.0, secretMinMargin - desperationDiscount - strategicDiscount);
+  return cost * adjustedMinMargin;
 }
 
 // =============================================================================
@@ -258,12 +286,7 @@ function calculateTargetPrice(
   // Calculate price points
   const idealPrice = cost * IDEAL_MARGIN;
   const comfortablePrice = cost * COMFORTABLE_MARGIN;
-
-  // Apply discounts to floor
-  const desperationDiscount = desperation * MAX_DESPERATION_DISCOUNT;
-  const strategicDiscount = strategicValue > 0.7 ? STRATEGIC_VALUE_DISCOUNT : 0;
-  const adjustedMinMargin = Math.max(1.0, secretMinMargin - desperationDiscount - strategicDiscount);
-  const floorPrice = cost * adjustedMinMargin;
+  const floorPrice = calculateFloorPrice(cost, secretMinMargin, desperation, strategicValue);
 
   // Calculate concession rate based on pattern
   let concessionMultiplier = 1.0;
@@ -284,7 +307,7 @@ function calculateTargetPrice(
   const targetPrice = idealPrice - totalConcession * (idealPrice - floorPrice);
 
   // Never go below comfortable unless desperate or strategic
-  if (desperation < 0.3 && strategicValue < 0.7) {
+  if (desperation < DESPERATION_THRESHOLD && strategicValue < STRATEGIC_VALUE_THRESHOLD) {
     return Math.max(targetPrice, comfortablePrice);
   }
 
@@ -304,23 +327,18 @@ function calculateAcceptanceThreshold(
   pattern: NegotiationPattern
 ): number {
   const comfortablePrice = cost * COMFORTABLE_MARGIN;
-
-  // Apply discounts to floor
-  const desperationDiscount = desperation * MAX_DESPERATION_DISCOUNT;
-  const strategicDiscount = strategicValue > 0.7 ? STRATEGIC_VALUE_DISCOUNT : 0;
-  const adjustedMinMargin = Math.max(1.0, secretMinMargin - desperationDiscount - strategicDiscount);
-  const floorPrice = cost * adjustedMinMargin;
+  const floorPrice = calculateFloorPrice(cost, secretMinMargin, desperation, strategicValue);
 
   // Early rounds: Only accept above comfortable
   // Later rounds: Accept closer to floor
   // Great concession: More willing to accept
-  const roundFactor = Math.min(1, (roundNumber - 1) / 4); // 0 at round 1, 1 at round 5
+  const roundFactor = Math.min(1, (roundNumber - 1) / ROUND_FACTOR_DIVISOR); // 0 at round 1, 1 at round 5
 
   let threshold = comfortablePrice - roundFactor * (comfortablePrice - floorPrice);
 
   // If player made great concession, lower threshold
   if (pattern === 'great-concession') {
-    threshold = Math.max(floorPrice, threshold * 0.95);
+    threshold = Math.max(floorPrice, threshold * GREAT_CONCESSION_THRESHOLD_MULTIPLIER);
   }
 
   return Math.max(floorPrice, threshold);
@@ -404,7 +422,7 @@ export function evaluateManufacturerOffer(
   // Check if player responded to our ultimatum
   if (pattern === 'responded-to-ultimatum') {
     // We issued ultimatum, they must accept or reject only
-    const floorPrice = cost * Math.max(1.0, secretMinMargin - desperation * MAX_DESPERATION_DISCOUNT);
+    const floorPrice = calculateFloorPrice(cost, secretMinMargin, desperation, strategicValue);
 
     if (offeredPrice >= floorPrice) {
       return {
@@ -412,7 +430,7 @@ export function evaluateManufacturerOffer(
         counterTerms: null,
         responseTone: ResponseTone.Professional,
         responseDelayDays: MIN_RESPONSE_DELAY_DAYS,
-        isNewsworthy: strategicValue > 0.7,
+        isNewsworthy: strategicValue > STRATEGIC_VALUE_THRESHOLD,
         relationshipChange: ACCEPT_RELATIONSHIP_BOOST,
       };
     } else {
@@ -439,7 +457,7 @@ export function evaluateManufacturerOffer(
         counterTerms: null,
         responseTone: determineResponseTone(relationshipScore, pattern),
         responseDelayDays: MIN_RESPONSE_DELAY_DAYS,
-        isNewsworthy: strategicValue > 0.7,
+        isNewsworthy: strategicValue > STRATEGIC_VALUE_THRESHOLD,
         relationshipChange: ACCEPT_RELATIONSHIP_BOOST,
       };
     } else {
@@ -467,7 +485,7 @@ export function evaluateManufacturerOffer(
       counterTerms: null,
       responseTone: determineResponseTone(relationshipScore, pattern),
       responseDelayDays: calculateResponseDelay(relationshipScore, strategicValue, false),
-      isNewsworthy: strategicValue > 0.7,
+      isNewsworthy: strategicValue > STRATEGIC_VALUE_THRESHOLD,
       relationshipChange: ACCEPT_RELATIONSHIP_BOOST,
     };
   }
