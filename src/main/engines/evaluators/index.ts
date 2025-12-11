@@ -43,3 +43,12 @@ export {
   type TeamEvaluationInput,
   type TeamEvaluationResult,
 } from './team-evaluator';
+
+export {
+  evaluateSponsorOffer,
+  hasRivalGroupConflict,
+  calculateSponsorValuation,
+  getPlacementForTier,
+  getSponsorTierDisplayName,
+  type SponsorEvaluationInput,
+} from './sponsor-evaluator';

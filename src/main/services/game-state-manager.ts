@@ -16,6 +16,7 @@ import { generateStubRaceResult } from '../engines/stubs';
 import {
   MIN_DESPERATION_MULTIPLIER,
   DESPERATION_MULTIPLIER_RANGE,
+  getPlacementForTier,
 } from '../engines/evaluators';
 import {
   IpcEvents,
@@ -80,7 +81,9 @@ import type {
   EngineCustomisation,
   ManufacturerNegotiation,
   DriverNegotiation,
+  SponsorNegotiation,
   DriverContractTerms,
+  SponsorContractTerms,
 } from '../../shared/domain';
 import {
   GamePhase,
@@ -94,6 +97,7 @@ import {
   ChassisDesignStage,
   CalendarEventType,
   EmailCategory,
+  SponsorTier,
   hasRaceSeat,
   createEvent,
   managerRef,
@@ -595,6 +599,121 @@ function generateNegotiationUpdateEmail(
     body,
     critical: true,
   });
+}
+
+// =============================================================================
+// SPONSOR CONTRACT RESOLUTION
+// =============================================================================
+
+/** Result of creating a sponsor contract */
+interface SponsorContractResult {
+  sponsorId: string;
+  teamId: string;
+  tier: SponsorTier;
+  annualPayment: number;
+  contractDuration: number;
+  startSeason: number;
+  endSeason: number;
+}
+
+/**
+ * Get the sponsor tier display name for news headlines.
+ */
+function getSponsorTierDisplayName(tier: SponsorTier): string {
+  switch (tier) {
+    case SponsorTier.Title:
+      return 'title sponsor';
+    case SponsorTier.Major:
+      return 'major sponsor';
+    case SponsorTier.Minor:
+      return 'minor sponsor';
+    default:
+      return 'sponsor';
+  }
+}
+
+/**
+ * Create a sponsor deal from a completed negotiation.
+ * Updates the team's sponsor deals array.
+ */
+function createSponsorContractFromNegotiation(
+  negotiation: SponsorNegotiation,
+  state: GameState
+): SponsorContractResult | null {
+  const sponsor = state.sponsors.find((s) => s.id === negotiation.sponsorId);
+  if (!sponsor) return null;
+
+  const lastRound = negotiation.rounds[negotiation.rounds.length - 1];
+  if (!lastRound) return null;
+
+  const terms = lastRound.terms as SponsorContractTerms;
+  const startSeason = negotiation.forSeason;
+  const endSeason = startSeason + terms.duration - 1;
+
+  // Create the active sponsor deal
+  const deal: ActiveSponsorDeal = {
+    sponsorId: sponsor.id,
+    teamId: negotiation.teamId,
+    tier: sponsor.tier,
+    annualPayment: terms.annualPayment,
+    bonusLevel: 0, // Default to 0 for now, can be negotiated later
+    guaranteed: !terms.exitClausePosition, // If no exit clause, payment is guaranteed
+    startSeason,
+    endSeason,
+  };
+
+  // Add to sponsor deals
+  state.sponsorDeals.push(deal);
+
+  return {
+    sponsorId: sponsor.id,
+    teamId: negotiation.teamId,
+    tier: sponsor.tier,
+    annualPayment: terms.annualPayment,
+    contractDuration: terms.duration,
+    startSeason,
+    endSeason,
+  };
+}
+
+/**
+ * Generate news headline and email for a sponsor signing.
+ */
+function generateSponsorSigningEvent(
+  state: GameState,
+  result: SponsorContractResult,
+  isPlayerTeamInvolved: boolean
+): void {
+  const sponsor = state.sponsors.find((s) => s.id === result.sponsorId);
+  const team = state.teams.find((t) => t.id === result.teamId);
+
+  if (!sponsor || !team) return;
+
+  const tierName = getSponsorTierDisplayName(result.tier);
+  const headline = `${team.name} announces ${sponsor.name} as ${tierName}`;
+  const body = `${team.name} has signed ${sponsor.name} as their ${tierName} in a ${result.contractDuration}-year deal worth $${(result.annualPayment / 1_000_000).toFixed(1)}M per season.`;
+
+  // News headline (visible to everyone)
+  state.calendarEvents.push({
+    id: randomUUID(),
+    date: state.currentDate,
+    type: CalendarEventType.Headline,
+    subject: headline,
+    body,
+    critical: false,
+  });
+
+  // Email to player if their team is involved
+  if (isPlayerTeamInvolved) {
+    state.calendarEvents.push({
+      id: randomUUID(),
+      date: state.currentDate,
+      type: CalendarEventType.Email,
+      subject: headline,
+      body: `${body} This sponsorship will provide important funding for your team.`,
+      critical: false, // Don't stop sim
+    });
+  }
 }
 
 /**
@@ -2257,6 +2376,8 @@ function buildNegotiationInput(state: GameState): NegotiationProcessingInput {
     activeManufacturerContracts: state.manufacturerContracts,
     securedTeamIds,
     relationshipScores: {}, // TODO: Implement relationship tracking
+    sponsors: state.sponsors,
+    activeSponsorDeals: state.sponsorDeals,
   };
 }
 
@@ -2337,6 +2458,35 @@ function applyNegotiationUpdates(state: GameState, updates: NegotiationUpdate[])
               manufacturerNeg.phase,
               latestRound?.isUltimatum ?? false,
               ' You may approach other manufacturers.'
+            );
+          }
+        }
+      } else if (negotiation.stakeholderType === StakeholderType.Sponsor) {
+        // Sponsor negotiation
+        const sponsorNeg = negotiation as SponsorNegotiation;
+
+        // Handle completed negotiations - create sponsor deals for ALL teams
+        if (sponsorNeg.phase === NegotiationPhase.Completed) {
+          const contractResult = createSponsorContractFromNegotiation(sponsorNeg, state);
+          if (contractResult) {
+            generateSponsorSigningEvent(state, contractResult, isPlayerTeam);
+          }
+        }
+
+        // Check if this affects player and should stop simulation
+        if (update.shouldStopSimulation && isPlayerTeam) {
+          shouldStop = true;
+
+          // Generate email for player
+          const sponsor = state.sponsors.find((s) => s.id === sponsorNeg.sponsorId);
+          if (sponsor) {
+            const latestRound = sponsorNeg.rounds[sponsorNeg.rounds.length - 1];
+            generateNegotiationUpdateEmail(
+              state,
+              sponsor.name,
+              sponsorNeg.phase,
+              latestRound?.isUltimatum ?? false,
+              ' You may approach other sponsors.'
             );
           }
         }
@@ -2664,6 +2814,181 @@ function processDriverOutreach(state: GameState): boolean {
   return playerReceivedOutreach;
 }
 
+// =============================================================================
+// SPONSOR PROACTIVE OUTREACH
+// =============================================================================
+
+/** Month when sponsors start reaching out (April) */
+const SPONSOR_OUTREACH_MONTH = 4;
+
+/**
+ * Check if a sponsor has already reached out to a team this season
+ */
+function hasExistingSponsorNegotiation(
+  state: GameState,
+  teamId: string,
+  sponsorId: string,
+  forSeason: number
+): boolean {
+  return state.negotiations.some(
+    (n) =>
+      n.stakeholderType === StakeholderType.Sponsor &&
+      n.teamId === teamId &&
+      (n as SponsorNegotiation).sponsorId === sponsorId &&
+      n.forSeason === forSeason
+  );
+}
+
+/**
+ * Check if team has a sponsor from the same rival group
+ */
+function teamHasRivalSponsor(
+  state: GameState,
+  teamId: string,
+  sponsorRivalGroup: string | null
+): boolean {
+  if (!sponsorRivalGroup) return false;
+
+  const teamDeals = state.sponsorDeals.filter((d) => d.teamId === teamId);
+  for (const deal of teamDeals) {
+    const existingSponsor = state.sponsors.find((s) => s.id === deal.sponsorId);
+    if (existingSponsor?.rivalGroup === sponsorRivalGroup) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Get teams ranked by constructor standings
+ */
+function getTeamsByPosition(state: GameState): Array<{ team: Team; position: number }> {
+  const standings = getConstructorStandingsMap(state);
+  return state.teams
+    .map((team) => ({
+      team,
+      position: standings.get(team.id) ?? state.teams.length,
+    }))
+    .sort((a, b) => a.position - b.position);
+}
+
+/**
+ * Create a sponsor negotiation from proactive outreach
+ */
+function createSponsorOutreachNegotiation(
+  state: GameState,
+  sponsor: Sponsor,
+  team: Team,
+  forSeason: number
+): SponsorNegotiation {
+  return {
+    id: randomUUID(),
+    teamId: team.id,
+    forSeason,
+    stakeholderType: StakeholderType.Sponsor,
+    phase: NegotiationPhase.ResponseReceived, // Sponsor initiated, awaiting player response
+    startDate: state.currentDate,
+    initiatedBy: 'counterparty',
+    sponsorId: sponsor.id,
+    rounds: [
+      {
+        roundNumber: 1,
+        offeredBy: 'counterparty',
+        terms: {
+          annualPayment: sponsor.payment,
+          duration: 2, // Default 2-year offer
+          placement: getPlacementForTier(sponsor.tier),
+          pointsBonus: 0,
+          winBonus: 0,
+          exitClausePosition: undefined,
+        } as SponsorContractTerms,
+        offeredDate: state.currentDate,
+        expiresDate: offsetDate(state.currentDate, 14),
+      },
+    ],
+  };
+}
+
+/**
+ * Process proactive outreach from sponsors to teams.
+ * Triggers in April - sponsors approach eligible teams.
+ */
+function processSponsorOutreach(state: GameState): boolean {
+  const { currentDate, currentSeason } = state;
+  const { month, day } = currentDate;
+  const nextSeason = currentSeason.seasonNumber + 1;
+  const playerTeamId = state.player.teamId;
+  let playerReceivedOutreach = false;
+
+  // Only trigger in April, on the 1st
+  if (month !== SPONSOR_OUTREACH_MONTH || day !== 1) return false;
+
+  // Get teams by position
+  const teamsByPosition = getTeamsByPosition(state);
+
+  // Process each sponsor
+  for (const sponsor of state.sponsors) {
+    // Skip sponsors that are already fully committed
+    const existingDeals = state.sponsorDeals.filter(
+      (d) => d.sponsorId === sponsor.id && d.endSeason >= nextSeason
+    );
+    if (existingDeals.length > 0) continue; // Sponsor already has active deal
+
+    // Determine target teams based on tier
+    let targetTeams: Team[] = [];
+
+    if (sponsor.tier === SponsorTier.Title) {
+      // Title sponsors approach top 3 teams
+      targetTeams = teamsByPosition.slice(0, 3).map((t) => t.team);
+    } else if (sponsor.tier === SponsorTier.Major) {
+      // Major sponsors approach top 6 teams
+      targetTeams = teamsByPosition.slice(0, 6).map((t) => t.team);
+    } else {
+      // Minor sponsors approach teams lacking minor sponsors
+      targetTeams = state.teams.filter((team) => {
+        const teamDeals = state.sponsorDeals.filter(
+          (d) => d.teamId === team.id && d.endSeason >= currentSeason.seasonNumber
+        );
+        const minorDeals = teamDeals.filter((d) => {
+          const s = state.sponsors.find((sp) => sp.id === d.sponsorId);
+          return s?.tier === SponsorTier.Minor;
+        });
+        return minorDeals.length < 2; // Teams with fewer than 2 minor sponsors
+      });
+    }
+
+    // Approach each target team
+    for (const team of targetTeams) {
+      // Skip if rival group conflict
+      if (teamHasRivalSponsor(state, team.id, sponsor.rivalGroup)) continue;
+
+      // Skip if already negotiating
+      if (hasExistingSponsorNegotiation(state, team.id, sponsor.id, nextSeason)) continue;
+
+      // Create negotiation
+      const negotiation = createSponsorOutreachNegotiation(state, sponsor, team, nextSeason);
+      state.negotiations.push(negotiation);
+
+      // If player's team, send email
+      if (team.id === playerTeamId) {
+        playerReceivedOutreach = true;
+
+        const tierName = getSponsorTierDisplayName(sponsor.tier);
+        state.calendarEvents.push({
+          id: randomUUID(),
+          date: currentDate,
+          type: CalendarEventType.Email,
+          subject: `${sponsor.name} interested in ${tierName} deal`,
+          body: `${sponsor.name} has approached your team about becoming a ${tierName}. They are offering $${(sponsor.payment / 1_000_000).toFixed(1)}M per season for a 2-year deal. Review the offer in your negotiations.`,
+          critical: true,
+        });
+      }
+    }
+  }
+
+  return playerReceivedOutreach;
+}
+
 /**
  * Apply turn processing result to game state (mutates state)
  * Returns true if player team had a design milestone or test completion (for auto-stop)
@@ -2697,10 +3022,13 @@ function applyTurnResult(state: GameState, result: TurnProcessingResult): boolea
   // Process proactive outreach from drivers
   const playerReceivedDriverOutreach = processDriverOutreach(state);
 
+  // Process proactive outreach from sponsors
+  const playerReceivedSponsorOutreach = processSponsorOutreach(state);
+
   // Update projected milestone dates based on current progress
   updateProjectedMilestones(state);
 
-  return playerHadDesignMilestone || playerHadTestCompletion || playerHadReadyPart || negotiationStopped || playerReceivedManufacturerOutreach || playerReceivedDriverOutreach;
+  return playerHadDesignMilestone || playerHadTestCompletion || playerHadReadyPart || negotiationStopped || playerReceivedManufacturerOutreach || playerReceivedDriverOutreach || playerReceivedSponsorOutreach;
 }
 
 /**
