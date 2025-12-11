@@ -430,36 +430,36 @@ function F1CareerHistoryPanel({ careerHistory, teams }: F1CareerHistoryPanelProp
 
       {/* Single Table with All Seasons */}
       <div className="card overflow-hidden overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-sm table-fixed">
           <thead className={TABLE_HEADER_CLASS}>
             <tr className={TABLE_HEADER_ROW_CLASS}>
-              <th className="w-14 px-3 py-2 text-left">Year</th>
-              <th className="min-w-[140px] px-3 py-2 text-left">Team</th>
+              <th className="w-[60px] px-3 py-2 text-left">Year</th>
+              <th className="w-[140px] px-3 py-2 text-left">Team</th>
               {Array.from({ length: maxRaces }, (_, i) => (
-                <th key={i} className="w-9 px-0.5 py-2 text-center">
+                <th key={i} className="px-0.5 py-2 text-center">
                   <span className="text-xs text-muted">R{i + 1}</span>
                 </th>
               ))}
-              <th className="w-14 px-3 py-2 text-right">Pts</th>
-              <th className="w-10 px-2 py-2 text-center">Pos</th>
+              <th className="w-[50px] px-2 py-2 text-right">Pts</th>
+              <th className="w-[40px] px-2 py-2 text-center">Pos</th>
             </tr>
           </thead>
           <tbody className={TABLE_BODY_CLASS}>
             {sortedHistory.map((season) => (
               <tr key={season.season} className="border-b border-[var(--neutral-700)]">
-                <td className="w-14 px-3 py-2 font-bold text-primary">{season.season}</td>
-                <td className="min-w-[140px] px-3 py-2 whitespace-nowrap text-secondary text-xs">
+                <td className="px-3 py-2 font-bold text-primary">{season.season}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-secondary text-xs truncate">
                   {teamNames.get(season.teamId) ?? season.teamId}
                 </td>
                 {Array.from({ length: maxRaces }, (_, i) => {
                   const race = season.races.find((r) => r.round === i + 1);
                   if (!race) {
-                    return <td key={i} className="w-9 px-0.5 py-1 text-center" />;
+                    return <td key={i} className="px-0.5 py-1 text-center" />;
                   }
                   return (
-                    <td key={i} className="w-9 px-0.5 py-1 text-center">
+                    <td key={i} className="px-0.5 py-1 text-center">
                       <div
-                        className={`w-8 h-6 text-xs rounded flex items-center justify-center mx-auto ${getHistoricalPositionStyle(race.position)}`}
+                        className={`h-6 text-xs rounded flex items-center justify-center ${getHistoricalPositionStyle(race.position)}`}
                         title={`${race.name}: ${race.position !== null ? `P${race.position}` : 'DNF'} - ${race.points} pts (${race.status})`}
                       >
                         {race.position ?? 'X'}
@@ -467,13 +467,13 @@ function F1CareerHistoryPanel({ careerHistory, teams }: F1CareerHistoryPanelProp
                     </td>
                   );
                 })}
-                <td className="w-14 px-3 py-2 text-right font-bold tabular-nums">
+                <td className="px-2 py-2 text-right font-bold tabular-nums">
                   {season.totalPoints}
                 </td>
-                <td className="w-10 px-2 py-1 text-center">
+                <td className="px-2 py-1 text-center">
                   {season.championshipPosition ? (
                     <div
-                      className={`w-8 h-6 text-xs rounded flex items-center justify-center mx-auto font-bold ${
+                      className={`h-6 text-xs rounded flex items-center justify-center font-bold ${
                         season.championshipPosition === 1
                           ? 'bg-amber-400/80 text-amber-950'
                           : season.championshipPosition === 2
