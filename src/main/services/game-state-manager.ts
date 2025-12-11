@@ -17,6 +17,8 @@ import {
   MIN_DESPERATION_MULTIPLIER,
   DESPERATION_MULTIPLIER_RANGE,
   getPlacementForTier,
+  getSponsorTierDisplayName,
+  hasRivalGroupConflict,
 } from '../engines/evaluators';
 import {
   IpcEvents,
@@ -614,22 +616,6 @@ interface SponsorContractResult {
   contractDuration: number;
   startSeason: number;
   endSeason: number;
-}
-
-/**
- * Get the sponsor tier display name for news headlines.
- */
-function getSponsorTierDisplayName(tier: SponsorTier): string {
-  switch (tier) {
-    case SponsorTier.Title:
-      return 'title sponsor';
-    case SponsorTier.Major:
-      return 'major sponsor';
-    case SponsorTier.Minor:
-      return 'minor sponsor';
-    default:
-      return 'sponsor';
-  }
 }
 
 /**
@@ -2821,6 +2807,9 @@ function processDriverOutreach(state: GameState): boolean {
 /** Month when sponsors start reaching out (April) */
 const SPONSOR_OUTREACH_MONTH = 4;
 
+/** Default contract duration for sponsor outreach offers */
+const DEFAULT_SPONSOR_OUTREACH_DURATION = 2;
+
 /**
  * Check if a sponsor has already reached out to a team this season
  */
@@ -2847,16 +2836,8 @@ function teamHasRivalSponsor(
   teamId: string,
   sponsorRivalGroup: string | null
 ): boolean {
-  if (!sponsorRivalGroup) return false;
-
   const teamDeals = state.sponsorDeals.filter((d) => d.teamId === teamId);
-  for (const deal of teamDeals) {
-    const existingSponsor = state.sponsors.find((s) => s.id === deal.sponsorId);
-    if (existingSponsor?.rivalGroup === sponsorRivalGroup) {
-      return true;
-    }
-  }
-  return false;
+  return hasRivalGroupConflict(sponsorRivalGroup, teamDeals, state.sponsors);
 }
 
 /**
@@ -2896,7 +2877,7 @@ function createSponsorOutreachNegotiation(
         offeredBy: 'counterparty',
         terms: {
           annualPayment: sponsor.payment,
-          duration: 2, // Default 2-year offer
+          duration: DEFAULT_SPONSOR_OUTREACH_DURATION,
           placement: getPlacementForTier(sponsor.tier),
           pointsBonus: 0,
           winBonus: 0,
@@ -2979,7 +2960,7 @@ function processSponsorOutreach(state: GameState): boolean {
           date: currentDate,
           type: CalendarEventType.Email,
           subject: `${sponsor.name} interested in ${tierName} deal`,
-          body: `${sponsor.name} has approached your team about becoming a ${tierName}. They are offering $${(sponsor.payment / 1_000_000).toFixed(1)}M per season for a 2-year deal. Review the offer in your negotiations.`,
+          body: `${sponsor.name} has approached your team about becoming a ${tierName}. They are offering $${(sponsor.payment / 1_000_000).toFixed(1)}M per season for a ${DEFAULT_SPONSOR_OUTREACH_DURATION}-year deal. Review the offer in your negotiations.`,
           critical: true,
         });
       }

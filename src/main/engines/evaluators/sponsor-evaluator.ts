@@ -478,17 +478,18 @@ export function getPlacementForTier(tier: SponsorTier): SponsorPlacement {
 }
 
 /**
- * Get display name for sponsor tier.
+ * Get display name for sponsor tier (lowercase for news headlines).
+ * UI can capitalize if needed.
  */
 export function getSponsorTierDisplayName(tier: SponsorTier): string {
   switch (tier) {
     case SponsorTier.Title:
-      return 'Title Sponsor';
+      return 'title sponsor';
     case SponsorTier.Major:
-      return 'Major Sponsor';
+      return 'major sponsor';
     case SponsorTier.Minor:
-      return 'Minor Sponsor';
+      return 'minor sponsor';
     default:
-      return 'Sponsor';
+      return 'sponsor';
   }
 }
