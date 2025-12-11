@@ -280,6 +280,16 @@ export const BASE_SPEC_RELEASE_PROBABILITY_PER_DAY = 0.005; // ~0.5% per day
  */
 export const MAX_SPEC_IMPROVEMENT_PER_STAT = 5;
 
+// Reputation thresholds for spec release mechanics
+/** Minimum reputation for 3 stats to improve per spec (vs 2) */
+export const REPUTATION_THRESHOLD_THREE_STATS = 70;
+/** Minimum reputation for +1 bonus improvement per stat */
+export const REPUTATION_THRESHOLD_BONUS_IMPROVEMENT = 80;
+/** Minimum reputation for 1.2x spec release probability */
+export const REPUTATION_THRESHOLD_MEDIUM_PROBABILITY = 60;
+/** Minimum reputation for 1.5x spec release probability */
+export const REPUTATION_THRESHOLD_HIGH_PROBABILITY = 80;
+
 /**
  * Creates a default (zeroed) spec bonus object
  */
@@ -316,7 +326,7 @@ export function generateSpecBonus(reputation: number): SpecBonus {
   const bonus = createDefaultSpecBonus();
 
   // Better manufacturers get more stats improved (2-3)
-  const statsToImprove = reputation >= 70 ? 3 : 2;
+  const statsToImprove = reputation >= REPUTATION_THRESHOLD_THREE_STATS ? 3 : 2;
 
   // Shuffle stats to pick random ones
   const shuffledStats = [...ENGINE_STAT_KEYS].sort(() => Math.random() - 0.5);
@@ -325,7 +335,7 @@ export function generateSpecBonus(reputation: number): SpecBonus {
   for (const stat of selectedStats) {
     // Base improvement 1-3, higher reputation gets +1
     const baseImprovement = Math.floor(Math.random() * 3) + 1;
-    const reputationBonus = reputation >= 80 ? 1 : 0;
+    const reputationBonus = reputation >= REPUTATION_THRESHOLD_BONUS_IMPROVEMENT ? 1 : 0;
     bonus[stat] = Math.min(baseImprovement + reputationBonus, MAX_SPEC_IMPROVEMENT_PER_STAT);
   }
 
@@ -340,22 +350,20 @@ export function generateSpecBonus(reputation: number): SpecBonus {
  * @returns True if a spec should be released
  */
 export function shouldReleaseSpec(reputation: number): boolean {
-  // Reputation modifier: 80+ reputation gets 50% bonus probability
-  const reputationModifier = reputation >= 80 ? 1.5 : reputation >= 60 ? 1.2 : 1.0;
+  // Reputation modifier: higher reputation gets bonus probability
+  const reputationModifier =
+    reputation >= REPUTATION_THRESHOLD_HIGH_PROBABILITY ? 1.5 :
+    reputation >= REPUTATION_THRESHOLD_MEDIUM_PROBABILITY ? 1.2 :
+    1.0;
   const adjustedProbability = BASE_SPEC_RELEASE_PROBABILITY_PER_DAY * reputationModifier;
   return Math.random() < adjustedProbability;
 }
 
 /**
- * Gets the spec bonuses array from ManufacturerSpecState, converting to EngineStats format
+ * Gets the spec bonuses array from ManufacturerSpecState as EngineStats[]
  * Used by getEffectiveEngineStats which expects EngineStats[]
+ * Note: SpecBonus and EngineStats are structurally identical, so this is just a type cast
  */
 export function getSpecBonusesAsEngineStats(specState: ManufacturerSpecState): EngineStats[] {
-  return specState.specBonuses.map((bonus) => ({
-    power: bonus.power,
-    fuelEfficiency: bonus.fuelEfficiency,
-    reliability: bonus.reliability,
-    heat: bonus.heat,
-    predictability: bonus.predictability,
-  }));
+  return specState.specBonuses;
 }

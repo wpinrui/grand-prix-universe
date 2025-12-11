@@ -1836,10 +1836,14 @@ function processSpecReleases(state: GameState, currentDate: GameDate): void {
       }
     }
 
+    // Build common fields for the event
+    const statSummary = statChanges.map((s) => `${s.statName} +${s.improvement}`).join(', ');
+    const subject = `${manufacturer.name} releases Spec ${specState.latestSpecVersion}.0`;
+
     // Check if this affects the player's team
     const affectsPlayer = playerEngineContract?.manufacturerId === manufacturer.id;
 
-    // Create email for player if it affects them (critical), news headline otherwise
+    // Create email for player if it affects them, news headline otherwise
     if (affectsPlayer) {
       const data: SpecReleaseData = {
         category: EmailCategory.SpecRelease,
@@ -1850,8 +1854,6 @@ function processSpecReleases(state: GameState, currentDate: GameDate): void {
         affectsPlayer: true,
       };
 
-      const statSummary = statChanges.map((s) => `${s.statName} +${s.improvement}`).join(', ');
-      const subject = `${manufacturer.name} releases Spec ${specState.latestSpecVersion}.0`;
       const body = `${manufacturer.name} has released a new engine specification! ` +
         `Spec ${specState.latestSpecVersion}.0 brings improvements to: ${statSummary}. ` +
         `This upgrade is now available for purchase for your cars.`;
@@ -1869,8 +1871,6 @@ function processSpecReleases(state: GameState, currentDate: GameDate): void {
       });
     } else {
       // News headline for other manufacturers' spec releases
-      const statSummary = statChanges.map((s) => `${s.statName} +${s.improvement}`).join(', ');
-      const subject = `${manufacturer.name} releases Spec ${specState.latestSpecVersion}.0`;
       const body = `${manufacturer.name} has released a new engine specification. ` +
         `The update brings improvements to: ${statSummary}.`;
 
