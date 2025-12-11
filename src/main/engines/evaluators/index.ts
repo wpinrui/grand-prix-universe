@@ -7,6 +7,7 @@
  * Currently implemented:
  * - ManufacturerEvaluator: Engine supplier contract evaluation
  * - DriverEvaluator: Driver contract evaluation (perceived market value system)
+ * - TeamEvaluator: Team's evaluation of drivers (shortlisting, attractiveness)
  *
  * Future evaluators:
  * - StaffEvaluator: Staff contract evaluation
@@ -27,3 +28,17 @@ export {
   MAX_DESPERATION_MULTIPLIER,
   type DriverEvaluationInput,
 } from './driver-evaluator';
+
+export {
+  calculateDriverAttractiveness,
+  getAgeMultiplier,
+  getEligibleDriverPool,
+  getTeamShortlist,
+  evaluateDriverApproach,
+  type DriverAttractivenessInput,
+  type RankedDriver,
+  type EligiblePoolInput,
+  type TeamShortlistInput,
+  type TeamEvaluationInput,
+  type TeamEvaluationResult,
+} from './team-evaluator';

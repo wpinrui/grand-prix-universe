@@ -1,0 +1,462 @@
+/**
+ * Team Evaluator
+ *
+ * Evaluates drivers from the team's perspective for driver shortlisting.
+ * Used when AI teams (and player's team) need to decide which drivers to consider.
+ *
+ * Key mechanics:
+ * - Eligible pool: Drivers from one team above + all teams below + free agents/rookies
+ * - Experienced drivers: Attractiveness based on perceived value (same as driver-evaluator)
+ * - Rookies: Attractiveness based on attribute sum with seeded +/-10% error per team principal
+ * - Age multiplier: Young drivers attractive on long deals, veterans less so
+ */
+
+import type { Driver, Team, TeamPrincipal } from '../../../shared/domain/types';
+import { calculatePerceivedValue } from './driver-evaluator';
+
+// =============================================================================
+// CONSTANTS
+// =============================================================================
+
+/** Age thresholds for attractiveness multiplier */
+const YOUNG_AGE_THRESHOLD = 26;
+const PRIME_AGE_THRESHOLD = 30;
+const VETERAN_AGE_THRESHOLD = 34;
+
+/** Error range for rookie evaluation (±10% of attribute sum) */
+const ROOKIE_ERROR_RANGE = 0.1;
+
+/** Minimum seasons of F1 history to be considered "experienced" */
+const ROOKIE_HISTORY_THRESHOLD = 2;
+
+/** Contract duration thresholds */
+const SHORT_CONTRACT = 1;
+const MEDIUM_CONTRACT = 2;
+
+// =============================================================================
+// AGE MULTIPLIER TABLE
+// =============================================================================
+
+/**
+ * Age multiplier matrix: [age bracket][contract duration] -> multiplier
+ *
+ * Young drivers (< 26): More attractive on long deals (developing talent)
+ * Prime drivers (26-29): Neutral across all durations
+ * Mature drivers (30-33): Slight penalty on long deals
+ * Veteran drivers (34+): Significant penalty on long deals (retirement risk)
+ *
+ * Duration: 1 year, 2 years, 3+ years
+ */
+const AGE_MULTIPLIER_TABLE: Record<string, [number, number, number]> = {
+  young: [0.95, 1.0, 1.1], // Young: slight penalty on short, bonus on long
+  prime: [1.0, 1.0, 1.0], // Prime: neutral
+  mature: [1.0, 0.95, 0.9], // Mature: slight penalty on longer deals
+  veteran: [0.9, 0.8, 0.6], // Veteran: increasing penalty for longer commitments
+};
+
+// =============================================================================
+// HELPER FUNCTIONS
+// =============================================================================
+
+/**
+ * Simple hash function for seeded randomness
+ * Returns a deterministic value 0-1 based on the input string
+ */
+function hashString(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  // Normalize to 0-1
+  return Math.abs(hash % 10000) / 10000;
+}
+
+/**
+ * Get age bracket for a driver
+ */
+function getAgeBracket(age: number): 'young' | 'prime' | 'mature' | 'veteran' {
+  if (age < YOUNG_AGE_THRESHOLD) return 'young';
+  if (age < PRIME_AGE_THRESHOLD) return 'prime';
+  if (age < VETERAN_AGE_THRESHOLD) return 'mature';
+  return 'veteran';
+}
+
+/**
+ * Calculate driver's age from date of birth and game year
+ */
+function calculateAge(dateOfBirth: string, gameYear: number): number {
+  const birthYear = new Date(dateOfBirth).getFullYear();
+  return gameYear - birthYear;
+}
+
+/**
+ * Calculate attribute sum for a driver (0-700 scale, 7 attributes × 100 max each)
+ */
+function calculateAttributeSum(driver: Driver): number {
+  const attrs = driver.attributes;
+  return (
+    attrs.pace +
+    attrs.consistency +
+    attrs.focus +
+    attrs.overtaking +
+    attrs.wetWeather +
+    attrs.smoothness +
+    attrs.defending
+  );
+}
+
+/**
+ * Check if driver is considered a rookie (< 2 seasons of F1 history)
+ */
+function isRookie(driver: Driver): boolean {
+  const historyLength = driver.careerHistory?.length ?? 0;
+  return historyLength < ROOKIE_HISTORY_THRESHOLD;
+}
+
+// =============================================================================
+// AGE MULTIPLIER
+// =============================================================================
+
+/**
+ * Get age-based attractiveness multiplier for a contract duration.
+ *
+ * @param age - Driver's current age
+ * @param contractYears - Proposed contract duration (1-5)
+ * @returns Multiplier (0.6 to 1.1)
+ */
+export function getAgeMultiplier(age: number, contractYears: number): number {
+  const bracket = getAgeBracket(age);
+  const multipliers = AGE_MULTIPLIER_TABLE[bracket];
+
+  // Map contract duration to index
+  let durationIndex: number;
+  if (contractYears <= SHORT_CONTRACT) {
+    durationIndex = 0;
+  } else if (contractYears <= MEDIUM_CONTRACT) {
+    durationIndex = 1;
+  } else {
+    durationIndex = 2; // LONG_CONTRACT (3+)
+  }
+
+  return multipliers[durationIndex];
+}
+
+// =============================================================================
+// DRIVER ATTRACTIVENESS CALCULATION
+// =============================================================================
+
+export interface DriverAttractivenessInput {
+  driver: Driver;
+  teamPrincipalId: string;
+  gameYear: number;
+  contractYears: number;
+  allDrivers: Driver[]; // Needed for percentile calculation
+}
+
+export interface RankedDriver {
+  driver: Driver;
+  attractiveness: number;
+  isRookie: boolean;
+  age: number;
+}
+
+/**
+ * Calculate how attractive a driver is to a team.
+ *
+ * For experienced drivers: Uses perceived value (contribution ratio history)
+ * For rookies: Uses attribute sum with seeded error unique to the team principal
+ *
+ * Result is then adjusted by age multiplier for contract duration.
+ *
+ * @returns Attractiveness score (0-1 scale)
+ */
+export function calculateDriverAttractiveness(input: DriverAttractivenessInput): number {
+  const { driver, teamPrincipalId, gameYear, contractYears, allDrivers: _allDrivers } = input;
+
+  let baseAttractiveness: number;
+
+  if (isRookie(driver)) {
+    // Rookie: attribute sum with seeded error
+    const attrSum = calculateAttributeSum(driver);
+    const normalizedSum = attrSum / 700; // 0-1 scale
+
+    // Generate team-principal-specific error for this driver
+    const errorSeed = hashString(`${teamPrincipalId}-${driver.id}`);
+    const errorDirection = errorSeed < 0.5 ? -1 : 1;
+    const errorMagnitude = errorSeed * ROOKIE_ERROR_RANGE; // 0 to 0.1
+    const error = errorDirection * errorMagnitude;
+
+    // Apply error to normalized sum, clamped to 0-1
+    baseAttractiveness = Math.max(0, Math.min(1, normalizedSum + error));
+  } else {
+    // Experienced driver: use perceived value
+    baseAttractiveness = calculatePerceivedValue(driver.careerHistory);
+  }
+
+  // Apply age multiplier based on contract duration
+  const age = calculateAge(driver.dateOfBirth, gameYear);
+  const ageMultiplier = getAgeMultiplier(age, contractYears);
+
+  // Final attractiveness, clamped to 0-1
+  return Math.max(0, Math.min(1, baseAttractiveness * ageMultiplier));
+}
+
+// =============================================================================
+// ELIGIBLE DRIVER POOL
+// =============================================================================
+
+export interface EligiblePoolInput {
+  team: Team;
+  constructorStandings: Map<string, number>; // teamId → position (1-indexed)
+  allTeams: Team[];
+  allDrivers: Driver[];
+}
+
+/**
+ * Get the pool of drivers a team can consider for their shortlist.
+ *
+ * Rules:
+ * - Drivers from the team directly above in standings (poach target)
+ * - Drivers from all teams below in standings (available talent)
+ * - Free agents (no teamId)
+ * - Excludes own current drivers
+ *
+ * @returns Array of eligible drivers
+ */
+export function getEligibleDriverPool(input: EligiblePoolInput): Driver[] {
+  const { team, constructorStandings, allTeams, allDrivers } = input;
+
+  const teamPosition = constructorStandings.get(team.id) ?? allTeams.length;
+
+  // Build set of eligible team IDs
+  const eligibleTeamIds = new Set<string>();
+
+  // One team directly above (if not already first)
+  if (teamPosition > 1) {
+    for (const [teamId, position] of constructorStandings.entries()) {
+      if (position === teamPosition - 1) {
+        eligibleTeamIds.add(teamId);
+        break;
+      }
+    }
+  }
+
+  // All teams below
+  for (const [teamId, position] of constructorStandings.entries()) {
+    if (position > teamPosition) {
+      eligibleTeamIds.add(teamId);
+    }
+  }
+
+  // Filter drivers
+  return allDrivers.filter((driver) => {
+    // Exclude own drivers
+    if (driver.teamId === team.id) return false;
+
+    // Include free agents
+    if (!driver.teamId) return true;
+
+    // Include drivers from eligible teams
+    return eligibleTeamIds.has(driver.teamId);
+  });
+}
+
+// =============================================================================
+// TEAM SHORTLIST
+// =============================================================================
+
+export interface TeamShortlistInput {
+  team: Team;
+  teamPrincipal: TeamPrincipal;
+  constructorStandings: Map<string, number>;
+  allTeams: Team[];
+  allDrivers: Driver[];
+  gameYear: number;
+  defaultContractDuration: number; // Typical contract offer duration for this team
+}
+
+/**
+ * Get a team's driver shortlist, ranked by attractiveness.
+ *
+ * This is the list of drivers a team would consider approaching or responding to.
+ * Drivers are ranked by their attractiveness score (perceived value or attributes).
+ *
+ * @returns Drivers sorted by attractiveness (highest first)
+ */
+export function getTeamShortlist(input: TeamShortlistInput): RankedDriver[] {
+  const {
+    team,
+    teamPrincipal,
+    constructorStandings,
+    allTeams,
+    allDrivers,
+    gameYear,
+    defaultContractDuration,
+  } = input;
+
+  // Get eligible pool
+  const eligibleDrivers = getEligibleDriverPool({
+    team,
+    constructorStandings,
+    allTeams,
+    allDrivers,
+  });
+
+  // Calculate attractiveness for each
+  const rankedDrivers: RankedDriver[] = eligibleDrivers.map((driver) => {
+    const attractiveness = calculateDriverAttractiveness({
+      driver,
+      teamPrincipalId: teamPrincipal.id,
+      gameYear,
+      contractYears: defaultContractDuration,
+      allDrivers,
+    });
+
+    return {
+      driver,
+      attractiveness,
+      isRookie: isRookie(driver),
+      age: calculateAge(driver.dateOfBirth, gameYear),
+    };
+  });
+
+  // Sort by attractiveness descending
+  rankedDrivers.sort((a, b) => b.attractiveness - a.attractiveness);
+
+  return rankedDrivers;
+}
+
+// =============================================================================
+// TEAM EVALUATION OF DRIVER APPROACH
+// =============================================================================
+
+export interface TeamEvaluationInput {
+  approachingDriver: Driver;
+  team: Team;
+  teamPrincipal: TeamPrincipal;
+  currentDrivers: Driver[]; // Team's current drivers (0-2)
+  constructorStandings: Map<string, number>;
+  allTeams: Team[];
+  allDrivers: Driver[];
+  gameYear: number;
+  hasVacancy: boolean; // True if a current driver has committed elsewhere
+  proposedDuration: number;
+}
+
+export interface TeamEvaluationResult {
+  interested: boolean;
+  reason: 'upgrade' | 'cheaper' | 'vacancy' | 'not_on_shortlist' | 'downgrade';
+  approacherAttractiveness: number;
+  currentDriversAttractiveness: number[];
+}
+
+/**
+ * Evaluate whether a team is interested when a driver approaches them.
+ *
+ * Team is interested if:
+ * 1. Driver is on their shortlist AND
+ * 2. One of:
+ *    a. Driver is an upgrade over a current driver
+ *    b. Driver is similar but potentially cheaper
+ *    c. Team has a vacancy (current driver committed elsewhere)
+ *
+ * @returns Evaluation result with interest flag and reason
+ */
+export function evaluateDriverApproach(input: TeamEvaluationInput): TeamEvaluationResult {
+  const {
+    approachingDriver,
+    team,
+    teamPrincipal,
+    currentDrivers,
+    constructorStandings,
+    allTeams,
+    allDrivers,
+    gameYear,
+    hasVacancy,
+    proposedDuration,
+  } = input;
+
+  // Calculate approaching driver's attractiveness
+  const approacherAttractiveness = calculateDriverAttractiveness({
+    driver: approachingDriver,
+    teamPrincipalId: teamPrincipal.id,
+    gameYear,
+    contractYears: proposedDuration,
+    allDrivers,
+  });
+
+  // Calculate current drivers' attractiveness
+  const currentDriversAttractiveness = currentDrivers.map((d) =>
+    calculateDriverAttractiveness({
+      driver: d,
+      teamPrincipalId: teamPrincipal.id,
+      gameYear,
+      contractYears: proposedDuration,
+      allDrivers,
+    })
+  );
+
+  // Check if driver is in eligible pool (on shortlist)
+  const eligiblePool = getEligibleDriverPool({
+    team,
+    constructorStandings,
+    allTeams,
+    allDrivers,
+  });
+
+  const isOnShortlist = eligiblePool.some((d) => d.id === approachingDriver.id);
+
+  if (!isOnShortlist) {
+    return {
+      interested: false,
+      reason: 'not_on_shortlist',
+      approacherAttractiveness,
+      currentDriversAttractiveness,
+    };
+  }
+
+  // If team has vacancy, accept anyone on shortlist
+  if (hasVacancy) {
+    return {
+      interested: true,
+      reason: 'vacancy',
+      approacherAttractiveness,
+      currentDriversAttractiveness,
+    };
+  }
+
+  // Check if approaching driver is better than any current driver
+  const worstCurrentAttractiveness = Math.min(...currentDriversAttractiveness, Infinity);
+  const upgradeThreshold = 0.05; // 5% better to be considered an upgrade
+
+  if (approacherAttractiveness > worstCurrentAttractiveness + upgradeThreshold) {
+    return {
+      interested: true,
+      reason: 'upgrade',
+      approacherAttractiveness,
+      currentDriversAttractiveness,
+    };
+  }
+
+  // Check if similar but potentially cheaper
+  // "Similar" = within 10% of worst current driver
+  const similarThreshold = 0.1;
+  if (approacherAttractiveness >= worstCurrentAttractiveness - similarThreshold) {
+    return {
+      interested: true,
+      reason: 'cheaper',
+      approacherAttractiveness,
+      currentDriversAttractiveness,
+    };
+  }
+
+  // Driver is a downgrade
+  return {
+    interested: false,
+    reason: 'downgrade',
+    approacherAttractiveness,
+    currentDriversAttractiveness,
+  };
+}
