@@ -79,6 +79,8 @@ import type {
   TechnologyDesignProject,
   EngineCustomisation,
   ManufacturerNegotiation,
+  DriverNegotiation,
+  DriverContractTerms,
 } from '../../shared/domain';
 import {
   GamePhase,
@@ -443,6 +445,159 @@ function generateContractSigningHeadline(
     subject: headline,
     body,
     critical: false,
+  });
+}
+
+// =============================================================================
+// DRIVER CONTRACT RESOLUTION
+// =============================================================================
+
+/**
+ * Count available seats for next season.
+ * A seat is "filled" if a driver has:
+ * - Contract extending into next season, OR
+ * - Completed negotiation for next season
+ *
+ * @returns Number of open seats (totalTeams * 2 - filledSeats)
+ */
+function _countAvailableSeatsForNextSeason(state: GameState): number {
+  const nextSeason = state.currentSeason.seasonNumber + 1;
+  const totalSeats = state.teams.length * 2; // 2 race drivers per team
+
+  // Count drivers with contracts extending into next season
+  const driversWithContracts = state.drivers.filter(
+    (d) => d.teamId && d.role !== DriverRole.Test && d.contractEnd >= nextSeason
+  ).length;
+
+  // Count completed driver negotiations for next season (new signings)
+  const completedSignings = state.negotiations.filter(
+    (n) =>
+      n.stakeholderType === StakeholderType.Driver &&
+      n.forSeason === nextSeason &&
+      n.phase === NegotiationPhase.Completed
+  ).length;
+
+  const filledSeats = driversWithContracts + completedSignings;
+  return Math.max(0, totalSeats - filledSeats);
+}
+
+/**
+ * Calculate scarcity multiplier based on available seats.
+ * Used to increase driver desperation as seats fill up.
+ *
+ * @returns Multiplier from 1.0 (many seats) to 0.5 (almost no seats)
+ */
+function _calculateSeatScarcityMultiplier(availableSeats: number, totalSeats: number): number {
+  if (totalSeats === 0) return 1.0;
+
+  // Percentage of seats available
+  const availablePercent = availableSeats / totalSeats;
+
+  // More seats = 1.0 (no pressure), fewer seats = lower (more pressure)
+  // At 50% seats: 1.0, at 25% seats: 0.75, at 10% seats: 0.55, at 0%: 0.5
+  return 0.5 + availablePercent * 0.5;
+}
+
+/**
+ * Result of creating a driver contract
+ */
+interface DriverContractResult {
+  driverId: string;
+  teamId: string;
+  oldTeamId: string | null;
+  salary: number;
+  contractDuration: number;
+  endSeason: number;
+}
+
+/**
+ * Create a driver contract from a completed negotiation.
+ * Updates the driver's teamId, contractEnd, and salary.
+ */
+function createDriverContractFromNegotiation(
+  negotiation: DriverNegotiation,
+  state: GameState
+): DriverContractResult | null {
+  const driver = state.drivers.find((d) => d.id === negotiation.driverId);
+  if (!driver) return null;
+
+  const lastRound = negotiation.rounds[negotiation.rounds.length - 1];
+  const terms = lastRound.terms as DriverContractTerms;
+
+  const oldTeamId = driver.teamId;
+  const newTeamId = negotiation.teamId;
+  const endSeason = negotiation.forSeason + terms.duration - 1;
+
+  // Update driver
+  driver.teamId = newTeamId;
+  driver.contractEnd = endSeason;
+  driver.salary = terms.salary;
+  driver.role = terms.driverStatus;
+
+  return {
+    driverId: driver.id,
+    teamId: newTeamId,
+    oldTeamId,
+    salary: terms.salary,
+    contractDuration: terms.duration,
+    endSeason,
+  };
+}
+
+/**
+ * Generate news headline and email for a driver signing.
+ * Called for ALL driver signings (not just player team).
+ */
+function generateDriverSigningEvent(
+  state: GameState,
+  result: DriverContractResult,
+  isPlayerTeamInvolved: boolean
+): void {
+  const driver = state.drivers.find((d) => d.id === result.driverId);
+  const newTeam = state.teams.find((t) => t.id === result.teamId);
+  const oldTeam = result.oldTeamId ? state.teams.find((t) => t.id === result.oldTeamId) : null;
+
+  if (!driver || !newTeam) return;
+
+  const driverName = `${driver.firstName} ${driver.lastName}`;
+  const isSwitching = oldTeam && oldTeam.id !== newTeam.id;
+  const isRenewal = oldTeam && oldTeam.id === newTeam.id;
+
+  // Generate news headline for all signings
+  let headline: string;
+  let body: string;
+
+  if (isSwitching) {
+    headline = `${driverName} joins ${newTeam.name}`;
+    body = `${driverName} has signed a ${result.contractDuration}-year deal with ${newTeam.name}, leaving ${oldTeam.name}.`;
+  } else if (isRenewal) {
+    headline = `${newTeam.name} extends ${driverName} contract`;
+    body = `${newTeam.name} has renewed ${driverName}'s contract for ${result.contractDuration} seasons.`;
+  } else {
+    headline = `${driverName} signs for ${newTeam.name}`;
+    body = `${driverName} has signed a ${result.contractDuration}-year contract with ${newTeam.name}.`;
+  }
+
+  // News headline (visible to everyone)
+  state.calendarEvents.push({
+    id: randomUUID(),
+    date: state.currentDate,
+    type: CalendarEventType.Headline,
+    subject: headline,
+    body,
+    critical: false,
+  });
+
+  // Email to player (for all signings, but don't stop sim)
+  state.calendarEvents.push({
+    id: randomUUID(),
+    date: state.currentDate,
+    type: CalendarEventType.Email,
+    subject: headline,
+    body: isPlayerTeamInvolved
+      ? body
+      : `${body} This may affect the driver market for next season.`,
+    critical: false, // Don't stop sim
   });
 }
 
@@ -2123,59 +2278,116 @@ function applyNegotiationUpdates(state: GameState, updates: NegotiationUpdate[])
     if (index !== -1 && update.updatedNegotiation) {
       state.negotiations[index] = update.updatedNegotiation;
 
-      const manufacturerNeg = update.updatedNegotiation as ManufacturerNegotiation;
-      const isPlayerTeam = manufacturerNeg.teamId === playerTeamId;
+      const negotiation = update.updatedNegotiation;
+      const isPlayerTeam = negotiation.teamId === playerTeamId;
 
-      // Handle completed negotiations - create contracts for ALL teams
-      if (manufacturerNeg.phase === NegotiationPhase.Completed) {
-        const contractResult = createContractFromNegotiation(manufacturerNeg, state);
-        generateContractSigningHeadline(
-          state,
-          contractResult,
-          manufacturerNeg.teamId,
-          manufacturerNeg.manufacturerId
-        );
-      }
+      // Handle based on stakeholder type
+      if (negotiation.stakeholderType === StakeholderType.Driver) {
+        // Driver negotiation
+        const driverNeg = negotiation as DriverNegotiation;
 
-      // Check if this affects player and should stop simulation
-      if (update.shouldStopSimulation && isPlayerTeam) {
-        shouldStop = true;
-
-        // Generate email for player
-        const manufacturer = state.manufacturers.find(
-          (m) => m.id === manufacturerNeg.manufacturerId
-        );
-        if (manufacturer) {
-          const latestRound = manufacturerNeg.rounds[manufacturerNeg.rounds.length - 1];
-          const phase = manufacturerNeg.phase;
-
-          let subject: string;
-          let body: string;
-
-          if (phase === NegotiationPhase.Completed) {
-            subject = `${manufacturer.name} accepts your offer`;
-            body = `Great news! ${manufacturer.name} has accepted your contract proposal. The deal is now complete.`;
-          } else if (phase === NegotiationPhase.Failed) {
-            subject = `${manufacturer.name} rejects negotiation`;
-            body = `${manufacturer.name} has declined to continue negotiations. You may approach other manufacturers.`;
-          } else if (phase === NegotiationPhase.ResponseReceived) {
-            subject = `${manufacturer.name} responds with counter-offer`;
-            body = latestRound?.isUltimatum
-              ? `${manufacturer.name} has made a final offer. This is their last position - accept or reject.`
-              : `${manufacturer.name} has responded with a counter-proposal. Review their terms and decide how to proceed.`;
-          } else {
-            subject = `Update from ${manufacturer.name}`;
-            body = `${manufacturer.name} has updated the negotiation status.`;
+        // Handle completed driver negotiations - create contracts for ALL teams
+        if (driverNeg.phase === NegotiationPhase.Completed) {
+          const contractResult = createDriverContractFromNegotiation(driverNeg, state);
+          if (contractResult) {
+            generateDriverSigningEvent(state, contractResult, isPlayerTeam);
           }
+        }
 
-          state.calendarEvents.push({
-            id: randomUUID(),
-            date: state.currentDate,
-            type: CalendarEventType.Email,
-            subject,
-            body,
-            critical: true,
-          });
+        // Generate email for player team driver negotiations (sim-stopping events)
+        if (update.shouldStopSimulation && isPlayerTeam) {
+          shouldStop = true;
+
+          const driver = state.drivers.find((d) => d.id === driverNeg.driverId);
+          if (driver) {
+            const driverName = `${driver.firstName} ${driver.lastName}`;
+            const latestRound = driverNeg.rounds[driverNeg.rounds.length - 1];
+            const phase = driverNeg.phase;
+
+            let subject: string;
+            let body: string;
+
+            if (phase === NegotiationPhase.Completed) {
+              subject = `${driverName} accepts your offer`;
+              body = `Great news! ${driverName} has accepted your contract proposal. The deal is now complete.`;
+            } else if (phase === NegotiationPhase.Failed) {
+              subject = `${driverName} rejects negotiation`;
+              body = `${driverName} has declined to continue negotiations.`;
+            } else if (phase === NegotiationPhase.ResponseReceived) {
+              subject = `${driverName} responds with counter-offer`;
+              body = latestRound?.isUltimatum
+                ? `${driverName} has made a final offer. This is their last position - accept or reject.`
+                : `${driverName} has responded with a counter-proposal. Review their terms and decide how to proceed.`;
+            } else {
+              subject = `Update from ${driverName}`;
+              body = `${driverName} has updated the negotiation status.`;
+            }
+
+            state.calendarEvents.push({
+              id: randomUUID(),
+              date: state.currentDate,
+              type: CalendarEventType.Email,
+              subject,
+              body,
+              critical: true,
+            });
+          }
+        }
+      } else if (negotiation.stakeholderType === StakeholderType.Manufacturer) {
+        // Manufacturer negotiation
+        const manufacturerNeg = negotiation as ManufacturerNegotiation;
+
+        // Handle completed negotiations - create contracts for ALL teams
+        if (manufacturerNeg.phase === NegotiationPhase.Completed) {
+          const contractResult = createContractFromNegotiation(manufacturerNeg, state);
+          generateContractSigningHeadline(
+            state,
+            contractResult,
+            manufacturerNeg.teamId,
+            manufacturerNeg.manufacturerId
+          );
+        }
+
+        // Check if this affects player and should stop simulation
+        if (update.shouldStopSimulation && isPlayerTeam) {
+          shouldStop = true;
+
+          // Generate email for player
+          const manufacturer = state.manufacturers.find(
+            (m) => m.id === manufacturerNeg.manufacturerId
+          );
+          if (manufacturer) {
+            const latestRound = manufacturerNeg.rounds[manufacturerNeg.rounds.length - 1];
+            const phase = manufacturerNeg.phase;
+
+            let subject: string;
+            let body: string;
+
+            if (phase === NegotiationPhase.Completed) {
+              subject = `${manufacturer.name} accepts your offer`;
+              body = `Great news! ${manufacturer.name} has accepted your contract proposal. The deal is now complete.`;
+            } else if (phase === NegotiationPhase.Failed) {
+              subject = `${manufacturer.name} rejects negotiation`;
+              body = `${manufacturer.name} has declined to continue negotiations. You may approach other manufacturers.`;
+            } else if (phase === NegotiationPhase.ResponseReceived) {
+              subject = `${manufacturer.name} responds with counter-offer`;
+              body = latestRound?.isUltimatum
+                ? `${manufacturer.name} has made a final offer. This is their last position - accept or reject.`
+                : `${manufacturer.name} has responded with a counter-proposal. Review their terms and decide how to proceed.`;
+            } else {
+              subject = `Update from ${manufacturer.name}`;
+              body = `${manufacturer.name} has updated the negotiation status.`;
+            }
+
+            state.calendarEvents.push({
+              id: randomUUID(),
+              date: state.currentDate,
+              type: CalendarEventType.Email,
+              subject,
+              body,
+              critical: true,
+            });
+          }
         }
       }
     }
