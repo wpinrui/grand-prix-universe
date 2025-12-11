@@ -248,7 +248,6 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IpcChannels.ENGINE_RESPOND_TO_OFFER, (_event, params: RespondToOfferParams) => {
     return GameStateManager.respondToEngineOffer(
-      params.negotiationId,
       params.offerId,
       params.response,
       params.counterTerms

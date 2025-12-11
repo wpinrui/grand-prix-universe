@@ -25,6 +25,7 @@ import type {
   TechnologyAttribute,
   HandlingProblem,
   EngineCustomisation,
+  ContractTerms,
 } from './domain';
 import type { TurnBlocked, DayStopReason } from './domain/engines';
 
@@ -205,16 +206,9 @@ export type OfferResponse = 'accept' | 'reject' | 'counter';
  * Parameters for responding to a contract offer
  */
 export interface RespondToOfferParams {
-  negotiationId: string;
   offerId: string;
   response: OfferResponse;
-  counterTerms?: {
-    annualCost: number;
-    duration: number;
-    upgradesIncluded: number;
-    customisationPointsIncluded: number;
-    optimisationIncluded: boolean;
-  };
+  counterTerms?: ContractTerms;
 }
 
 // =============================================================================

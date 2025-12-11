@@ -100,22 +100,27 @@ import {
   TYPICAL_WORK_UNITS_PER_DAY,
   createDefaultTestSession,
 } from '../../shared/domain';
-import type {
-  EmailData,
-  ChassisStageCompleteData,
-  TechBreakthroughData,
-  TechDevelopmentCompleteData,
-  HandlingSolutionCompleteData,
-  TestCompleteData,
-  PartReadyData,
-  PostRaceRepairData,
-  CarRepairCost,
-  PendingPart,
-  DriverRaceResult,
-  SpecReleaseData,
-  SpecReleaseStatChange,
+import {
+  PendingPartSource,
+  DriverRole,
+  RaceFinishStatus,
+  PartsLogEntryType,
+  NegotiationStatus,
+  type EmailData,
+  type ChassisStageCompleteData,
+  type TechBreakthroughData,
+  type TechDevelopmentCompleteData,
+  type HandlingSolutionCompleteData,
+  type TestCompleteData,
+  type PartReadyData,
+  type PostRaceRepairData,
+  type CarRepairCost,
+  type PendingPart,
+  type DriverRaceResult,
+  type SpecReleaseData,
+  type SpecReleaseStatChange,
+  type ContractTerms,
 } from '../../shared/domain/types';
-import { PendingPartSource, DriverRole, RaceFinishStatus, PartsLogEntryType, NegotiationStatus } from '../../shared/domain/types';
 import {
   getPreSeasonStartDate,
   getWeekNumber,
@@ -2832,8 +2837,8 @@ export const GameStateManager = {
     const negotiation = createNegotiation(
       playerTeamId,
       manufacturerId,
-      state.currentDate,
-      state.seasonNumber + 1
+      state.seasonNumber + 1,
+      state.currentDate
     );
 
     state.engineNegotiations.push(negotiation);
@@ -2845,16 +2850,9 @@ export const GameStateManager = {
    * Responds to a contract offer (accept, reject, or counter).
    */
   respondToEngineOffer(
-    negotiationId: string,
     offerId: string,
     response: 'accept' | 'reject' | 'counter',
-    counterTerms?: {
-      annualCost: number;
-      duration: number;
-      upgradesIncluded: number;
-      customisationPointsIncluded: number;
-      optimisationIncluded: boolean;
-    }
+    counterTerms?: ContractTerms
   ): GameState {
     const state = getGameState();
     if (!state) throw new Error('No game in progress');

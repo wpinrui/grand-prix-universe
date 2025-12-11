@@ -524,6 +524,12 @@ export const MIN_PROFIT_MARGIN = 0.1;
 export const BUNDLE_DISCOUNT = 0.33;
 
 /**
+ * Maximum desperation effect on profit margin requirements (0.8 = 80%)
+ * At max desperation, required profit margin can drop by up to this percentage
+ */
+export const DESPERATION_MARGIN_REDUCTION = 0.8;
+
+/**
  * Calculates manufacturer desperation level based on market position
  *
  * Desperation kicks in when:
@@ -533,7 +539,6 @@ export const BUNDLE_DISCOUNT = 0.33;
  * @param manufacturerId - The manufacturer to calculate desperation for
  * @param currentSeason - Current season number
  * @param contracts - All active manufacturer contracts
- * @param teamCount - Total number of teams in the game
  * @returns Desperation level 0-1 (0 = not desperate, 1 = very desperate)
  */
 export function calculateDesperation(
@@ -628,7 +633,7 @@ export function isOfferProfitable(
   const margin = totalRevenue > 0 ? (totalRevenue - totalCost) / totalRevenue : -1;
 
   // Minimum acceptable margin reduces with desperation
-  const minAcceptableMargin = MIN_PROFIT_MARGIN * (1 - desperation * 0.8);
+  const minAcceptableMargin = MIN_PROFIT_MARGIN * (1 - desperation * DESPERATION_MARGIN_REDUCTION);
 
   return margin >= minAcceptableMargin;
 }
