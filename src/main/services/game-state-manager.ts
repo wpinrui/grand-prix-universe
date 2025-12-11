@@ -154,12 +154,15 @@ import {
   getSpecBonusesAsEngineStats,
   createManufacturerNegotiation,
   createProactiveOutreach,
+  createDriverOutreach,
   generateBaseContractTerms,
+  generateDefaultDriverTerms,
   isContractExpiring,
   getCurrentManufacturer,
   OFFER_EXPIRY_DAYS,
   LATE_SEASON_MONTH,
 } from '../../shared/domain/engine-utils';
+import { evaluateDriverApproach } from '../engines/evaluators/team-evaluator';
 
 /** Current save format version */
 const SAVE_VERSION = '1.0.0';
@@ -222,6 +225,13 @@ const INITIAL_TECH_LEVEL = 35;
 const OUTREACH_CURRENT_SUPPLIER_MONTH = 5;
 /** Proactive outreach timing - other manufacturers reach out in June-July */
 const OUTREACH_OTHER_MANUFACTURERS_MONTH = 6;
+
+/** Driver outreach timing - drivers start looking for new teams in July */
+const DRIVER_OUTREACH_START_MONTH = 7;
+/** Default contract duration for driver outreach */
+const DRIVER_DEFAULT_CONTRACT_YEARS = 2;
+/** Cooldown days between driver outreach attempts to same team */
+const DRIVER_OUTREACH_COOLDOWN_DAYS = 14;
 
 /** Early termination penalty multiplier (100% of remaining contract value) */
 const EARLY_TERMINATION_PENALTY_MULTIPLIER = 1.0;
@@ -2295,6 +2305,207 @@ function processProactiveOutreach(state: GameState): boolean {
 }
 
 /**
+ * Check if a driver has already approached a team this season
+ * (prevents spam - respects cooldown period)
+ */
+function hasRecentDriverOutreach(
+  state: GameState,
+  teamId: string,
+  driverId: string,
+  forSeason: number
+): boolean {
+  const { currentDate } = state;
+
+  return state.negotiations.some((n) => {
+    if (n.stakeholderType !== StakeholderType.Driver) return false;
+    if (n.teamId !== teamId) return false;
+    if ((n as DriverNegotiation).driverId !== driverId) return false;
+    if (n.forSeason !== forSeason) return false;
+
+    // Check cooldown period
+    const startedDate = n.startedDate;
+    const daysSinceStart =
+      (currentDate.year - startedDate.year) * 365 +
+      (currentDate.month - startedDate.month) * 30 +
+      (currentDate.day - startedDate.day);
+
+    return daysSinceStart < DRIVER_OUTREACH_COOLDOWN_DAYS;
+  });
+}
+
+/**
+ * Get constructor standings as a Map (teamId → position)
+ */
+function getConstructorStandingsMap(state: GameState): Map<string, number> {
+  const standings = new Map<string, number>();
+  state.currentSeason.constructorStandings.forEach((standing) => {
+    standings.set(standing.teamId, standing.position);
+  });
+  return standings;
+}
+
+/**
+ * Check if team has a vacant seat (fewer than 2 race drivers)
+ */
+function teamHasVacancy(state: GameState, teamId: string): boolean {
+  const raceDrivers = state.drivers.filter(
+    (d) => d.teamId === teamId && d.role !== DriverRole.Test
+  );
+  return raceDrivers.length < 2;
+}
+
+/**
+ * Check if any of team's drivers have committed elsewhere
+ */
+function teamDriverCommittedElsewhere(state: GameState, teamId: string, forSeason: number): boolean {
+  const teamDrivers = state.drivers.filter(
+    (d) => d.teamId === teamId && d.role !== DriverRole.Test
+  );
+
+  // Check if any driver has an accepted negotiation with another team
+  for (const driver of teamDrivers) {
+    const hasCommitted = state.negotiations.some(
+      (n) =>
+        n.stakeholderType === StakeholderType.Driver &&
+        (n as DriverNegotiation).driverId === driver.id &&
+        n.teamId !== teamId &&
+        n.forSeason === forSeason &&
+        n.phase === NegotiationPhase.Completed
+    );
+    if (hasCommitted) return true;
+  }
+  return false;
+}
+
+/**
+ * Generate proactive outreach from drivers to teams
+ * Called during daily processing
+ *
+ * Triggers:
+ * 1. Contract expiring - driver shops around for better options
+ * 2. Received offer - driver informs other interested teams
+ * 3. Team vacancy - driver sees opportunity
+ */
+function processDriverOutreach(state: GameState): boolean {
+  const { currentDate, currentSeason } = state;
+  const { month, day } = currentDate;
+  const nextSeason = currentSeason.seasonNumber + 1;
+  const gameYear = seasonToYear(currentSeason.seasonNumber);
+  const playerTeamId = state.player.teamId;
+  let playerReceivedOutreach = false;
+
+  // Only process during the outreach window (July-December)
+  if (month < DRIVER_OUTREACH_START_MONTH) return false;
+
+  // Process weekly on day 1 to avoid daily spam
+  if (day !== 1 && day !== 15) return false;
+
+  const constructorStandings = getConstructorStandingsMap(state);
+
+  // Find drivers with expiring contracts (contract ends this season)
+  const driversWithExpiringContracts = state.drivers.filter(
+    (d) => d.teamId && d.contractEnd === currentSeason.seasonNumber && d.role !== DriverRole.Test
+  );
+
+  for (const driver of driversWithExpiringContracts) {
+    // Get teams this driver would approach
+    // Drivers look at teams above their current team in standings
+    const driverTeam = state.teams.find((t) => t.id === driver.teamId);
+    if (!driverTeam) continue;
+
+    const driverTeamPosition = constructorStandings.get(driverTeam.id) ?? state.teams.length;
+
+    // Find teams above driver's current team
+    const targetTeams = state.teams.filter((team) => {
+      const teamPosition = constructorStandings.get(team.id) ?? state.teams.length;
+      // Driver approaches teams ranked higher (lower position number)
+      return teamPosition < driverTeamPosition && team.id !== driver.teamId;
+    });
+
+    // Also consider teams with vacancies regardless of position
+    const teamsWithVacancies = state.teams.filter(
+      (team) =>
+        team.id !== driver.teamId &&
+        (teamHasVacancy(state, team.id) ||
+          teamDriverCommittedElsewhere(state, team.id, nextSeason))
+    );
+
+    // Combine and deduplicate
+    const allTargetTeams = new Map(
+      [...targetTeams, ...teamsWithVacancies].map((t) => [t.id, t])
+    );
+
+    for (const team of allTargetTeams.values()) {
+      // Skip if recent outreach exists
+      if (hasRecentDriverOutreach(state, team.id, driver.id, nextSeason)) continue;
+
+      // Find team principal
+      const principal = state.principals.find((p) => p.teamId === team.id);
+      if (!principal) continue;
+
+      // Get team's current drivers
+      const currentDrivers = state.drivers.filter(
+        (d) => d.teamId === team.id && d.role !== DriverRole.Test
+      );
+
+      // Check if team has vacancy (driver committed elsewhere)
+      const hasVacancy =
+        teamHasVacancy(state, team.id) ||
+        teamDriverCommittedElsewhere(state, team.id, nextSeason);
+
+      // Evaluate if team is interested
+      const evaluation = evaluateDriverApproach({
+        approachingDriver: driver,
+        team,
+        teamPrincipal: principal,
+        currentDrivers,
+        constructorStandings,
+        allTeams: state.teams,
+        allDrivers: state.drivers,
+        gameYear,
+        hasVacancy,
+        proposedDuration: DRIVER_DEFAULT_CONTRACT_YEARS,
+      });
+
+      // If team is interested, create negotiation
+      if (evaluation.interested) {
+        const terms = generateDefaultDriverTerms(driver.salary, driver.role);
+        const negotiation = createDriverOutreach(
+          team.id,
+          driver.id,
+          nextSeason,
+          currentDate,
+          terms
+        );
+        state.negotiations.push(negotiation);
+
+        // Email for player team
+        if (team.id === playerTeamId) {
+          playerReceivedOutreach = true;
+          const reasonText =
+            evaluation.reason === 'upgrade'
+              ? 'believes they could be an asset to your team'
+              : evaluation.reason === 'vacancy'
+                ? 'has noticed you may have a seat available'
+                : 'is exploring their options for next season';
+
+          state.calendarEvents.push({
+            id: randomUUID(),
+            date: currentDate,
+            type: CalendarEventType.Email,
+            subject: `${driver.firstName} ${driver.lastName} expresses interest in joining`,
+            body: `${driver.firstName} ${driver.lastName} has reached out to your team. The driver ${reasonText} and would like to discuss a contract for the ${seasonToYear(nextSeason)} season.`,
+            critical: true,
+          });
+        }
+      }
+    }
+  }
+
+  return playerReceivedOutreach;
+}
+
+/**
  * Apply turn processing result to game state (mutates state)
  * Returns true if player team had a design milestone or test completion (for auto-stop)
  */
@@ -2322,12 +2533,15 @@ function applyTurnResult(state: GameState, result: TurnProcessingResult): boolea
   const negotiationStopped = applyNegotiationUpdates(state, negotiationResult.updates);
 
   // Process proactive outreach from manufacturers
-  const playerReceivedOutreach = processProactiveOutreach(state);
+  const playerReceivedManufacturerOutreach = processProactiveOutreach(state);
+
+  // Process proactive outreach from drivers
+  const playerReceivedDriverOutreach = processDriverOutreach(state);
 
   // Update projected milestone dates based on current progress
   updateProjectedMilestones(state);
 
-  return playerHadDesignMilestone || playerHadTestCompletion || playerHadReadyPart || negotiationStopped || playerReceivedOutreach;
+  return playerHadDesignMilestone || playerHadTestCompletion || playerHadReadyPart || negotiationStopped || playerReceivedManufacturerOutreach || playerReceivedDriverOutreach;
 }
 
 /**
