@@ -12,6 +12,7 @@
  */
 
 import type { Driver, Team, TeamPrincipal } from '../../../shared/domain/types';
+import { calculateAge } from '../../../shared/utils/date-utils';
 import { calculatePerceivedValue, calculateDriverAbility } from './driver-evaluator';
 
 // =============================================================================
@@ -97,13 +98,6 @@ function getAgeBracket(age: number): AgeBracket {
   return 'veteran';
 }
 
-/**
- * Calculate driver's age from date of birth and game year
- */
-function calculateAge(dateOfBirth: string, gameYear: number): number {
-  const birthYear = new Date(dateOfBirth).getFullYear();
-  return gameYear - birthYear;
-}
 
 /**
  * Check if driver is considered a rookie (< 2 seasons of F1 history)

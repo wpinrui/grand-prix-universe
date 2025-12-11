@@ -13,6 +13,7 @@
  */
 
 import type { Driver, Team, CareerSeasonRecord } from '../../../shared/domain/types';
+import { calculateAge } from '../../../shared/utils/date-utils';
 import { DriverRole } from '../../../shared/domain/types';
 import type { NegotiationEvaluationResult } from '../../../shared/domain/engines';
 import { ResponseType, ResponseTone } from '../../../shared/domain';
@@ -239,8 +240,7 @@ function calculateTeamQualityMultiplier(
  * @param gameYear - The current in-game year (not real-world year)
  */
 function calculateCareerWeight(driver: Driver, gameYear: number): number {
-  const birthYear = new Date(driver.dateOfBirth).getFullYear();
-  const age = gameYear - birthYear;
+  const age = calculateAge(driver.dateOfBirth, gameYear);
 
   if (age < YOUNG_AGE_THRESHOLD) {
     return 0.3; // Young: 70% performance focus
