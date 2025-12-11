@@ -393,6 +393,45 @@ function createContractFromNegotiation(
 }
 
 /**
+ * Generates a news headline for a completed engine contract signing.
+ * Used when any team (player or AI) completes a manufacturer negotiation.
+ */
+function generateContractSigningHeadline(
+  state: GameState,
+  contractResult: ContractCreationResult,
+  teamId: string,
+  newManufacturerId: string
+): void {
+  const team = state.teams.find((t) => t.id === teamId);
+  const newManufacturer = state.manufacturers.find((m) => m.id === newManufacturerId);
+  const oldManufacturer = contractResult.oldManufacturerId
+    ? state.manufacturers.find((m) => m.id === contractResult.oldManufacturerId)
+    : null;
+
+  if (!team || !newManufacturer) return;
+
+  const isSwitching = oldManufacturer && oldManufacturer.id !== newManufacturer.id;
+  const contractDuration =
+    contractResult.newContract.endSeason - contractResult.newContract.startSeason + 1;
+
+  const headline = isSwitching
+    ? `${team.name} switches to ${newManufacturer.name} engines`
+    : `${team.name} extends ${newManufacturer.name} engine deal`;
+  const body = isSwitching
+    ? `${team.name} has signed a ${contractDuration}-year engine supply deal with ${newManufacturer.name}, ending their relationship with ${oldManufacturer.name}.`
+    : `${team.name} has renewed their engine partnership with ${newManufacturer.name} for ${contractDuration} seasons.`;
+
+  state.calendarEvents.push({
+    id: randomUUID(),
+    date: state.currentDate,
+    type: CalendarEventType.Headline,
+    subject: headline,
+    body,
+    critical: false,
+  });
+}
+
+/**
  * Gets the player's design state, throwing if no game is active.
  * Used by design-related GameStateManager methods to reduce boilerplate.
  */
@@ -2057,34 +2096,12 @@ function applyNegotiationUpdates(state: GameState, updates: NegotiationUpdate[])
       // Handle completed negotiations - create contracts for ALL teams
       if (manufacturerNeg.phase === NegotiationPhase.Completed) {
         const contractResult = createContractFromNegotiation(manufacturerNeg, state);
-
-        // Generate news headline for contract signing (all teams)
-        const team = state.teams.find((t) => t.id === manufacturerNeg.teamId);
-        const newManufacturer = state.manufacturers.find(
-          (m) => m.id === manufacturerNeg.manufacturerId
+        generateContractSigningHeadline(
+          state,
+          contractResult,
+          manufacturerNeg.teamId,
+          manufacturerNeg.manufacturerId
         );
-        const oldManufacturer = contractResult.oldManufacturerId
-          ? state.manufacturers.find((m) => m.id === contractResult.oldManufacturerId)
-          : null;
-
-        if (team && newManufacturer) {
-          const isSwitching = oldManufacturer && oldManufacturer.id !== newManufacturer.id;
-          const headline = isSwitching
-            ? `${team.name} switches to ${newManufacturer.name} engines`
-            : `${team.name} extends ${newManufacturer.name} engine deal`;
-          const newsBody = isSwitching
-            ? `${team.name} has signed a ${contractResult.newContract.endSeason - contractResult.newContract.startSeason + 1}-year engine supply deal with ${newManufacturer.name}, ending their relationship with ${oldManufacturer.name}.`
-            : `${team.name} has renewed their engine partnership with ${newManufacturer.name} for ${contractResult.newContract.endSeason - contractResult.newContract.startSeason + 1} seasons.`;
-
-          state.calendarEvents.push({
-            id: randomUUID(),
-            date: state.currentDate,
-            type: CalendarEventType.Headline,
-            subject: headline,
-            body: newsBody,
-            critical: false,
-          });
-        }
       }
 
       // Check if this affects player and should stop simulation
@@ -3263,34 +3280,14 @@ export const GameStateManager = {
       negotiation.phase = NegotiationPhase.Completed;
       negotiation.lastActivityDate = { ...state.currentDate };
 
-      // Create the contract
+      // Create the contract and generate news headline
       const result = createContractFromNegotiation(negotiation, state);
-
-      // Generate news headline for contract signing
-      const team = state.teams.find((t) => t.id === negotiation.teamId);
-      const newManufacturer = state.manufacturers.find((m) => m.id === negotiation.manufacturerId);
-      const oldManufacturer = result.oldManufacturerId
-        ? state.manufacturers.find((m) => m.id === result.oldManufacturerId)
-        : null;
-
-      if (team && newManufacturer) {
-        const isSwitching = oldManufacturer && oldManufacturer.id !== newManufacturer.id;
-        const headline = isSwitching
-          ? `${team.name} switches to ${newManufacturer.name} engines`
-          : `${team.name} extends ${newManufacturer.name} engine deal`;
-        const body = isSwitching
-          ? `${team.name} has signed a ${result.newContract.endSeason - result.newContract.startSeason + 1}-year engine supply deal with ${newManufacturer.name}, ending their relationship with ${oldManufacturer.name}.`
-          : `${team.name} has renewed their engine partnership with ${newManufacturer.name} for ${result.newContract.endSeason - result.newContract.startSeason + 1} seasons.`;
-
-        state.calendarEvents.push({
-          id: randomUUID(),
-          date: state.currentDate,
-          type: CalendarEventType.Headline,
-          subject: headline,
-          body,
-          critical: false,
-        });
-      }
+      generateContractSigningHeadline(
+        state,
+        result,
+        negotiation.teamId,
+        negotiation.manufacturerId
+      );
     } else if (response === 'reject') {
       // Reject - negotiation failed
       negotiation.phase = NegotiationPhase.Failed;
