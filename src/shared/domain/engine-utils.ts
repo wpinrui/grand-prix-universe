@@ -14,11 +14,11 @@ import type {
   EngineAnalyticsDataPoint,
   ActiveManufacturerContract,
   ContractTerms,
-  ContractOffer,
-  EngineNegotiation,
+  ManufacturerNegotiation,
   GameDate,
 } from './types';
-import { ManufacturerType, NegotiationStatus } from './types';
+import { ManufacturerType, NegotiationPhase, StakeholderType } from './types';
+import { offsetDate } from '../utils/date-utils';
 
 /**
  * Engine stat keys for iteration
@@ -512,6 +512,21 @@ export const DEFAULT_CONTRACT_DURATION = 2;
 export const OFFER_EXPIRY_DAYS = 14;
 
 /**
+ * Maximum number of negotiation rounds before stalemate
+ */
+export const DEFAULT_MAX_ROUNDS = 5;
+
+/**
+ * Default neutral relationship score (0-100 scale)
+ */
+export const DEFAULT_RELATIONSHIP_SCORE = 50;
+
+/**
+ * Month threshold for late season negotiations (October onwards)
+ */
+export const LATE_SEASON_MONTH = 10;
+
+/**
  * Minimum profit margin manufacturers require (0.1 = 10%)
  * Manufacturers won't offer unprofitable deals below this margin
  */
@@ -673,53 +688,47 @@ export function generateBaseContractTerms(
 }
 
 /**
- * Creates a contract offer from a manufacturer
+ * Creates a new manufacturer negotiation using the generic negotiation system
  *
- * @param manufacturerId - ID of the manufacturer
- * @param terms - The contract terms being offered
+ * @param teamId - Team starting the negotiation
+ * @param manufacturerId - Manufacturer being negotiated with
+ * @param forSeason - Season the contract would apply to
  * @param currentDate - Current game date
- * @param desperation - Manufacturer's desperation level
- * @param isCounterOffer - Whether this is a counter to player's request
- * @param isProactive - Whether manufacturer initiated this
- * @returns A new ContractOffer
+ * @param initialTerms - Player's initial offer terms
+ * @returns A new ManufacturerNegotiation
  */
-export function createContractOffer(
-  manufacturerId: string,
-  terms: ContractTerms,
-  currentDate: GameDate,
-  desperation: number,
-  isCounterOffer: boolean,
-  isProactive: boolean
-): ContractOffer {
-  return {
-    id: `offer-${manufacturerId}-${Date.now()}`,
-    manufacturerId,
-    terms,
-    offeredDate: { ...currentDate },
-    expiresDate: offsetGameDate(currentDate, OFFER_EXPIRY_DAYS),
-    desperationAtOffer: desperation,
-    isCounterOffer,
-    isProactiveOffer: isProactive,
-  };
-}
-
-/**
- * Creates an empty negotiation state for a team and manufacturer
- */
-export function createNegotiation(
+export function createManufacturerNegotiation(
   teamId: string,
   manufacturerId: string,
   forSeason: number,
-  currentDate: GameDate
-): EngineNegotiation {
+  currentDate: GameDate,
+  initialTerms: ContractTerms
+): ManufacturerNegotiation {
+  const expiresDate = offsetDate(currentDate, OFFER_EXPIRY_DAYS);
+
   return {
+    id: `neg-mfg-${manufacturerId}-${Date.now()}`,
+    stakeholderType: StakeholderType.Manufacturer,
     teamId,
     manufacturerId,
-    status: NegotiationStatus.AwaitingOffer,
+    phase: NegotiationPhase.AwaitingResponse,
     forSeason,
-    offers: [],
-    playerCounterTerms: null,
     startedDate: { ...currentDate },
+    lastActivityDate: { ...currentDate },
+    rounds: [
+      {
+        roundNumber: 1,
+        offeredBy: 'player',
+        terms: initialTerms,
+        offeredDate: { ...currentDate },
+        expiresDate,
+      },
+    ],
+    currentRound: 1,
+    maxRounds: DEFAULT_MAX_ROUNDS,
+    relationshipScoreBefore: DEFAULT_RELATIONSHIP_SCORE,
+    hasCompetingOffer: false,
+    isProactiveOutreach: false,
   };
 }
 
@@ -749,26 +758,3 @@ export function getCurrentManufacturer(
   );
   return engineContract?.manufacturerId ?? null;
 }
-
-/**
- * Offsets a game date by a number of days
- * Simple helper - doesn't handle month/year wraparound perfectly
- */
-function offsetGameDate(date: GameDate, days: number): GameDate {
-  // Simple implementation - assumes 30-day months for simplicity
-  let newDay = date.day + days;
-  let newMonth = date.month;
-  let newYear = date.year;
-
-  while (newDay > 30) {
-    newDay -= 30;
-    newMonth++;
-    if (newMonth > 12) {
-      newMonth = 1;
-      newYear++;
-    }
-  }
-
-  return { year: newYear, month: newMonth, day: newDay };
-}
-

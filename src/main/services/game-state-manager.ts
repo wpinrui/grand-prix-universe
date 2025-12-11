@@ -72,8 +72,7 @@ import type {
   HandlingProblemState,
   TechnologyDesignProject,
   EngineCustomisation,
-  EngineNegotiation,
-  ContractOffer,
+  ManufacturerNegotiation,
 } from '../../shared/domain';
 import {
   GamePhase,
@@ -107,7 +106,8 @@ import {
   DriverRole,
   RaceFinishStatus,
   PartsLogEntryType,
-  NegotiationStatus,
+  NegotiationPhase,
+  StakeholderType,
   type EmailData,
   type ChassisStageCompleteData,
   type TechBreakthroughData,
@@ -145,7 +145,10 @@ import {
   generateEstimatedPower,
   getEffectiveEngineStats,
   getSpecBonusesAsEngineStats,
-  createNegotiation,
+  createManufacturerNegotiation,
+  generateBaseContractTerms,
+  OFFER_EXPIRY_DAYS,
+  LATE_SEASON_MONTH,
 } from '../../shared/domain/engine-utils';
 
 /** Current save format version */
@@ -748,7 +751,7 @@ function buildGameState(params: BuildGameStateParams): GameState {
     manufacturerContracts,
     manufacturerSpecs,
     engineAnalytics,
-    engineNegotiations: [],
+    negotiations: [],
 
     pastSeasons: [],
     events: [],
@@ -2828,62 +2831,104 @@ export const GameStateManager = {
     const playerTeamId = state.player.teamId;
 
     // Check if already negotiating with this manufacturer
-    const existing = state.engineNegotiations.find(
-      (n: EngineNegotiation) => n.teamId === playerTeamId && n.manufacturerId === manufacturerId
+    const existing = state.negotiations.find(
+      (n) =>
+        n.stakeholderType === StakeholderType.Manufacturer &&
+        n.teamId === playerTeamId &&
+        (n as ManufacturerNegotiation).manufacturerId === manufacturerId &&
+        n.phase !== NegotiationPhase.Completed &&
+        n.phase !== NegotiationPhase.Failed
     );
     if (existing) {
       throw new Error('Already negotiating with this manufacturer');
     }
 
+    // Get manufacturer for generating initial terms
+    const manufacturer = state.manufacturers.find((m) => m.id === manufacturerId);
+    if (!manufacturer) {
+      throw new Error('Manufacturer not found');
+    }
+
+    // Generate initial offer terms based on manufacturer pricing
+    // Desperation: 0 for initial player offer (we don't know their desperation yet)
+    // Late season: Check if we're negotiating in the final months
+    const isLateSeason = state.currentDate.month >= LATE_SEASON_MONTH;
+    const initialTerms = generateBaseContractTerms(manufacturer, 0, isLateSeason);
+
     // Create new negotiation
-    const negotiation = createNegotiation(
+    const negotiation = createManufacturerNegotiation(
       playerTeamId,
       manufacturerId,
       state.currentSeason.seasonNumber + 1,
-      state.currentDate
+      state.currentDate,
+      initialTerms
     );
 
-    state.engineNegotiations.push(negotiation);
+    state.negotiations.push(negotiation);
 
     return state;
   },
 
   /**
    * Responds to a contract offer (accept, reject, or counter).
+   * Works with the generic rounds-based negotiation system.
+   *
+   * @param negotiationId - ID of the negotiation to respond to
+   * @param response - Player's response: accept, reject, or counter
+   * @param counterTerms - Required for counter offers
+   * @param isUltimatum - If true, marks this as a "take it or leave it" offer
    */
   respondToEngineOffer(
-    offerId: string,
+    negotiationId: string,
     response: 'accept' | 'reject' | 'counter',
-    counterTerms?: ContractTerms
+    counterTerms?: ContractTerms,
+    isUltimatum?: boolean
   ): GameState {
     const state = GameStateManager.currentState;
     if (!state) throw new Error('No game in progress');
 
-    // Find the negotiation by checking for matching offer
-    const negotiation = state.engineNegotiations.find((n: EngineNegotiation) =>
-      n.offers.some((o: ContractOffer) => o.id === offerId)
-    );
-
-    if (!negotiation) {
+    // Find the negotiation by ID
+    const negotiationIndex = state.negotiations.findIndex((n) => n.id === negotiationId);
+    if (negotiationIndex === -1) {
       throw new Error('Negotiation not found');
     }
 
-    const offer = negotiation.offers.find((o: ContractOffer) => o.id === offerId);
-    if (!offer) {
-      throw new Error('Offer not found');
+    const negotiation = state.negotiations[negotiationIndex] as ManufacturerNegotiation;
+
+    // Ensure it's a manufacturer negotiation in response-received phase
+    if (negotiation.stakeholderType !== StakeholderType.Manufacturer) {
+      throw new Error('Not a manufacturer negotiation');
     }
 
     if (response === 'accept') {
-      negotiation.status = NegotiationStatus.Accepted;
-      // Contract signing will be handled by a separate system
+      // Accept the counterparty's terms - negotiation complete
+      negotiation.phase = NegotiationPhase.Completed;
+      negotiation.lastActivityDate = { ...state.currentDate };
+      // Contract creation will be handled by a separate system (PR 7)
     } else if (response === 'reject') {
-      negotiation.status = NegotiationStatus.Rejected;
+      // Reject - negotiation failed
+      negotiation.phase = NegotiationPhase.Failed;
+      negotiation.lastActivityDate = { ...state.currentDate };
     } else if (response === 'counter') {
+      // Counter with new terms - add a new round
       if (!counterTerms) {
         throw new Error('Counter terms required for counter offer');
       }
-      negotiation.status = NegotiationStatus.CounterPending;
-      negotiation.playerCounterTerms = counterTerms;
+
+      const expiresDate = offsetDate(state.currentDate, OFFER_EXPIRY_DAYS);
+      const newRound = {
+        roundNumber: negotiation.currentRound + 1,
+        offeredBy: 'player' as const,
+        terms: counterTerms,
+        offeredDate: { ...state.currentDate },
+        expiresDate,
+        isUltimatum,
+      };
+
+      negotiation.rounds.push(newRound);
+      negotiation.currentRound = newRound.roundNumber;
+      negotiation.phase = NegotiationPhase.AwaitingResponse;
+      negotiation.lastActivityDate = { ...state.currentDate };
     }
 
     return state;
