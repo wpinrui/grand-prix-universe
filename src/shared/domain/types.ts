@@ -1451,6 +1451,8 @@ export interface NegotiationRound<T extends AnyContractTerms = AnyContractTerms>
   responseTone?: ResponseTone;
   /** Date response was received */
   responseDate?: GameDate;
+  /** If true, this is a "take it or leave it" final offer */
+  isUltimatum?: boolean;
 }
 
 /**
