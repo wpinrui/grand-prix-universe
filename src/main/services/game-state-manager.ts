@@ -19,6 +19,8 @@ import {
   getPlacementForTier,
   getSponsorTierDisplayName,
   hasRivalGroupConflict,
+  evaluateStaffApproach,
+  getChiefRoleDisplayName,
 } from '../engines/evaluators';
 import {
   IpcEvents,
@@ -84,8 +86,10 @@ import type {
   ManufacturerNegotiation,
   DriverNegotiation,
   SponsorNegotiation,
+  StaffNegotiation,
   DriverContractTerms,
   SponsorContractTerms,
+  StaffContractTerms,
 } from '../../shared/domain';
 import {
   GamePhase,
@@ -561,6 +565,160 @@ function generateDriverSigningEvent(
       : `${body} This may affect the driver market for next season.`,
     critical: false, // Don't stop sim
   });
+}
+
+// =============================================================================
+// STAFF CONTRACT RESOLUTION
+// =============================================================================
+
+/**
+ * Result of creating a staff contract
+ */
+interface StaffContractResult {
+  chiefId: string;
+  teamId: string;
+  oldTeamId: string | null;
+  salary: number;
+  contractDuration: number;
+  endSeason: number;
+  buyoutPaid: number;
+  signingBonus: number;
+  role: ChiefRole;
+}
+
+/**
+ * Create a staff contract from a completed negotiation.
+ * Updates the chief's teamId, contractEnd, and salary.
+ * Deducts buyout and signing bonus from team budget.
+ */
+function createStaffContractFromNegotiation(
+  negotiation: StaffNegotiation,
+  state: GameState
+): StaffContractResult | null {
+  const chief = state.chiefs.find((c) => c.id === negotiation.staffId);
+  if (!chief) return null;
+
+  const lastRound = negotiation.rounds[negotiation.rounds.length - 1];
+  if (!lastRound) return null;
+
+  const terms = lastRound.terms as StaffContractTerms;
+
+  const oldTeamId = chief.teamId;
+  const newTeamId = negotiation.teamId;
+  const endSeason = negotiation.forSeason + terms.duration - 1;
+
+  // Update chief
+  chief.teamId = newTeamId;
+  chief.contractEnd = endSeason;
+  chief.salary = terms.salary;
+
+  // Deduct buyout and signing bonus from player's team budget (if applicable)
+  const team = state.teams.find((t) => t.id === newTeamId);
+  if (team && newTeamId === state.player.teamId) {
+    if (terms.buyoutRequired > 0) {
+      team.budget -= terms.buyoutRequired;
+    }
+    if (terms.signingBonus > 0) {
+      team.budget -= terms.signingBonus;
+    }
+  }
+
+  return {
+    chiefId: chief.id,
+    teamId: newTeamId,
+    oldTeamId,
+    salary: terms.salary,
+    contractDuration: terms.duration,
+    endSeason,
+    buyoutPaid: terms.buyoutRequired,
+    signingBonus: terms.signingBonus,
+    role: chief.role,
+  };
+}
+
+
+/**
+ * Generate news headline and email for a staff signing.
+ * Called for ALL staff signings (not just player team).
+ */
+function generateStaffSigningEvent(
+  state: GameState,
+  result: StaffContractResult,
+  isPlayerTeamInvolved: boolean
+): void {
+  const chief = state.chiefs.find((c) => c.id === result.chiefId);
+  const newTeam = state.teams.find((t) => t.id === result.teamId);
+  const oldTeam = result.oldTeamId ? state.teams.find((t) => t.id === result.oldTeamId) : null;
+
+  if (!chief || !newTeam) return;
+
+  const chiefName = `${chief.firstName} ${chief.lastName}`;
+  const roleName = getChiefRoleDisplayName(result.role);
+  const isPoaching = oldTeam && oldTeam.id !== newTeam.id;
+  const isRenewal = oldTeam && oldTeam.id === newTeam.id;
+
+  // Generate news headline for all signings
+  let headline: string;
+  let body: string;
+
+  if (isPoaching) {
+    headline = `${newTeam.name} signs ${chiefName} from ${oldTeam.name}`;
+    body = `${newTeam.name} has signed ${chiefName} as ${roleName}, poaching them from ${oldTeam.name} with a ${result.contractDuration}-year deal.`;
+  } else if (isRenewal) {
+    headline = `${newTeam.name} extends ${chiefName} contract`;
+    body = `${newTeam.name} has renewed ${chiefName}'s contract as ${roleName} for ${result.contractDuration} seasons.`;
+  } else {
+    // New hire (from free agency)
+    headline = `${newTeam.name} hires ${chiefName} as ${roleName}`;
+    body = `${newTeam.name} has hired ${chiefName} as their new ${roleName} on a ${result.contractDuration}-year contract.`;
+  }
+
+  // Create news headline event
+  state.calendarEvents.push({
+    id: randomUUID(),
+    date: state.currentDate,
+    type: CalendarEventType.Headline,
+    subject: headline,
+    body,
+    critical: false,
+  });
+
+  // Create STAFF_HIRED game event for Player Wiki
+  state.events.push(
+    createEvent({
+      type: 'STAFF_HIRED',
+      date: { ...state.currentDate },
+      involvedEntities: [
+        { type: 'staff', id: chief.id },
+        teamRef(newTeam.id),
+        ...(oldTeam ? [teamRef(oldTeam.id)] : []),
+      ],
+      data: {
+        chiefId: chief.id,
+        chiefName,
+        role: chief.role,
+        teamId: newTeam.id,
+        teamName: newTeam.name,
+        previousTeamId: oldTeam?.id ?? null,
+        salary: result.salary,
+        duration: result.contractDuration,
+        buyoutPaid: result.buyoutPaid,
+      },
+      importance: chief.ability >= 85 ? 'high' : 'medium',
+    })
+  );
+
+  // Email for player team
+  if (isPlayerTeamInvolved) {
+    state.calendarEvents.push({
+      id: randomUUID(),
+      date: state.currentDate,
+      type: CalendarEventType.Email,
+      subject: `${chiefName} contract confirmed`,
+      body: `Your agreement with ${chiefName} as ${roleName} is now official. Contract duration: ${result.contractDuration} season(s).`,
+      critical: false,
+    });
+  }
 }
 
 /**
@@ -2476,6 +2634,35 @@ function applyNegotiationUpdates(state: GameState, updates: NegotiationUpdate[])
             );
           }
         }
+      } else if (negotiation.stakeholderType === StakeholderType.Staff) {
+        // Staff negotiation
+        const staffNeg = negotiation as StaffNegotiation;
+
+        // Handle completed staff negotiations - create contracts for ALL teams
+        if (staffNeg.phase === NegotiationPhase.Completed) {
+          const contractResult = createStaffContractFromNegotiation(staffNeg, state);
+          if (contractResult) {
+            generateStaffSigningEvent(state, contractResult, isPlayerTeam);
+          }
+        }
+
+        // Check if this affects player and should stop simulation
+        if (update.shouldStopSimulation && isPlayerTeam) {
+          shouldStop = true;
+
+          // Generate email for player
+          const chief = state.chiefs.find((c) => c.id === staffNeg.staffId);
+          if (chief) {
+            const chiefName = `${chief.firstName} ${chief.lastName}`;
+            const latestRound = staffNeg.rounds[staffNeg.rounds.length - 1];
+            generateNegotiationUpdateEmail(
+              state,
+              chiefName,
+              staffNeg.phase,
+              latestRound?.isUltimatum ?? false
+            );
+          }
+        }
       }
     }
   }
@@ -2672,6 +2859,134 @@ function teamDriverCommittedElsewhere(state: GameState, teamId: string, forSeaso
     if (hasCommitted) return true;
   }
   return false;
+}
+
+// =============================================================================
+// STAFF PROACTIVE OUTREACH
+// =============================================================================
+
+/** Staff outreach timing - staff reach out in May-June (early transfer window) */
+const STAFF_OUTREACH_START_MONTH = 5;
+const STAFF_OUTREACH_END_MONTH = 6;
+
+/** Buyout cost multiplier when staff approaches new team while under contract */
+const STAFF_BUYOUT_SALARY_MULTIPLIER = 0.5;
+
+/**
+ * Check if staff has already approached this team
+ */
+function hasExistingStaffNegotiation(
+  state: GameState,
+  teamId: string,
+  staffId: string,
+  forSeason: number
+): boolean {
+  return state.negotiations.some(
+    (n) =>
+      n.stakeholderType === StakeholderType.Staff &&
+      n.teamId === teamId &&
+      (n as StaffNegotiation).staffId === staffId &&
+      n.forSeason === forSeason
+  );
+}
+
+/**
+ * Generate proactive outreach from staff to teams
+ * Called during daily processing
+ *
+ * Triggers:
+ * 1. Free agents looking for work
+ * 2. Staff at smaller teams seeking upgrades
+ */
+function processStaffOutreach(state: GameState): boolean {
+  const { currentDate, currentSeason } = state;
+  const { month, day } = currentDate;
+  const nextSeason = currentSeason.seasonNumber + 1;
+  const playerTeamId = state.player.teamId;
+  let playerReceivedOutreach = false;
+
+  // Only process during the outreach window (May-June)
+  if (month < STAFF_OUTREACH_START_MONTH || month > STAFF_OUTREACH_END_MONTH) return false;
+
+  // Process bi-weekly (1st and 15th)
+  if (day !== 1 && day !== 15) return false;
+
+  // Find staff with expiring contracts or free agents
+  const chiefsToProcess = state.chiefs.filter((c) => {
+    // Free agents always look
+    if (!c.teamId) return true;
+    // Staff with expiring contracts
+    return c.contractEnd === currentSeason.seasonNumber;
+  });
+
+  for (const chief of chiefsToProcess) {
+    // Evaluate which teams this chief would approach
+    for (const targetTeam of state.teams) {
+      // Skip own team
+      if (targetTeam.id === chief.teamId) continue;
+
+      // Skip if negotiation already exists
+      if (hasExistingStaffNegotiation(state, targetTeam.id, chief.id, nextSeason)) continue;
+
+      // Check if chief would approach this team
+      const approachResult = evaluateStaffApproach({
+        approachingChief: chief,
+        targetTeam,
+        allTeams: state.teams,
+        allChiefs: state.chiefs,
+      });
+
+      if (!approachResult.shouldApproach) continue;
+
+      // Create outreach negotiation
+      const roleName = getChiefRoleDisplayName(chief.role);
+      const chiefName = `${chief.firstName} ${chief.lastName}`;
+
+      const negotiation: StaffNegotiation = {
+        id: `neg-staff-${chief.id}-${targetTeam.id}-${Date.now()}`,
+        stakeholderType: StakeholderType.Staff,
+        teamId: targetTeam.id,
+        staffId: chief.id,
+        role: chief.role,
+        phase: NegotiationPhase.ResponseReceived, // Team needs to respond
+        forSeason: nextSeason,
+        startedDate: { ...currentDate },
+        lastActivityDate: { ...currentDate },
+        rounds: [
+          {
+            roundNumber: 1,
+            offeredBy: 'counterparty', // Staff initiated
+            terms: {
+              salary: approachResult.proposedSalary,
+              duration: approachResult.proposedDuration,
+              signingBonus: 0,
+              buyoutRequired: chief.teamId ? Math.round(chief.salary * STAFF_BUYOUT_SALARY_MULTIPLIER) : 0,
+              bonusPercent: 10, // 10% performance bonus
+            } as StaffContractTerms,
+            offeredDate: { ...currentDate },
+            expiresDate: offsetDate(currentDate, 30),
+          },
+        ],
+      };
+
+      state.negotiations.push(negotiation);
+
+      // Email for player team
+      if (targetTeam.id === playerTeamId) {
+        playerReceivedOutreach = true;
+        state.calendarEvents.push({
+          id: randomUUID(),
+          date: currentDate,
+          type: CalendarEventType.Email,
+          subject: `${chiefName} interested in joining your team`,
+          body: `${chiefName}, a ${roleName}${chief.teamId ? ` currently at ${state.teams.find((t) => t.id === chief.teamId)?.name ?? 'another team'}` : ''}, has expressed interest in joining ${targetTeam.name}. Review their proposal in the Contracts screen.`,
+          critical: true,
+        });
+      }
+    }
+  }
+
+  return playerReceivedOutreach;
 }
 
 /**
@@ -3006,10 +3321,13 @@ function applyTurnResult(state: GameState, result: TurnProcessingResult): boolea
   // Process proactive outreach from sponsors
   const playerReceivedSponsorOutreach = processSponsorOutreach(state);
 
+  // Process proactive outreach from staff
+  const playerReceivedStaffOutreach = processStaffOutreach(state);
+
   // Update projected milestone dates based on current progress
   updateProjectedMilestones(state);
 
-  return playerHadDesignMilestone || playerHadTestCompletion || playerHadReadyPart || negotiationStopped || playerReceivedManufacturerOutreach || playerReceivedDriverOutreach || playerReceivedSponsorOutreach;
+  return playerHadDesignMilestone || playerHadTestCompletion || playerHadReadyPart || negotiationStopped || playerReceivedManufacturerOutreach || playerReceivedDriverOutreach || playerReceivedSponsorOutreach || playerReceivedStaffOutreach;
 }
 
 /**

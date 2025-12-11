@@ -24,9 +24,11 @@ import type {
   ManufacturerNegotiation,
   DriverNegotiation,
   SponsorNegotiation,
+  StaffNegotiation,
   NegotiationRound,
   GameDate,
   DriverContractTerms,
+  StaffContractTerms,
 } from '../../shared/domain/types';
 import {
   StakeholderType,
@@ -38,6 +40,7 @@ import {
   evaluateManufacturerOffer,
   evaluateDriverOffer,
   evaluateSponsorOffer,
+  evaluateStaffOffer,
   MAX_DESPERATION_MULTIPLIER,
 } from './evaluators';
 import { offsetDate } from '../../shared/utils/date-utils';
@@ -182,17 +185,38 @@ function dispatchToEvaluator(
       });
     }
 
-    case StakeholderType.Staff:
-      // Stub: Accept with default delay
-      // TODO: Staff evaluator is in PR #174
-      return {
-        responseType: ResponseType.Accept,
-        counterTerms: null,
-        responseTone: ResponseTone.Professional,
-        responseDelayDays: DEFAULT_RESPONSE_DELAY_DAYS,
-        isNewsworthy: false,
-        relationshipChange: 0,
-      };
+    case StakeholderType.Staff: {
+      const staffNegotiation = negotiation as StaffNegotiation;
+      const chief = input.chiefs.find((c) => c.id === staffNegotiation.staffId);
+      const offeringTeam = input.teams.find((t) => t.id === negotiation.teamId);
+
+      if (!chief || !offeringTeam) {
+        return {
+          responseType: ResponseType.Reject,
+          counterTerms: null,
+          responseTone: ResponseTone.Professional,
+          responseDelayDays: DEFAULT_RESPONSE_DELAY_DAYS,
+          isNewsworthy: false,
+          relationshipChange: 0,
+        };
+      }
+
+      const lastRound = negotiation.rounds[negotiation.rounds.length - 1];
+      const terms = lastRound.terms as StaffContractTerms;
+
+      return evaluateStaffOffer({
+        chief,
+        offeringTeam,
+        offeredSalary: terms.salary,
+        offeredDuration: terms.duration,
+        offeredSigningBonus: terms.signingBonus,
+        offeredBonusPercent: terms.bonusPercent,
+        buyoutRequired: terms.buyoutRequired,
+        allTeams: input.teams,
+        currentRound: negotiation.rounds.length,
+        maxRounds: MAX_NEGOTIATION_ROUNDS,
+      });
+    }
 
     case StakeholderType.Sponsor: {
       const sponsorNegotiation = negotiation as SponsorNegotiation;

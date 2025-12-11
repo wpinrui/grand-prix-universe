@@ -8,9 +8,9 @@
  * - ManufacturerEvaluator: Engine supplier contract evaluation
  * - DriverEvaluator: Driver contract evaluation (perceived market value system)
  * - TeamEvaluator: Team's evaluation of drivers (shortlisting, attractiveness)
+ * - StaffEvaluator: Staff contract evaluation (letter grade scouting system)
  *
  * Future evaluators:
- * - StaffEvaluator: Staff contract evaluation
  * - SponsorEvaluator: Sponsor contract evaluation
  */
 
@@ -52,3 +52,19 @@ export {
   getSponsorTierDisplayName,
   type SponsorEvaluationInput,
 } from './sponsor-evaluator';
+
+export {
+  evaluateStaffOffer,
+  evaluateStaffApproach,
+  calculatePerceivedAbility,
+  calculateExpectedSalary,
+  calculateTeamPrestige,
+  abilityToLetterGrade,
+  getChiefLetterGrade,
+  getAllLetterGrades,
+  getChiefRoleDisplayName,
+  type StaffEvaluationInput,
+  type StaffApproachInput,
+  type StaffApproachResult,
+  type LetterGrade,
+} from './staff-evaluator';
