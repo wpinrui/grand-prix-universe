@@ -309,10 +309,7 @@ function TierSection({ title, tier, deals, sponsors, currentSeason, slotCount }:
   const isMinor = tier === SponsorTier.Minor;
 
   // Create slots array with deals + empty slots
-  const slots: (ActiveSponsorDeal | null)[] = [];
-  for (let i = 0; i < slotCount; i++) {
-    slots.push(deals[i] ?? null);
-  }
+  const slots = Array.from({ length: slotCount }, (_, i) => deals[i] ?? null);
 
   return (
     <div className="space-y-3">
