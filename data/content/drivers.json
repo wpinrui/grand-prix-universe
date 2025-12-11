@@ -221,7 +221,8 @@
             }
           ],
           "totalPoints": 399,
-          "teamTotalPoints": 589
+          "teamTotalPoints": 589,
+          "championshipPosition": 1
         },
         {
           "season": 2023,
@@ -405,7 +406,8 @@
             }
           ],
           "totalPoints": 530,
-          "teamTotalPoints": 860
+          "teamTotalPoints": 860,
+          "championshipPosition": 1
         },
         {
           "season": 2022,
@@ -589,7 +591,8 @@
             }
           ],
           "totalPoints": 433,
-          "teamTotalPoints": 759
+          "teamTotalPoints": 759,
+          "championshipPosition": 1
         },
         {
           "season": 2021,
@@ -773,7 +776,8 @@
             }
           ],
           "totalPoints": 388.5,
-          "teamTotalPoints": 585.5
+          "teamTotalPoints": 585.5,
+          "championshipPosition": 1
         },
         {
           "season": 2020,
@@ -917,7 +921,8 @@
             }
           ],
           "totalPoints": 214,
-          "teamTotalPoints": 319
+          "teamTotalPoints": 319,
+          "championshipPosition": 3
         },
         {
           "season": 2019,
@@ -1093,7 +1098,8 @@
             }
           ],
           "totalPoints": 278,
-          "teamTotalPoints": 417
+          "teamTotalPoints": 417,
+          "championshipPosition": 3
         },
         {
           "season": 2018,
@@ -1269,7 +1275,8 @@
             }
           ],
           "totalPoints": 249,
-          "teamTotalPoints": 419
+          "teamTotalPoints": 419,
+          "championshipPosition": 4
         },
         {
           "season": 2017,
@@ -1437,7 +1444,8 @@
             }
           ],
           "totalPoints": 168,
-          "teamTotalPoints": 368
+          "teamTotalPoints": 368,
+          "championshipPosition": 6
         },
         {
           "season": 2016,
@@ -1613,7 +1621,8 @@
             }
           ],
           "totalPoints": 204,
-          "teamTotalPoints": 63
+          "teamTotalPoints": 63,
+          "championshipPosition": 5
         },
         {
           "season": 2015,
@@ -1749,7 +1758,8 @@
             }
           ],
           "totalPoints": 33,
-          "teamTotalPoints": 67
+          "teamTotalPoints": 67,
+          "championshipPosition": 12
         }
       ]
     },
@@ -1974,7 +1984,8 @@
             }
           ],
           "totalPoints": 327,
-          "teamTotalPoints": 652
+          "teamTotalPoints": 652,
+          "championshipPosition": 3
         },
         {
           "season": 2023,
@@ -2158,7 +2169,8 @@
             }
           ],
           "totalPoints": 185,
-          "teamTotalPoints": 406
+          "teamTotalPoints": 406,
+          "championshipPosition": 5
         },
         {
           "season": 2022,
@@ -2342,7 +2354,8 @@
             }
           ],
           "totalPoints": 291,
-          "teamTotalPoints": 554
+          "teamTotalPoints": 554,
+          "championshipPosition": 2
         },
         {
           "season": 2021,
@@ -2526,7 +2539,8 @@
             }
           ],
           "totalPoints": 159,
-          "teamTotalPoints": 323.5
+          "teamTotalPoints": 323.5,
+          "championshipPosition": 7
         },
         {
           "season": 2020,
@@ -2670,7 +2684,8 @@
             }
           ],
           "totalPoints": 98,
-          "teamTotalPoints": 131
+          "teamTotalPoints": 131,
+          "championshipPosition": 8
         },
         {
           "season": 2019,
@@ -2846,7 +2861,8 @@
             }
           ],
           "totalPoints": 264,
-          "teamTotalPoints": 504
+          "teamTotalPoints": 504,
+          "championshipPosition": 4
         },
         {
           "season": 2018,
@@ -3022,7 +3038,8 @@
             }
           ],
           "totalPoints": 39,
-          "teamTotalPoints": 48
+          "teamTotalPoints": 48,
+          "championshipPosition": 13
         }
       ]
     },
@@ -3247,7 +3264,8 @@
             }
           ],
           "totalPoints": 344,
-          "teamTotalPoints": 666
+          "teamTotalPoints": 666,
+          "championshipPosition": 2
         },
         {
           "season": 2023,
@@ -3431,7 +3449,8 @@
             }
           ],
           "totalPoints": 184,
-          "teamTotalPoints": 302
+          "teamTotalPoints": 302,
+          "championshipPosition": 6
         },
         {
           "season": 2022,
@@ -3615,7 +3634,8 @@
             }
           ],
           "totalPoints": 116,
-          "teamTotalPoints": 159
+          "teamTotalPoints": 159,
+          "championshipPosition": 7
         },
         {
           "season": 2021,
@@ -3799,7 +3819,8 @@
             }
           ],
           "totalPoints": 160,
-          "teamTotalPoints": 275
+          "teamTotalPoints": 275,
+          "championshipPosition": 6
         },
         {
           "season": 2020,
@@ -3943,7 +3964,8 @@
             }
           ],
           "totalPoints": 97,
-          "teamTotalPoints": 202
+          "teamTotalPoints": 202,
+          "championshipPosition": 9
         },
         {
           "season": 2019,
@@ -4119,7 +4141,8 @@
             }
           ],
           "totalPoints": 49,
-          "teamTotalPoints": 145
+          "teamTotalPoints": 145,
+          "championshipPosition": 11
         }
       ]
     },
@@ -4344,7 +4367,8 @@
             }
           ],
           "totalPoints": 226,
-          "teamTotalPoints": 468
+          "teamTotalPoints": 468,
+          "championshipPosition": 6
         },
         {
           "season": 2023,
@@ -4528,7 +4552,8 @@
             }
           ],
           "totalPoints": 157,
-          "teamTotalPoints": 409
+          "teamTotalPoints": 409,
+          "championshipPosition": 8
         },
         {
           "season": 2022,
@@ -4712,7 +4737,8 @@
             }
           ],
           "totalPoints": 262,
-          "teamTotalPoints": 515
+          "teamTotalPoints": 515,
+          "championshipPosition": 4
         },
         {
           "season": 2021,
@@ -4896,7 +4922,8 @@
             }
           ],
           "totalPoints": 16,
-          "teamTotalPoints": 23
+          "teamTotalPoints": 23,
+          "championshipPosition": 15
         },
         {
           "season": 2020,
@@ -5040,7 +5067,8 @@
             }
           ],
           "totalPoints": 3,
-          "teamTotalPoints": 0
+          "teamTotalPoints": 0,
+          "championshipPosition": 18
         },
         {
           "season": 2019,
@@ -5216,7 +5244,8 @@
             }
           ],
           "totalPoints": 0,
-          "teamTotalPoints": 1
+          "teamTotalPoints": 1,
+          "championshipPosition": 20
         }
       ]
     },
@@ -5441,7 +5470,8 @@
             }
           ],
           "totalPoints": 265,
-          "teamTotalPoints": 666
+          "teamTotalPoints": 666,
+          "championshipPosition": 4
         },
         {
           "season": 2023,
@@ -5625,7 +5655,8 @@
             }
           ],
           "totalPoints": 82,
-          "teamTotalPoints": 302
+          "teamTotalPoints": 302,
+          "championshipPosition": 9
         }
       ]
     },
@@ -5850,7 +5881,8 @@
             }
           ],
           "totalPoints": 207,
-          "teamTotalPoints": 468
+          "teamTotalPoints": 468,
+          "championshipPosition": 7
         },
         {
           "season": 2023,
@@ -6034,7 +6066,8 @@
             }
           ],
           "totalPoints": 217,
-          "teamTotalPoints": 409
+          "teamTotalPoints": 409,
+          "championshipPosition": 3
         },
         {
           "season": 2022,
@@ -6218,7 +6251,8 @@
             }
           ],
           "totalPoints": 233,
-          "teamTotalPoints": 515
+          "teamTotalPoints": 515,
+          "championshipPosition": 6
         },
         {
           "season": 2021,
@@ -6402,7 +6436,8 @@
             }
           ],
           "totalPoints": 385.5,
-          "teamTotalPoints": 613.5
+          "teamTotalPoints": 613.5,
+          "championshipPosition": 2
         },
         {
           "season": 2020,
@@ -6538,7 +6573,8 @@
             }
           ],
           "totalPoints": 347,
-          "teamTotalPoints": 573
+          "teamTotalPoints": 573,
+          "championshipPosition": 1
         },
         {
           "season": 2019,
@@ -6714,7 +6750,8 @@
             }
           ],
           "totalPoints": 413,
-          "teamTotalPoints": 739
+          "teamTotalPoints": 739,
+          "championshipPosition": 1
         },
         {
           "season": 2018,
@@ -6890,7 +6927,8 @@
             }
           ],
           "totalPoints": 408,
-          "teamTotalPoints": 655
+          "teamTotalPoints": 655,
+          "championshipPosition": 1
         },
         {
           "season": 2017,
@@ -7058,7 +7096,8 @@
             }
           ],
           "totalPoints": 363,
-          "teamTotalPoints": 668
+          "teamTotalPoints": 668,
+          "championshipPosition": 1
         },
         {
           "season": 2016,
@@ -7226,7 +7265,8 @@
             }
           ],
           "totalPoints": 380,
-          "teamTotalPoints": 765
+          "teamTotalPoints": 765,
+          "championshipPosition": 2
         },
         {
           "season": 2015,
@@ -7378,7 +7418,8 @@
             }
           ],
           "totalPoints": 366,
-          "teamTotalPoints": 703
+          "teamTotalPoints": 703,
+          "championshipPosition": 1
         },
         {
           "season": 2014,
@@ -7530,7 +7571,8 @@
             }
           ],
           "totalPoints": 369,
-          "teamTotalPoints": 701
+          "teamTotalPoints": 701,
+          "championshipPosition": 1
         },
         {
           "season": 2013,
@@ -7682,7 +7724,8 @@
             }
           ],
           "totalPoints": 187,
-          "teamTotalPoints": 360
+          "teamTotalPoints": 360,
+          "championshipPosition": 4
         },
         {
           "season": 2012,
@@ -7842,7 +7885,8 @@
             }
           ],
           "totalPoints": 186,
-          "teamTotalPoints": 378
+          "teamTotalPoints": 378,
+          "championshipPosition": 4
         },
         {
           "season": 2011,
@@ -8002,7 +8046,8 @@
             }
           ],
           "totalPoints": 227,
-          "teamTotalPoints": 497
+          "teamTotalPoints": 497,
+          "championshipPosition": 5
         },
         {
           "season": 2010,
@@ -8154,7 +8199,8 @@
             }
           ],
           "totalPoints": 240,
-          "teamTotalPoints": 454
+          "teamTotalPoints": 454,
+          "championshipPosition": 4
         }
       ]
     },
@@ -8371,7 +8417,8 @@
             }
           ],
           "totalPoints": 262,
-          "teamTotalPoints": 652
+          "teamTotalPoints": 652,
+          "championshipPosition": 5
         },
         {
           "season": 2023,
@@ -8555,7 +8602,8 @@
             }
           ],
           "totalPoints": 178,
-          "teamTotalPoints": 406
+          "teamTotalPoints": 406,
+          "championshipPosition": 7
         },
         {
           "season": 2022,
@@ -8739,7 +8787,8 @@
             }
           ],
           "totalPoints": 228,
-          "teamTotalPoints": 554
+          "teamTotalPoints": 554,
+          "championshipPosition": 5
         },
         {
           "season": 2021,
@@ -8923,7 +8972,8 @@
             }
           ],
           "totalPoints": 163.5,
-          "teamTotalPoints": 323.5
+          "teamTotalPoints": 323.5,
+          "championshipPosition": 5
         },
         {
           "season": 2020,
@@ -9067,7 +9117,8 @@
             }
           ],
           "totalPoints": 105,
-          "teamTotalPoints": 202
+          "teamTotalPoints": 202,
+          "championshipPosition": 6
         },
         {
           "season": 2019,
@@ -9243,7 +9294,8 @@
             }
           ],
           "totalPoints": 96,
-          "teamTotalPoints": 145
+          "teamTotalPoints": 145,
+          "championshipPosition": 6
         },
         {
           "season": 2018,
@@ -9419,7 +9471,8 @@
             }
           ],
           "totalPoints": 53,
-          "teamTotalPoints": 122
+          "teamTotalPoints": 122,
+          "championshipPosition": 10
         },
         {
           "season": 2017,
@@ -9587,7 +9640,8 @@
             }
           ],
           "totalPoints": 54,
-          "teamTotalPoints": 53
+          "teamTotalPoints": 53,
+          "championshipPosition": 9
         },
         {
           "season": 2016,
@@ -9739,7 +9793,8 @@
             }
           ],
           "totalPoints": 42,
-          "teamTotalPoints": 63
+          "teamTotalPoints": 63,
+          "championshipPosition": 12
         },
         {
           "season": 2015,
@@ -9875,7 +9930,8 @@
             }
           ],
           "totalPoints": 11,
-          "teamTotalPoints": 67
+          "teamTotalPoints": 67,
+          "championshipPosition": 15
         }
       ]
     },
@@ -10100,7 +10156,8 @@
             }
           ],
           "totalPoints": 70,
-          "teamTotalPoints": 94
+          "teamTotalPoints": 94,
+          "championshipPosition": 9
         },
         {
           "season": 2023,
@@ -10284,7 +10341,8 @@
             }
           ],
           "totalPoints": 198,
-          "teamTotalPoints": 280
+          "teamTotalPoints": 280,
+          "championshipPosition": 4
         },
         {
           "season": 2022,
@@ -10468,7 +10526,8 @@
             }
           ],
           "totalPoints": 81,
-          "teamTotalPoints": 173
+          "teamTotalPoints": 173,
+          "championshipPosition": 9
         },
         {
           "season": 2021,
@@ -10652,7 +10711,8 @@
             }
           ],
           "totalPoints": 81,
-          "teamTotalPoints": 155
+          "teamTotalPoints": 155,
+          "championshipPosition": 10
         },
         {
           "season": 2018,
@@ -10828,7 +10888,8 @@
             }
           ],
           "totalPoints": 50,
-          "teamTotalPoints": 62
+          "teamTotalPoints": 62,
+          "championshipPosition": 11
         },
         {
           "season": 2017,
@@ -10988,7 +11049,8 @@
             }
           ],
           "totalPoints": 17,
-          "teamTotalPoints": 30
+          "teamTotalPoints": 30,
+          "championshipPosition": 15
         },
         {
           "season": 2016,
@@ -11132,7 +11194,8 @@
             }
           ],
           "totalPoints": 54,
-          "teamTotalPoints": 76
+          "teamTotalPoints": 76,
+          "championshipPosition": 10
         },
         {
           "season": 2015,
@@ -11260,7 +11323,8 @@
             }
           ],
           "totalPoints": 11,
-          "teamTotalPoints": 27
+          "teamTotalPoints": 27,
+          "championshipPosition": 17
         },
         {
           "season": 2014,
@@ -11412,7 +11476,8 @@
             }
           ],
           "totalPoints": 151,
-          "teamTotalPoints": 216
+          "teamTotalPoints": 216,
+          "championshipPosition": 6
         },
         {
           "season": 2013,
@@ -11564,7 +11629,8 @@
             }
           ],
           "totalPoints": 232,
-          "teamTotalPoints": 354
+          "teamTotalPoints": 354,
+          "championshipPosition": 2
         },
         {
           "season": 2012,
@@ -11732,7 +11798,8 @@
             }
           ],
           "totalPoints": 278,
-          "teamTotalPoints": 400
+          "teamTotalPoints": 400,
+          "championshipPosition": 2
         },
         {
           "season": 2011,
@@ -11892,7 +11959,8 @@
             }
           ],
           "totalPoints": 257,
-          "teamTotalPoints": 375
+          "teamTotalPoints": 375,
+          "championshipPosition": 4
         },
         {
           "season": 2010,
@@ -12044,7 +12112,8 @@
             }
           ],
           "totalPoints": 252,
-          "teamTotalPoints": 396
+          "teamTotalPoints": 396,
+          "championshipPosition": 2
         }
       ]
     },
@@ -12269,7 +12338,8 @@
             }
           ],
           "totalPoints": 36,
-          "teamTotalPoints": 58
+          "teamTotalPoints": 58,
+          "championshipPosition": 11
         },
         {
           "season": 2023,
@@ -12453,7 +12523,8 @@
             }
           ],
           "totalPoints": 6,
-          "teamTotalPoints": 12
+          "teamTotalPoints": 12,
+          "championshipPosition": 16
         },
         {
           "season": 2022,
@@ -12477,7 +12548,8 @@
             }
           ],
           "totalPoints": 0,
-          "teamTotalPoints": 55
+          "teamTotalPoints": 55,
+          "championshipPosition": 22
         },
         {
           "season": 2020,
@@ -12509,7 +12581,8 @@
             }
           ],
           "totalPoints": 10,
-          "teamTotalPoints": 195
+          "teamTotalPoints": 195,
+          "championshipPosition": 15
         },
         {
           "season": 2019,
@@ -12685,7 +12758,8 @@
             }
           ],
           "totalPoints": 37,
-          "teamTotalPoints": 91
+          "teamTotalPoints": 91,
+          "championshipPosition": 14
         },
         {
           "season": 2018,
@@ -12861,7 +12935,8 @@
             }
           ],
           "totalPoints": 69,
-          "teamTotalPoints": 122
+          "teamTotalPoints": 122,
+          "championshipPosition": 7
         },
         {
           "season": 2017,
@@ -13029,7 +13104,8 @@
             }
           ],
           "totalPoints": 43,
-          "teamTotalPoints": 57
+          "teamTotalPoints": 57,
+          "championshipPosition": 10
         },
         {
           "season": 2013,
@@ -13165,7 +13241,8 @@
             }
           ],
           "totalPoints": 47,
-          "teamTotalPoints": 57
+          "teamTotalPoints": 57,
+          "championshipPosition": 10
         },
         {
           "season": 2010,
@@ -13301,7 +13378,8 @@
             }
           ],
           "totalPoints": 22,
-          "teamTotalPoints": 69
+          "teamTotalPoints": 69,
+          "championshipPosition": 14
         }
       ]
     },
@@ -13526,7 +13604,8 @@
             }
           ],
           "totalPoints": 12,
-          "teamTotalPoints": 17
+          "teamTotalPoints": 17,
+          "championshipPosition": 16
         },
         {
           "season": 2023,
@@ -13710,7 +13789,8 @@
             }
           ],
           "totalPoints": 25,
-          "teamTotalPoints": 28
+          "teamTotalPoints": 28,
+          "championshipPosition": 13
         },
         {
           "season": 2022,
@@ -13886,7 +13966,8 @@
             }
           ],
           "totalPoints": 4,
-          "teamTotalPoints": 8
+          "teamTotalPoints": 8,
+          "championshipPosition": 19
         },
         {
           "season": 2020,
@@ -14030,7 +14111,8 @@
             }
           ],
           "totalPoints": 105,
-          "teamTotalPoints": 319
+          "teamTotalPoints": 319,
+          "championshipPosition": 7
         },
         {
           "season": 2019,
@@ -14206,7 +14288,8 @@
             }
           ],
           "totalPoints": 92,
-          "teamTotalPoints": 85
+          "teamTotalPoints": 85,
+          "championshipPosition": 8
         }
       ]
     },
@@ -14454,7 +14537,8 @@
             }
           ],
           "totalPoints": 40,
-          "teamTotalPoints": 65
+          "teamTotalPoints": 65,
+          "championshipPosition": 10
         },
         {
           "season": 2023,
@@ -14638,7 +14722,8 @@
             }
           ],
           "totalPoints": 54,
-          "teamTotalPoints": 120
+          "teamTotalPoints": 120,
+          "championshipPosition": 11
         },
         {
           "season": 2022,
@@ -14822,7 +14907,8 @@
             }
           ],
           "totalPoints": 23,
-          "teamTotalPoints": 35
+          "teamTotalPoints": 35,
+          "championshipPosition": 14
         },
         {
           "season": 2021,
@@ -15006,7 +15092,8 @@
             }
           ],
           "totalPoints": 110,
-          "teamTotalPoints": 142
+          "teamTotalPoints": 142,
+          "championshipPosition": 9
         },
         {
           "season": 2020,
@@ -15150,7 +15237,8 @@
             }
           ],
           "totalPoints": 75,
-          "teamTotalPoints": 107
+          "teamTotalPoints": 107,
+          "championshipPosition": 10
         },
         {
           "season": 2019,
@@ -15326,7 +15414,8 @@
             }
           ],
           "totalPoints": 95,
-          "teamTotalPoints": 417
+          "teamTotalPoints": 417,
+          "championshipPosition": 7
         },
         {
           "season": 2018,
@@ -15502,7 +15591,8 @@
             }
           ],
           "totalPoints": 29,
-          "teamTotalPoints": 33
+          "teamTotalPoints": 33,
+          "championshipPosition": 15
         },
         {
           "season": 2017,
@@ -15550,7 +15640,8 @@
             }
           ],
           "totalPoints": 0,
-          "teamTotalPoints": 53
+          "teamTotalPoints": 53,
+          "championshipPosition": 21
         }
       ]
     },
@@ -15774,7 +15865,8 @@
             }
           ],
           "totalPoints": 0,
-          "teamTotalPoints": 4
+          "teamTotalPoints": 4,
+          "championshipPosition": 22
         },
         {
           "season": 2023,
@@ -15958,7 +16050,8 @@
             }
           ],
           "totalPoints": 10,
-          "teamTotalPoints": 16
+          "teamTotalPoints": 16,
+          "championshipPosition": 15
         },
         {
           "season": 2022,
@@ -16142,7 +16235,8 @@
             }
           ],
           "totalPoints": 47,
-          "teamTotalPoints": 55
+          "teamTotalPoints": 55,
+          "championshipPosition": 10
         },
         {
           "season": 2021,
@@ -16326,7 +16420,8 @@
             }
           ],
           "totalPoints": 219,
-          "teamTotalPoints": 613.5
+          "teamTotalPoints": 613.5,
+          "championshipPosition": 3
         },
         {
           "season": 2020,
@@ -16470,7 +16565,8 @@
             }
           ],
           "totalPoints": 223,
-          "teamTotalPoints": 573
+          "teamTotalPoints": 573,
+          "championshipPosition": 2
         },
         {
           "season": 2019,
@@ -16646,7 +16742,8 @@
             }
           ],
           "totalPoints": 326,
-          "teamTotalPoints": 739
+          "teamTotalPoints": 739,
+          "championshipPosition": 2
         },
         {
           "season": 2018,
@@ -16822,7 +16919,8 @@
             }
           ],
           "totalPoints": 247,
-          "teamTotalPoints": 655
+          "teamTotalPoints": 655,
+          "championshipPosition": 5
         },
         {
           "season": 2017,
@@ -16990,7 +17088,8 @@
             }
           ],
           "totalPoints": 305,
-          "teamTotalPoints": 668
+          "teamTotalPoints": 668,
+          "championshipPosition": 3
         },
         {
           "season": 2016,
@@ -17150,7 +17249,8 @@
             }
           ],
           "totalPoints": 81,
-          "teamTotalPoints": 138
+          "teamTotalPoints": 138,
+          "championshipPosition": 8
         },
         {
           "season": 2015,
@@ -17286,7 +17386,8 @@
             }
           ],
           "totalPoints": 134,
-          "teamTotalPoints": 257
+          "teamTotalPoints": 257,
+          "championshipPosition": 5
         },
         {
           "season": 2014,
@@ -17446,7 +17547,8 @@
             }
           ],
           "totalPoints": 186,
-          "teamTotalPoints": 320
+          "teamTotalPoints": 320,
+          "championshipPosition": 4
         },
         {
           "season": 2013,
@@ -17582,7 +17684,8 @@
             }
           ],
           "totalPoints": 4,
-          "teamTotalPoints": 5
+          "teamTotalPoints": 5,
+          "championshipPosition": 17
         }
       ]
     },
@@ -17639,7 +17742,8 @@
             }
           ],
           "totalPoints": 7,
-          "teamTotalPoints": 652
+          "teamTotalPoints": 652,
+          "championshipPosition": 18
         }
       ]
     },
@@ -17856,7 +17960,8 @@
             }
           ],
           "totalPoints": 23,
-          "teamTotalPoints": 65
+          "teamTotalPoints": 65,
+          "championshipPosition": 14
         },
         {
           "season": 2023,
@@ -18040,7 +18145,8 @@
             }
           ],
           "totalPoints": 56,
-          "teamTotalPoints": 120
+          "teamTotalPoints": 120,
+          "championshipPosition": 12
         },
         {
           "season": 2022,
@@ -18224,7 +18330,8 @@
             }
           ],
           "totalPoints": 89,
-          "teamTotalPoints": 173
+          "teamTotalPoints": 173,
+          "championshipPosition": 8
         },
         {
           "season": 2021,
@@ -18408,7 +18515,8 @@
             }
           ],
           "totalPoints": 74,
-          "teamTotalPoints": 155
+          "teamTotalPoints": 155,
+          "championshipPosition": 11
         },
         {
           "season": 2020,
@@ -18552,7 +18660,8 @@
             }
           ],
           "totalPoints": 62,
-          "teamTotalPoints": 181
+          "teamTotalPoints": 181,
+          "championshipPosition": 12
         }
       ]
     },
@@ -18799,7 +18908,8 @@
             }
           ],
           "totalPoints": 138,
-          "teamTotalPoints": 589
+          "teamTotalPoints": 589,
+          "championshipPosition": 8
         },
         {
           "season": 2023,
@@ -18983,7 +19093,8 @@
             }
           ],
           "totalPoints": 260,
-          "teamTotalPoints": 860
+          "teamTotalPoints": 860,
+          "championshipPosition": 2
         },
         {
           "season": 2022,
@@ -19167,7 +19278,8 @@
             }
           ],
           "totalPoints": 291,
-          "teamTotalPoints": 759
+          "teamTotalPoints": 759,
+          "championshipPosition": 3
         },
         {
           "season": 2021,
@@ -19351,7 +19463,8 @@
             }
           ],
           "totalPoints": 190,
-          "teamTotalPoints": 585.5
+          "teamTotalPoints": 585.5,
+          "championshipPosition": 4
         },
         {
           "season": 2020,
@@ -19479,7 +19592,8 @@
             }
           ],
           "totalPoints": 125,
-          "teamTotalPoints": 195
+          "teamTotalPoints": 195,
+          "championshipPosition": 4
         },
         {
           "season": 2019,
@@ -19655,7 +19769,8 @@
             }
           ],
           "totalPoints": 52,
-          "teamTotalPoints": 73
+          "teamTotalPoints": 73,
+          "championshipPosition": 10
         },
         {
           "season": 2013,
@@ -19799,7 +19914,8 @@
             }
           ],
           "totalPoints": 39,
-          "teamTotalPoints": 122
+          "teamTotalPoints": 122,
+          "championshipPosition": 11
         },
         {
           "season": 2012,
@@ -19943,7 +20059,8 @@
             }
           ],
           "totalPoints": 66,
-          "teamTotalPoints": 126
+          "teamTotalPoints": 126,
+          "championshipPosition": 10
         },
         {
           "season": 2011,
@@ -20079,7 +20196,8 @@
             }
           ],
           "totalPoints": 12,
-          "teamTotalPoints": 44
+          "teamTotalPoints": 44,
+          "championshipPosition": 16
         }
       ]
     },
@@ -20304,7 +20422,8 @@
             }
           ],
           "totalPoints": 29,
-          "teamTotalPoints": 46
+          "teamTotalPoints": 46,
+          "championshipPosition": 12
         },
         {
           "season": 2023,
@@ -20488,7 +20607,8 @@
             }
           ],
           "totalPoints": 14,
-          "teamTotalPoints": 25
+          "teamTotalPoints": 25,
+          "championshipPosition": 14
         },
         {
           "season": 2022,
@@ -20672,7 +20792,8 @@
             }
           ],
           "totalPoints": 12,
-          "teamTotalPoints": 35
+          "teamTotalPoints": 35,
+          "championshipPosition": 17
         },
         {
           "season": 2021,
@@ -20856,7 +20977,8 @@
             }
           ],
           "totalPoints": 32,
-          "teamTotalPoints": 142
+          "teamTotalPoints": 142,
+          "championshipPosition": 14
         }
       ]
     },
@@ -20937,7 +21059,8 @@
             }
           ],
           "totalPoints": 4,
-          "teamTotalPoints": 46
+          "teamTotalPoints": 46,
+          "championshipPosition": 21
         },
         {
           "season": 2023,
@@ -20985,7 +21108,8 @@
             }
           ],
           "totalPoints": 2,
-          "teamTotalPoints": 25
+          "teamTotalPoints": 25,
+          "championshipPosition": 20
         }
       ]
     },
@@ -21233,7 +21357,8 @@
             }
           ],
           "totalPoints": 24,
-          "teamTotalPoints": 94
+          "teamTotalPoints": 94,
+          "championshipPosition": 13
         },
         {
           "season": 2023,
@@ -21417,7 +21542,8 @@
             }
           ],
           "totalPoints": 68,
-          "teamTotalPoints": 280
+          "teamTotalPoints": 280,
+          "championshipPosition": 10
         },
         {
           "season": 2022,
@@ -21601,7 +21727,8 @@
             }
           ],
           "totalPoints": 18,
-          "teamTotalPoints": 55
+          "teamTotalPoints": 55,
+          "championshipPosition": 15
         },
         {
           "season": 2021,
@@ -21785,7 +21912,8 @@
             }
           ],
           "totalPoints": 34,
-          "teamTotalPoints": 77
+          "teamTotalPoints": 77,
+          "championshipPosition": 13
         },
         {
           "season": 2020,
@@ -21921,7 +22049,8 @@
             }
           ],
           "totalPoints": 75,
-          "teamTotalPoints": 195
+          "teamTotalPoints": 195,
+          "championshipPosition": 11
         },
         {
           "season": 2019,
@@ -22097,7 +22226,8 @@
             }
           ],
           "totalPoints": 21,
-          "teamTotalPoints": 73
+          "teamTotalPoints": 73,
+          "championshipPosition": 15
         },
         {
           "season": 2018,
@@ -22273,7 +22403,8 @@
             }
           ],
           "totalPoints": 6,
-          "teamTotalPoints": 7
+          "teamTotalPoints": 7,
+          "championshipPosition": 18
         },
         {
           "season": 2017,
@@ -22441,7 +22572,8 @@
             }
           ],
           "totalPoints": 40,
-          "teamTotalPoints": 83
+          "teamTotalPoints": 83,
+          "championshipPosition": 12
         }
       ]
     },
@@ -22640,7 +22772,8 @@
             }
           ],
           "totalPoints": 7,
-          "teamTotalPoints": 46
+          "teamTotalPoints": 46,
+          "championshipPosition": 17
         },
         {
           "season": 2023,
@@ -22704,7 +22837,8 @@
             }
           ],
           "totalPoints": 6,
-          "teamTotalPoints": 25
+          "teamTotalPoints": 25,
+          "championshipPosition": 17
         },
         {
           "season": 2022,
@@ -22888,7 +23022,8 @@
             }
           ],
           "totalPoints": 34,
-          "teamTotalPoints": 159
+          "teamTotalPoints": 159,
+          "championshipPosition": 11
         },
         {
           "season": 2021,
@@ -23072,7 +23207,8 @@
             }
           ],
           "totalPoints": 114,
-          "teamTotalPoints": 275
+          "teamTotalPoints": 275,
+          "championshipPosition": 8
         },
         {
           "season": 2020,
@@ -23216,7 +23352,8 @@
             }
           ],
           "totalPoints": 119,
-          "teamTotalPoints": 181
+          "teamTotalPoints": 181,
+          "championshipPosition": 5
         },
         {
           "season": 2019,
@@ -23392,7 +23529,8 @@
             }
           ],
           "totalPoints": 54,
-          "teamTotalPoints": 91
+          "teamTotalPoints": 91,
+          "championshipPosition": 9
         },
         {
           "season": 2018,
@@ -23568,7 +23706,8 @@
             }
           ],
           "totalPoints": 170,
-          "teamTotalPoints": 419
+          "teamTotalPoints": 419,
+          "championshipPosition": 6
         },
         {
           "season": 2017,
@@ -23736,7 +23875,8 @@
             }
           ],
           "totalPoints": 200,
-          "teamTotalPoints": 368
+          "teamTotalPoints": 368,
+          "championshipPosition": 5
         },
         {
           "season": 2016,
@@ -23904,7 +24044,8 @@
             }
           ],
           "totalPoints": 244,
-          "teamTotalPoints": 468
+          "teamTotalPoints": 468,
+          "championshipPosition": 3
         },
         {
           "season": 2015,
@@ -24040,7 +24181,8 @@
             }
           ],
           "totalPoints": 81,
-          "teamTotalPoints": 187
+          "teamTotalPoints": 187,
+          "championshipPosition": 8
         },
         {
           "season": 2014,
@@ -24192,7 +24334,8 @@
             }
           ],
           "totalPoints": 230,
-          "teamTotalPoints": 405
+          "teamTotalPoints": 405,
+          "championshipPosition": 3
         },
         {
           "season": 2013,
@@ -24328,7 +24471,8 @@
             }
           ],
           "totalPoints": 19,
-          "teamTotalPoints": 33
+          "teamTotalPoints": 33,
+          "championshipPosition": 14
         },
         {
           "season": 2012,
@@ -24480,7 +24624,8 @@
             }
           ],
           "totalPoints": 10,
-          "teamTotalPoints": 26
+          "teamTotalPoints": 26,
+          "championshipPosition": 18
         }
       ]
     },
@@ -24664,7 +24809,8 @@
             }
           ],
           "totalPoints": 370,
-          "teamTotalPoints": 765
+          "teamTotalPoints": 765,
+          "championshipPosition": 1
         },
         {
           "season": 2015,
@@ -24824,7 +24970,8 @@
             }
           ],
           "totalPoints": 322,
-          "teamTotalPoints": 703
+          "teamTotalPoints": 703,
+          "championshipPosition": 2
         },
         {
           "season": 2014,
@@ -24968,7 +25115,8 @@
             }
           ],
           "totalPoints": 317,
-          "teamTotalPoints": 701
+          "teamTotalPoints": 701,
+          "championshipPosition": 2
         },
         {
           "season": 2013,
@@ -25112,7 +25260,8 @@
             }
           ],
           "totalPoints": 161,
-          "teamTotalPoints": 360
+          "teamTotalPoints": 360,
+          "championshipPosition": 6
         },
         {
           "season": 2012,
@@ -25264,7 +25413,8 @@
             }
           ],
           "totalPoints": 87,
-          "teamTotalPoints": 142
+          "teamTotalPoints": 142,
+          "championshipPosition": 9
         },
         {
           "season": 2011,
@@ -25408,7 +25558,8 @@
             }
           ],
           "totalPoints": 83,
-          "teamTotalPoints": 165
+          "teamTotalPoints": 165,
+          "championshipPosition": 7
         },
         {
           "season": 2010,
@@ -25544,7 +25695,8 @@
             }
           ],
           "totalPoints": 141,
-          "teamTotalPoints": 214
+          "teamTotalPoints": 214,
+          "championshipPosition": 7
         }
       ]
     },
@@ -25766,7 +25918,8 @@
             }
           ],
           "totalPoints": 21,
-          "teamTotalPoints": 76
+          "teamTotalPoints": 76,
+          "championshipPosition": 15
         },
         {
           "season": 2015,
@@ -25902,7 +26055,8 @@
             }
           ],
           "totalPoints": 4,
-          "teamTotalPoints": 27
+          "teamTotalPoints": 27,
+          "championshipPosition": 16
         },
         {
           "season": 2014,
@@ -26046,7 +26200,8 @@
             }
           ],
           "totalPoints": 122,
-          "teamTotalPoints": 181
+          "teamTotalPoints": 181,
+          "championshipPosition": 8
         },
         {
           "season": 2013,
@@ -26198,7 +26353,8 @@
             }
           ],
           "totalPoints": 67,
-          "teamTotalPoints": 122
+          "teamTotalPoints": 122,
+          "championshipPosition": 9
         },
         {
           "season": 2012,
@@ -26350,7 +26506,8 @@
             }
           ],
           "totalPoints": 186,
-          "teamTotalPoints": 378
+          "teamTotalPoints": 378,
+          "championshipPosition": 5
         },
         {
           "season": 2011,
@@ -26502,7 +26659,8 @@
             }
           ],
           "totalPoints": 270,
-          "teamTotalPoints": 497
+          "teamTotalPoints": 497,
+          "championshipPosition": 2
         },
         {
           "season": 2010,
@@ -26646,7 +26804,8 @@
             }
           ],
           "totalPoints": 204,
-          "teamTotalPoints": 454
+          "teamTotalPoints": 454,
+          "championshipPosition": 5
         }
       ]
     },
@@ -26838,7 +26997,8 @@
             }
           ],
           "totalPoints": 37,
-          "teamTotalPoints": 55
+          "teamTotalPoints": 55,
+          "championshipPosition": 12
         },
         {
           "season": 2021,
@@ -27022,7 +27182,8 @@
             }
           ],
           "totalPoints": 43,
-          "teamTotalPoints": 77
+          "teamTotalPoints": 77,
+          "championshipPosition": 12
         },
         {
           "season": 2020,
@@ -27166,7 +27327,8 @@
             }
           ],
           "totalPoints": 33,
-          "teamTotalPoints": 131
+          "teamTotalPoints": 131,
+          "championshipPosition": 13
         },
         {
           "season": 2019,
@@ -27342,7 +27504,8 @@
             }
           ],
           "totalPoints": 240,
-          "teamTotalPoints": 504
+          "teamTotalPoints": 504,
+          "championshipPosition": 5
         },
         {
           "season": 2018,
@@ -27518,7 +27681,8 @@
             }
           ],
           "totalPoints": 320,
-          "teamTotalPoints": 571
+          "teamTotalPoints": 571,
+          "championshipPosition": 2
         },
         {
           "season": 2017,
@@ -27686,7 +27850,8 @@
             }
           ],
           "totalPoints": 317,
-          "teamTotalPoints": 522
+          "teamTotalPoints": 522,
+          "championshipPosition": 2
         },
         {
           "season": 2016,
@@ -27846,7 +28011,8 @@
             }
           ],
           "totalPoints": 200,
-          "teamTotalPoints": 398
+          "teamTotalPoints": 398,
+          "championshipPosition": 4
         },
         {
           "season": 2015,
@@ -27990,7 +28156,8 @@
             }
           ],
           "totalPoints": 263,
-          "teamTotalPoints": 428
+          "teamTotalPoints": 428,
+          "championshipPosition": 3
         },
         {
           "season": 2014,
@@ -28142,7 +28309,8 @@
             }
           ],
           "totalPoints": 155,
-          "teamTotalPoints": 405
+          "teamTotalPoints": 405,
+          "championshipPosition": 5
         },
         {
           "season": 2013,
@@ -28294,7 +28462,8 @@
             }
           ],
           "totalPoints": 382,
-          "teamTotalPoints": 596
+          "teamTotalPoints": 596,
+          "championshipPosition": 1
         },
         {
           "season": 2012,
@@ -28454,7 +28623,8 @@
             }
           ],
           "totalPoints": 281,
-          "teamTotalPoints": 460
+          "teamTotalPoints": 460,
+          "championshipPosition": 1
         },
         {
           "season": 2011,
@@ -28614,7 +28784,8 @@
             }
           ],
           "totalPoints": 392,
-          "teamTotalPoints": 650
+          "teamTotalPoints": 650,
+          "championshipPosition": 1
         },
         {
           "season": 2010,
@@ -28758,7 +28929,8 @@
             }
           ],
           "totalPoints": 256,
-          "teamTotalPoints": 498
+          "teamTotalPoints": 498,
+          "championshipPosition": 1
         }
       ]
     },
@@ -28950,7 +29122,8 @@
             }
           ],
           "totalPoints": 10,
-          "teamTotalPoints": 13
+          "teamTotalPoints": 13,
+          "championshipPosition": 16
         },
         {
           "season": 2020,
@@ -29094,7 +29267,8 @@
             }
           ],
           "totalPoints": 4,
-          "teamTotalPoints": 8
+          "teamTotalPoints": 8,
+          "championshipPosition": 16
         },
         {
           "season": 2019,
@@ -29270,7 +29444,8 @@
             }
           ],
           "totalPoints": 43,
-          "teamTotalPoints": 57
+          "teamTotalPoints": 57,
+          "championshipPosition": 12
         },
         {
           "season": 2018,
@@ -29446,7 +29621,8 @@
             }
           ],
           "totalPoints": 251,
-          "teamTotalPoints": 571
+          "teamTotalPoints": 571,
+          "championshipPosition": 3
         },
         {
           "season": 2017,
@@ -29614,7 +29790,8 @@
             }
           ],
           "totalPoints": 205,
-          "teamTotalPoints": 522
+          "teamTotalPoints": 522,
+          "championshipPosition": 4
         },
         {
           "season": 2016,
@@ -29774,7 +29951,8 @@
             }
           ],
           "totalPoints": 168,
-          "teamTotalPoints": 398
+          "teamTotalPoints": 398,
+          "championshipPosition": 6
         },
         {
           "season": 2015,
@@ -29910,7 +30088,8 @@
             }
           ],
           "totalPoints": 136,
-          "teamTotalPoints": 428
+          "teamTotalPoints": 428,
+          "championshipPosition": 4
         },
         {
           "season": 2014,
@@ -30062,7 +30241,8 @@
             }
           ],
           "totalPoints": 55,
-          "teamTotalPoints": 216
+          "teamTotalPoints": 216,
+          "championshipPosition": 12
         }
       ]
     },
@@ -30270,7 +30450,8 @@
             }
           ],
           "totalPoints": 14,
-          "teamTotalPoints": 58
+          "teamTotalPoints": 58,
+          "championshipPosition": 15
         },
         {
           "season": 2023,
@@ -30454,7 +30635,8 @@
             }
           ],
           "totalPoints": 3,
-          "teamTotalPoints": 12
+          "teamTotalPoints": 12,
+          "championshipPosition": 19
         },
         {
           "season": 2022,
@@ -30638,7 +30820,8 @@
             }
           ],
           "totalPoints": 21,
-          "teamTotalPoints": 37
+          "teamTotalPoints": 37,
+          "championshipPosition": 13
         },
         {
           "season": 2020,
@@ -30782,7 +30965,8 @@
             }
           ],
           "totalPoints": 1,
-          "teamTotalPoints": 3
+          "teamTotalPoints": 3,
+          "championshipPosition": 20
         },
         {
           "season": 2019,
@@ -30958,7 +31142,8 @@
             }
           ],
           "totalPoints": 20,
-          "teamTotalPoints": 28
+          "teamTotalPoints": 28,
+          "championshipPosition": 16
         },
         {
           "season": 2018,
@@ -31134,7 +31319,8 @@
             }
           ],
           "totalPoints": 56,
-          "teamTotalPoints": 93
+          "teamTotalPoints": 93,
+          "championshipPosition": 9
         },
         {
           "season": 2017,
@@ -31302,7 +31488,8 @@
             }
           ],
           "totalPoints": 19,
-          "teamTotalPoints": 47
+          "teamTotalPoints": 47,
+          "championshipPosition": 14
         },
         {
           "season": 2016,
@@ -31446,7 +31633,8 @@
             }
           ],
           "totalPoints": 7,
-          "teamTotalPoints": 8
+          "teamTotalPoints": 8,
+          "championshipPosition": 16
         },
         {
           "season": 2015,
@@ -31614,7 +31802,8 @@
             }
           ],
           "totalPoints": 53,
-          "teamTotalPoints": 181
+          "teamTotalPoints": 181,
+          "championshipPosition": 11
         }
       ]
     },
@@ -31822,7 +32011,8 @@
             }
           ],
           "totalPoints": 12,
-          "teamTotalPoints": 37
+          "teamTotalPoints": 37,
+          "championshipPosition": 16
         },
         {
           "season": 2021,
@@ -32006,7 +32196,8 @@
             }
           ],
           "totalPoints": 0,
-          "teamTotalPoints": 0
+          "teamTotalPoints": 0,
+          "championshipPosition": 19
         }
       ]
     },
@@ -32230,7 +32421,8 @@
             }
           ],
           "totalPoints": 4,
-          "teamTotalPoints": 4
+          "teamTotalPoints": 4,
+          "championshipPosition": 20
         },
         {
           "season": 2023,
@@ -32414,7 +32606,8 @@
             }
           ],
           "totalPoints": 6,
-          "teamTotalPoints": 16
+          "teamTotalPoints": 16,
+          "championshipPosition": 18
         },
         {
           "season": 2022,
@@ -32598,7 +32791,8 @@
             }
           ],
           "totalPoints": 6,
-          "teamTotalPoints": 55
+          "teamTotalPoints": 55,
+          "championshipPosition": 18
         }
       ]
     },
@@ -32806,7 +33000,8 @@
             }
           ],
           "totalPoints": 2,
-          "teamTotalPoints": 8
+          "teamTotalPoints": 8,
+          "championshipPosition": 20
         },
         {
           "season": 2021,
@@ -32990,7 +33185,8 @@
             }
           ],
           "totalPoints": 7,
-          "teamTotalPoints": 23
+          "teamTotalPoints": 23,
+          "championshipPosition": 17
         },
         {
           "season": 2020,
@@ -33134,7 +33330,8 @@
             }
           ],
           "totalPoints": 0,
-          "teamTotalPoints": 0
+          "teamTotalPoints": 0,
+          "championshipPosition": 21
         }
       ]
     },
@@ -33246,7 +33443,8 @@
             }
           ],
           "totalPoints": 0,
-          "teamTotalPoints": 25
+          "teamTotalPoints": 25,
+          "championshipPosition": 22
         },
         {
           "season": 2022,
@@ -33262,7 +33460,8 @@
             }
           ],
           "totalPoints": 2,
-          "teamTotalPoints": 8
+          "teamTotalPoints": 8,
+          "championshipPosition": 21
         }
       ]
     },
@@ -33406,7 +33605,8 @@
             }
           ],
           "totalPoints": 0,
-          "teamTotalPoints": 17
+          "teamTotalPoints": 17,
+          "championshipPosition": 23
         },
         {
           "season": 2023,
@@ -33590,7 +33790,8 @@
             }
           ],
           "totalPoints": 1,
-          "teamTotalPoints": 28
+          "teamTotalPoints": 28,
+          "championshipPosition": 21
         }
       ]
     },
@@ -33750,7 +33951,8 @@
             }
           ],
           "totalPoints": 0,
-          "teamTotalPoints": 5
+          "teamTotalPoints": 5,
+          "championshipPosition": 18
         },
         {
           "season": 2012,
@@ -33910,7 +34112,8 @@
             }
           ],
           "totalPoints": 45,
-          "teamTotalPoints": 76
+          "teamTotalPoints": 76,
+          "championshipPosition": 15
         },
         {
           "season": 2011,
@@ -34046,7 +34249,8 @@
             }
           ],
           "totalPoints": 1,
-          "teamTotalPoints": 5
+          "teamTotalPoints": 5,
+          "championshipPosition": 19
         }
       ]
     },
@@ -34246,7 +34450,8 @@
             }
           ],
           "totalPoints": 9,
-          "teamTotalPoints": 48
+          "teamTotalPoints": 48,
+          "championshipPosition": 17
         },
         {
           "season": 2017,
@@ -34414,7 +34619,8 @@
             }
           ],
           "totalPoints": 0,
-          "teamTotalPoints": 5
+          "teamTotalPoints": 5,
+          "championshipPosition": 20
         },
         {
           "season": 2016,
@@ -34566,7 +34772,8 @@
             }
           ],
           "totalPoints": 0,
-          "teamTotalPoints": 2
+          "teamTotalPoints": 2,
+          "championshipPosition": 22
         },
         {
           "season": 2015,
@@ -34702,7 +34909,8 @@
             }
           ],
           "totalPoints": 8,
-          "teamTotalPoints": 36
+          "teamTotalPoints": 36,
+          "championshipPosition": 18
         }
       ]
     },
@@ -34886,7 +35094,8 @@
             }
           ],
           "totalPoints": 0,
-          "teamTotalPoints": 29
+          "teamTotalPoints": 29,
+          "championshipPosition": 21
         },
         {
           "season": 2014,
@@ -35014,7 +35223,8 @@
             }
           ],
           "totalPoints": 0,
-          "teamTotalPoints": 0
+          "teamTotalPoints": 0,
+          "championshipPosition": 20
         },
         {
           "season": 2013,
@@ -35158,7 +35368,8 @@
             }
           ],
           "totalPoints": 6,
-          "teamTotalPoints": 57
+          "teamTotalPoints": 57,
+          "championshipPosition": 16
         }
       ]
     },
@@ -35318,7 +35529,8 @@
             }
           ],
           "totalPoints": 8,
-          "teamTotalPoints": 57
+          "teamTotalPoints": 57,
+          "championshipPosition": 17
         },
         {
           "season": 2016,
@@ -35462,7 +35674,8 @@
             }
           ],
           "totalPoints": 1,
-          "teamTotalPoints": 8
+          "teamTotalPoints": 8,
+          "championshipPosition": 18
         }
       ]
     },
@@ -35638,7 +35851,8 @@
             }
           ],
           "totalPoints": 5,
-          "teamTotalPoints": 5
+          "teamTotalPoints": 5,
+          "championshipPosition": 18
         }
       ]
     },
@@ -35828,7 +36042,8 @@
             }
           ],
           "totalPoints": 2,
-          "teamTotalPoints": 2
+          "teamTotalPoints": 2,
+          "championshipPosition": 17
         },
         {
           "season": 2015,
@@ -35964,7 +36179,8 @@
             }
           ],
           "totalPoints": 23,
-          "teamTotalPoints": 36
+          "teamTotalPoints": 36,
+          "championshipPosition": 13
         }
       ]
     },
@@ -36216,7 +36432,8 @@
             }
           ],
           "totalPoints": 3,
-          "teamTotalPoints": 13
+          "teamTotalPoints": 13,
+          "championshipPosition": 18
         },
         {
           "season": 2020,
@@ -36360,7 +36577,8 @@
             }
           ],
           "totalPoints": 4,
-          "teamTotalPoints": 8
+          "teamTotalPoints": 8,
+          "championshipPosition": 17
         },
         {
           "season": 2019,
@@ -36536,7 +36754,8 @@
             }
           ],
           "totalPoints": 14,
-          "teamTotalPoints": 57
+          "teamTotalPoints": 57,
+          "championshipPosition": 17
         },
         {
           "season": 2017,
@@ -36560,7 +36779,8 @@
             }
           ],
           "totalPoints": 0,
-          "teamTotalPoints": 5
+          "teamTotalPoints": 5,
+          "championshipPosition": 22
         }
       ]
     },
@@ -36744,7 +36964,8 @@
             }
           ],
           "totalPoints": 43,
-          "teamTotalPoints": 83
+          "teamTotalPoints": 83,
+          "championshipPosition": 11
         },
         {
           "season": 2016,
@@ -36904,7 +37125,8 @@
             }
           ],
           "totalPoints": 51,
-          "teamTotalPoints": 138
+          "teamTotalPoints": 138,
+          "championshipPosition": 11
         },
         {
           "season": 2015,
@@ -37040,7 +37262,8 @@
             }
           ],
           "totalPoints": 113,
-          "teamTotalPoints": 257
+          "teamTotalPoints": 257,
+          "championshipPosition": 6
         },
         {
           "season": 2014,
@@ -37184,7 +37407,8 @@
             }
           ],
           "totalPoints": 134,
-          "teamTotalPoints": 320
+          "teamTotalPoints": 320,
+          "championshipPosition": 7
         },
         {
           "season": 2013,
@@ -37328,7 +37552,8 @@
             }
           ],
           "totalPoints": 102,
-          "teamTotalPoints": 354
+          "teamTotalPoints": 354,
+          "championshipPosition": 8
         },
         {
           "season": 2012,
@@ -37488,7 +37713,8 @@
             }
           ],
           "totalPoints": 122,
-          "teamTotalPoints": 400
+          "teamTotalPoints": 400,
+          "championshipPosition": 7
         },
         {
           "season": 2011,
@@ -37632,7 +37858,8 @@
             }
           ],
           "totalPoints": 118,
-          "teamTotalPoints": 375
+          "teamTotalPoints": 375,
+          "championshipPosition": 6
         },
         {
           "season": 2010,
@@ -37776,7 +38003,8 @@
             }
           ],
           "totalPoints": 136,
-          "teamTotalPoints": 396
+          "teamTotalPoints": 396,
+          "championshipPosition": 6
         }
       ]
     },
@@ -37928,7 +38156,8 @@
             }
           ],
           "totalPoints": 2,
-          "teamTotalPoints": 3
+          "teamTotalPoints": 3,
+          "championshipPosition": 19
         },
         {
           "season": 2019,
@@ -38104,7 +38333,8 @@
             }
           ],
           "totalPoints": 8,
-          "teamTotalPoints": 28
+          "teamTotalPoints": 28,
+          "championshipPosition": 18
         },
         {
           "season": 2018,
@@ -38280,7 +38510,8 @@
             }
           ],
           "totalPoints": 37,
-          "teamTotalPoints": 93
+          "teamTotalPoints": 93,
+          "championshipPosition": 14
         },
         {
           "season": 2017,
@@ -38448,7 +38679,8 @@
             }
           ],
           "totalPoints": 28,
-          "teamTotalPoints": 47
+          "teamTotalPoints": 47,
+          "championshipPosition": 13
         },
         {
           "season": 2016,
@@ -38600,7 +38832,8 @@
             }
           ],
           "totalPoints": 29,
-          "teamTotalPoints": 29
+          "teamTotalPoints": 29,
+          "championshipPosition": 13
         }
       ]
     },
@@ -38768,7 +39001,8 @@
             }
           ],
           "totalPoints": 32,
-          "teamTotalPoints": 107
+          "teamTotalPoints": 107,
+          "championshipPosition": 14
         },
         {
           "season": 2019,
@@ -38944,7 +39178,8 @@
             }
           ],
           "totalPoints": 37,
-          "teamTotalPoints": 85
+          "teamTotalPoints": 85,
+          "championshipPosition": 13
         },
         {
           "season": 2017,
@@ -39072,7 +39307,8 @@
             }
           ],
           "totalPoints": 5,
-          "teamTotalPoints": 53
+          "teamTotalPoints": 53,
+          "championshipPosition": 19
         },
         {
           "season": 2016,
@@ -39224,7 +39460,8 @@
             }
           ],
           "totalPoints": 24,
-          "teamTotalPoints": 468
+          "teamTotalPoints": 468,
+          "championshipPosition": 14
         },
         {
           "season": 2015,
@@ -39360,7 +39597,8 @@
             }
           ],
           "totalPoints": 71,
-          "teamTotalPoints": 187
+          "teamTotalPoints": 187,
+          "championshipPosition": 7
         },
         {
           "season": 2014,
@@ -39496,7 +39734,8 @@
             }
           ],
           "totalPoints": 8,
-          "teamTotalPoints": 30
+          "teamTotalPoints": 30,
+          "championshipPosition": 15
         }
       ]
     },
@@ -40764,7 +41003,8 @@
             }
           ],
           "totalPoints": 22,
-          "teamTotalPoints": 30
+          "teamTotalPoints": 30,
+          "championshipPosition": 13
         },
         {
           "season": 2013,
@@ -40892,7 +41132,8 @@
             }
           ],
           "totalPoints": 13,
-          "teamTotalPoints": 33
+          "teamTotalPoints": 33,
+          "championshipPosition": 15
         },
         {
           "season": 2012,
@@ -41036,7 +41277,8 @@
             }
           ],
           "totalPoints": 16,
-          "teamTotalPoints": 26
+          "teamTotalPoints": 26,
+          "championshipPosition": 17
         }
       ]
     },
@@ -41306,7 +41548,8 @@
             }
           ],
           "totalPoints": 15,
-          "teamTotalPoints": 41
+          "teamTotalPoints": 41,
+          "championshipPosition": 15
         },
         {
           "season": 2010,
@@ -41442,7 +41685,8 @@
             }
           ],
           "totalPoints": 6,
-          "teamTotalPoints": 13
+          "teamTotalPoints": 13,
+          "championshipPosition": 16
         }
       ]
     },
@@ -41744,7 +41988,8 @@
             }
           ],
           "totalPoints": 5,
-          "teamTotalPoints": 17
+          "teamTotalPoints": 17,
+          "championshipPosition": 19
         }
       ]
     }
