@@ -1,13 +1,16 @@
 /**
  * Update Driver Salaries Based on Perceived Reputation
  *
- * Combined perceived value formula (two equal components):
- * 1. Contribution ratio (0-0.5): weighted avg of (driver pts / team pts) with 0.8^i decay
- * 2. Championship position (0-0.5): normalized position (1st = 0.5, 20th = 0)
- *
- * This prevents the flaw where a driver on a weak team (e.g., Alex Albon scoring
- * 70% of Williams' points) ranks higher than a race winner on a strong team
- * (e.g., Oscar Piastri scoring 34% of McLaren's points).
+ * Combined perceived value formula (three components, max 1.0):
+ * 1. Contribution ratio (0-0.375): weighted avg of (driver pts / team pts) with 0.8^i decay
+ * 2. Championship position (0-0.375): normalized position (1st = 0.375, 20th = 0)
+ * 3. Experience scalar (0-0.25): based on career achievements
+ *    - 0.00: No F1 experience
+ *    - 0.05: Has raced in F1
+ *    - 0.10: Has scored points
+ *    - 0.15: Has scored a podium
+ *    - 0.20: Has won a race
+ *    - 0.25: Has won a championship
  *
  * Salary distribution:
  * - 100th percentile: $20M
@@ -26,21 +29,80 @@ const MAX_HISTORY_YEARS = 5;
 const MARKET_VALUE_FLOOR = 2_000_000;
 const MARKET_VALUE_CEILING = 20_000_000;
 const GRID_SIZE = 20; // Number of drivers on the F1 grid
+const MIN_RACES_FOR_FULL_SEASON = 10; // Exclude part-time/substitute seasons
 
 /**
- * Calculate perceived value from career history using two equal components:
- * 1. Contribution ratio (0-0.5): weighted avg of (driver pts / team pts)
- * 2. Championship position (0-0.5): normalized position (1st = 0.5, 20th = 0)
+ * Calculate experience scalar based on career achievements.
+ * Returns 0-0.25 based on highest achievement:
+ * - 0.00: No F1 experience
+ * - 0.05: Has raced in F1
+ * - 0.10: Has scored points
+ * - 0.15: Has scored a podium
+ * - 0.20: Has won a race
+ * - 0.25: Has won a championship
+ */
+function calculateExperienceScalar(careerHistory) {
+  if (!careerHistory || careerHistory.length === 0) {
+    return 0.00; // No F1 experience
+  }
+
+  let hasRaced = false;
+  let hasPoints = false;
+  let hasPodium = false;
+  let hasWin = false;
+  let hasChampionship = false;
+
+  for (const season of careerHistory) {
+    // Check for championship
+    if (season.championshipPosition === 1) {
+      hasChampionship = true;
+    }
+
+    // Check individual races
+    for (const race of season.races || []) {
+      hasRaced = true;
+      if (race.points > 0) hasPoints = true;
+      if (race.position !== null && race.position <= 3) hasPodium = true;
+      if (race.position === 1) hasWin = true;
+    }
+  }
+
+  // Return highest achievement scalar
+  if (hasChampionship) return 0.25;
+  if (hasWin) return 0.20;
+  if (hasPodium) return 0.15;
+  if (hasPoints) return 0.10;
+  if (hasRaced) return 0.05;
+  return 0.00;
+}
+
+/**
+ * Calculate perceived value from career history using three components:
+ * 1. Contribution ratio (0-0.375): weighted avg of (driver pts / team pts)
+ * 2. Championship position (0-0.375): normalized position (1st = 0.375, 20th = 0)
+ * 3. Experience scalar (0-0.25): based on career achievements
  *
- * Returns a value from 0 to 1.
+ * Returns a value from 0 to 1.0.
  */
 function calculatePerceivedValue(careerHistory) {
+  // Calculate experience scalar (0-0.25)
+  const experienceScalar = calculateExperienceScalar(careerHistory);
+
   if (!careerHistory || careerHistory.length === 0) {
-    return 0.5;
+    return 0.375 + experienceScalar; // Neutral base (0.5 * 0.75) + experience
+  }
+
+  // Filter out part-time/substitute seasons (fewer than 10 races)
+  const fullSeasons = careerHistory.filter(
+    (season) => (season.races?.length || 0) >= MIN_RACES_FOR_FULL_SEASON
+  );
+
+  if (fullSeasons.length === 0) {
+    return 0.375 + experienceScalar; // No full seasons, use neutral base
   }
 
   // Sort by season descending (most recent first)
-  const sorted = [...careerHistory].sort((a, b) => b.season - a.season);
+  const sorted = [...fullSeasons].sort((a, b) => b.season - a.season);
   const limited = sorted.slice(0, MAX_HISTORY_YEARS);
 
   let contributionWeightedSum = 0;
@@ -66,14 +128,14 @@ function calculatePerceivedValue(careerHistory) {
   }
 
   if (totalWeight === 0) {
-    return 0.5;
+    return 0.375 + experienceScalar;
   }
 
-  // Each component contributes 0-0.5 to the final value (0-1 total)
-  const contributionComponent = (contributionWeightedSum / totalWeight) * 0.5;
-  const positionComponent = (positionWeightedSum / totalWeight) * 0.5;
+  // Components: contribution (0-0.375) + position (0-0.375) + experience (0-0.25) = 0-1.0
+  const contributionComponent = (contributionWeightedSum / totalWeight) * 0.375;
+  const positionComponent = (positionWeightedSum / totalWeight) * 0.375;
 
-  return contributionComponent + positionComponent;
+  return contributionComponent + positionComponent + experienceScalar;
 }
 
 /**

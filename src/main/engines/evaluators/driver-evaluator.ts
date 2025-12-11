@@ -26,6 +26,9 @@ const DECAY_FACTOR = 0.8;
 /** Maximum seasons to consider for perceived value */
 const MAX_HISTORY_YEARS = 5;
 
+/** Number of drivers on the F1 grid (for normalizing championship position) */
+const GRID_SIZE = 20;
+
 /** Market value floor (0th percentile driver) */
 const MARKET_VALUE_FLOOR = 2_000_000;
 
