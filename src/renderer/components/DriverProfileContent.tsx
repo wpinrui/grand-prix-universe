@@ -365,14 +365,19 @@ function _CareerHistoryPanel({ seasonHistory }: CareerHistoryPanelProps) {
 // F1 CAREER HISTORY PANEL (REAL-WORLD DATA)
 // ===========================================
 
+/** Check if a status indicates retirement/DNF */
+function isRetiredStatus(status: string): boolean {
+  return status !== 'Finished' && !status.includes('Lap');
+}
+
 /** Get position style for historical results (matching FIA Results page) */
-function getHistoricalPositionStyle(position: number | null): string {
-  // DNF/Ret - purple (matching current season styling)
-  if (position === null) return 'bg-purple-600/50 text-purple-200';
+function getHistoricalPositionStyle(position: number | null, status: string): string {
+  // DNF/Ret - purple (check status, not just null position)
+  if (isRetiredStatus(status)) return 'bg-purple-600/50 text-purple-200';
   if (position === 1) return 'bg-amber-400/80 text-amber-950 font-bold';
   if (position === 2) return 'bg-gray-300/70 text-gray-800 font-bold';
   if (position === 3) return 'bg-orange-500/60 text-orange-100 font-bold';
-  if (position <= 10) return 'bg-[#99b382] text-neutral-900';
+  if (position !== null && position <= 10) return 'bg-[#99b382] text-neutral-900';
   return 'bg-[var(--neutral-700)]/50 text-muted';
 }
 
@@ -457,13 +462,14 @@ function F1CareerHistoryPanel({ careerHistory, teams }: F1CareerHistoryPanelProp
                   if (!race) {
                     return <td key={i} className="px-0.5 py-1 text-center" />;
                   }
+                  const isRetired = isRetiredStatus(race.status);
                   return (
                     <td key={i} className="px-0.5 py-1 text-center">
                       <div
-                        className={`h-6 text-xs rounded flex items-center justify-center ${getHistoricalPositionStyle(race.position)}`}
-                        title={`${race.name}: ${race.position !== null ? `P${race.position}` : 'DNF'} - ${race.points} pts (${race.status})`}
+                        className={`h-6 text-xs rounded flex items-center justify-center ${getHistoricalPositionStyle(race.position, race.status)}`}
+                        title={`${race.name}: ${isRetired ? 'Ret' : `P${race.position}`} - ${race.points} pts (${race.status})`}
                       >
-                        {race.position ?? 'Ret'}
+                        {isRetired ? 'Ret' : race.position}
                       </div>
                     </td>
                   );
