@@ -50,6 +50,15 @@ const INDUSTRY_ICONS: Record<string, string> = {
 
 const DEFAULT_ICON = '\u{1F4BC}'; // briefcase
 
+/** Divisor to convert currency to millions */
+const MILLIONS = 1_000_000;
+
+/** Min heights for empty slot variants */
+const EMPTY_SLOT_MIN_HEIGHT = {
+  large: 140,
+  medium: 100,
+} as const;
+
 // ===========================================
 // HELPER FUNCTIONS
 // ===========================================
@@ -76,6 +85,49 @@ function getContractStatus(deal: ActiveSponsorDeal, currentSeason: number): { la
 // ===========================================
 // SUB-COMPONENTS
 // ===========================================
+
+interface SponsorLogoProps {
+  sponsor: Sponsor;
+  size: 'sm' | 'md' | 'lg';
+}
+
+/** Reusable sponsor logo with industry icon fallback */
+function SponsorLogo({ sponsor, size }: SponsorLogoProps) {
+  const sizeClasses = {
+    sm: 'w-10 h-10 rounded',
+    md: 'w-12 h-12 rounded-lg',
+    lg: 'w-20 h-20 rounded-lg',
+  };
+  const iconSizes = {
+    sm: 'text-lg',
+    md: 'text-xl',
+    lg: 'text-3xl',
+  };
+  const imgPadding = {
+    sm: 'p-0.5',
+    md: 'p-1',
+    lg: 'p-1',
+  };
+
+  return (
+    <div className={`flex-shrink-0 ${sizeClasses[size]} bg-white flex items-center justify-center overflow-hidden`}>
+      {sponsor.logoUrl ? (
+        <img
+          src={sponsor.logoUrl}
+          alt={sponsor.name}
+          className={`max-w-full max-h-full object-contain ${imgPadding[size]}`}
+          onError={(e) => {
+            e.currentTarget.style.display = 'none';
+            e.currentTarget.nextElementSibling?.classList.remove('hidden');
+          }}
+        />
+      ) : null}
+      <span className={`${sponsor.logoUrl ? 'hidden' : ''} ${iconSizes[size]}`}>
+        {getIndustryIcon(sponsor.industry)}
+      </span>
+    </div>
+  );
+}
 
 interface IncomeSummaryProps {
   totalAnnual: number;
@@ -136,24 +188,7 @@ function SponsorCard({ sponsor, deal, currentSeason, variant }: SponsorCardProps
       className={`card ${isLarge ? 'p-6' : 'p-4'} flex ${isLarge ? 'flex-row gap-6' : 'flex-col gap-3'}`}
       style={ACCENT_CARD_STYLE}
     >
-      {/* Logo */}
-      <div className={`flex-shrink-0 ${isLarge ? 'w-20 h-20' : 'w-12 h-12'} bg-white rounded-lg flex items-center justify-center overflow-hidden`}>
-        {sponsor.logoUrl ? (
-          <img
-            src={sponsor.logoUrl}
-            alt={sponsor.name}
-            className="max-w-full max-h-full object-contain p-1"
-            onError={(e) => {
-              // Fallback to industry icon on load error
-              e.currentTarget.style.display = 'none';
-              e.currentTarget.nextElementSibling?.classList.remove('hidden');
-            }}
-          />
-        ) : null}
-        <span className={`${sponsor.logoUrl ? 'hidden' : ''} ${isLarge ? 'text-3xl' : 'text-xl'}`}>
-          {getIndustryIcon(sponsor.industry)}
-        </span>
-      </div>
+      <SponsorLogo sponsor={sponsor} size={isLarge ? 'lg' : 'md'} />
 
       {/* Details */}
       <div className="flex-1 min-w-0">
@@ -214,7 +249,7 @@ function EmptySlot({ tier, variant }: EmptySlotProps) {
   return (
     <div
       className={`card ${isLarge ? 'p-6' : 'p-4'} flex items-center justify-center border-2 border-dashed border-neutral-700 bg-neutral-800/30`}
-      style={{ minHeight: isLarge ? '140px' : '100px' }}
+      style={{ minHeight: isLarge ? EMPTY_SLOT_MIN_HEIGHT.large : EMPTY_SLOT_MIN_HEIGHT.medium }}
     >
       <div className="text-center">
         <div className={`${isLarge ? 'text-4xl' : 'text-2xl'} text-neutral-600 mb-2`}>+</div>
@@ -238,22 +273,8 @@ function MinorSponsorChip({ sponsor, deal, currentSeason }: MinorSponsorChipProp
 
   return (
     <div className="flex flex-col items-center p-3 rounded-lg bg-neutral-800/50 border border-neutral-700 min-w-[100px]">
-      {/* Logo */}
-      <div className="w-10 h-10 bg-white rounded flex items-center justify-center overflow-hidden mb-2">
-        {sponsor.logoUrl ? (
-          <img
-            src={sponsor.logoUrl}
-            alt={sponsor.name}
-            className="max-w-full max-h-full object-contain p-0.5"
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-              e.currentTarget.nextElementSibling?.classList.remove('hidden');
-            }}
-          />
-        ) : null}
-        <span className={`${sponsor.logoUrl ? 'hidden' : ''} text-lg`}>
-          {getIndustryIcon(sponsor.industry)}
-        </span>
+      <div className="mb-2">
+        <SponsorLogo sponsor={sponsor} size="sm" />
       </div>
 
       {/* Name */}
@@ -263,7 +284,7 @@ function MinorSponsorChip({ sponsor, deal, currentSeason }: MinorSponsorChipProp
 
       {/* Payment */}
       <div className="text-xs text-secondary mt-1">
-        {formatCurrency(deal.annualPayment / 1000000)}M
+        {formatCurrency(deal.annualPayment / MILLIONS)}M
       </div>
 
       {/* Contract */}
