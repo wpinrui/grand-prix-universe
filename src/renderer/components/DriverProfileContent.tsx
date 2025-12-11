@@ -441,7 +441,7 @@ function F1CareerHistoryPanel({ careerHistory, teams }: F1CareerHistoryPanelProp
                 </th>
               ))}
               <th className="w-[50px] px-2 py-2 text-right">Pts</th>
-              <th className="w-[40px] px-2 py-2 text-center">Pos</th>
+              <th className="w-[60px] px-2 py-2 text-center">Pos</th>
             </tr>
           </thead>
           <tbody className={TABLE_BODY_CLASS}>
@@ -483,7 +483,7 @@ function F1CareerHistoryPanel({ careerHistory, teams }: F1CareerHistoryPanelProp
                               : 'text-muted'
                       }`}
                     >
-                      {season.championshipPosition}
+                      {formatOrdinal(season.championshipPosition)}
                     </div>
                   ) : (
                     <span className="text-muted">-</span>
