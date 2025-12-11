@@ -178,7 +178,10 @@ function determineNewPhase(responseType: ResponseType): NegotiationPhase {
     case ResponseType.Reject:
       return NegotiationPhase.Failed;
     case ResponseType.Counter:
+      // Counterparty countered - player's turn to respond
+      return NegotiationPhase.ResponseReceived;
     case ResponseType.NeedTime:
+      // Counterparty needs more time - still waiting for their decision
       return NegotiationPhase.AwaitingResponse;
     default:
       return NegotiationPhase.AwaitingResponse;
