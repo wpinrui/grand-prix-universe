@@ -24,6 +24,7 @@ import type {
   TeamRuntimeState,
   ActiveSponsorDeal,
   ActiveManufacturerContract,
+  Manufacturer,
   DriverStanding,
   ConstructorStanding,
   RaceWeekendResult,
@@ -691,6 +692,18 @@ export interface NegotiationProcessingInput {
 
   /** All chiefs (for staff negotiations) */
   chiefs: Chief[];
+
+  /** All manufacturers (for engine negotiations) */
+  manufacturers: Manufacturer[];
+
+  /** Active manufacturer contracts (for desperation calculation) */
+  activeManufacturerContracts: ActiveManufacturerContract[];
+
+  /** Team IDs that have already secured contracts for next season */
+  securedTeamIds: string[];
+
+  /** Relationship scores by entity ID (entityId -> score 0-100) */
+  relationshipScores: Record<string, number>;
 }
 
 /**
