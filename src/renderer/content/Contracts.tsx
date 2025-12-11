@@ -2,12 +2,13 @@ import { useState, useMemo, useCallback } from 'react';
 import { useDerivedGameState } from '../hooks';
 import { SectionHeading, TabBar } from '../components';
 import type { Tab } from '../components';
-import { ACCENT_CARD_STYLE, GHOST_BORDERED_BUTTON_CLASSES } from '../utils/theme-styles';
+import { ACCENT_CARD_STYLE, GHOST_BORDERED_BUTTON_CLASSES, PRIMARY_BUTTON_CLASSES } from '../utils/theme-styles';
 import { formatMoney } from '../utils/format';
 import { seasonToYear } from '../../shared/utils/date-utils';
 import { IpcChannels } from '../../shared/ipc';
 import {
   ManufacturerType,
+  NegotiationStatus,
   type Manufacturer,
   type ActiveManufacturerContract,
   type TeamEngineState,
@@ -18,6 +19,7 @@ import {
   type Team,
   type TeamEngineAnalytics,
   type GameState,
+  type EngineNegotiation,
 } from '../../shared/domain';
 import {
   ENGINE_STAT_KEYS,
@@ -27,6 +29,7 @@ import {
   calculateAnalyticsConfidence,
   ANALYTICS_CONFIDENCE_LOW_THRESHOLD,
   ANALYTICS_CONFIDENCE_HIGH_THRESHOLD,
+  isContractExpiring,
 } from '../../shared/domain/engine-utils';
 
 // ===========================================
@@ -545,11 +548,316 @@ function AnalyticsTab({ gameState, teams, playerTeamId }: AnalyticsTabProps) {
   );
 }
 
-function ComingSoonTab({ tabName }: { tabName: string }) {
+// ===========================================
+// NEGOTIATION TAB
+// ===========================================
+
+interface NegotiationTabProps {
+  gameState: GameState;
+  manufacturers: Manufacturer[];
+  playerTeamId: string;
+  currentSeason: number;
+  onStartNegotiation: (manufacturerId: string) => void;
+  onRespondToOffer: (offerId: string, response: 'accept' | 'reject') => void;
+}
+
+/** Get status label and color for negotiation status */
+function getNegotiationStatusDisplay(status: NegotiationStatus): { label: string; colorClass: string } {
+  switch (status) {
+    case NegotiationStatus.AwaitingOffer:
+      return { label: 'Awaiting Response', colorClass: 'text-amber-400' };
+    case NegotiationStatus.OfferReceived:
+      return { label: 'Offer Received', colorClass: 'text-emerald-400' };
+    case NegotiationStatus.CounterPending:
+      return { label: 'Counter Pending', colorClass: 'text-amber-400' };
+    case NegotiationStatus.Accepted:
+      return { label: 'Accepted', colorClass: 'text-emerald-400' };
+    case NegotiationStatus.Rejected:
+      return { label: 'Rejected', colorClass: 'text-red-400' };
+    default:
+      return { label: 'Unknown', colorClass: 'text-neutral-400' };
+  }
+}
+
+interface ManufacturerRowProps {
+  manufacturer: Manufacturer;
+  hasActiveNegotiation: boolean;
+  isCurrentSupplier: boolean;
+  onStartNegotiation: () => void;
+}
+
+function ManufacturerRow({
+  manufacturer,
+  hasActiveNegotiation,
+  isCurrentSupplier,
+  onStartNegotiation,
+}: ManufacturerRowProps) {
   return (
-    <div className="card p-8 text-center" style={ACCENT_CARD_STYLE}>
-      <h3 className="text-xl font-semibold text-primary mb-2">{tabName}</h3>
-      <p className="text-muted">This feature is coming in a future update.</p>
+    <tr className="border-b border-neutral-700">
+      <td className="py-3 px-4">
+        <div className="flex items-center gap-2">
+          <span className="font-medium text-primary">{manufacturer.name}</span>
+          {isCurrentSupplier && (
+            <span className="text-xs bg-accent-600/30 text-accent-400 px-2 py-0.5 rounded">
+              Current
+            </span>
+          )}
+        </div>
+      </td>
+      <td className="py-3 px-4 text-secondary">
+        {manufacturer.reputation}
+      </td>
+      <td className="py-3 px-4 text-secondary">
+        {formatMoney(manufacturer.annualCost)}/year
+      </td>
+      <td className="py-3 px-4 text-center">
+        <button
+          type="button"
+          className={`${GHOST_BORDERED_BUTTON_CLASSES} text-sm cursor-pointer`}
+          onClick={onStartNegotiation}
+          disabled={hasActiveNegotiation}
+        >
+          {hasActiveNegotiation ? 'Negotiating' : 'Start Negotiation'}
+        </button>
+      </td>
+    </tr>
+  );
+}
+
+interface ActiveNegotiationCardProps {
+  negotiation: EngineNegotiation;
+  manufacturer: Manufacturer;
+  onRespondToOffer: (offerId: string, response: 'accept' | 'reject') => void;
+}
+
+function ActiveNegotiationCard({
+  negotiation,
+  manufacturer,
+  onRespondToOffer,
+}: ActiveNegotiationCardProps) {
+  const statusDisplay = getNegotiationStatusDisplay(negotiation.status);
+  const latestOffer = negotiation.offers[negotiation.offers.length - 1];
+
+  return (
+    <div className="card p-4" style={ACCENT_CARD_STYLE}>
+      <div className="flex justify-between items-start mb-4">
+        <div>
+          <h3 className="text-lg font-semibold text-primary">{manufacturer.name}</h3>
+          <p className="text-sm text-muted">
+            Negotiating for {seasonToYear(negotiation.forSeason)} season
+          </p>
+        </div>
+        <span className={`text-sm font-medium ${statusDisplay.colorClass}`}>
+          {statusDisplay.label}
+        </span>
+      </div>
+
+      {negotiation.status === NegotiationStatus.AwaitingOffer && (
+        <div className="bg-neutral-800/50 rounded-lg p-4 text-center">
+          <p className="text-muted text-sm">
+            Waiting for {manufacturer.name} to respond with an offer...
+          </p>
+          <p className="text-xs text-neutral-500 mt-2">
+            The manufacturer will respond within a few days.
+          </p>
+        </div>
+      )}
+
+      {negotiation.status === NegotiationStatus.OfferReceived && latestOffer && (
+        <div className="space-y-4">
+          <div className="bg-neutral-800/50 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-primary mb-3">Contract Offer</h4>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <span className="text-muted">Annual Cost:</span>
+                <span className="text-primary ml-2 font-medium">
+                  {formatMoney(latestOffer.terms.annualCost)}
+                </span>
+              </div>
+              <div>
+                <span className="text-muted">Duration:</span>
+                <span className="text-primary ml-2 font-medium">
+                  {latestOffer.terms.duration} year{latestOffer.terms.duration !== 1 ? 's' : ''}
+                </span>
+              </div>
+              <div>
+                <span className="text-muted">Upgrades Included:</span>
+                <span className="text-primary ml-2 font-medium">
+                  {latestOffer.terms.upgradesIncluded}/year
+                </span>
+              </div>
+              <div>
+                <span className="text-muted">Customisation Points:</span>
+                <span className="text-primary ml-2 font-medium">
+                  {latestOffer.terms.customisationPointsIncluded}
+                </span>
+              </div>
+              <div className="col-span-2">
+                <span className="text-muted">Optimisation:</span>
+                <span className={`ml-2 font-medium ${latestOffer.terms.optimisationIncluded ? 'text-emerald-400' : 'text-neutral-500'}`}>
+                  {latestOffer.terms.optimisationIncluded ? 'Included' : 'Not Included'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              className={`${PRIMARY_BUTTON_CLASSES} flex-1 cursor-pointer`}
+              onClick={() => onRespondToOffer(latestOffer.id, 'accept')}
+            >
+              Accept Offer
+            </button>
+            <button
+              type="button"
+              className={`${GHOST_BORDERED_BUTTON_CLASSES} flex-1 cursor-pointer`}
+              onClick={() => onRespondToOffer(latestOffer.id, 'reject')}
+            >
+              Reject
+            </button>
+          </div>
+        </div>
+      )}
+
+      {negotiation.status === NegotiationStatus.Accepted && (
+        <div className="bg-emerald-900/20 border border-emerald-600/30 rounded-lg p-4 text-center">
+          <p className="text-emerald-400 font-medium">
+            Contract signed! Your new engine supplier for {seasonToYear(negotiation.forSeason)}.
+          </p>
+        </div>
+      )}
+
+      {negotiation.status === NegotiationStatus.Rejected && (
+        <div className="bg-red-900/20 border border-red-600/30 rounded-lg p-4 text-center">
+          <p className="text-red-400 font-medium">
+            Negotiation ended. You can start a new negotiation with another manufacturer.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function NegotiationTab({
+  gameState,
+  manufacturers,
+  playerTeamId,
+  currentSeason,
+  onStartNegotiation,
+  onRespondToOffer,
+}: NegotiationTabProps) {
+  const engineManufacturers = manufacturers.filter((m) => m.type === ManufacturerType.Engine);
+
+  // Get player's active negotiations
+  const activeNegotiations = gameState.engineNegotiations.filter(
+    (n) => n.teamId === playerTeamId && n.status !== NegotiationStatus.Rejected
+  );
+
+  // Check if contract is expiring
+  const contractExpiring = isContractExpiring(
+    playerTeamId,
+    currentSeason,
+    gameState.manufacturerContracts
+  );
+
+  // Get current manufacturer ID
+  const currentContract = gameState.manufacturerContracts.find(
+    (c) => c.teamId === playerTeamId && c.type === ManufacturerType.Engine
+  );
+  const currentManufacturerId = currentContract?.manufacturerId;
+
+  return (
+    <div className="space-y-6">
+      {/* Contract Status Banner */}
+      {contractExpiring ? (
+        <div className="card p-4 bg-amber-900/20 border border-amber-600/30" style={ACCENT_CARD_STYLE}>
+          <div className="flex items-start gap-3">
+            <div className="text-amber-400 text-xl">⚠️</div>
+            <div>
+              <h3 className="text-sm font-semibold text-amber-400 mb-1">
+                Contract Expiring
+              </h3>
+              <p className="text-xs text-muted">
+                Your current engine contract expires at the end of this season.
+                Negotiate a new deal before the season ends to secure your engine supply.
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="card p-4" style={ACCENT_CARD_STYLE}>
+          <div className="flex items-start gap-3">
+            <div className="text-blue-400 text-xl">ℹ️</div>
+            <div>
+              <h3 className="text-sm font-semibold text-primary mb-1">
+                Engine Contract Negotiation
+              </h3>
+              <p className="text-xs text-muted">
+                Negotiate engine supply contracts for next season. Contact manufacturers to
+                receive offers, then accept or negotiate terms.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Active Negotiations */}
+      {activeNegotiations.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-primary">Active Negotiations</h3>
+          {activeNegotiations.map((negotiation) => {
+            const manufacturer = manufacturers.find(
+              (m) => m.id === negotiation.manufacturerId
+            );
+            if (!manufacturer) return null;
+
+            return (
+              <ActiveNegotiationCard
+                key={`${negotiation.teamId}-${negotiation.manufacturerId}`}
+                negotiation={negotiation}
+                manufacturer={manufacturer}
+                onRespondToOffer={onRespondToOffer}
+              />
+            );
+          })}
+        </div>
+      )}
+
+      {/* Available Manufacturers */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-primary">Engine Manufacturers</h3>
+        <div className="card overflow-hidden" style={ACCENT_CARD_STYLE}>
+          <table className="w-full">
+            <thead className="bg-neutral-800/50">
+              <tr className="text-left text-sm text-muted">
+                <th className="py-3 px-4 font-medium">Manufacturer</th>
+                <th className="py-3 px-4 font-medium">Reputation</th>
+                <th className="py-3 px-4 font-medium">Base Price</th>
+                <th className="py-3 px-4 font-medium text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {engineManufacturers.map((manufacturer) => {
+                const hasActiveNegotiation = activeNegotiations.some(
+                  (n) => n.manufacturerId === manufacturer.id
+                );
+                const isCurrentSupplier = manufacturer.id === currentManufacturerId;
+
+                return (
+                  <ManufacturerRow
+                    key={manufacturer.id}
+                    manufacturer={manufacturer}
+                    hasActiveNegotiation={hasActiveNegotiation}
+                    isCurrentSupplier={isCurrentSupplier}
+                    onStartNegotiation={() => onStartNegotiation(manufacturer.id)}
+                  />
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
@@ -632,6 +940,24 @@ export function Contracts() {
     }
   }, [refreshGameState]);
 
+  const handleStartNegotiation = useCallback(async (manufacturerId: string) => {
+    try {
+      await window.electronAPI.invoke(IpcChannels.ENGINE_START_NEGOTIATION, { manufacturerId });
+      refreshGameState();
+    } catch (error) {
+      console.error('Failed to start negotiation:', error);
+    }
+  }, [refreshGameState]);
+
+  const handleRespondToOffer = useCallback(async (offerId: string, response: 'accept' | 'reject') => {
+    try {
+      await window.electronAPI.invoke(IpcChannels.ENGINE_RESPOND_TO_OFFER, { offerId, response });
+      refreshGameState();
+    } catch (error) {
+      console.error('Failed to respond to offer:', error);
+    }
+  }, [refreshGameState]);
+
   if (isLoading) {
     return (
       <div className="p-4">
@@ -685,7 +1011,16 @@ export function Contracts() {
         />
       )}
 
-      {activeTab === 'negotiation' && <ComingSoonTab tabName="Negotiation" />}
+      {activeTab === 'negotiation' && (
+        <NegotiationTab
+          gameState={gameState}
+          manufacturers={gameState.manufacturers}
+          playerTeamId={gameState.player.teamId}
+          currentSeason={currentSeason}
+          onStartNegotiation={handleStartNegotiation}
+          onRespondToOffer={handleRespondToOffer}
+        />
+      )}
     </div>
   );
 }
