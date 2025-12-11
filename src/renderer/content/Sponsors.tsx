@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useDerivedGameState } from '../hooks';
 import { SectionHeading } from '../components';
 import { ACCENT_CARD_STYLE } from '../utils/theme-styles';
-import { formatCurrency } from '../utils/format';
+import { formatCurrency, formatCompact } from '../utils/format';
 import { seasonToYear } from '../../shared/utils/date-utils';
 import {
   SponsorTier,
@@ -50,8 +50,6 @@ const INDUSTRY_ICONS: Record<string, string> = {
 
 const DEFAULT_ICON = '\u{1F4BC}'; // briefcase
 
-/** Divisor to convert currency to millions */
-const MILLIONS = 1_000_000;
 
 /** Min heights for empty slot variants */
 const EMPTY_SLOT_MIN_HEIGHT = {
@@ -284,7 +282,7 @@ function MinorSponsorChip({ sponsor, deal, currentSeason }: MinorSponsorChipProp
 
       {/* Payment */}
       <div className="text-xs text-secondary mt-1">
-        {formatCurrency(deal.monthlyPayment / MILLIONS)}M/mo
+        ${formatCompact(deal.monthlyPayment)}/mo
       </div>
 
       {/* Contract */}
