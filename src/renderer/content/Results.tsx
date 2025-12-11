@@ -25,13 +25,59 @@ import type {
 } from '../../shared/domain';
 
 // ===========================================
+// HISTORICAL CIRCUIT ID TO COUNTRY MAPPING
+// ===========================================
+// Maps Ergast API circuit IDs to country names for flag display
+
+const HISTORICAL_CIRCUIT_COUNTRY: Record<string, string> = {
+  albert_park: 'Australia',
+  americas: 'United States',
+  bahrain: 'Bahrain',
+  baku: 'Azerbaijan',
+  buddh: 'India',
+  catalunya: 'Spain',
+  hockenheimring: 'Germany',
+  hungaroring: 'Hungary',
+  imola: 'Italy',
+  interlagos: 'Brazil',
+  istanbul: 'Turkey',
+  jeddah: 'Saudi Arabia',
+  losail: 'Qatar',
+  marina_bay: 'Singapore',
+  miami: 'United States',
+  monaco: 'Monaco',
+  monza: 'Italy',
+  mugello: 'Italy',
+  nurburgring: 'Germany',
+  portimao: 'Portugal',
+  red_bull_ring: 'Austria',
+  ricard: 'France',
+  rodriguez: 'Mexico',
+  sepang: 'Malaysia',
+  shanghai: 'China',
+  silverstone: 'United Kingdom',
+  sochi: 'Russia',
+  spa: 'Belgium',
+  suzuka: 'Japan',
+  valencia: 'Spain',
+  vegas: 'United States',
+  villeneuve: 'Canada',
+  yas_marina: 'United Arab Emirates',
+  yeongam: 'South Korea',
+  zandvoort: 'Netherlands',
+};
+
+function getHistoricalCircuitCountry(circuitId: string): string {
+  return HISTORICAL_CIRCUIT_COUNTRY[circuitId] ?? '';
+}
+
+// ===========================================
 // TYPES
 // ===========================================
 
 type ViewState =
   | { type: 'grid' }
-  | { type: 'race'; raceNumber: number }
-  | { type: 'driver'; driverId: string };
+  | { type: 'race'; raceNumber: number };
 
 // ===========================================
 // ENTITY LOOKUP HELPERS
@@ -423,10 +469,18 @@ function SeasonGrid({
       return b.season.totalPoints - a.season.totalPoints;
     });
 
-    // Get max number of races from all drivers in this season
-    const maxRaces = Math.max(...driverData.map((d) => d.season.races.length), 0);
+    // Collect all unique races across all drivers for header display
+    const raceMap = new Map<number, { round: number; name: string; circuitId: string }>();
+    for (const { season } of driverData) {
+      for (const race of season.races) {
+        if (!raceMap.has(race.round)) {
+          raceMap.set(race.round, { round: race.round, name: race.name, circuitId: race.circuitId });
+        }
+      }
+    }
+    const races = Array.from(raceMap.values()).sort((a, b) => a.round - b.round);
 
-    return { driverData, maxRaces, year };
+    return { driverData, races, year };
   }, [isHistorical, selectedSeasonOption?.year, drivers, teams]);
 
   // Render historical season grid
@@ -450,17 +504,30 @@ function SeasonGrid({
                 <th className="w-12 px-3 py-3 text-center">Pos</th>
                 <th className="w-40 px-3 py-3 text-left">Driver</th>
                 <th className="w-28 px-2 py-3 text-left">Team</th>
-                {Array.from({ length: historicalData.maxRaces }, (_, i) => (
-                  <th key={i + 1} className="w-9 px-0.5 py-2 text-center">
-                    <span className="text-xs text-muted">R{i + 1}</span>
-                  </th>
-                ))}
+                {historicalData.races.map((race) => {
+                  const country = getHistoricalCircuitCountry(race.circuitId);
+                  const countryCode = country.slice(0, 3).toUpperCase() || '???';
+                  return (
+                    <th key={race.round} className="w-9 px-0.5 py-2 text-center">
+                      <div
+                        className="flex flex-col items-center gap-0.5 mx-auto"
+                        title={race.name}
+                      >
+                        <FlagIcon country={country} size="sm" />
+                        <span className="text-[10px] text-muted uppercase">{countryCode}</span>
+                      </div>
+                    </th>
+                  );
+                })}
                 <th className="w-14 px-3 py-3 text-right">Pts</th>
               </tr>
             </thead>
             <tbody className={TABLE_BODY_CLASS}>
               {historicalData.driverData.map(({ driverId, driver, season, team }, index) => (
-                <tr key={driverId} className="border-b border-[var(--border-color)] hover:bg-[var(--neutral-800)]/50">
+                <tr
+                  key={driverId}
+                  className="border-b border-[var(--neutral-700)] hover:bg-[var(--neutral-800)]/50"
+                >
                   <td className="w-12 px-3 py-2 text-center font-bold text-primary tabular-nums">
                     {season.championshipPosition ?? index + 1}
                   </td>
@@ -476,14 +543,14 @@ function SeasonGrid({
                   <td className="w-28 px-2 py-2 text-secondary text-sm whitespace-nowrap">
                     {team?.shortName ?? season.teamId}
                   </td>
-                  {Array.from({ length: historicalData.maxRaces }, (_, i) => {
-                    const race = season.races.find((r) => r.round === i + 1);
+                  {historicalData.races.map((raceInfo) => {
+                    const race = season.races.find((r) => r.round === raceInfo.round);
                     if (!race) {
-                      return <td key={i + 1} className="w-9 px-0.5 py-1 text-center" />;
+                      return <td key={raceInfo.round} className="w-9 px-0.5 py-1 text-center" />;
                     }
                     return (
                       <HistoricalResultCell
-                        key={i + 1}
+                        key={raceInfo.round}
                         result={race}
                         pointsPositions={10} // F1 top 10 score points
                       />
@@ -760,265 +827,6 @@ function HistoricalResultCell({ result, pointsPositions }: HistoricalResultCellP
   );
 }
 
-interface DriverCareerViewProps {
-  driver: Driver;
-  team: Team | undefined;
-  calendar: CalendarEntry[];
-  lookups: EntityLookups;
-  pointsPositions: number;
-  playerTeamId: string;
-  teams: Team[];
-  currentSeasonYear: number;
-  onBack: () => void;
-  onRaceClick: (raceNumber: number) => void;
-}
-
-function DriverCareerView({
-  driver,
-  team,
-  calendar,
-  lookups,
-  pointsPositions,
-  playerTeamId,
-  teams,
-  currentSeasonYear,
-  onBack,
-  onRaceClick,
-}: DriverCareerViewProps) {
-  const { getCircuit } = lookups;
-  const isPlayerTeam = driver.teamId === playerTeamId;
-  const rowStyles = getHighlightedRowStyles(isPlayerTeam);
-
-  // Build season options: current game season + F1 historical seasons
-  const seasonOptions = useMemo((): SeasonOption[] => {
-    const options: SeasonOption[] = [];
-
-    // Current game season
-    options.push({
-      value: 'current',
-      label: `${currentSeasonYear} (Current)`,
-      type: 'current',
-      year: currentSeasonYear,
-    });
-
-    // Historical F1 seasons from careerHistory
-    if (driver.careerHistory && driver.careerHistory.length > 0) {
-      const sorted = [...driver.careerHistory].sort((a, b) => b.season - a.season);
-      for (const season of sorted) {
-        options.push({
-          value: `f1-${season.season}`,
-          label: `${season.season} (F1)`,
-          type: 'historical',
-          year: season.season,
-        });
-      }
-    }
-
-    return options;
-  }, [driver.careerHistory, currentSeasonYear]);
-
-  const [selectedSeason, setSelectedSeason] = useState<string>('current');
-
-  // Get the selected season data
-  const selectedSeasonOption = seasonOptions.find((s) => s.value === selectedSeason) ?? seasonOptions[0];
-  const isHistorical = selectedSeasonOption?.type === 'historical';
-
-  // Get historical season data if viewing historical
-  const historicalSeason = useMemo((): CareerSeasonRecord | null => {
-    if (!isHistorical || !driver.careerHistory) return null;
-    return driver.careerHistory.find((s) => s.season === selectedSeasonOption.year) ?? null;
-  }, [isHistorical, driver.careerHistory, selectedSeasonOption?.year]);
-
-  // Build team name lookup
-  const teamNames = useMemo(() => new Map(teams.map((t) => [t.id, t.name])), [teams]);
-
-  // Current season driver results
-  const driverResults = useMemo(() => {
-    const results: Array<{ entry: CalendarEntry; result: DriverRaceResult }> = [];
-    for (const entry of calendar) {
-      if (entry.result) {
-        const driverResult = entry.result.race.find((r) => r.driverId === driver.id);
-        if (driverResult) {
-          results.push({ entry, result: driverResult });
-        }
-      }
-    }
-    return results;
-  }, [calendar, driver.id]);
-
-  // Stats for current season
-  const currentStats = useMemo(() => {
-    let points = 0;
-    let wins = 0;
-    let podiums = 0;
-    let dnfs = 0;
-
-    for (const { result } of driverResults) {
-      points += result.points;
-      if (result.finishPosition === 1) wins++;
-      if (result.finishPosition !== null && result.finishPosition <= 3) podiums++;
-      if (result.finishPosition === null) dnfs++;
-    }
-
-    return { points, wins, podiums, dnfs, races: driverResults.length };
-  }, [driverResults]);
-
-  // Stats for historical season
-  const historicalStats = useMemo(() => {
-    if (!historicalSeason) return null;
-
-    const races = historicalSeason.races;
-    const wins = races.filter((r) => r.position === 1).length;
-    const podiums = races.filter((r) => r.position !== null && r.position <= 3).length;
-    const dnfs = races.filter((r) => r.position === null).length;
-
-    return {
-      points: historicalSeason.totalPoints,
-      wins,
-      podiums,
-      dnfs,
-      races: races.length,
-    };
-  }, [historicalSeason]);
-
-  const displayStats = isHistorical ? historicalStats : currentStats;
-  const historicalTeamName = historicalSeason ? teamNames.get(historicalSeason.teamId) ?? historicalSeason.teamId : null;
-
-  return (
-    <div className="space-y-6">
-      <BackButton onClick={onBack} />
-
-      {/* Header with Season Selector */}
-      <div className="flex items-center justify-between">
-        <DetailHeader
-          flagCountry={driver.nationality}
-          title={`${driver.firstName} ${driver.lastName}`}
-          subtitle={isHistorical ? (historicalTeamName ?? 'Unknown Team') : (team?.name ?? 'Free Agent')}
-        />
-        {seasonOptions.length > 1 && (
-          <div className="w-48">
-            <Dropdown
-              value={selectedSeason}
-              onChange={setSelectedSeason}
-              options={seasonOptions.map((s) => ({ value: s.value, label: s.label }))}
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Season Stats Summary */}
-      {displayStats && (
-        <div className="grid grid-cols-5 gap-4">
-          {[
-            { label: 'Races', value: displayStats.races },
-            { label: 'Points', value: displayStats.points },
-            { label: 'Wins', value: displayStats.wins },
-            { label: 'Podiums', value: displayStats.podiums },
-            { label: 'DNFs', value: displayStats.dnfs },
-          ].map(({ label, value }) => (
-            <div key={label} className="card p-4 text-center">
-              <div className="text-3xl font-bold text-primary tabular-nums">{value}</div>
-              <div className="text-sm text-muted uppercase">{label}</div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Results Grid - Historical Season */}
-      {isHistorical && historicalSeason && (
-        <section>
-          <SectionHeading>{selectedSeasonOption.year} Results</SectionHeading>
-          <div className="card overflow-hidden overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className={TABLE_HEADER_CLASS}>
-                <tr className={TABLE_HEADER_ROW_CLASS}>
-                  <th className="min-w-[180px] px-3 py-3 text-left">Team</th>
-                  {historicalSeason.races.map((race) => (
-                    <th key={race.round} className="w-9 px-0.5 py-2 text-center">
-                      <span className="text-xs text-muted" title={race.name}>
-                        R{race.round}
-                      </span>
-                    </th>
-                  ))}
-                  <th className="w-14 px-3 py-3 text-right">Pts</th>
-                </tr>
-              </thead>
-              <tbody className={TABLE_BODY_CLASS}>
-                <tr>
-                  <td className="min-w-[180px] px-3 py-2 whitespace-nowrap text-secondary">
-                    {historicalTeamName ?? historicalSeason.teamId}
-                  </td>
-                  {historicalSeason.races.map((race) => (
-                    <HistoricalResultCell
-                      key={race.round}
-                      result={race}
-                      pointsPositions={10} // F1 top 10 score points
-                    />
-                  ))}
-                  <td className="w-14 px-3 py-2 text-right font-bold tabular-nums">
-                    {historicalSeason.totalPoints}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-      )}
-
-      {/* Results Grid - Current Season */}
-      {!isHistorical && (
-        <section>
-          <SectionHeading>Season Results</SectionHeading>
-          <div className="card overflow-hidden overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className={TABLE_HEADER_CLASS}>
-                <tr className={TABLE_HEADER_ROW_CLASS}>
-                  <th className="min-w-[180px] px-3 py-3 text-left">Team</th>
-                  {calendar.map((entry) => {
-                    const circuit = getCircuit(entry.circuitId);
-                    return (
-                      <th key={entry.raceNumber} className="w-9 px-0.5 py-2 text-center">
-                        <div className="flex flex-col items-center gap-0.5 mx-auto">
-                          <FlagIcon country={circuit?.country ?? ''} size="sm" />
-                        </div>
-                      </th>
-                    );
-                  })}
-                  <th className="w-14 px-3 py-3 text-right">Pts</th>
-                </tr>
-              </thead>
-              <tbody className={TABLE_BODY_CLASS}>
-                <tr className={rowStyles.rowClass} style={rowStyles.rowStyle}>
-                  <td className="min-w-[180px] px-3 py-2 whitespace-nowrap text-secondary">
-                    {team?.name ?? 'N/A'}
-                  </td>
-                  {calendar.map((entry) => {
-                    const driverResult = driverResults.find(
-                      (r) => r.entry.raceNumber === entry.raceNumber
-                    )?.result;
-
-                    return (
-                      <ResultCell
-                        key={entry.raceNumber}
-                        result={driverResult}
-                        pointsPositions={pointsPositions}
-                        onClick={() => entry.completed && onRaceClick(entry.raceNumber)}
-                      />
-                    );
-                  })}
-                  <td className="w-14 px-3 py-2 text-right font-bold tabular-nums">
-                    {currentStats.points}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-      )}
-    </div>
-  );
-}
-
 // ===========================================
 // MAIN COMPONENT
 // ===========================================
@@ -1026,9 +834,10 @@ function DriverCareerView({
 interface ResultsProps {
   initialRaceNumber?: number | null;
   onRaceViewed?: () => void;
+  onNavigateToDriver?: (driverId: string) => void;
 }
 
-export function Results({ initialRaceNumber, onRaceViewed }: ResultsProps) {
+export function Results({ initialRaceNumber, onRaceViewed, onNavigateToDriver }: ResultsProps) {
   const { gameState, playerTeam } = useDerivedGameState();
   const [view, setView] = useState<ViewState>({ type: 'grid' });
 
@@ -1042,7 +851,7 @@ export function Results({ initialRaceNumber, onRaceViewed }: ResultsProps) {
 
   const goToGrid = () => setView({ type: 'grid' });
   const goToRace = (raceNumber: number) => setView({ type: 'race', raceNumber });
-  const goToDriver = (driverId: string) => setView({ type: 'driver', driverId });
+  const goToDriver = (driverId: string) => onNavigateToDriver?.(driverId);
 
   if (!gameState || !playerTeam) {
     return (
@@ -1060,7 +869,7 @@ export function Results({ initialRaceNumber, onRaceViewed }: ResultsProps) {
 
   // Create lookups once and pass to child components
   const lookups = createEntityLookups(drivers, teams, circuits);
-  const { getDriver, getTeam, getCircuit } = lookups;
+  const { getCircuit } = lookups;
 
   // Race detail view
   if (view.type === 'race') {
@@ -1074,27 +883,6 @@ export function Results({ initialRaceNumber, onRaceViewed }: ResultsProps) {
           playerTeamId={playerTeam.id}
           onBack={goToGrid}
           onDriverClick={goToDriver}
-        />
-      );
-    }
-  }
-
-  // Driver career view
-  if (view.type === 'driver') {
-    const driver = getDriver(view.driverId);
-    if (driver) {
-      return (
-        <DriverCareerView
-          driver={driver}
-          team={driver.teamId ? getTeam(driver.teamId) : undefined}
-          calendar={calendar}
-          lookups={lookups}
-          pointsPositions={pointsPositions}
-          playerTeamId={playerTeam.id}
-          teams={teams}
-          currentSeasonYear={seasonToYear(gameState.currentSeason.seasonNumber)}
-          onBack={goToGrid}
-          onRaceClick={goToRace}
         />
       );
     }

@@ -354,6 +354,7 @@ export function MainLayout() {
         <Results
           initialRaceNumber={targetRaceNumber}
           onRaceViewed={() => setTargetRaceNumber(null)}
+          onNavigateToDriver={(driverId) => navigateToEntity('driver', driverId)}
         />
       );
     }
