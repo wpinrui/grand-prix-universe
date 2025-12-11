@@ -521,6 +521,7 @@ export interface Sponsor {
   payment: number; // annual payment in dollars
   minReputation: number; // 0-100, team must have at least this reputation
   rivalGroup: string | null; // sponsors in same group are mutually exclusive
+  logoUrl: string | null; // URL to sponsor logo, null = use industry icon fallback
 }
 
 // =============================================================================
