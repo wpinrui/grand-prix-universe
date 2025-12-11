@@ -733,6 +733,45 @@ export function createManufacturerNegotiation(
 }
 
 /**
+ * Creates a proactive outreach negotiation (manufacturer initiates contact)
+ * Used when manufacturer reaches out to team with expiring contract
+ */
+export function createProactiveOutreach(
+  teamId: string,
+  manufacturerId: string,
+  forSeason: number,
+  currentDate: GameDate,
+  initialTerms: ContractTerms
+): ManufacturerNegotiation {
+  const expiresDate = offsetDate(currentDate, OFFER_EXPIRY_DAYS);
+
+  return {
+    id: `neg-mfg-${manufacturerId}-${teamId}-${Date.now()}`,
+    stakeholderType: StakeholderType.Manufacturer,
+    teamId,
+    manufacturerId,
+    phase: NegotiationPhase.ResponseReceived, // Team needs to respond
+    forSeason,
+    startedDate: { ...currentDate },
+    lastActivityDate: { ...currentDate },
+    rounds: [
+      {
+        roundNumber: 1,
+        offeredBy: 'counterparty', // Manufacturer initiated
+        terms: initialTerms,
+        offeredDate: { ...currentDate },
+        expiresDate,
+      },
+    ],
+    currentRound: 1,
+    maxRounds: DEFAULT_MAX_ROUNDS,
+    relationshipScoreBefore: DEFAULT_RELATIONSHIP_SCORE,
+    hasCompetingOffer: false,
+    isProactiveOutreach: true,
+  };
+}
+
+/**
  * Checks if a team's contract is expiring at end of current season
  */
 export function isContractExpiring(

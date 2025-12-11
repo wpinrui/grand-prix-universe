@@ -38,6 +38,8 @@ import type {
   ChampionshipStandings,
   DesignUpdate,
   TestingUpdate,
+  NegotiationProcessingInput,
+  NegotiationUpdate,
 } from '../../shared/domain/engines';
 import type {
   GameState,
@@ -146,7 +148,10 @@ import {
   getEffectiveEngineStats,
   getSpecBonusesAsEngineStats,
   createManufacturerNegotiation,
+  createProactiveOutreach,
   generateBaseContractTerms,
+  isContractExpiring,
+  getCurrentManufacturer,
   OFFER_EXPIRY_DAYS,
   LATE_SEASON_MONTH,
 } from '../../shared/domain/engine-utils';
@@ -207,6 +212,11 @@ const SIM_MAX_SPEED = 3.0;      // Maximum speed multiplier (333ms per tick)
 
 /** Initial technology attribute level (0-100 scale, 35 = midpoint of 10-60 normalized range) */
 const INITIAL_TECH_LEVEL = 35;
+
+/** Proactive outreach timing - current supplier reaches out in May */
+const OUTREACH_CURRENT_SUPPLIER_MONTH = 5;
+/** Proactive outreach timing - other manufacturers reach out in June-July */
+const OUTREACH_OTHER_MANUFACTURERS_MONTH = 6;
 
 /**
  * Creates initial technology levels for all 7 components
@@ -1906,6 +1916,210 @@ function processSpecReleases(state: GameState, currentDate: GameDate): void {
 }
 
 /**
+ * Build input for negotiation engine processing
+ */
+function buildNegotiationInput(state: GameState): NegotiationProcessingInput {
+  // Get team IDs that have already secured contracts for next season
+  const nextSeason = state.currentSeason.seasonNumber + 1;
+  const securedTeamIds = state.manufacturerContracts
+    .filter((c) => c.type === ManufacturerType.Engine && c.endSeason >= nextSeason)
+    .map((c) => c.teamId);
+
+  return {
+    negotiations: state.negotiations,
+    currentDate: state.currentDate,
+    teams: state.teams,
+    drivers: state.drivers,
+    chiefs: state.chiefs,
+    manufacturers: state.manufacturers,
+    activeManufacturerContracts: state.manufacturerContracts,
+    securedTeamIds,
+    relationshipScores: {}, // TODO: Implement relationship tracking
+  };
+}
+
+/**
+ * Apply negotiation updates to game state
+ * Returns true if any update should stop simulation (for player team)
+ */
+function applyNegotiationUpdates(state: GameState, updates: NegotiationUpdate[]): boolean {
+  let shouldStop = false;
+  const playerTeamId = state.player.teamId;
+
+  for (const update of updates) {
+    // Find and update the negotiation
+    const index = state.negotiations.findIndex((n) => n.id === update.negotiationId);
+    if (index !== -1 && update.updatedNegotiation) {
+      state.negotiations[index] = update.updatedNegotiation;
+
+      // Check if this affects player and should stop simulation
+      if (update.shouldStopSimulation && update.updatedNegotiation.teamId === playerTeamId) {
+        shouldStop = true;
+
+        // Generate email for player
+        const neg = update.updatedNegotiation as ManufacturerNegotiation;
+        const manufacturer = state.manufacturers.find((m) => m.id === neg.manufacturerId);
+        if (manufacturer) {
+          const latestRound = neg.rounds[neg.rounds.length - 1];
+          const phase = neg.phase;
+
+          let subject: string;
+          let body: string;
+
+          if (phase === NegotiationPhase.Completed) {
+            subject = `${manufacturer.name} accepts your offer`;
+            body = `Great news! ${manufacturer.name} has accepted your contract proposal. The deal is now complete.`;
+          } else if (phase === NegotiationPhase.Failed) {
+            subject = `${manufacturer.name} rejects negotiation`;
+            body = `${manufacturer.name} has declined to continue negotiations. You may approach other manufacturers.`;
+          } else if (phase === NegotiationPhase.ResponseReceived) {
+            subject = `${manufacturer.name} responds with counter-offer`;
+            body = latestRound?.isUltimatum
+              ? `${manufacturer.name} has made a final offer. This is their last position - accept or reject.`
+              : `${manufacturer.name} has responded with a counter-proposal. Review their terms and decide how to proceed.`;
+          } else {
+            subject = `Update from ${manufacturer.name}`;
+            body = `${manufacturer.name} has updated the negotiation status.`;
+          }
+
+          state.calendarEvents.push({
+            id: randomUUID(),
+            date: state.currentDate,
+            type: CalendarEventType.Email,
+            subject,
+            body,
+            critical: true,
+          });
+        }
+      }
+    }
+  }
+
+  return shouldStop;
+}
+
+/**
+ * Check if a manufacturer has already reached out to a team this season
+ * (prevents spam - only one outreach per manufacturer per team per season)
+ */
+function hasExistingNegotiation(
+  state: GameState,
+  teamId: string,
+  manufacturerId: string,
+  forSeason: number
+): boolean {
+  return state.negotiations.some(
+    (n) =>
+      n.stakeholderType === StakeholderType.Manufacturer &&
+      n.teamId === teamId &&
+      (n as ManufacturerNegotiation).manufacturerId === manufacturerId &&
+      n.forSeason === forSeason
+  );
+}
+
+/**
+ * Generate proactive outreach from manufacturers to teams with expiring contracts
+ * Called during daily processing - checks date triggers
+ */
+function processProactiveOutreach(state: GameState): boolean {
+  const { currentDate, currentSeason } = state;
+  const { month, day } = currentDate;
+  const nextSeason = currentSeason.seasonNumber + 1;
+  const playerTeamId = state.player.teamId;
+  let playerReceivedOutreach = false;
+
+  // Only trigger on day 1 of the outreach months
+  if (day !== 1) return false;
+
+  // Get all teams with expiring contracts
+  const teamsWithExpiringContracts = state.teams.filter((team) =>
+    isContractExpiring(team.id, currentSeason.seasonNumber, state.manufacturerContracts)
+  );
+
+  if (teamsWithExpiringContracts.length === 0) return false;
+
+  // Get engine manufacturers (non-factory teams can be approached)
+  const engineManufacturers = state.manufacturers.filter(
+    (m) => m.type === ManufacturerType.Engine
+  );
+
+  for (const team of teamsWithExpiringContracts) {
+    const currentManufacturerId = getCurrentManufacturer(team.id, state.manufacturerContracts);
+
+    // Current supplier reaches out in May
+    if (month === OUTREACH_CURRENT_SUPPLIER_MONTH && currentManufacturerId) {
+      if (!hasExistingNegotiation(state, team.id, currentManufacturerId, nextSeason)) {
+        const manufacturer = engineManufacturers.find((m) => m.id === currentManufacturerId);
+        if (manufacturer) {
+          // Generate terms (current supplier offers retention terms)
+          const terms = generateBaseContractTerms(manufacturer, 0, false);
+          const negotiation = createProactiveOutreach(
+            team.id,
+            currentManufacturerId,
+            nextSeason,
+            currentDate,
+            terms
+          );
+          state.negotiations.push(negotiation);
+
+          // Email for player team
+          if (team.id === playerTeamId) {
+            playerReceivedOutreach = true;
+            state.calendarEvents.push({
+              id: randomUUID(),
+              date: currentDate,
+              type: CalendarEventType.Email,
+              subject: `${manufacturer.name} wishes to discuss contract renewal`,
+              body: `Your current engine supplier, ${manufacturer.name}, would like to discuss renewing your contract for the ${nextSeason + 2024} season. They have sent an initial proposal for your consideration.`,
+              critical: true,
+            });
+          }
+        }
+      }
+    }
+
+    // Other manufacturers reach out in June (poaching attempts)
+    if (month === OUTREACH_OTHER_MANUFACTURERS_MONTH) {
+      for (const manufacturer of engineManufacturers) {
+        // Skip current supplier (already reached out)
+        if (manufacturer.id === currentManufacturerId) continue;
+
+        // Skip if negotiation already exists
+        if (hasExistingNegotiation(state, team.id, manufacturer.id, nextSeason)) continue;
+
+        // TODO: Add desperation-based probability here
+        // For now, all manufacturers reach out to all available teams
+
+        const terms = generateBaseContractTerms(manufacturer, 0, false);
+        const negotiation = createProactiveOutreach(
+          team.id,
+          manufacturer.id,
+          nextSeason,
+          currentDate,
+          terms
+        );
+        state.negotiations.push(negotiation);
+
+        // Email for player team
+        if (team.id === playerTeamId) {
+          playerReceivedOutreach = true;
+          state.calendarEvents.push({
+            id: randomUUID(),
+            date: currentDate,
+            type: CalendarEventType.Email,
+            subject: `${manufacturer.name} approaches with engine supply offer`,
+            body: `${manufacturer.name} has approached your team with a proposal to supply engines for the ${nextSeason + 2024} season. Review their offer in the Contracts screen.`,
+            critical: true,
+          });
+        }
+      }
+    }
+  }
+
+  return playerReceivedOutreach;
+}
+
+/**
  * Apply turn processing result to game state (mutates state)
  * Returns true if player team had a design milestone or test completion (for auto-stop)
  */
@@ -1927,10 +2141,18 @@ function applyTurnResult(state: GameState, result: TurnProcessingResult): boolea
   // Process manufacturer spec releases
   processSpecReleases(state, result.newDate);
 
+  // Process active negotiations (manufacturer responses)
+  const negotiationInput = buildNegotiationInput(state);
+  const negotiationResult = engineManager.negotiation.processDay(negotiationInput);
+  const negotiationStopped = applyNegotiationUpdates(state, negotiationResult.updates);
+
+  // Process proactive outreach from manufacturers
+  const playerReceivedOutreach = processProactiveOutreach(state);
+
   // Update projected milestone dates based on current progress
   updateProjectedMilestones(state);
 
-  return playerHadDesignMilestone || playerHadTestCompletion || playerHadReadyPart;
+  return playerHadDesignMilestone || playerHadTestCompletion || playerHadReadyPart || negotiationStopped || playerReceivedOutreach;
 }
 
 /**
