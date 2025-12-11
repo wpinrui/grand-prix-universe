@@ -1,9 +1,13 @@
 /**
  * Update Driver Salaries Based on Perceived Reputation
  *
- * Uses the perceived value formula from driver-evaluator.ts:
- * - Weighted average of (driver points / team points) over past seasons
- * - Exponential decay (0.8^i) with most recent seasons weighted more
+ * Combined perceived value formula (two equal components):
+ * 1. Contribution ratio (0-0.5): weighted avg of (driver pts / team pts) with 0.8^i decay
+ * 2. Championship position (0-0.5): normalized position (1st = 0.5, 20th = 0)
+ *
+ * This prevents the flaw where a driver on a weak team (e.g., Alex Albon scoring
+ * 70% of Williams' points) ranks higher than a race winner on a strong team
+ * (e.g., Oscar Piastri scoring 34% of McLaren's points).
  *
  * Salary distribution:
  * - 100th percentile: $20M
@@ -21,10 +25,14 @@ const DECAY_FACTOR = 0.8;
 const MAX_HISTORY_YEARS = 5;
 const MARKET_VALUE_FLOOR = 2_000_000;
 const MARKET_VALUE_CEILING = 20_000_000;
+const GRID_SIZE = 20; // Number of drivers on the F1 grid
 
 /**
- * Calculate perceived value from career history using exponential decay.
- * Returns a value from 0 to 1 representing the driver's contribution ratio.
+ * Calculate perceived value from career history using two equal components:
+ * 1. Contribution ratio (0-0.5): weighted avg of (driver pts / team pts)
+ * 2. Championship position (0-0.5): normalized position (1st = 0.5, 20th = 0)
+ *
+ * Returns a value from 0 to 1.
  */
 function calculatePerceivedValue(careerHistory) {
   if (!careerHistory || careerHistory.length === 0) {
@@ -35,23 +43,37 @@ function calculatePerceivedValue(careerHistory) {
   const sorted = [...careerHistory].sort((a, b) => b.season - a.season);
   const limited = sorted.slice(0, MAX_HISTORY_YEARS);
 
-  let weightedSum = 0;
+  let contributionWeightedSum = 0;
+  let positionWeightedSum = 0;
   let totalWeight = 0;
 
   for (let i = 0; i < limited.length; i++) {
     const record = limited[i];
     const weight = Math.pow(DECAY_FACTOR, i);
 
-    // Calculate contribution ratio (driver points / team points)
-    const ratio = record.teamTotalPoints > 0
+    // Component 1: Contribution ratio (driver points / team points)
+    const contributionRatio = record.teamTotalPoints > 0
       ? record.totalPoints / record.teamTotalPoints
       : 0.5;
+    contributionWeightedSum += contributionRatio * weight;
 
-    weightedSum += ratio * weight;
+    // Component 2: Championship position (normalized: 1st = 1.0, 20th = 0)
+    const position = record.championshipPosition ?? GRID_SIZE; // Default to last if missing
+    const positionNormalized = (GRID_SIZE - position) / (GRID_SIZE - 1);
+    positionWeightedSum += positionNormalized * weight;
+
     totalWeight += weight;
   }
 
-  return totalWeight > 0 ? weightedSum / totalWeight : 0.5;
+  if (totalWeight === 0) {
+    return 0.5;
+  }
+
+  // Each component contributes 0-0.5 to the final value (0-1 total)
+  const contributionComponent = (contributionWeightedSum / totalWeight) * 0.5;
+  const positionComponent = (positionWeightedSum / totalWeight) * 0.5;
+
+  return contributionComponent + positionComponent;
 }
 
 /**
