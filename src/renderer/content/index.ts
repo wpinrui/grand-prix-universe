@@ -10,6 +10,7 @@ export { Testing } from './Testing';
 export { Design } from './Design';
 export { Construction } from './Construction';
 export { Contracts } from './Contracts';
+export { Sponsors } from './Sponsors';
 export { SavedGames } from './SavedGames';
 export { GameOptions } from './GameOptions';
 export { ActionScreen, ACTION_CONFIGS, isActionType, type ActionType } from './ActionScreen';

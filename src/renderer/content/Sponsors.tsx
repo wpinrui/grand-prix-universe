@@ -1,0 +1,461 @@
+import { useMemo } from 'react';
+import { useDerivedGameState } from '../hooks';
+import { SectionHeading } from '../components';
+import { ACCENT_CARD_STYLE } from '../utils/theme-styles';
+import { formatCurrency } from '../utils/format';
+import { seasonToYear } from '../../shared/utils/date-utils';
+import {
+  SponsorTier,
+  type Sponsor,
+  type ActiveSponsorDeal,
+  type GameState,
+} from '../../shared/domain';
+
+// ===========================================
+// CONSTANTS
+// ===========================================
+
+/** Fixed slot counts per tier */
+const SLOT_COUNTS: Record<SponsorTier, number> = {
+  [SponsorTier.Title]: 1,
+  [SponsorTier.Major]: 3,
+  [SponsorTier.Minor]: 5,
+};
+
+/** Industry icons (Lucide icon names mapped to emoji for now) */
+const INDUSTRY_ICONS: Record<string, string> = {
+  'oil-gas': '\u26FD', // fuel pump
+  technology: '\u{1F4BB}', // laptop
+  finance: '\u{1F4B3}', // credit card
+  telecommunications: '\u{1F4F1}', // mobile phone
+  payments: '\u{1F4B8}', // money with wings
+  'water-technology': '\u{1F4A7}', // droplet
+  consulting: '\u{1F4BC}', // briefcase
+  aviation: '\u2708\uFE0F', // airplane
+  luxury: '\u{1F48E}', // gem
+  beverages: '\u{1F37A}', // beer mug
+  logistics: '\u{1F4E6}', // package
+  apparel: '\u{1F455}', // t-shirt
+  insurance: '\u{1F6E1}\uFE0F', // shield
+  tyres: '\u{1F6DE}', // wheel
+  components: '\u2699\uFE0F', // gear
+  'consumer-electronics': '\u{1F4F7}', // camera
+  entertainment: '\u{1F3AC}', // clapper board
+  hospitality: '\u{1F3E8}', // hotel
+  food: '\u{1F35E}', // bread
+  'consumer-goods': '\u{1F6D2}', // shopping cart
+  beauty: '\u{1F484}', // lipstick
+  industrial: '\u{1F3ED}', // factory
+};
+
+const DEFAULT_ICON = '\u{1F4BC}'; // briefcase
+
+// ===========================================
+// HELPER FUNCTIONS
+// ===========================================
+
+function getIndustryIcon(industry: string): string {
+  return INDUSTRY_ICONS[industry] ?? DEFAULT_ICON;
+}
+
+function getSponsorById(sponsors: Sponsor[], sponsorId: string): Sponsor | null {
+  return sponsors.find((s) => s.id === sponsorId) ?? null;
+}
+
+function getContractStatus(deal: ActiveSponsorDeal, currentSeason: number): { label: string; isExpiring: boolean } {
+  const seasonsLeft = deal.endSeason - currentSeason;
+  if (seasonsLeft <= 0) {
+    return { label: 'Final Year', isExpiring: true };
+  }
+  if (seasonsLeft === 1) {
+    return { label: '1 year left', isExpiring: true };
+  }
+  return { label: `${seasonsLeft} years left`, isExpiring: false };
+}
+
+// ===========================================
+// SUB-COMPONENTS
+// ===========================================
+
+interface IncomeSummaryProps {
+  totalAnnual: number;
+  titleIncome: number;
+  majorIncome: number;
+  minorIncome: number;
+}
+
+function IncomeSummary({ totalAnnual, titleIncome, majorIncome, minorIncome }: IncomeSummaryProps) {
+  const monthlyIncome = totalAnnual / 12;
+
+  return (
+    <div className="card p-6" style={ACCENT_CARD_STYLE}>
+      <div className="flex justify-between items-start">
+        <div>
+          <div className="text-sm text-muted mb-1">Annual Sponsor Income</div>
+          <div className="text-3xl font-bold text-primary">{formatCurrency(totalAnnual)}</div>
+          <div className="text-sm text-secondary mt-1">{formatCurrency(monthlyIncome)}/month</div>
+        </div>
+        <div className="text-right text-sm">
+          <div className="text-muted mb-2">Breakdown</div>
+          <div className="space-y-1">
+            <div className="flex justify-between gap-4">
+              <span className="text-secondary">Title:</span>
+              <span className="text-primary font-medium">{formatCurrency(titleIncome)}</span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-secondary">Major:</span>
+              <span className="text-primary font-medium">{formatCurrency(majorIncome)}</span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-secondary">Minor:</span>
+              <span className="text-primary font-medium">{formatCurrency(minorIncome)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface SponsorCardProps {
+  sponsor: Sponsor;
+  deal: ActiveSponsorDeal;
+  currentSeason: number;
+  variant: 'large' | 'medium';
+}
+
+function SponsorCard({ sponsor, deal, currentSeason, variant }: SponsorCardProps) {
+  const status = getContractStatus(deal, currentSeason);
+  const startYear = seasonToYear(deal.startSeason);
+  const endYear = seasonToYear(deal.endSeason);
+
+  const isLarge = variant === 'large';
+
+  return (
+    <div
+      className={`card ${isLarge ? 'p-6' : 'p-4'} flex ${isLarge ? 'flex-row gap-6' : 'flex-col gap-3'}`}
+      style={ACCENT_CARD_STYLE}
+    >
+      {/* Logo */}
+      <div className={`flex-shrink-0 ${isLarge ? 'w-20 h-20' : 'w-12 h-12'} bg-white rounded-lg flex items-center justify-center overflow-hidden`}>
+        {sponsor.logoUrl ? (
+          <img
+            src={sponsor.logoUrl}
+            alt={sponsor.name}
+            className="max-w-full max-h-full object-contain p-1"
+            onError={(e) => {
+              // Fallback to industry icon on load error
+              e.currentTarget.style.display = 'none';
+              e.currentTarget.nextElementSibling?.classList.remove('hidden');
+            }}
+          />
+        ) : null}
+        <span className={`${sponsor.logoUrl ? 'hidden' : ''} ${isLarge ? 'text-3xl' : 'text-xl'}`}>
+          {getIndustryIcon(sponsor.industry)}
+        </span>
+      </div>
+
+      {/* Details */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <h3 className={`font-semibold text-primary ${isLarge ? 'text-xl' : 'text-base'} truncate`}>
+              {sponsor.name}
+            </h3>
+            <p className="text-sm text-muted capitalize">{sponsor.industry.replace(/-/g, ' ')}</p>
+          </div>
+          <div className="text-right flex-shrink-0">
+            <div className={`font-bold text-primary ${isLarge ? 'text-xl' : 'text-base'}`}>
+              {formatCurrency(deal.annualPayment)}
+              <span className="text-sm font-normal text-muted">/yr</span>
+            </div>
+          </div>
+        </div>
+
+        <div className={`${isLarge ? 'mt-4 pt-4 border-t border-neutral-700' : 'mt-2'}`}>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-secondary">
+              {startYear}-{endYear}
+            </span>
+            <span className={status.isExpiring ? 'text-amber-400' : 'text-muted'}>
+              {status.isExpiring && '\u26A0\uFE0F '}{status.label}
+            </span>
+          </div>
+          {deal.guaranteed && (
+            <div className="mt-1 text-xs text-emerald-400">
+              \u2713 Guaranteed payment
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface EmptySlotProps {
+  tier: SponsorTier;
+  variant: 'large' | 'medium' | 'compact';
+}
+
+function EmptySlot({ tier, variant }: EmptySlotProps) {
+  const tierLabel = tier.charAt(0).toUpperCase() + tier.slice(1);
+
+  if (variant === 'compact') {
+    return (
+      <div className="flex flex-col items-center justify-center p-3 rounded-lg border-2 border-dashed border-neutral-700 bg-neutral-800/30 min-w-[100px]">
+        <span className="text-2xl text-neutral-600">+</span>
+        <span className="text-xs text-neutral-500 mt-1">Empty</span>
+      </div>
+    );
+  }
+
+  const isLarge = variant === 'large';
+
+  return (
+    <div
+      className={`card ${isLarge ? 'p-6' : 'p-4'} flex items-center justify-center border-2 border-dashed border-neutral-700 bg-neutral-800/30`}
+      style={{ minHeight: isLarge ? '140px' : '100px' }}
+    >
+      <div className="text-center">
+        <div className={`${isLarge ? 'text-4xl' : 'text-2xl'} text-neutral-600 mb-2`}>+</div>
+        <div className="text-sm text-neutral-500">Empty {tierLabel} Slot</div>
+        <div className="text-xs text-neutral-600 mt-1">Go to Deals to find sponsors</div>
+      </div>
+    </div>
+  );
+}
+
+interface MinorSponsorChipProps {
+  sponsor: Sponsor;
+  deal: ActiveSponsorDeal;
+  currentSeason: number;
+}
+
+function MinorSponsorChip({ sponsor, deal, currentSeason }: MinorSponsorChipProps) {
+  const status = getContractStatus(deal, currentSeason);
+  const startYear = seasonToYear(deal.startSeason);
+  const endYear = seasonToYear(deal.endSeason);
+
+  return (
+    <div className="flex flex-col items-center p-3 rounded-lg bg-neutral-800/50 border border-neutral-700 min-w-[100px]">
+      {/* Logo */}
+      <div className="w-10 h-10 bg-white rounded flex items-center justify-center overflow-hidden mb-2">
+        {sponsor.logoUrl ? (
+          <img
+            src={sponsor.logoUrl}
+            alt={sponsor.name}
+            className="max-w-full max-h-full object-contain p-0.5"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+              e.currentTarget.nextElementSibling?.classList.remove('hidden');
+            }}
+          />
+        ) : null}
+        <span className={`${sponsor.logoUrl ? 'hidden' : ''} text-lg`}>
+          {getIndustryIcon(sponsor.industry)}
+        </span>
+      </div>
+
+      {/* Name */}
+      <div className="text-xs font-medium text-primary text-center truncate w-full" title={sponsor.name}>
+        {sponsor.name}
+      </div>
+
+      {/* Payment */}
+      <div className="text-xs text-secondary mt-1">
+        {formatCurrency(deal.annualPayment / 1000000)}M
+      </div>
+
+      {/* Contract */}
+      <div className={`text-xs mt-1 ${status.isExpiring ? 'text-amber-400' : 'text-muted'}`}>
+        {startYear}-{endYear.toString().slice(-2)}
+      </div>
+    </div>
+  );
+}
+
+interface TierSectionProps {
+  title: string;
+  tier: SponsorTier;
+  deals: ActiveSponsorDeal[];
+  sponsors: Sponsor[];
+  currentSeason: number;
+  slotCount: number;
+}
+
+function TierSection({ title, tier, deals, sponsors, currentSeason, slotCount }: TierSectionProps) {
+  const isTitle = tier === SponsorTier.Title;
+  const isMinor = tier === SponsorTier.Minor;
+
+  // Create slots array with deals + empty slots
+  const slots: (ActiveSponsorDeal | null)[] = [];
+  for (let i = 0; i < slotCount; i++) {
+    slots.push(deals[i] ?? null);
+  }
+
+  return (
+    <div className="space-y-3">
+      <h2 className="text-lg font-semibold text-secondary uppercase tracking-wide">
+        {title}
+      </h2>
+
+      {isMinor ? (
+        // Minor sponsors: compact row
+        <div className="flex flex-wrap gap-3">
+          {slots.map((deal, index) => {
+            if (!deal) {
+              return <EmptySlot key={`empty-${index}`} tier={tier} variant="compact" />;
+            }
+            const sponsor = getSponsorById(sponsors, deal.sponsorId);
+            if (!sponsor) return null;
+            return (
+              <MinorSponsorChip
+                key={deal.sponsorId}
+                sponsor={sponsor}
+                deal={deal}
+                currentSeason={currentSeason}
+              />
+            );
+          })}
+        </div>
+      ) : (
+        // Title/Major sponsors: cards
+        <div className={isTitle ? '' : 'grid grid-cols-3 gap-4'}>
+          {slots.map((deal, index) => {
+            if (!deal) {
+              return (
+                <EmptySlot
+                  key={`empty-${index}`}
+                  tier={tier}
+                  variant={isTitle ? 'large' : 'medium'}
+                />
+              );
+            }
+            const sponsor = getSponsorById(sponsors, deal.sponsorId);
+            if (!sponsor) return null;
+            return (
+              <SponsorCard
+                key={deal.sponsorId}
+                sponsor={sponsor}
+                deal={deal}
+                currentSeason={currentSeason}
+                variant={isTitle ? 'large' : 'medium'}
+              />
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ===========================================
+// MAIN COMPONENT
+// ===========================================
+
+interface SponsorData {
+  titleDeals: ActiveSponsorDeal[];
+  majorDeals: ActiveSponsorDeal[];
+  minorDeals: ActiveSponsorDeal[];
+  totalIncome: number;
+  titleIncome: number;
+  majorIncome: number;
+  minorIncome: number;
+}
+
+function computeSponsorData(gameState: GameState, playerTeamId: string): SponsorData {
+  const teamDeals = gameState.sponsorDeals.filter((d) => d.teamId === playerTeamId);
+
+  const titleDeals = teamDeals.filter((d) => d.tier === SponsorTier.Title);
+  const majorDeals = teamDeals.filter((d) => d.tier === SponsorTier.Major);
+  const minorDeals = teamDeals.filter((d) => d.tier === SponsorTier.Minor);
+
+  const titleIncome = titleDeals.reduce((sum, d) => sum + d.annualPayment, 0);
+  const majorIncome = majorDeals.reduce((sum, d) => sum + d.annualPayment, 0);
+  const minorIncome = minorDeals.reduce((sum, d) => sum + d.annualPayment, 0);
+  const totalIncome = titleIncome + majorIncome + minorIncome;
+
+  return {
+    titleDeals,
+    majorDeals,
+    minorDeals,
+    totalIncome,
+    titleIncome,
+    majorIncome,
+    minorIncome,
+  };
+}
+
+export function Sponsors() {
+  const { gameState, isLoading } = useDerivedGameState();
+
+  const sponsorData = useMemo(() => {
+    if (!gameState) return null;
+    return computeSponsorData(gameState, gameState.player.teamId);
+  }, [gameState]);
+
+  if (isLoading) {
+    return (
+      <div className="p-4">
+        <SectionHeading>Sponsors</SectionHeading>
+        <p className="text-muted">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!gameState || !sponsorData) {
+    return (
+      <div className="p-4">
+        <SectionHeading>Sponsors</SectionHeading>
+        <p className="text-muted">No game data available.</p>
+      </div>
+    );
+  }
+
+  const currentSeason = gameState.currentSeason.seasonNumber;
+  const sponsors = gameState.sponsors;
+
+  return (
+    <div className="space-y-6">
+      <SectionHeading>Sponsors</SectionHeading>
+
+      {/* Income Summary */}
+      <IncomeSummary
+        totalAnnual={sponsorData.totalIncome}
+        titleIncome={sponsorData.titleIncome}
+        majorIncome={sponsorData.majorIncome}
+        minorIncome={sponsorData.minorIncome}
+      />
+
+      {/* Title Sponsor */}
+      <TierSection
+        title="Title Sponsor"
+        tier={SponsorTier.Title}
+        deals={sponsorData.titleDeals}
+        sponsors={sponsors}
+        currentSeason={currentSeason}
+        slotCount={SLOT_COUNTS[SponsorTier.Title]}
+      />
+
+      {/* Major Sponsors */}
+      <TierSection
+        title="Major Sponsors"
+        tier={SponsorTier.Major}
+        deals={sponsorData.majorDeals}
+        sponsors={sponsors}
+        currentSeason={currentSeason}
+        slotCount={SLOT_COUNTS[SponsorTier.Major]}
+      />
+
+      {/* Minor Sponsors */}
+      <TierSection
+        title="Minor Sponsors"
+        tier={SponsorTier.Minor}
+        deals={sponsorData.minorDeals}
+        sponsors={sponsors}
+        currentSeason={currentSeason}
+        slotCount={SLOT_COUNTS[SponsorTier.Minor]}
+      />
+    </div>
+  );
+}
