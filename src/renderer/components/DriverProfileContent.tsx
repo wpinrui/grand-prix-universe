@@ -19,6 +19,7 @@ import {
   pluralize,
   isHistoricalRetiredStatus,
   getHistoricalPositionStyle,
+  getChampionshipPositionStyle,
 } from '../utils/format';
 import { seasonToYear } from '../../shared/utils/date-utils';
 import {
@@ -297,18 +298,6 @@ function FormPanel({ recentResults }: FormPanelProps) {
 }
 
 // ===========================================
-// CAREER HISTORY PANEL
-// ===========================================
-
-export interface SeasonSummary {
-  seasonNumber: number;
-  teamName: string;
-  position: number;
-  points: number;
-  wins: number;
-}
-
-// ===========================================
 // F1 CAREER HISTORY PANEL (REAL-WORLD DATA)
 // ===========================================
 
@@ -411,15 +400,7 @@ function F1CareerHistoryPanel({ careerHistory, teams }: F1CareerHistoryPanelProp
                 <td className="px-2 py-1 text-center">
                   {season.championshipPosition ? (
                     <div
-                      className={`h-6 text-xs rounded flex items-center justify-center font-bold ${
-                        season.championshipPosition === 1
-                          ? 'bg-amber-400/80 text-amber-950'
-                          : season.championshipPosition === 2
-                            ? 'bg-gray-300/70 text-gray-800'
-                            : season.championshipPosition === 3
-                              ? 'bg-orange-500/60 text-orange-100'
-                              : 'text-muted'
-                      }`}
+                      className={`h-6 text-xs rounded flex items-center justify-center ${getChampionshipPositionStyle(season.championshipPosition)}`}
                     >
                       {formatOrdinal(season.championshipPosition)}
                     </div>
@@ -572,36 +553,4 @@ export function extractRecentResults(
   }
 
   return results;
-}
-
-/**
- * Extract career history for a driver from past seasons
- */
-export function extractCareerHistory(
-  driverId: string,
-  pastSeasons: SeasonData[],
-  teams: Team[]
-): SeasonSummary[] {
-  const history: SeasonSummary[] = [];
-
-  // Build team lookup
-  const teamMap = new Map(teams.map((t) => [t.id, t.name]));
-
-  for (const season of pastSeasons) {
-    const standing = season.driverStandings.find((s) => s.driverId === driverId);
-    if (standing) {
-      history.push({
-        seasonNumber: season.seasonNumber,
-        teamName: teamMap.get(standing.teamId) ?? 'Unknown',
-        position: standing.position,
-        points: standing.points,
-        wins: standing.wins,
-      });
-    }
-  }
-
-  // Sort by season number (oldest first)
-  history.sort((a, b) => a.seasonNumber - b.seasonNumber);
-
-  return history;
 }

@@ -436,8 +436,9 @@ function SeasonGrid({
 
   const [selectedSeason, setSelectedSeason] = useState<string>('current');
 
+  // Always has at least the current season option, so fallback is guaranteed to exist
   const selectedSeasonOption = seasonOptions.find((s) => s.value === selectedSeason) ?? seasonOptions[0];
-  const isHistorical = selectedSeasonOption?.type === 'historical';
+  const isHistorical = selectedSeasonOption.type === 'historical';
 
   // Build historical season data for all drivers
   const historicalData = useMemo(() => {
@@ -485,7 +486,7 @@ function SeasonGrid({
     const races = Array.from(raceMap.values()).sort((a, b) => a.round - b.round);
 
     return { driverData, races, year };
-  }, [isHistorical, selectedSeasonOption?.year, drivers, teams]);
+  }, [isHistorical, selectedSeasonOption.year, drivers, teams]);
 
   // Render historical season grid
   if (isHistorical && historicalData) {

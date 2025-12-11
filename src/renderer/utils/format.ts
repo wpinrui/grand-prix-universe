@@ -204,6 +204,29 @@ export function isHistoricalRetiredStatus(status: string): boolean {
 }
 
 /**
+ * Get Tailwind classes for medal positions (1st, 2nd, 3rd)
+ * Used for both race finishes and championship standings
+ * @param position - Position (1, 2, or 3 for medals)
+ * @returns Medal styling classes or empty string for non-medal positions
+ */
+export function getMedalPositionStyle(position: number | null): string {
+  if (position === 1) return 'bg-amber-400/80 text-amber-950 font-bold';
+  if (position === 2) return 'bg-gray-300/70 text-gray-800 font-bold';
+  if (position === 3) return 'bg-orange-500/60 text-orange-100 font-bold';
+  return '';
+}
+
+/**
+ * Get Tailwind classes for championship position styling
+ * Shows medal colors for P1-P3, muted for other positions
+ * @param position - Championship position
+ */
+export function getChampionshipPositionStyle(position: number | null): string {
+  const medalStyle = getMedalPositionStyle(position);
+  return medalStyle || 'text-muted';
+}
+
+/**
  * Get Tailwind classes for historical position styling (career history tables)
  * Matches FIA Results styling with podium colors and points position highlighting
  * @param position - Finishing position (null if DNF)
@@ -216,9 +239,8 @@ export function getHistoricalPositionStyle(
   pointsPositions = 10
 ): string {
   if (isHistoricalRetiredStatus(status)) return 'bg-purple-600/50 text-purple-200';
-  if (position === 1) return 'bg-amber-400/80 text-amber-950 font-bold';
-  if (position === 2) return 'bg-gray-300/70 text-gray-800 font-bold';
-  if (position === 3) return 'bg-orange-500/60 text-orange-100 font-bold';
+  const medalStyle = getMedalPositionStyle(position);
+  if (medalStyle) return medalStyle;
   if (position !== null && position <= pointsPositions) return 'bg-[#99b382] text-neutral-900';
   return 'bg-[var(--neutral-700)]/50 text-muted';
 }
