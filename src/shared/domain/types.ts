@@ -1217,6 +1217,8 @@ export interface DriverRuntimeState {
   // Regulation tracking
   engineUnitsUsed: number; // For grid penalty tracking
   gearboxRaceCount: number; // Races since last gearbox change
+  // Negotiation personality (persistent per driver, randomized on game start)
+  desperationMultiplier: number; // 0.7-1.0, lower = more willing to accept worse offers
 }
 
 /**

@@ -493,8 +493,14 @@ function matchesTechProject(component: TechnologyComponent, attribute: Technolog
 
 /**
  * Creates initial runtime state for a driver
+ * desperationMultiplier is randomized per driver (0.7-1.0)
+ * Lower values = more willing to accept worse contract offers
  */
 function createInitialDriverState(): DriverRuntimeState {
+  // Random desperation multiplier: 0.7 to 1.0
+  // Lower = more desperate, higher = more demanding
+  const desperationMultiplier = 0.7 + Math.random() * 0.3;
+
   return {
     morale: INITIAL_MORALE,
     fitness: INITIAL_FITNESS,
@@ -504,6 +510,7 @@ function createInitialDriverState(): DriverRuntimeState {
     isAngry: false,
     engineUnitsUsed: 0,
     gearboxRaceCount: 0,
+    desperationMultiplier,
   };
 }
 
@@ -2063,11 +2070,21 @@ function buildNegotiationInput(state: GameState): NegotiationProcessingInput {
     .filter((c) => c.type === ManufacturerType.Engine && c.endSeason >= nextSeason)
     .map((c) => c.teamId);
 
+  // Build constructor standings map from current season data
+  const constructorStandings = new Map<string, number>();
+  if (state.currentSeason.constructorStandings) {
+    state.currentSeason.constructorStandings.forEach((standing, index) => {
+      constructorStandings.set(standing.teamId, index + 1); // 1-indexed position
+    });
+  }
+
   return {
     negotiations: state.negotiations,
     currentDate: state.currentDate,
     teams: state.teams,
     drivers: state.drivers,
+    driverStates: state.driverStates,
+    constructorStandings,
     chiefs: state.chiefs,
     manufacturers: state.manufacturers,
     activeManufacturerContracts: state.manufacturerContracts,

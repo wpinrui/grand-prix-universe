@@ -245,6 +245,8 @@ export interface DriverEvaluationInput {
   availableSeats: number; // How many open seats remain on grid
   currentRound: number;
   maxRounds: number;
+  /** Driver's personal desperation multiplier (0.7-1.0, lower = more willing to accept less) */
+  desperationMultiplier: number;
 }
 
 /**
@@ -261,6 +263,7 @@ export function evaluateDriverOffer(input: DriverEvaluationInput): NegotiationEv
     availableSeats,
     currentRound,
     maxRounds,
+    desperationMultiplier,
   } = input;
 
   // Calculate key metrics
@@ -270,15 +273,20 @@ export function evaluateDriverOffer(input: DriverEvaluationInput): NegotiationEv
   const careerWeight = calculateCareerWeight(driver);
 
   // Calculate required salary based on team quality gap
-  const multiplier = calculateTeamQualityMultiplier(driverAbility, teamQuality, careerWeight);
-  const requiredSalary = marketValue * multiplier;
+  const teamQualityMultiplier = calculateTeamQualityMultiplier(driverAbility, teamQuality, careerWeight);
+  const baseRequiredSalary = marketValue * teamQualityMultiplier;
+
+  // Apply personal desperation multiplier (0.7-1.0)
+  // Lower multiplier = driver willing to accept less money
+  const requiredSalary = baseRequiredSalary * desperationMultiplier;
 
   // Calculate salary ratio
   const salaryRatio = offeredSalary / requiredSalary;
 
-  // Determine desperation level
-  const isDesperate = availableSeats <= DESPERATION_SEAT_THRESHOLD;
+  // Determine market desperation (few seats available)
+  const isMarketDesperate = availableSeats <= DESPERATION_SEAT_THRESHOLD;
   const isLateRound = currentRound >= maxRounds - 1;
+  const isDesperate = isMarketDesperate || desperationMultiplier < 0.8;
 
   // Decision logic
   let responseType: ResponseType;
