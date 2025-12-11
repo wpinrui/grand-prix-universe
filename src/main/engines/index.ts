@@ -20,4 +20,5 @@ export {
   StubDriverPerformanceEngine,
   StubRegulationEngine,
   StubTurnEngine,
+  StubNegotiationEngine,
 } from './stubs';

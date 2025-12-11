@@ -38,6 +38,11 @@ import type {
   TestSession,
   CurrentYearChassisState,
   StaffCounts,
+  // Negotiation types
+  ResponseType,
+  ResponseTone,
+  AnyContractTerms,
+  Negotiation,
 } from './types';
 
 // =============================================================================
@@ -613,4 +618,136 @@ export interface IDriverPerformanceEngine {
  */
 export interface IRegulationEngine {
   processRegulations(input: RegulationInput): RegulationResult;
+}
+
+// =============================================================================
+// NEGOTIATION ENGINE TYPES
+// =============================================================================
+
+/**
+ * NegotiationEvaluationInput - All data needed to evaluate an offer
+ * Passed to the negotiation engine to generate a response
+ */
+export interface NegotiationEvaluationInput {
+  /** The negotiation being evaluated */
+  negotiation: Negotiation;
+
+  /** Current game date */
+  currentDate: GameDate;
+
+  /** Team making the offer (for context) */
+  team: Team;
+
+  /** All teams (for comparing competitiveness) */
+  allTeams: Team[];
+
+  /** Relationship score (0-100) */
+  relationshipScore: number;
+}
+
+/**
+ * NegotiationEvaluationResult - Result of evaluating an offer
+ * Contains the counterparty's response and any state changes
+ */
+export interface NegotiationEvaluationResult {
+  /** How the counterparty responds */
+  responseType: ResponseType;
+
+  /** Counter-offer terms (only if responseType is Counter) */
+  counterTerms: AnyContractTerms | null;
+
+  /** Emotional tone of the response */
+  responseTone: ResponseTone;
+
+  /** Days until response arrives (1-7, personality-driven) */
+  responseDelayDays: number;
+
+  /** Whether this negotiation should generate a news headline */
+  isNewsworthy: boolean;
+
+  /** Relationship score change from this interaction */
+  relationshipChange: number;
+}
+
+/**
+ * NegotiationProcessingInput - Input for processing all active negotiations
+ * Called once per day during time simulation
+ */
+export interface NegotiationProcessingInput {
+  /** All active negotiations */
+  negotiations: Negotiation[];
+
+  /** Current game date */
+  currentDate: GameDate;
+
+  /** All teams (for context) */
+  teams: Team[];
+
+  /** All drivers (for driver negotiations) */
+  drivers: Driver[];
+
+  /** All chiefs (for staff negotiations) */
+  chiefs: Chief[];
+}
+
+/**
+ * NegotiationUpdate - Update to a single negotiation
+ */
+export interface NegotiationUpdate {
+  /** ID of the negotiation being updated */
+  negotiationId: string;
+
+  /** Updated negotiation state (null if no update needed today) */
+  updatedNegotiation: Negotiation | null;
+
+  /** Whether a sim-stopping email should be sent */
+  shouldStopSimulation: boolean;
+
+  /** Whether to generate a news headline */
+  isNewsworthy: boolean;
+}
+
+/**
+ * NegotiationProcessingResult - Result of processing all negotiations for a day
+ */
+export interface NegotiationProcessingResult {
+  /** Updates to apply to negotiations */
+  updates: NegotiationUpdate[];
+}
+
+// =============================================================================
+// NEGOTIATION ENGINE INTERFACE
+// =============================================================================
+
+/**
+ * INegotiationEngine - Handles contract negotiations for all stakeholder types
+ *
+ * Responsible for:
+ * - Evaluating offers and generating responses (Accept/Counter/Reject)
+ * - Calculating response delays based on personality
+ * - Determining response tone (affects relationship)
+ * - Processing daily negotiation state (checking for responses due)
+ *
+ * The engine is stakeholder-agnostic - specific evaluation logic lives in
+ * evaluators (ManufacturerEvaluator, DriverEvaluator, etc.) called by this engine.
+ *
+ * See proposal.md → "Contract Negotiations System" for full specification.
+ */
+export interface INegotiationEngine {
+  /**
+   * Evaluate a single offer and generate a response
+   *
+   * @param input - Negotiation state, team context, relationship
+   * @returns Response type, counter terms (if any), tone, delay
+   */
+  evaluateOffer(input: NegotiationEvaluationInput): NegotiationEvaluationResult;
+
+  /**
+   * Process all active negotiations for a single day
+   * Checks if any responses are due and generates them
+   *
+   * @param input - All active negotiations and context
+   * @returns Updates to apply to negotiations
+   */
+  processDay(input: NegotiationProcessingInput): NegotiationProcessingResult;
 }
