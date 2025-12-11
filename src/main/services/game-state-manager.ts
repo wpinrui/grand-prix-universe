@@ -219,6 +219,9 @@ const OUTREACH_CURRENT_SUPPLIER_MONTH = 5;
 /** Proactive outreach timing - other manufacturers reach out in June-July */
 const OUTREACH_OTHER_MANUFACTURERS_MONTH = 6;
 
+/** Early termination penalty multiplier (100% of remaining contract value) */
+const EARLY_TERMINATION_PENALTY_MULTIPLIER = 1.0;
+
 /**
  * Creates initial technology levels for all 7 components
  * All components start at midpoint (35) for both performance and reliability
@@ -292,6 +295,140 @@ const MAX_PERCENTAGE = 100;
  */
 function clampPercentage(value: number): number {
   return Math.max(0, Math.min(MAX_PERCENTAGE, value));
+}
+
+/**
+ * Result of creating a contract from a completed negotiation
+ */
+interface ContractCreationResult {
+  newContract: ActiveManufacturerContract;
+  earlyTerminationPenalty: number;
+  oldManufacturerId: string | null;
+}
+
+/**
+ * Creates a manufacturer contract from a completed negotiation.
+ * Handles early termination penalty if switching mid-contract.
+ *
+ * @param negotiation - The completed manufacturer negotiation
+ * @param state - Current game state (will be mutated)
+ * @returns Contract creation result with penalty info
+ */
+function createContractFromNegotiation(
+  negotiation: ManufacturerNegotiation,
+  state: GameState
+): ContractCreationResult {
+  const teamId = negotiation.teamId;
+  const manufacturerId = negotiation.manufacturerId;
+  const forSeason = negotiation.forSeason;
+
+  // Get the accepted terms from the last round
+  const lastRound = negotiation.rounds[negotiation.rounds.length - 1];
+  const terms = lastRound.terms;
+
+  // Find existing engine contract for this team
+  const existingContractIndex = state.manufacturerContracts.findIndex(
+    (c) => c.teamId === teamId && c.type === ManufacturerType.Engine
+  );
+  const existingContract =
+    existingContractIndex !== -1 ? state.manufacturerContracts[existingContractIndex] : null;
+
+  // Calculate early termination penalty
+  let earlyTerminationPenalty = 0;
+  let oldManufacturerId: string | null = null;
+
+  if (existingContract) {
+    oldManufacturerId = existingContract.manufacturerId;
+    const remainingSeasons = existingContract.endSeason - state.currentSeason.seasonNumber;
+
+    // Only apply penalty if contract extends beyond current season
+    if (remainingSeasons > 0) {
+      earlyTerminationPenalty = Math.round(
+        remainingSeasons * existingContract.annualCost * EARLY_TERMINATION_PENALTY_MULTIPLIER
+      );
+    }
+
+    // Remove the old contract
+    state.manufacturerContracts.splice(existingContractIndex, 1);
+  }
+
+  // Deduct penalty from team budget (if any)
+  if (earlyTerminationPenalty > 0) {
+    const team = state.teams.find((t) => t.id === teamId);
+    if (team) {
+      team.budget -= earlyTerminationPenalty;
+    }
+  }
+
+  // Create the new contract
+  const newContract: ActiveManufacturerContract = {
+    manufacturerId,
+    teamId,
+    type: ManufacturerType.Engine,
+    dealType: ManufacturerDealType.Customer, // MVP: all deals are customer deals
+    annualCost: terms.annualCost,
+    bonusLevel: INITIAL_BONUS_LEVEL,
+    startSeason: forSeason,
+    endSeason: forSeason + terms.duration - 1,
+  };
+
+  // Add the new contract
+  state.manufacturerContracts.push(newContract);
+
+  // Update team engine state with negotiated benefits
+  const teamState = state.teamStates[teamId];
+  if (teamState) {
+    teamState.engineState.customisationPointsOwned += terms.customisationPointsIncluded;
+    teamState.engineState.preNegotiatedUpgrades = terms.upgradesIncluded;
+    if (terms.optimisationIncluded) {
+      teamState.engineState.optimisationPurchasedForNextSeason = true;
+    }
+  }
+
+  return {
+    newContract,
+    earlyTerminationPenalty,
+    oldManufacturerId,
+  };
+}
+
+/**
+ * Generates a news headline for a completed engine contract signing.
+ * Used when any team (player or AI) completes a manufacturer negotiation.
+ */
+function generateContractSigningHeadline(
+  state: GameState,
+  contractResult: ContractCreationResult,
+  teamId: string,
+  newManufacturerId: string
+): void {
+  const team = state.teams.find((t) => t.id === teamId);
+  const newManufacturer = state.manufacturers.find((m) => m.id === newManufacturerId);
+  const oldManufacturer = contractResult.oldManufacturerId
+    ? state.manufacturers.find((m) => m.id === contractResult.oldManufacturerId)
+    : null;
+
+  if (!team || !newManufacturer) return;
+
+  const isSwitching = oldManufacturer && oldManufacturer.id !== newManufacturer.id;
+  const contractDuration =
+    contractResult.newContract.endSeason - contractResult.newContract.startSeason + 1;
+
+  const headline = isSwitching
+    ? `${team.name} switches to ${newManufacturer.name} engines`
+    : `${team.name} extends ${newManufacturer.name} engine deal`;
+  const body = isSwitching
+    ? `${team.name} has signed a ${contractDuration}-year engine supply deal with ${newManufacturer.name}, ending their relationship with ${oldManufacturer.name}.`
+    : `${team.name} has renewed their engine partnership with ${newManufacturer.name} for ${contractDuration} seasons.`;
+
+  state.calendarEvents.push({
+    id: randomUUID(),
+    date: state.currentDate,
+    type: CalendarEventType.Headline,
+    subject: headline,
+    body,
+    critical: false,
+  });
 }
 
 /**
@@ -1953,13 +2090,28 @@ function applyNegotiationUpdates(state: GameState, updates: NegotiationUpdate[])
     if (index !== -1 && update.updatedNegotiation) {
       state.negotiations[index] = update.updatedNegotiation;
 
+      const manufacturerNeg = update.updatedNegotiation as ManufacturerNegotiation;
+      const isPlayerTeam = manufacturerNeg.teamId === playerTeamId;
+
+      // Handle completed negotiations - create contracts for ALL teams
+      if (manufacturerNeg.phase === NegotiationPhase.Completed) {
+        const contractResult = createContractFromNegotiation(manufacturerNeg, state);
+        generateContractSigningHeadline(
+          state,
+          contractResult,
+          manufacturerNeg.teamId,
+          manufacturerNeg.manufacturerId
+        );
+      }
+
       // Check if this affects player and should stop simulation
-      if (update.shouldStopSimulation && update.updatedNegotiation.teamId === playerTeamId) {
+      if (update.shouldStopSimulation && isPlayerTeam) {
         shouldStop = true;
 
         // Generate email for player
-        const manufacturerNeg = update.updatedNegotiation as ManufacturerNegotiation;
-        const manufacturer = state.manufacturers.find((m) => m.id === manufacturerNeg.manufacturerId);
+        const manufacturer = state.manufacturers.find(
+          (m) => m.id === manufacturerNeg.manufacturerId
+        );
         if (manufacturer) {
           const latestRound = manufacturerNeg.rounds[manufacturerNeg.rounds.length - 1];
           const phase = manufacturerNeg.phase;
@@ -3127,7 +3279,15 @@ export const GameStateManager = {
       // Accept the counterparty's terms - negotiation complete
       negotiation.phase = NegotiationPhase.Completed;
       negotiation.lastActivityDate = { ...state.currentDate };
-      // Contract creation will be handled by a separate system (PR 7)
+
+      // Create the contract and generate news headline
+      const result = createContractFromNegotiation(negotiation, state);
+      generateContractSigningHeadline(
+        state,
+        result,
+        negotiation.teamId,
+        negotiation.manufacturerId
+      );
     } else if (response === 'reject') {
       // Reject - negotiation failed
       negotiation.phase = NegotiationPhase.Failed;
