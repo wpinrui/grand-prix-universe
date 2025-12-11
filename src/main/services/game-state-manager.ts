@@ -129,6 +129,7 @@ import {
   getPreSeasonStartDate,
   getWeekNumber,
   yearToSeason,
+  seasonToYear,
   DEFAULT_SIMULATION_STATE,
   offsetDate,
   isSameDay,
@@ -1957,11 +1958,11 @@ function applyNegotiationUpdates(state: GameState, updates: NegotiationUpdate[])
         shouldStop = true;
 
         // Generate email for player
-        const neg = update.updatedNegotiation as ManufacturerNegotiation;
-        const manufacturer = state.manufacturers.find((m) => m.id === neg.manufacturerId);
+        const manufacturerNeg = update.updatedNegotiation as ManufacturerNegotiation;
+        const manufacturer = state.manufacturers.find((m) => m.id === manufacturerNeg.manufacturerId);
         if (manufacturer) {
-          const latestRound = neg.rounds[neg.rounds.length - 1];
-          const phase = neg.phase;
+          const latestRound = manufacturerNeg.rounds[manufacturerNeg.rounds.length - 1];
+          const phase = manufacturerNeg.phase;
 
           let subject: string;
           let body: string;
@@ -2070,7 +2071,7 @@ function processProactiveOutreach(state: GameState): boolean {
               date: currentDate,
               type: CalendarEventType.Email,
               subject: `${manufacturer.name} wishes to discuss contract renewal`,
-              body: `Your current engine supplier, ${manufacturer.name}, would like to discuss renewing your contract for the ${nextSeason + 2024} season. They have sent an initial proposal for your consideration.`,
+              body: `Your current engine supplier, ${manufacturer.name}, would like to discuss renewing your contract for the ${seasonToYear(nextSeason)} season. They have sent an initial proposal for your consideration.`,
               critical: true,
             });
           }
@@ -2108,7 +2109,7 @@ function processProactiveOutreach(state: GameState): boolean {
             date: currentDate,
             type: CalendarEventType.Email,
             subject: `${manufacturer.name} approaches with engine supply offer`,
-            body: `${manufacturer.name} has approached your team with a proposal to supply engines for the ${nextSeason + 2024} season. Review their offer in the Contracts screen.`,
+            body: `${manufacturer.name} has approached your team with a proposal to supply engines for the ${seasonToYear(nextSeason)} season. Review their offer in the Contracts screen.`,
             critical: true,
           });
         }
