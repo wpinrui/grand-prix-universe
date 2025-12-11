@@ -350,14 +350,27 @@ export interface DriverAttributes {
 }
 
 /**
+ * HistoricalRaceResult - Individual race result for career history
+ */
+export interface HistoricalRaceResult {
+  round: number; // Race number in the season (1, 2, 3...)
+  name: string; // Race name (e.g., "Bahrain Grand Prix")
+  circuitId: string; // Circuit identifier
+  position: number | null; // Finishing position, null if DNF/DNS
+  points: number; // Points scored
+  status: string; // "Finished", "+1 Lap", "Collision", etc.
+}
+
+/**
  * CareerSeasonRecord - Historical season performance for perceived market value calculation
  * Used to calculate a driver's contribution ratio (driver points / team points) over time
  */
 export interface CareerSeasonRecord {
   season: number; // Calendar year (e.g., 2024)
   teamId: string; // Team they drove for that season
-  driverPoints: number; // Their WDC points that season
-  teamPoints: number; // Their team's total WCC points that season
+  races: HistoricalRaceResult[]; // Individual race results
+  totalPoints: number; // Driver's total WDC points that season
+  teamTotalPoints: number; // Team's total WCC points that season
 }
 
 /**

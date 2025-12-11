@@ -101,7 +101,7 @@ export function calculatePerceivedValue(careerHistory: CareerSeasonRecord[] | un
 
     // Calculate contribution ratio (driver points / team points)
     // If team got 0 points, use 0.5 as neutral (driver couldn't do better/worse)
-    const ratio = record.teamPoints > 0 ? record.driverPoints / record.teamPoints : 0.5;
+    const ratio = record.teamTotalPoints > 0 ? record.totalPoints / record.teamTotalPoints : 0.5;
 
     weightedSum += ratio * weight;
     totalWeight += weight;
