@@ -235,11 +235,12 @@ function calculateTeamQualityMultiplier(
 /**
  * Calculate career weight based on driver age.
  * Higher weight = more focused on money than performance.
+ * @param driver - The driver to calculate career weight for
+ * @param gameYear - The current in-game year (not real-world year)
  */
-function calculateCareerWeight(driver: Driver): number {
+function calculateCareerWeight(driver: Driver, gameYear: number): number {
   const birthYear = new Date(driver.dateOfBirth).getFullYear();
-  const currentYear = new Date().getFullYear(); // TODO: Use game year
-  const age = currentYear - birthYear;
+  const age = gameYear - birthYear;
 
   if (age < YOUNG_AGE_THRESHOLD) {
     return 0.3; // Young: 70% performance focus
@@ -269,6 +270,8 @@ export interface DriverEvaluationInput {
   maxRounds: number;
   /** Driver's personal desperation multiplier (0.7-1.0, lower = more willing to accept less) */
   desperationMultiplier: number;
+  /** Current in-game year (for age/career stage calculations) */
+  gameYear: number;
 }
 
 /**
@@ -286,13 +289,14 @@ export function evaluateDriverOffer(input: DriverEvaluationInput): NegotiationEv
     currentRound,
     maxRounds,
     desperationMultiplier,
+    gameYear,
   } = input;
 
   // Calculate key metrics
   const marketValue = calculateMarketValue(driver, allDrivers);
   const driverAbility = calculateDriverAbility(driver);
   const teamQuality = calculateTeamQuality(offeringTeam, allTeams, constructorStandings);
-  const careerWeight = calculateCareerWeight(driver);
+  const careerWeight = calculateCareerWeight(driver, gameYear);
 
   // Calculate required salary based on team quality gap
   const teamQualityMultiplier = calculateTeamQualityMultiplier(driverAbility, teamQuality, careerWeight);

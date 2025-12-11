@@ -176,6 +176,7 @@ function dispatchToEvaluator(
         currentRound: negotiation.rounds.length,
         maxRounds: MAX_NEGOTIATION_ROUNDS,
         desperationMultiplier,
+        gameYear: input.currentDate.year,
       });
     }
 
