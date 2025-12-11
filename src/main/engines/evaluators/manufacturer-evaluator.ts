@@ -18,6 +18,7 @@ import type {
   ManufacturerNegotiation,
   ContractTerms,
   NegotiationRound,
+  ActiveManufacturerContract,
 } from '../../../shared/domain/types';
 import type { NegotiationEvaluationResult } from '../../../shared/domain/engines';
 import { ResponseType, ResponseTone } from '../../../shared/domain';
@@ -95,6 +96,8 @@ export interface ManufacturerEvaluationInput {
   allTeams: Team[];
   relationshipScore: number;
   securedTeamIds: string[];
+  /** Active manufacturer contracts (from GameState) - needed to calculate desperation */
+  activeContracts: ActiveManufacturerContract[];
 }
 
 /** Player negotiation patterns */
@@ -172,16 +175,21 @@ function calculateFloorPrice(
 function calculateDesperation(
   manufacturerId: string,
   allTeams: Team[],
-  securedTeamIds: string[]
+  securedTeamIds: string[],
+  activeContracts: ActiveManufacturerContract[]
 ): number {
-  const currentCustomers = allTeams.filter((team) =>
-    team.manufacturerContracts?.some((c) => c.manufacturerId === manufacturerId)
-  ).length;
+  // Find teams that currently have contracts with this manufacturer
+  const currentCustomerIds = new Set(
+    activeContracts
+      .filter((c) => c.manufacturerId === manufacturerId)
+      .map((c) => c.teamId)
+  );
+  const currentCustomers = currentCustomerIds.size;
 
+  // Count secured customers (teams that have already renewed with this manufacturer)
   const securedCount = allTeams.filter(
     (team) =>
-      securedTeamIds.includes(team.id) &&
-      team.manufacturerContracts?.some((c) => c.manufacturerId === manufacturerId)
+      securedTeamIds.includes(team.id) && currentCustomerIds.has(team.id)
   ).length;
 
   const unsignedCount = allTeams.filter((team) => !securedTeamIds.includes(team.id)).length;
@@ -353,13 +361,13 @@ function determineResponseTone(
   pattern: NegotiationPattern
 ): ResponseTone {
   // Pattern affects tone more than relationship
-  if (pattern === 'aggressive') return ResponseTone.Cold;
-  if (pattern === 'stubborn') return ResponseTone.Cold;
+  if (pattern === 'aggressive') return ResponseTone.Insulted;
+  if (pattern === 'stubborn') return ResponseTone.Disappointed;
 
-  if (pattern === 'great-concession') return ResponseTone.Warm;
+  if (pattern === 'great-concession') return ResponseTone.Enthusiastic;
 
-  if (relationshipScore >= WARM_RELATIONSHIP_THRESHOLD) return ResponseTone.Warm;
-  if (relationshipScore <= COLD_RELATIONSHIP_THRESHOLD) return ResponseTone.Cold;
+  if (relationshipScore >= WARM_RELATIONSHIP_THRESHOLD) return ResponseTone.Enthusiastic;
+  if (relationshipScore <= COLD_RELATIONSHIP_THRESHOLD) return ResponseTone.Disappointed;
   return ResponseTone.Professional;
 }
 
@@ -391,6 +399,7 @@ export function evaluateManufacturerOffer(
     allTeams,
     relationshipScore,
     securedTeamIds,
+    activeContracts,
   } = input;
 
   const rounds = negotiation.rounds;
@@ -400,7 +409,7 @@ export function evaluateManufacturerOffer(
     return {
       responseType: ResponseType.Reject,
       counterTerms: null,
-      responseTone: ResponseTone.Cold,
+      responseTone: ResponseTone.Disappointed,
       responseDelayDays: BASE_RESPONSE_DELAY_DAYS,
       isNewsworthy: false,
       relationshipChange: REJECT_RELATIONSHIP_PENALTY,
@@ -414,7 +423,7 @@ export function evaluateManufacturerOffer(
   // Calculate factors
   const cost = calculateManufacturerCost(manufacturer, terms);
   const secretMinMargin = getSecretMinimumMargin(negotiation.id);
-  const desperation = calculateDesperation(manufacturer.id, allTeams, securedTeamIds);
+  const desperation = calculateDesperation(manufacturer.id, allTeams, securedTeamIds, activeContracts);
   const strategicValue = calculateStrategicValue(team, allTeams);
   const pattern = detectNegotiationPattern(rounds);
   const stubbornCount = countStubbornRounds(rounds);
@@ -437,7 +446,7 @@ export function evaluateManufacturerOffer(
       return {
         responseType: ResponseType.Reject,
         counterTerms: null,
-        responseTone: ResponseTone.Cold,
+        responseTone: ResponseTone.Disappointed,
         responseDelayDays: MIN_RESPONSE_DELAY_DAYS,
         isNewsworthy: false,
         relationshipChange: REJECT_RELATIONSHIP_PENALTY,
@@ -465,7 +474,7 @@ export function evaluateManufacturerOffer(
       return {
         responseType: ResponseType.Reject,
         counterTerms: null,
-        responseTone: ResponseTone.Cold,
+        responseTone: ResponseTone.Disappointed,
         responseDelayDays: MIN_RESPONSE_DELAY_DAYS,
         isNewsworthy: false,
         relationshipChange: REJECT_RELATIONSHIP_PENALTY,
