@@ -440,49 +440,12 @@ export interface Manufacturer {
 }
 
 /**
- * Engine specification - supplied by engine manufacturer
- */
-export interface Engine {
-  id: string; // e.g. "phoenix-v10-01a"
-  manufacturerId: string;
-  name: string;
-  fuelEfficiency: number; // 0-100, lower fuel consumption
-  power: number; // 0-100, straight-line speed
-  reliability: number; // 0-100, resistance to failure
-  lightness: number; // 0-100, lighter engines improve performance
-}
-
-/**
- * Tyre specification - supplied by tyre manufacturer
- */
-export interface Tyre {
-  id: string;
-  manufacturerId: string;
-  compound: TyreCompound;
-  grip: number; // 0-100
-  durability: number; // 0-100, resistance to wear
-  temperatureRange: number; // 0-100, optimal operating range width
-}
-
-/**
- * Fuel specification - supplied by fuel manufacturer
- */
-export interface Fuel {
-  id: string;
-  manufacturerId: string;
-  name: string;
-  performance: number; // 0-100, combustion efficiency
-  engineTolerance: number; // 0-100, compatibility across engine types
-}
-
-/**
  * Car - A physical racing car owned by a team
  */
 export interface Car {
   id: string;
   teamId: string;
   chassisId: string; // reference to chassis design
-  engineId: string;
   condition: number; // 0-100, degrades with use/damage
   mileage: number; // total miles driven
   isRaceCar: boolean; // false = R&D car

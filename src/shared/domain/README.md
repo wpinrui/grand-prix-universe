@@ -125,42 +125,6 @@ Department head with significant impact on team performance.
 
 ## Technical Types
 
-### Engine
-Engine specification supplied by engine manufacturer.
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Spec ID, e.g. `"phoenix-v10-01a"` |
-| `manufacturerId` | string | Engine manufacturer ID |
-| `name` | string | Display name |
-| `fuelEfficiency` | number | 0-100, lower fuel consumption |
-| `power` | number | 0-100, straight-line speed |
-| `reliability` | number | 0-100, resistance to failure |
-| `lightness` | number | 0-100, lighter = better performance |
-
-### Tyre
-Tyre specification by compound.
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique ID |
-| `manufacturerId` | string | Tyre manufacturer ID |
-| `compound` | TyreCompound | Type of tyre |
-| `grip` | number | 0-100, road holding |
-| `durability` | number | 0-100, resistance to wear |
-| `temperatureRange` | number | 0-100, optimal operating range width |
-
-### Fuel
-Fuel specification.
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique ID |
-| `manufacturerId` | string | Fuel manufacturer ID |
-| `name` | string | Display name |
-| `performance` | number | 0-100, combustion efficiency |
-| `engineTolerance` | number | 0-100, compatibility across engine types |
-
 ### Car
 A physical racing car owned by a team.
 
@@ -169,7 +133,6 @@ A physical racing car owned by a team.
 | `id` | string | Unique ID |
 | `teamId` | string | Owning team |
 | `chassisId` | string | Reference to chassis design |
-| `engineId` | string | Fitted engine spec |
 | `condition` | number | 0-100, degrades with use/damage |
 | `mileage` | number | Total miles driven |
 | `isRaceCar` | boolean | `true` = race car, `false` = R&D car |

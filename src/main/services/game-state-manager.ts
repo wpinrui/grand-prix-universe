@@ -503,7 +503,6 @@ function createInitialCars(teams: Team[]): Car[] {
         id: `${team.id}-car-${i}`,
         teamId: team.id,
         chassisId: `${team.id}-chassis-s1`, // Season 1 chassis placeholder
-        engineId: team.initialEngineManufacturerId,
         condition: INITIAL_CAR_CONDITION,
         mileage: 0,
         isRaceCar: true,
