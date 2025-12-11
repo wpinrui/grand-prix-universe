@@ -367,7 +367,8 @@ function _CareerHistoryPanel({ seasonHistory }: CareerHistoryPanelProps) {
 
 /** Get position style for historical results (matching FIA Results page) */
 function getHistoricalPositionStyle(position: number | null): string {
-  if (position === null) return 'bg-red-600/40 text-red-300';
+  // DNF/Ret - purple (matching current season styling)
+  if (position === null) return 'bg-purple-600/50 text-purple-200';
   if (position === 1) return 'bg-amber-400/80 text-amber-950 font-bold';
   if (position === 2) return 'bg-gray-300/70 text-gray-800 font-bold';
   if (position === 3) return 'bg-orange-500/60 text-orange-100 font-bold';
@@ -462,7 +463,7 @@ function F1CareerHistoryPanel({ careerHistory, teams }: F1CareerHistoryPanelProp
                         className={`h-6 text-xs rounded flex items-center justify-center ${getHistoricalPositionStyle(race.position)}`}
                         title={`${race.name}: ${race.position !== null ? `P${race.position}` : 'DNF'} - ${race.points} pts (${race.status})`}
                       >
-                        {race.position ?? 'X'}
+                        {race.position ?? 'Ret'}
                       </div>
                     </td>
                   );

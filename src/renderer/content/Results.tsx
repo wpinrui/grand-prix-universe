@@ -720,9 +720,10 @@ interface SeasonOption {
   year: number;
 }
 
-/** Get position style for historical results (same logic as getPositionStyle but no status) */
+/** Get position style for historical results */
 function getHistoricalPositionStyle(position: number | null, pointsPositions: number): string {
-  if (position === null) return 'bg-red-600/40 text-red-300';
+  // DNF/Ret - purple (matching current season styling)
+  if (position === null) return 'bg-purple-600/50 text-purple-200';
   if (position === 1) return 'bg-amber-400/80 text-amber-950 font-bold';
   if (position === 2) return 'bg-gray-300/70 text-gray-800 font-bold';
   if (position === 3) return 'bg-orange-500/60 text-orange-100 font-bold';
@@ -738,7 +739,7 @@ interface HistoricalResultCellProps {
 
 function HistoricalResultCell({ result, pointsPositions }: HistoricalResultCellProps) {
   const style = getHistoricalPositionStyle(result.position, pointsPositions);
-  const text = result.position !== null ? String(result.position) : 'X';
+  const text = result.position !== null ? String(result.position) : 'Ret';
 
   return (
     <td className="w-9 px-0.5 py-1 text-center">
