@@ -60,6 +60,18 @@ const MIN_TEAM_QUALITY_MULTIPLIER = 0.2;
 const YOUNG_AGE_THRESHOLD = 25;
 const VETERAN_AGE_THRESHOLD = 33;
 
+/** Relationship boost for accepting */
+const ACCEPT_RELATIONSHIP_BOOST = 5;
+
+/** Relationship penalty for rejecting */
+const REJECT_RELATIONSHIP_PENALTY = -3;
+
+/** Threshold of available seats above which driver will counter even good offers */
+const MANY_SEATS_THRESHOLD = 5;
+
+/** Multiplier for asking more than required salary when countering a good offer */
+const COUNTER_ASK_MULTIPLIER = 1.1;
+
 // =============================================================================
 // PERCEIVED VALUE CALCULATION
 // =============================================================================
@@ -278,10 +290,10 @@ export function evaluateDriverOffer(input: DriverEvaluationInput): NegotiationEv
     responseType = ResponseType.Accept;
   } else if (salaryRatio >= ACCEPT_RATIO) {
     // Good deal - accept, or counter if many alternatives
-    if (availableSeats > 5) {
+    if (availableSeats > MANY_SEATS_THRESHOLD) {
       // Many options - try to negotiate better
       responseType = ResponseType.Counter;
-      counterSalary = Math.round(requiredSalary * 1.1); // Ask for 10% more
+      counterSalary = Math.round(requiredSalary * COUNTER_ASK_MULTIPLIER);
     } else {
       responseType = ResponseType.Accept;
     }
@@ -304,14 +316,12 @@ export function evaluateDriverOffer(input: DriverEvaluationInput): NegotiationEv
 
   // Determine tone based on salary ratio
   let responseTone: ResponseTone;
-  if (salaryRatio >= INSTANT_ACCEPT_RATIO) {
+  if (salaryRatio >= ACCEPT_RATIO) {
     responseTone = ResponseTone.Enthusiastic;
-  } else if (salaryRatio >= ACCEPT_RATIO) {
-    responseTone = ResponseTone.Warm;
   } else if (salaryRatio >= COUNTER_RATIO) {
     responseTone = ResponseTone.Professional;
   } else {
-    responseTone = ResponseTone.Cold;
+    responseTone = ResponseTone.Disappointed;
   }
 
   // Build result
@@ -330,7 +340,12 @@ export function evaluateDriverOffer(input: DriverEvaluationInput): NegotiationEv
     responseTone,
     responseDelayDays: BASE_RESPONSE_DELAY_DAYS,
     isNewsworthy: responseType === ResponseType.Accept,
-    relationshipChange: responseType === ResponseType.Accept ? 5 : responseType === ResponseType.Reject ? -3 : 0,
+    relationshipChange:
+      responseType === ResponseType.Accept
+        ? ACCEPT_RELATIONSHIP_BOOST
+        : responseType === ResponseType.Reject
+          ? REJECT_RELATIONSHIP_PENALTY
+          : 0,
     isUltimatum,
   };
 
