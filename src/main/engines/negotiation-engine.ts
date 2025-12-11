@@ -44,6 +44,9 @@ const DEFAULT_RESPONSE_DELAY_DAYS = 3;
 /** Default expiration days from offer date */
 const DEFAULT_EXPIRATION_DAYS = 14;
 
+/** Default relationship score when not specified (neutral) */
+const DEFAULT_RELATIONSHIP_SCORE = 50;
+
 // =============================================================================
 // DATE HELPERS
 // =============================================================================
@@ -102,7 +105,7 @@ function dispatchToEvaluator(
       }
 
       const relationshipScore =
-        input.relationshipScores[mfgNegotiation.manufacturerId] ?? 50;
+        input.relationshipScores[mfgNegotiation.manufacturerId] ?? DEFAULT_RELATIONSHIP_SCORE;
 
       return evaluateManufacturerOffer({
         negotiation: mfgNegotiation,
@@ -232,7 +235,7 @@ function processNegotiation(
   const shouldStop =
     result.responseType === ResponseType.Accept ||
     result.responseType === ResponseType.Reject ||
-    (result.responseType === ResponseType.Counter && result.isUltimatum === true);
+    (result.responseType === ResponseType.Counter && result.isUltimatum);
 
   return {
     negotiationId: negotiation.id,
