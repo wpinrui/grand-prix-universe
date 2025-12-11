@@ -1283,6 +1283,37 @@ export interface ManufacturerSpecState {
   specBonuses: SpecBonus[];
 }
 
+// =============================================================================
+// ENGINE ANALYTICS TYPES
+// =============================================================================
+
+/**
+ * EngineAnalyticsDataPoint - A single estimated power reading from a race
+ *
+ * Each data point has ±8% independent error from the true calculated power.
+ * This creates information asymmetry - early season data is sparse and unreliable,
+ * but improves as more races are completed.
+ */
+export interface EngineAnalyticsDataPoint {
+  /** Race number where this data was collected */
+  raceNumber: number;
+  /** Estimated power value (true power ± 8% random error) */
+  estimatedPower: number;
+}
+
+/**
+ * TeamEngineAnalytics - Collected engine analytics data for a team
+ *
+ * Used to estimate competitor engine performance throughout the season.
+ * Data accumulates after each race, with running average shown in UI.
+ * More data points = more confidence in the estimate.
+ */
+export interface TeamEngineAnalytics {
+  teamId: string;
+  /** Data points collected after each race (one per completed race) */
+  dataPoints: EngineAnalyticsDataPoint[];
+}
+
 /**
  * TeamEngineState - Team-level engine state
  * Tracks both cars' engines plus team-wide engine resources
@@ -1396,6 +1427,9 @@ export interface GameState {
 
   // Engine Manufacturer Spec Versions (global tracking per manufacturer)
   manufacturerSpecs: ManufacturerSpecState[];
+
+  // Engine Analytics (estimated power per team, updated after each race)
+  engineAnalytics: TeamEngineAnalytics[];
 
   // Historical Data (for career stats, Player Wiki)
   pastSeasons: SeasonData[];

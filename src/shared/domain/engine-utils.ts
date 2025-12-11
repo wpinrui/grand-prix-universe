@@ -10,6 +10,8 @@ import type {
   Manufacturer,
   ManufacturerSpecState,
   SpecBonus,
+  TeamEngineAnalytics,
+  EngineAnalyticsDataPoint,
 } from './types';
 
 /**
@@ -366,4 +368,129 @@ export function shouldReleaseSpec(reputation: number): boolean {
  */
 export function getSpecBonusesAsEngineStats(specState: ManufacturerSpecState): EngineStats[] {
   return specState.specBonuses;
+}
+
+// =============================================================================
+// ENGINE ANALYTICS FUNCTIONS
+// =============================================================================
+
+/**
+ * Analytics error margin (±8%)
+ * Creates information asymmetry - early season estimates are unreliable
+ */
+export const ANALYTICS_ERROR_MARGIN = 0.08;
+
+/**
+ * Calculates the "true" composite power value from engine stats
+ * This is a weighted average favoring Power and Reliability
+ *
+ * @param stats - The effective engine stats (after spec bonuses and customisation)
+ * @returns Composite power score (0-100)
+ */
+export function calculateTruePower(stats: EngineStats): number {
+  // Weighted average: Power is most important, then reliability, then others
+  const weights = {
+    power: 0.40, // 40% - directly affects lap time
+    fuelEfficiency: 0.15, // 15% - affects strategy options
+    reliability: 0.25, // 25% - affects DNF probability
+    heat: 0.10, // 10% - hot race penalty
+    predictability: 0.10, // 10% - driver error modifier
+  };
+
+  return (
+    stats.power * weights.power +
+    stats.fuelEfficiency * weights.fuelEfficiency +
+    stats.reliability * weights.reliability +
+    stats.heat * weights.heat +
+    stats.predictability * weights.predictability
+  );
+}
+
+/**
+ * Generates an estimated power value with ±8% random error
+ * Used when collecting analytics data points after each race
+ *
+ * @param truePower - The actual composite power value
+ * @returns Estimated power with error applied
+ */
+export function generateEstimatedPower(truePower: number): number {
+  // Random error in range [-8%, +8%]
+  const errorMultiplier = 1 + (Math.random() * 2 - 1) * ANALYTICS_ERROR_MARGIN;
+  return truePower * errorMultiplier;
+}
+
+/**
+ * Calculates the running average of estimated power from data points
+ *
+ * @param dataPoints - Array of analytics data points for a team
+ * @returns Average estimated power, or null if no data
+ */
+export function calculateAverageEstimatedPower(
+  dataPoints: EngineAnalyticsDataPoint[]
+): number | null {
+  if (dataPoints.length === 0) return null;
+
+  const sum = dataPoints.reduce((acc, dp) => acc + dp.estimatedPower, 0);
+  return sum / dataPoints.length;
+}
+
+/**
+ * Calculates confidence percentage based on number of data points
+ * More data = more confidence in the estimate
+ *
+ * Formula: confidence = min(100, dataPoints * 10 + 20)
+ * - 0 points = 0% (no data)
+ * - 1 point = 30%
+ * - 5 points = 70%
+ * - 8+ points = 100%
+ *
+ * @param dataPointCount - Number of collected data points
+ * @returns Confidence percentage (0-100)
+ */
+export function calculateAnalyticsConfidence(dataPointCount: number): number {
+  if (dataPointCount === 0) return 0;
+  return Math.min(100, dataPointCount * 10 + 20);
+}
+
+/**
+ * Creates empty analytics state for all teams
+ * Called when initializing a new game
+ *
+ * @param teamIds - Array of team IDs
+ * @returns Array of empty TeamEngineAnalytics
+ */
+export function createInitialEngineAnalytics(teamIds: string[]): TeamEngineAnalytics[] {
+  return teamIds.map((teamId) => ({
+    teamId,
+    dataPoints: [],
+  }));
+}
+
+/**
+ * Adds a new data point to a team's analytics
+ * Called after each race with estimated power values
+ *
+ * @param analytics - Current analytics array
+ * @param teamId - Team to update
+ * @param raceNumber - Race number for this data point
+ * @param estimatedPower - The estimated power value (with error)
+ * @returns Updated analytics array (immutable)
+ */
+export function addAnalyticsDataPoint(
+  analytics: TeamEngineAnalytics[],
+  teamId: string,
+  raceNumber: number,
+  estimatedPower: number
+): TeamEngineAnalytics[] {
+  return analytics.map((teamAnalytics) => {
+    if (teamAnalytics.teamId !== teamId) return teamAnalytics;
+
+    return {
+      ...teamAnalytics,
+      dataPoints: [
+        ...teamAnalytics.dataPoints,
+        { raceNumber, estimatedPower },
+      ],
+    };
+  });
 }
