@@ -358,13 +358,16 @@ function DesignerAllocationPanel({
           <span className="text-sm text-secondary">{label}</span>
           <div className="flex items-center gap-2">
             {onAllocationChange ? (
-              <StaffAllocationSlider
-                id={`allocation-${label.toLowerCase().replace(/\s+/g, '-')}`}
-                value={chassisAllocation}
-                onChange={handleAllocationChange}
-                staffCount={staffCount}
-                className="w-32"
-              />
+              <>
+                <span className="text-sm font-mono text-primary w-10">{chassisAllocation}%</span>
+                <StaffAllocationSlider
+                  id={`allocation-${label.toLowerCase().replace(/\s+/g, '-')}`}
+                  value={chassisAllocation}
+                  onChange={handleAllocationChange}
+                  staffCount={staffCount}
+                  className="w-24"
+                />
+              </>
             ) : (
               <>
                 <span className="text-sm font-mono text-primary">{chassisAllocation}%</span>
@@ -787,7 +790,6 @@ interface TechAttributeCellProps {
   maxAllocation: number;
   staffCount: number;
   onAllocationChange: (value: number) => void;
-  cellId: string;
 }
 
 function TechAttributeCell({
@@ -797,13 +799,12 @@ function TechAttributeCell({
   maxAllocation,
   staffCount,
   onAllocationChange,
-  cellId,
 }: TechAttributeCellProps) {
   const isWorking = !!project;
   const allocation = project?.designersAssigned ?? 0;
 
   // Clamp slider value to max allocation
-  const handleAllocationChange = (value: number) => {
+  const handleSliderChange = (value: number) => {
     onAllocationChange(Math.min(value, maxAllocation));
   };
 
@@ -823,15 +824,18 @@ function TechAttributeCell({
       {/* Status */}
       <td className="py-2 text-center text-secondary text-xs w-28">{getProjectStatus(project)}</td>
       {/* Allocation */}
-      <td className="py-2 w-28">
+      <td className="py-2 w-32">
         {isWorking ? (
-          <StaffAllocationSlider
-            id={cellId}
-            value={allocation}
-            onChange={handleAllocationChange}
-            staffCount={staffCount}
-            className="w-24"
-          />
+          <div className="flex items-center gap-1">
+            <span className="text-xs font-mono text-primary w-8">{allocation}%</span>
+            <StaffAllocationSlider
+              id={`tech-alloc-${level}`}
+              value={allocation}
+              onChange={handleSliderChange}
+              staffCount={staffCount}
+              className="w-16"
+            />
+          </div>
         ) : (
           <span className="text-muted text-center block">---</span>
         )}
@@ -925,7 +929,6 @@ function TechnologyTab({
                     onAllocationChange={(val) =>
                       onSetAllocation(component, TechnologyAttribute.Performance, val)
                     }
-                    cellId={`tech-${component}-perf`}
                   />
                   <TechAttributeCell
                     level={relLevel}
@@ -938,7 +941,6 @@ function TechnologyTab({
                     onAllocationChange={(val) =>
                       onSetAllocation(component, TechnologyAttribute.Reliability, val)
                     }
-                    cellId={`tech-${component}-rel`}
                   />
                 </tr>
               );
