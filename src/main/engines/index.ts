@@ -22,3 +22,9 @@ export {
   StubTurnEngine,
   StubNegotiationEngine,
 } from './stubs';
+
+// Stakeholder evaluators for negotiation engine
+export {
+  evaluateManufacturerOffer,
+  type ManufacturerEvaluationInput,
+} from './evaluators';
