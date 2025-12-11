@@ -58,6 +58,7 @@ import {
   TechnologyProjectPhase,
   HandlingProblem,
   ChassisDesignStage,
+  ManufacturerType,
   createEvent,
   managerRef,
   teamRef,
@@ -130,7 +131,7 @@ function getPlayerEngineContext(): {
   }
 
   const engineContract = state.manufacturerContracts.find(
-    (c) => c.teamId === playerTeamId && c.type === 'engine'
+    (c) => c.teamId === playerTeamId && c.type === ManufacturerType.Engine
   );
   if (!engineContract) {
     throw new Error('No engine contract found');
