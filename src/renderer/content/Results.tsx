@@ -6,6 +6,7 @@ import { seasonToYear } from '../../shared/utils/date-utils';
 import {
   isHistoricalRetiredStatus,
   getHistoricalPositionStyle,
+  getMedalPositionStyle,
 } from '../utils/format';
 import {
   TABLE_CELL_BASE,
@@ -144,10 +145,9 @@ function getPositionStyle(
     }
   }
 
-  // Podium positions
-  if (position === 1) return 'bg-amber-400/80 text-amber-950 font-bold';
-  if (position === 2) return 'bg-gray-300/70 text-gray-800 font-bold';
-  if (position === 3) return 'bg-orange-500/60 text-orange-100 font-bold';
+  // Podium positions (use shared medal styling)
+  const medalStyle = getMedalPositionStyle(position);
+  if (medalStyle) return medalStyle;
 
   // Points finish - pale green (Wikipedia style)
   if (position <= pointsPositions) return 'bg-[#99b382] text-neutral-900';
@@ -781,7 +781,7 @@ function RaceDetailView({
 }
 
 // ===========================================
-// DRIVER CAREER VIEW
+// HISTORICAL SEASON TYPES & COMPONENTS
 // ===========================================
 
 /** Season option for the dropdown */
