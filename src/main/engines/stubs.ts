@@ -100,6 +100,7 @@ import {
   yearToSeason,
   seasonToYear,
   isFriday,
+  calculateAge,
 } from '../../shared/utils/date-utils';
 import {
   calculateDailyWorkUnits,
@@ -927,16 +928,6 @@ function updateStandings(
 // =============================================================================
 
 /**
- * Calculate a person's age given their date of birth and current season
- * Assumes season number roughly maps to a year (e.g., season 1 = 2025)
- */
-function calculateAge(dateOfBirth: string, currentSeason: number): number {
-  const birthYear = new Date(dateOfBirth).getFullYear();
-  const currentYear = seasonToYear(currentSeason);
-  return currentYear - birthYear;
-}
-
-/**
  * Determine if someone should retire based on age and probability
  * Uses linear probability scaling between min and max retirement ages
  */
@@ -1032,7 +1023,7 @@ function generateSingleDriverAttributeChanges(
   driver: Driver,
   currentSeason: number
 ): DriverAttributeChange[] {
-  const age = calculateAge(driver.dateOfBirth, currentSeason);
+  const age = calculateAge(driver.dateOfBirth, seasonToYear(currentSeason));
 
   if (age < DRIVER_PEAK_AGE) {
     return generateYoungDriverChanges(driver.id);
@@ -1078,7 +1069,7 @@ function generateChiefChanges(chiefs: Chief[]): ChiefChange[] {
 function determineDriverRetirements(drivers: Driver[], currentSeason: number): string[] {
   return drivers
     .filter((driver) => {
-      const age = calculateAge(driver.dateOfBirth, currentSeason);
+      const age = calculateAge(driver.dateOfBirth, seasonToYear(currentSeason));
       return shouldRetire(age, DRIVER_RETIREMENT_MIN_AGE, DRIVER_RETIREMENT_MAX_AGE);
     })
     .map((driver) => driver.id);

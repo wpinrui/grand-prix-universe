@@ -103,7 +103,6 @@ export function calculateAge(dateOfBirth: string, gameYear: number): number {
   return gameYear - birthYear;
 }
 
-
 /**
  * Create a GameDate from year, month, day
  */
