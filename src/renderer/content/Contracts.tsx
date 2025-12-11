@@ -6,16 +6,28 @@ import { ACCENT_CARD_STYLE, GHOST_BORDERED_BUTTON_CLASSES } from '../utils/theme
 import { formatMoney } from '../utils/format';
 import { seasonToYear } from '../../shared/utils/date-utils';
 import { IpcChannels } from '../../shared/ipc';
-import type {
-  Manufacturer,
-  ActiveManufacturerContract,
-  TeamEngineState,
-  CarEngineState,
-  EngineStats,
-  Driver,
-  ManufacturerSpecState,
+import {
+  ManufacturerType,
+  type Manufacturer,
+  type ActiveManufacturerContract,
+  type TeamEngineState,
+  type CarEngineState,
+  type EngineStats,
+  type Driver,
+  type ManufacturerSpecState,
+  type Team,
+  type TeamEngineAnalytics,
+  type GameState,
 } from '../../shared/domain';
-import { ENGINE_STAT_KEYS, getEffectiveEngineStats, getSpecBonusesAsEngineStats } from '../../shared/domain/engine-utils';
+import {
+  ENGINE_STAT_KEYS,
+  getEffectiveEngineStats,
+  getSpecBonusesAsEngineStats,
+  calculateAverageEstimatedPower,
+  calculateAnalyticsConfidence,
+  ANALYTICS_CONFIDENCE_LOW_THRESHOLD,
+  ANALYTICS_CONFIDENCE_HIGH_THRESHOLD,
+} from '../../shared/domain/engine-utils';
 
 // ===========================================
 // TYPES
@@ -349,6 +361,190 @@ function ActionCard({ title, description, cost, buttonLabel, disabled, onClick }
   );
 }
 
+// ===========================================
+// ANALYTICS TAB
+// ===========================================
+
+interface AnalyticsTabProps {
+  gameState: GameState;
+  teams: Team[];
+  playerTeamId: string;
+}
+
+/** Get team's engine manufacturer name */
+function getTeamManufacturerName(
+  teamId: string,
+  gameState: GameState
+): string {
+  const contract = gameState.manufacturerContracts.find(
+    (c) => c.teamId === teamId && c.type === ManufacturerType.Engine
+  );
+  if (!contract) return 'Unknown';
+
+  const manufacturer = gameState.manufacturers.find(
+    (m) => m.id === contract.manufacturerId
+  );
+  return manufacturer?.name ?? 'Unknown';
+}
+
+/** Confidence level display with color coding */
+function ConfidenceBadge({ confidence }: { confidence: number }) {
+  let colorClass = 'text-red-400';
+  let label = 'No Data';
+
+  if (confidence === 0) {
+    label = 'No Data';
+    colorClass = 'text-neutral-500';
+  } else if (confidence < ANALYTICS_CONFIDENCE_LOW_THRESHOLD) {
+    label = 'Low';
+    colorClass = 'text-red-400';
+  } else if (confidence < ANALYTICS_CONFIDENCE_HIGH_THRESHOLD) {
+    label = 'Medium';
+    colorClass = 'text-amber-400';
+  } else {
+    label = 'High';
+    colorClass = 'text-emerald-400';
+  }
+
+  return (
+    <span className={`text-sm font-medium ${colorClass}`}>
+      {label} ({confidence}%)
+    </span>
+  );
+}
+
+interface TeamAnalyticsRowProps {
+  team: Team;
+  analytics: TeamEngineAnalytics | undefined;
+  manufacturerName: string;
+  isPlayerTeam: boolean;
+}
+
+function TeamAnalyticsRow({
+  team,
+  analytics,
+  manufacturerName,
+  isPlayerTeam,
+}: TeamAnalyticsRowProps) {
+  const dataPoints = analytics?.dataPoints ?? [];
+  const averagePower = calculateAverageEstimatedPower(dataPoints);
+  const confidence = calculateAnalyticsConfidence(dataPoints.length);
+
+  return (
+    <tr className={`border-b border-neutral-700 ${isPlayerTeam ? 'bg-accent-900/20' : ''}`}>
+      <td className="py-3 px-4">
+        <div className="flex items-center gap-2">
+          <div
+            className="w-3 h-3 rounded-full"
+            style={{ backgroundColor: team.primaryColor }}
+          />
+          <span className={`font-medium ${isPlayerTeam ? 'text-accent-400' : 'text-primary'}`}>
+            {team.name}
+          </span>
+        </div>
+      </td>
+      <td className="py-3 px-4 text-secondary">
+        {manufacturerName}
+      </td>
+      <td className="py-3 px-4 text-center">
+        {averagePower !== null ? (
+          <span className="text-primary font-semibold">
+            {averagePower.toFixed(1)}
+          </span>
+        ) : (
+          <span className="text-neutral-500">—</span>
+        )}
+      </td>
+      <td className="py-3 px-4 text-center">
+        {dataPoints.length}
+      </td>
+      <td className="py-3 px-4 text-center">
+        <ConfidenceBadge confidence={confidence} />
+      </td>
+    </tr>
+  );
+}
+
+function AnalyticsTab({ gameState, teams, playerTeamId }: AnalyticsTabProps) {
+  const racesCompleted = gameState.currentSeason.calendar.filter((r) => r.completed).length;
+
+  return (
+    <div className="space-y-6">
+      {/* Info Banner */}
+      <div className="card p-4" style={ACCENT_CARD_STYLE}>
+        <div className="flex items-start gap-3">
+          <div className="text-amber-400 text-xl">ℹ️</div>
+          <div>
+            <h3 className="text-sm font-semibold text-primary mb-1">
+              Engine Power Analytics
+            </h3>
+            <p className="text-xs text-muted">
+              Estimated engine power for all teams. Data is collected after each race with ±8%
+              measurement error. More races = more accurate estimates. Use this information to
+              assess the competition and make strategic decisions.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Data Status */}
+      <div className="flex justify-between items-center text-sm">
+        <span className="text-muted">
+          Data from {racesCompleted} race{racesCompleted !== 1 ? 's' : ''} this season
+        </span>
+        {racesCompleted === 0 && (
+          <span className="text-amber-400">
+            Complete races to collect engine performance data
+          </span>
+        )}
+      </div>
+
+      {/* Analytics Table */}
+      <div className="card overflow-hidden" style={ACCENT_CARD_STYLE}>
+        <table className="w-full">
+          <thead className="bg-neutral-800/50">
+            <tr className="text-left text-sm text-muted">
+              <th className="py-3 px-4 font-medium">Team</th>
+              <th className="py-3 px-4 font-medium">Engine</th>
+              <th className="py-3 px-4 font-medium text-center">Est. Power</th>
+              <th className="py-3 px-4 font-medium text-center">Data Points</th>
+              <th className="py-3 px-4 font-medium text-center">Confidence</th>
+            </tr>
+          </thead>
+          <tbody>
+            {teams.map((team) => {
+              const analytics = gameState.engineAnalytics.find(
+                (a) => a.teamId === team.id
+              );
+              const manufacturerName = getTeamManufacturerName(team.id, gameState);
+              const isPlayerTeam = team.id === playerTeamId;
+
+              return (
+                <TeamAnalyticsRow
+                  key={team.id}
+                  team={team}
+                  analytics={analytics}
+                  manufacturerName={manufacturerName}
+                  isPlayerTeam={isPlayerTeam}
+                />
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Legend */}
+      <div className="text-xs text-muted">
+        <strong>Confidence Levels:</strong>{' '}
+        <span className="text-neutral-500">No Data</span> (0 races) →{' '}
+        <span className="text-red-400">Low</span> (1-2 races) →{' '}
+        <span className="text-amber-400">Medium</span> (3-5 races) →{' '}
+        <span className="text-emerald-400">High</span> (6+ races)
+      </div>
+    </div>
+  );
+}
+
 function ComingSoonTab({ tabName }: { tabName: string }) {
   return (
     <div className="card p-8 text-center" style={ACCENT_CARD_STYLE}>
@@ -481,7 +677,13 @@ export function Contracts() {
         />
       )}
 
-      {activeTab === 'analytics' && <ComingSoonTab tabName="Analytics" />}
+      {activeTab === 'analytics' && (
+        <AnalyticsTab
+          gameState={gameState}
+          teams={gameState.teams}
+          playerTeamId={gameState.player.teamId}
+        />
+      )}
 
       {activeTab === 'negotiation' && <ComingSoonTab tabName="Negotiation" />}
     </div>

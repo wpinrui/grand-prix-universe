@@ -10,6 +10,8 @@ import type {
   Manufacturer,
   ManufacturerSpecState,
   SpecBonus,
+  TeamEngineAnalytics,
+  EngineAnalyticsDataPoint,
 } from './types';
 
 /**
@@ -367,3 +369,113 @@ export function shouldReleaseSpec(reputation: number): boolean {
 export function getSpecBonusesAsEngineStats(specState: ManufacturerSpecState): EngineStats[] {
   return specState.specBonuses;
 }
+
+// =============================================================================
+// ENGINE ANALYTICS FUNCTIONS
+// =============================================================================
+
+/**
+ * Analytics error margin (±8%)
+ * Creates information asymmetry - early season estimates are unreliable
+ */
+export const ANALYTICS_ERROR_MARGIN = 0.08;
+
+/**
+ * Confidence thresholds for analytics display
+ * Based on formula: confidence = min(100, dataPoints * 10 + 20)
+ * - Low: 1-2 races (30-40%)
+ * - Medium: 3-5 races (50-70%)
+ * - High: 6+ races (80-100%)
+ */
+export const ANALYTICS_CONFIDENCE_LOW_THRESHOLD = 50;
+export const ANALYTICS_CONFIDENCE_HIGH_THRESHOLD = 80;
+
+/**
+ * Weights for calculating composite engine power
+ * Power and reliability are prioritized as they most directly affect race outcomes
+ */
+export const ENGINE_POWER_WEIGHTS = {
+  power: 0.40, // 40% - directly affects lap time
+  fuelEfficiency: 0.15, // 15% - affects strategy options
+  reliability: 0.25, // 25% - affects DNF probability
+  heat: 0.10, // 10% - hot race penalty
+  predictability: 0.10, // 10% - driver error modifier
+} as const;
+
+/**
+ * Calculates the "true" composite power value from engine stats
+ * This is a weighted average favoring Power and Reliability
+ *
+ * @param stats - The effective engine stats (after spec bonuses and customisation)
+ * @returns Composite power score (0-100)
+ */
+export function calculateTruePower(stats: EngineStats): number {
+  return (
+    stats.power * ENGINE_POWER_WEIGHTS.power +
+    stats.fuelEfficiency * ENGINE_POWER_WEIGHTS.fuelEfficiency +
+    stats.reliability * ENGINE_POWER_WEIGHTS.reliability +
+    stats.heat * ENGINE_POWER_WEIGHTS.heat +
+    stats.predictability * ENGINE_POWER_WEIGHTS.predictability
+  );
+}
+
+/**
+ * Generates an estimated power value with ±8% random error
+ * Used when collecting analytics data points after each race
+ *
+ * @param truePower - The actual composite power value
+ * @returns Estimated power with error applied
+ */
+export function generateEstimatedPower(truePower: number): number {
+  // Random error in range [-8%, +8%]
+  const errorMultiplier = 1 + (Math.random() * 2 - 1) * ANALYTICS_ERROR_MARGIN;
+  return truePower * errorMultiplier;
+}
+
+/**
+ * Calculates the running average of estimated power from data points
+ *
+ * @param dataPoints - Array of analytics data points for a team
+ * @returns Average estimated power, or null if no data
+ */
+export function calculateAverageEstimatedPower(
+  dataPoints: EngineAnalyticsDataPoint[]
+): number | null {
+  if (dataPoints.length === 0) return null;
+
+  const sum = dataPoints.reduce((acc, dp) => acc + dp.estimatedPower, 0);
+  return sum / dataPoints.length;
+}
+
+/**
+ * Calculates confidence percentage based on number of data points
+ * More data = more confidence in the estimate
+ *
+ * Formula: confidence = min(100, dataPoints * 10 + 20)
+ * - 0 points = 0% (no data)
+ * - 1 point = 30%
+ * - 5 points = 70%
+ * - 8+ points = 100%
+ *
+ * @param dataPointCount - Number of collected data points
+ * @returns Confidence percentage (0-100)
+ */
+export function calculateAnalyticsConfidence(dataPointCount: number): number {
+  if (dataPointCount === 0) return 0;
+  return Math.min(100, dataPointCount * 10 + 20);
+}
+
+/**
+ * Creates empty analytics state for all teams
+ * Called when initializing a new game
+ *
+ * @param teamIds - Array of team IDs
+ * @returns Array of empty TeamEngineAnalytics
+ */
+export function createInitialEngineAnalytics(teamIds: string[]): TeamEngineAnalytics[] {
+  return teamIds.map((teamId) => ({
+    teamId,
+    dataPoints: [],
+  }));
+}
+
