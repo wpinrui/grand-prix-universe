@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import { useMemo } from 'react';
 
 /**
@@ -11,7 +12,8 @@ const GENERIC_FOLDER = 'generic';
 
 // Import all background images using Vite's glob import
 // This creates a map of path -> module
-const backgroundModules = import.meta.glob<{ default: string }>(
+// @ts-expect-error - import.meta.glob is a Vite-specific feature handled at build time
+const backgroundModules: Record<string, { default: string }> = import.meta.glob(
   '../assets/backgrounds/**/*.{jpg,jpeg,png}',
   { eager: true }
 );

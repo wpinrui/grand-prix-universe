@@ -162,7 +162,7 @@ export function Races({ onViewRaceReport }: RacesProps) {
                 <HeaderCell align="left">Date</HeaderCell>
                 <HeaderCell className="whitespace-nowrap">In</HeaderCell>
                 <HeaderCell className="w-28">Status</HeaderCell>
-                <HeaderCell className="w-24"></HeaderCell>
+                <HeaderCell className="w-24">{null}</HeaderCell>
               </tr>
             </thead>
             <tbody className={TABLE_BODY_CLASS}>

@@ -224,7 +224,7 @@ export function Construction() {
               id="type-filter"
               options={TYPE_FILTER_OPTIONS}
               value={typeFilter}
-              onChange={setTypeFilter}
+              onChange={(v) => setTypeFilter(v)}
               className="w-32"
             />
           </div>

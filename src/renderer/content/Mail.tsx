@@ -70,6 +70,18 @@ const CATEGORY_BADGE_CONFIG: Record<EmailCategory, { label: string; className: s
     label: 'Testing',
     className: 'bg-cyan-600/20 text-cyan-400',
   },
+  [EmailCategory.PartReady]: {
+    label: 'Parts',
+    className: 'bg-orange-600/20 text-orange-400',
+  },
+  [EmailCategory.PostRaceRepair]: {
+    label: 'Repairs',
+    className: 'bg-red-600/20 text-red-400',
+  },
+  [EmailCategory.SpecRelease]: {
+    label: 'Engine',
+    className: 'bg-indigo-600/20 text-indigo-400',
+  },
 };
 
 // ===========================================
@@ -697,7 +709,7 @@ export function Mail() {
           id="mail-category-filter"
           options={CATEGORY_FILTER_OPTIONS}
           value={categoryFilter}
-          onChange={setCategoryFilter}
+          onChange={(v) => setCategoryFilter(v)}
         />
       </div>
 

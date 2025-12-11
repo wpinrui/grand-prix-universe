@@ -12,7 +12,7 @@ import {
   TabBar,
   getContractRelationship,
 } from '../../components';
-import type { Chief, ChiefRole, TeamPrincipal } from '../../../shared/domain';
+import { ChiefRole, type Chief, type Team, type TeamPrincipal } from '../../../shared/domain';
 import { FREE_AGENT_COLORS } from '../../utils/face-generator';
 
 // ===========================================
@@ -36,9 +36,9 @@ interface StaffMember {
 const STAFF_FILTER_TABS: { id: StaffFilterType; label: string }[] = [
   { id: 'all', label: 'All' },
   { id: 'principal', label: 'Principals' },
-  { id: 'designer', label: 'Designers' },
-  { id: 'mechanic', label: 'Mechanics' },
-  { id: 'commercial', label: 'Commercial' },
+  { id: ChiefRole.Designer, label: 'Designers' },
+  { id: ChiefRole.Mechanic, label: 'Mechanics' },
+  { id: ChiefRole.Commercial, label: 'Commercial' },
 ];
 
 const ROLE_DISPLAY_NAMES: Record<StaffFilterType, string> = {
@@ -74,7 +74,7 @@ export function WorldStaff({ initialStaffId }: WorldStaffProps) {
   // Build unified staff list
   const { allStaff, teamMap } = useMemo(() => {
     if (!gameState) {
-      return { allStaff: [], teamMap: new Map() };
+      return { allStaff: [] as StaffMember[], teamMap: new Map<string, Team>() };
     }
 
     const teams = new Map(gameState.teams.map((t) => [t.id, t]));
@@ -164,7 +164,7 @@ export function WorldStaff({ initialStaffId }: WorldStaffProps) {
       <TabBar
         tabs={STAFF_FILTER_TABS}
         activeTab={activeFilter}
-        onTabChange={setActiveFilter}
+        onTabChange={(tab) => setActiveFilter(tab)}
       />
 
       {/* Empty state */}

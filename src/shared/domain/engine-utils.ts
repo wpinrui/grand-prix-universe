@@ -481,7 +481,7 @@ export function calculateAnalyticsConfidence(dataPointCount: number): number {
 export function createInitialEngineAnalytics(teamIds: string[]): TeamEngineAnalytics[] {
   return teamIds.map((teamId) => ({
     teamId,
-    dataPoints: [],
+    dataPoints: [] as EngineAnalyticsDataPoint[],
   }));
 }
 

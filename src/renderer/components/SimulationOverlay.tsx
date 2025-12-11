@@ -24,8 +24,6 @@ interface SimulationOverlayProps {
   isVisible: boolean;
   isPostSeason: boolean;
   // TopBar props
-  sectionLabel: string;
-  subItemLabel: string;
   playerTeam: Team | null;
 }
 
@@ -37,8 +35,6 @@ export function SimulationOverlay({
   nextRace,
   isVisible,
   isPostSeason,
-  sectionLabel,
-  subItemLabel,
   playerTeam,
 }: SimulationOverlayProps) {
   const animationKey = dateKey(currentDate);
@@ -76,8 +72,6 @@ export function SimulationOverlay({
           {/* TopBar with stop button */}
           <div className="relative z-10">
             <TopBar
-              sectionLabel={sectionLabel}
-              subItemLabel={subItemLabel}
               currentDate={currentDate}
               playerTeam={playerTeam}
             />

@@ -497,7 +497,7 @@ export function PlayerWiki() {
 
   return (
     <div className="max-w-4xl">
-      <TabBar tabs={WIKI_TABS} activeTab={activeTab} onTabChange={setActiveTab} />
+      <TabBar tabs={WIKI_TABS} activeTab={activeTab} onTabChange={(tab) => setActiveTab(tab)} />
       {renderTabContent()}
     </div>
   );
