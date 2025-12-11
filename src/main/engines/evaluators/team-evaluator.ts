@@ -98,7 +98,6 @@ function getAgeBracket(age: number): AgeBracket {
   return 'veteran';
 }
 
-
 /**
  * Check if driver is considered a rookie (< 2 seasons of F1 history)
  */
