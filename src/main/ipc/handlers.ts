@@ -18,6 +18,8 @@ import type {
   BuyEngineUpgradeParams,
   BuyCustomisationPointsParams,
   ApplyCustomisationParams,
+  StartNegotiationParams,
+  RespondToOfferParams,
 } from '../../shared/ipc';
 import type { NewGameParams, EventQuery } from '../../shared/domain';
 import { queryEvents } from '../../shared/domain';
@@ -234,5 +236,21 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IpcChannels.ENGINE_BUY_OPTIMISATION, () => {
     return GameStateManager.buyEngineOptimisation();
+  });
+
+  // Engine negotiation handlers
+  ipcMain.handle(
+    IpcChannels.ENGINE_START_NEGOTIATION,
+    (_event, params: StartNegotiationParams) => {
+      return GameStateManager.startEngineNegotiation(params.manufacturerId);
+    }
+  );
+
+  ipcMain.handle(IpcChannels.ENGINE_RESPOND_TO_OFFER, (_event, params: RespondToOfferParams) => {
+    return GameStateManager.respondToEngineOffer(
+      params.offerId,
+      params.response,
+      params.counterTerms
+    );
   });
 }

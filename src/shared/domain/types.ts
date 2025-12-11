@@ -1314,6 +1314,89 @@ export interface TeamEngineAnalytics {
   dataPoints: EngineAnalyticsDataPoint[];
 }
 
+// =============================================================================
+// ENGINE CONTRACT NEGOTIATION TYPES
+// =============================================================================
+
+/**
+ * NegotiationStatus - State of an engine contract negotiation
+ */
+export enum NegotiationStatus {
+  /** No active negotiation */
+  None = 'none',
+  /** Player has initiated, waiting for manufacturer response */
+  AwaitingOffer = 'awaiting-offer',
+  /** Manufacturer has made an offer, player can accept/counter/reject */
+  OfferReceived = 'offer-received',
+  /** Player has countered, waiting for manufacturer response */
+  CounterPending = 'counter-pending',
+  /** Negotiation complete, deal signed */
+  Accepted = 'accepted',
+  /** Negotiation ended without deal */
+  Rejected = 'rejected',
+}
+
+/**
+ * ContractTerms - The negotiable terms of an engine contract
+ * Used for both offers and counter-offers
+ */
+export interface ContractTerms {
+  /** Annual fee (positive = team pays, negative = works deal pays team) */
+  annualCost: number;
+  /** Contract duration in seasons */
+  duration: number;
+  /** Pre-paid engine upgrades included per season */
+  upgradesIncluded: number;
+  /** Customisation points included */
+  customisationPointsIncluded: number;
+  /** Whether optimisation package is included */
+  optimisationIncluded: boolean;
+}
+
+/**
+ * ContractOffer - An offer from a manufacturer during negotiation
+ * Includes terms and manufacturer's assessment
+ */
+export interface ContractOffer {
+  /** Unique offer ID */
+  id: string;
+  /** Which manufacturer made this offer */
+  manufacturerId: string;
+  /** The contract terms */
+  terms: ContractTerms;
+  /** Date the offer was made */
+  offeredDate: GameDate;
+  /** Date the offer expires (manufacturer won't wait forever) */
+  expiresDate: GameDate;
+  /** Manufacturer's desperation level when making offer (0-1) */
+  desperationAtOffer: number;
+  /** Whether this is a counter-offer to player's request */
+  isCounterOffer: boolean;
+  /** True if this is a proactive outreach from manufacturer */
+  isProactiveOffer: boolean;
+}
+
+/**
+ * EngineNegotiation - Tracks the full state of an engine contract negotiation
+ * Each team can have at most one active negotiation per manufacturer
+ */
+export interface EngineNegotiation {
+  /** Team negotiating */
+  teamId: string;
+  /** Manufacturer being negotiated with */
+  manufacturerId: string;
+  /** Current status of the negotiation */
+  status: NegotiationStatus;
+  /** For which season this contract would apply */
+  forSeason: number;
+  /** History of offers in this negotiation */
+  offers: ContractOffer[];
+  /** Player's most recent counter-offer (if any) */
+  playerCounterTerms: ContractTerms | null;
+  /** Date negotiation started */
+  startedDate: GameDate;
+}
+
 /**
  * TeamEngineState - Team-level engine state
  * Tracks both cars' engines plus team-wide engine resources
@@ -1430,6 +1513,9 @@ export interface GameState {
 
   // Engine Analytics (estimated power per team, updated after each race)
   engineAnalytics: TeamEngineAnalytics[];
+
+  // Engine Contract Negotiations (active negotiations for next season)
+  engineNegotiations: EngineNegotiation[];
 
   // Historical Data (for career stats, Player Wiki)
   pastSeasons: SeasonData[];

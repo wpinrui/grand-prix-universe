@@ -12,7 +12,13 @@ import type {
   SpecBonus,
   TeamEngineAnalytics,
   EngineAnalyticsDataPoint,
+  ActiveManufacturerContract,
+  ContractTerms,
+  ContractOffer,
+  EngineNegotiation,
+  GameDate,
 } from './types';
+import { ManufacturerType, NegotiationStatus } from './types';
 
 /**
  * Engine stat keys for iteration
@@ -477,5 +483,292 @@ export function createInitialEngineAnalytics(teamIds: string[]): TeamEngineAnaly
     teamId,
     dataPoints: [],
   }));
+}
+
+// =============================================================================
+// CONTRACT NEGOTIATION FUNCTIONS
+// =============================================================================
+
+/**
+ * Maximum desperation discount percentage (0.3 = 30% off)
+ * Desperate manufacturers can offer up to this discount
+ */
+export const MAX_DESPERATION_DISCOUNT = 0.3;
+
+/**
+ * Late negotiation penalty multiplier
+ * Signing during off-season costs this much more
+ */
+export const LATE_NEGOTIATION_PENALTY = 1.5;
+
+/**
+ * Default contract duration in seasons
+ */
+export const DEFAULT_CONTRACT_DURATION = 2;
+
+/**
+ * Days until an offer expires
+ */
+export const OFFER_EXPIRY_DAYS = 14;
+
+/**
+ * Minimum profit margin manufacturers require (0.1 = 10%)
+ * Manufacturers won't offer unprofitable deals below this margin
+ */
+export const MIN_PROFIT_MARGIN = 0.1;
+
+/**
+ * Bundle discount for pre-negotiated upgrades (vs ad-hoc)
+ * Pre-paid upgrades in contract cost this much less
+ */
+export const BUNDLE_DISCOUNT = 0.33;
+
+/**
+ * Maximum desperation effect on profit margin requirements (0.8 = 80%)
+ * At max desperation, required profit margin can drop by up to this percentage
+ */
+export const DESPERATION_MARGIN_REDUCTION = 0.8;
+
+/**
+ * Calculates manufacturer desperation level based on market position
+ *
+ * Desperation kicks in when:
+ * - Manufacturer has fewer teams secured for next season than they currently have
+ * - AND there aren't enough unsigned teams to make up the difference
+ *
+ * @param manufacturerId - The manufacturer to calculate desperation for
+ * @param currentSeason - Current season number
+ * @param contracts - All active manufacturer contracts
+ * @returns Desperation level 0-1 (0 = not desperate, 1 = very desperate)
+ */
+export function calculateDesperation(
+  manufacturerId: string,
+  currentSeason: number,
+  contracts: ActiveManufacturerContract[]
+): number {
+  // Count teams currently with this manufacturer (engine contracts only)
+  const currentTeams = contracts.filter(
+    (c) =>
+      c.manufacturerId === manufacturerId &&
+      c.type === ManufacturerType.Engine &&
+      c.startSeason <= currentSeason &&
+      c.endSeason >= currentSeason
+  ).length;
+
+  // Count teams secured for next season
+  const nextSeason = currentSeason + 1;
+  const securedNextYear = contracts.filter(
+    (c) =>
+      c.manufacturerId === manufacturerId &&
+      c.type === ManufacturerType.Engine &&
+      c.startSeason <= nextSeason &&
+      c.endSeason >= nextSeason
+  ).length;
+
+  // How many teams does this manufacturer need to replace?
+  const needed = currentTeams - securedNextYear;
+
+  // If already secured enough, not desperate
+  if (needed <= 0) return 0;
+
+  // Count all unsigned teams for next season
+  const teamsWithContractsNextSeason = new Set(
+    contracts
+      .filter(
+        (c) =>
+          c.type === ManufacturerType.Engine &&
+          c.startSeason <= nextSeason &&
+          c.endSeason >= nextSeason
+      )
+      .map((c) => c.teamId)
+  );
+
+  // Get total unique teams from current contracts
+  const allTeams = new Set(
+    contracts.filter((c) => c.type === ManufacturerType.Engine).map((c) => c.teamId)
+  );
+
+  const unsignedTeamsCount = allTeams.size - teamsWithContractsNextSeason.size;
+
+  // Desperation increases when unsigned teams ≤ what manufacturer needs
+  if (unsignedTeamsCount <= 0) {
+    // No unsigned teams available - maximum desperation
+    return 1;
+  }
+
+  if (unsignedTeamsCount <= needed) {
+    // Desperate: not enough unsigned teams to fill the gap
+    return Math.min(1, needed / unsignedTeamsCount);
+  }
+
+  // Some desperation if they need teams but there are options
+  return Math.min(0.3, needed / (unsignedTeamsCount * 2));
+}
+
+/**
+ * Calculates whether a contract offer is profitable for the manufacturer
+ *
+ * @param manufacturer - The manufacturer making the offer
+ * @param terms - The proposed contract terms
+ * @returns True if profitable (or acceptable with desperation), false otherwise
+ */
+export function isOfferProfitable(
+  manufacturer: Manufacturer,
+  terms: ContractTerms,
+  desperation: number
+): boolean {
+  // Calculate total revenue over contract duration
+  const totalRevenue = terms.annualCost * terms.duration;
+
+  // Calculate total costs
+  const baseCost = manufacturer.costs.baseEngine * 2 * terms.duration; // 2 engines per year
+  const upgradeCost = manufacturer.costs.upgrade * terms.upgradesIncluded * terms.duration;
+  const customisationCost =
+    manufacturer.costs.customisationPoint * terms.customisationPointsIncluded;
+  const optimisationCost = terms.optimisationIncluded ? manufacturer.costs.optimisation : 0;
+
+  const totalCost = baseCost + upgradeCost + customisationCost + optimisationCost;
+
+  // Calculate profit margin
+  const margin = totalRevenue > 0 ? (totalRevenue - totalCost) / totalRevenue : -1;
+
+  // Minimum acceptable margin reduces with desperation
+  const minAcceptableMargin = MIN_PROFIT_MARGIN * (1 - desperation * DESPERATION_MARGIN_REDUCTION);
+
+  return margin >= minAcceptableMargin;
+}
+
+/**
+ * Generates base contract terms for a manufacturer's standard offer
+ *
+ * @param manufacturer - The manufacturer making the offer
+ * @param desperation - Manufacturer's desperation level (0-1)
+ * @param isLateSeason - Whether this is late in the season (penalty applies)
+ * @returns Base contract terms
+ */
+export function generateBaseContractTerms(
+  manufacturer: Manufacturer,
+  desperation: number,
+  isLateSeason: boolean
+): ContractTerms {
+  // Base annual cost is manufacturer's standard rate
+  let annualCost = manufacturer.annualCost;
+
+  // Apply desperation discount (up to 30% off)
+  const desperationDiscount = desperation * MAX_DESPERATION_DISCOUNT;
+  annualCost = annualCost * (1 - desperationDiscount);
+
+  // Apply late season penalty
+  if (isLateSeason) {
+    annualCost = annualCost * LATE_NEGOTIATION_PENALTY;
+  }
+
+  return {
+    annualCost: Math.round(annualCost),
+    duration: DEFAULT_CONTRACT_DURATION,
+    upgradesIncluded: 0,
+    customisationPointsIncluded: 0,
+    optimisationIncluded: false,
+  };
+}
+
+/**
+ * Creates a contract offer from a manufacturer
+ *
+ * @param manufacturerId - ID of the manufacturer
+ * @param terms - The contract terms being offered
+ * @param currentDate - Current game date
+ * @param desperation - Manufacturer's desperation level
+ * @param isCounterOffer - Whether this is a counter to player's request
+ * @param isProactive - Whether manufacturer initiated this
+ * @returns A new ContractOffer
+ */
+export function createContractOffer(
+  manufacturerId: string,
+  terms: ContractTerms,
+  currentDate: GameDate,
+  desperation: number,
+  isCounterOffer: boolean,
+  isProactive: boolean
+): ContractOffer {
+  return {
+    id: `offer-${manufacturerId}-${Date.now()}`,
+    manufacturerId,
+    terms,
+    offeredDate: { ...currentDate },
+    expiresDate: offsetGameDate(currentDate, OFFER_EXPIRY_DAYS),
+    desperationAtOffer: desperation,
+    isCounterOffer,
+    isProactiveOffer: isProactive,
+  };
+}
+
+/**
+ * Creates an empty negotiation state for a team and manufacturer
+ */
+export function createNegotiation(
+  teamId: string,
+  manufacturerId: string,
+  forSeason: number,
+  currentDate: GameDate
+): EngineNegotiation {
+  return {
+    teamId,
+    manufacturerId,
+    status: NegotiationStatus.AwaitingOffer,
+    forSeason,
+    offers: [],
+    playerCounterTerms: null,
+    startedDate: { ...currentDate },
+  };
+}
+
+/**
+ * Checks if a team's contract is expiring at end of current season
+ */
+export function isContractExpiring(
+  teamId: string,
+  currentSeason: number,
+  contracts: ActiveManufacturerContract[]
+): boolean {
+  const engineContract = contracts.find(
+    (c) => c.teamId === teamId && c.type === ManufacturerType.Engine
+  );
+  return engineContract?.endSeason === currentSeason;
+}
+
+/**
+ * Gets the manufacturer ID for a team's current engine contract
+ */
+export function getCurrentManufacturer(
+  teamId: string,
+  contracts: ActiveManufacturerContract[]
+): string | null {
+  const engineContract = contracts.find(
+    (c) => c.teamId === teamId && c.type === ManufacturerType.Engine
+  );
+  return engineContract?.manufacturerId ?? null;
+}
+
+/**
+ * Offsets a game date by a number of days
+ * Simple helper - doesn't handle month/year wraparound perfectly
+ */
+function offsetGameDate(date: GameDate, days: number): GameDate {
+  // Simple implementation - assumes 30-day months for simplicity
+  let newDay = date.day + days;
+  let newMonth = date.month;
+  let newYear = date.year;
+
+  while (newDay > 30) {
+    newDay -= 30;
+    newMonth++;
+    if (newMonth > 12) {
+      newMonth = 1;
+      newYear++;
+    }
+  }
+
+  return { year: newYear, month: newMonth, day: newDay };
 }
 

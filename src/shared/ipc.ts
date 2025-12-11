@@ -25,6 +25,7 @@ import type {
   TechnologyAttribute,
   HandlingProblem,
   EngineCustomisation,
+  ContractTerms,
 } from './domain';
 import type { TurnBlocked, DayStopReason } from './domain/engines';
 
@@ -189,6 +190,27 @@ export interface ApplyCustomisationParams {
   customisation: EngineCustomisation;
 }
 
+/**
+ * Parameters for starting a negotiation with a manufacturer
+ */
+export interface StartNegotiationParams {
+  manufacturerId: string;
+}
+
+/**
+ * Response to a contract offer
+ */
+export type OfferResponse = 'accept' | 'reject' | 'counter';
+
+/**
+ * Parameters for responding to a contract offer
+ */
+export interface RespondToOfferParams {
+  offerId: string;
+  response: OfferResponse;
+  counterTerms?: ContractTerms;
+}
+
 // =============================================================================
 // TESTING TYPES
 // =============================================================================
@@ -281,6 +303,10 @@ export const IpcChannels = {
   ENGINE_BUY_CUSTOMISATION_POINTS: 'engine:buyCustomisationPoints',
   ENGINE_APPLY_CUSTOMISATION: 'engine:applyCustomisation',
   ENGINE_BUY_OPTIMISATION: 'engine:buyOptimisation',
+
+  // Engine Negotiation
+  ENGINE_START_NEGOTIATION: 'engine:startNegotiation',
+  ENGINE_RESPOND_TO_OFFER: 'engine:respondToOffer',
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];
@@ -481,6 +507,16 @@ export interface IpcInvokeMap {
   };
   [IpcChannels.ENGINE_BUY_OPTIMISATION]: {
     args: [];
+    result: GameState;
+  };
+
+  // Engine Negotiation
+  [IpcChannels.ENGINE_START_NEGOTIATION]: {
+    args: [params: StartNegotiationParams];
+    result: GameState;
+  };
+  [IpcChannels.ENGINE_RESPOND_TO_OFFER]: {
+    args: [params: RespondToOfferParams];
     result: GameState;
   };
 }
