@@ -234,7 +234,7 @@ function ClickableDriverName({
     <button
       type="button"
       onClick={onClick}
-      className={`hover:underline font-semibold ${className}`}
+      className={`hover:underline font-semibold cursor-pointer ${className}`}
       style={nameStyle}
     >
       {formatDriverName(driver, fallbackId)}

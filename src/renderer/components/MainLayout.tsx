@@ -82,7 +82,7 @@ const ROUTE_COMPONENTS: Partial<Record<SectionId, Record<string, React.Component
     contracts: Contracts,
   },
   fia: {
-    championship: Championship,
+    // championship, races, results handled separately (need navigation props)
   },
   options: {
     'game-options': GameOptions,
@@ -345,6 +345,9 @@ export function MainLayout() {
     }
     if (selectedSectionId === 'world' && selectedSubItemId === 'staff') {
       return <WorldStaff initialStaffId={targetStaffId} />;
+    }
+    if (selectedSectionId === 'fia' && selectedSubItemId === 'championship') {
+      return <Championship onNavigateToDriver={(driverId) => navigateToEntity('driver', driverId)} />;
     }
     if (selectedSectionId === 'fia' && selectedSubItemId === 'races') {
       return <Races onViewRaceReport={navigateToRaceReport} />;
