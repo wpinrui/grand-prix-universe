@@ -6,17 +6,18 @@ import { ACCENT_CARD_STYLE, GHOST_BORDERED_BUTTON_CLASSES } from '../utils/theme
 import { formatMoney } from '../utils/format';
 import { seasonToYear } from '../../shared/utils/date-utils';
 import { IpcChannels } from '../../shared/ipc';
-import type {
-  Manufacturer,
-  ActiveManufacturerContract,
-  TeamEngineState,
-  CarEngineState,
-  EngineStats,
-  Driver,
-  ManufacturerSpecState,
-  Team,
-  TeamEngineAnalytics,
-  GameState,
+import {
+  ManufacturerType,
+  type Manufacturer,
+  type ActiveManufacturerContract,
+  type TeamEngineState,
+  type CarEngineState,
+  type EngineStats,
+  type Driver,
+  type ManufacturerSpecState,
+  type Team,
+  type TeamEngineAnalytics,
+  type GameState,
 } from '../../shared/domain';
 import {
   ENGINE_STAT_KEYS,
@@ -24,6 +25,8 @@ import {
   getSpecBonusesAsEngineStats,
   calculateAverageEstimatedPower,
   calculateAnalyticsConfidence,
+  ANALYTICS_CONFIDENCE_LOW_THRESHOLD,
+  ANALYTICS_CONFIDENCE_HIGH_THRESHOLD,
 } from '../../shared/domain/engine-utils';
 
 // ===========================================
@@ -374,7 +377,7 @@ function getTeamManufacturerName(
   gameState: GameState
 ): string {
   const contract = gameState.manufacturerContracts.find(
-    (c) => c.teamId === teamId && c.type === 'engine'
+    (c) => c.teamId === teamId && c.type === ManufacturerType.Engine
   );
   if (!contract) return 'Unknown';
 
@@ -392,10 +395,10 @@ function ConfidenceBadge({ confidence }: { confidence: number }) {
   if (confidence === 0) {
     label = 'No Data';
     colorClass = 'text-neutral-500';
-  } else if (confidence < 50) {
+  } else if (confidence < ANALYTICS_CONFIDENCE_LOW_THRESHOLD) {
     label = 'Low';
     colorClass = 'text-red-400';
-  } else if (confidence < 80) {
+  } else if (confidence < ANALYTICS_CONFIDENCE_HIGH_THRESHOLD) {
     label = 'Medium';
     colorClass = 'text-amber-400';
   } else {

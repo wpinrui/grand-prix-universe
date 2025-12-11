@@ -381,6 +381,28 @@ export function getSpecBonusesAsEngineStats(specState: ManufacturerSpecState): E
 export const ANALYTICS_ERROR_MARGIN = 0.08;
 
 /**
+ * Confidence thresholds for analytics display
+ * Based on formula: confidence = min(100, dataPoints * 10 + 20)
+ * - Low: 1-2 races (30-40%)
+ * - Medium: 3-5 races (50-70%)
+ * - High: 6+ races (80-100%)
+ */
+export const ANALYTICS_CONFIDENCE_LOW_THRESHOLD = 50;
+export const ANALYTICS_CONFIDENCE_HIGH_THRESHOLD = 80;
+
+/**
+ * Weights for calculating composite engine power
+ * Power and reliability are prioritized as they most directly affect race outcomes
+ */
+export const ENGINE_POWER_WEIGHTS = {
+  power: 0.40, // 40% - directly affects lap time
+  fuelEfficiency: 0.15, // 15% - affects strategy options
+  reliability: 0.25, // 25% - affects DNF probability
+  heat: 0.10, // 10% - hot race penalty
+  predictability: 0.10, // 10% - driver error modifier
+} as const;
+
+/**
  * Calculates the "true" composite power value from engine stats
  * This is a weighted average favoring Power and Reliability
  *
@@ -388,21 +410,12 @@ export const ANALYTICS_ERROR_MARGIN = 0.08;
  * @returns Composite power score (0-100)
  */
 export function calculateTruePower(stats: EngineStats): number {
-  // Weighted average: Power is most important, then reliability, then others
-  const weights = {
-    power: 0.40, // 40% - directly affects lap time
-    fuelEfficiency: 0.15, // 15% - affects strategy options
-    reliability: 0.25, // 25% - affects DNF probability
-    heat: 0.10, // 10% - hot race penalty
-    predictability: 0.10, // 10% - driver error modifier
-  };
-
   return (
-    stats.power * weights.power +
-    stats.fuelEfficiency * weights.fuelEfficiency +
-    stats.reliability * weights.reliability +
-    stats.heat * weights.heat +
-    stats.predictability * weights.predictability
+    stats.power * ENGINE_POWER_WEIGHTS.power +
+    stats.fuelEfficiency * ENGINE_POWER_WEIGHTS.fuelEfficiency +
+    stats.reliability * ENGINE_POWER_WEIGHTS.reliability +
+    stats.heat * ENGINE_POWER_WEIGHTS.heat +
+    stats.predictability * ENGINE_POWER_WEIGHTS.predictability
   );
 }
 
@@ -466,31 +479,3 @@ export function createInitialEngineAnalytics(teamIds: string[]): TeamEngineAnaly
   }));
 }
 
-/**
- * Adds a new data point to a team's analytics
- * Called after each race with estimated power values
- *
- * @param analytics - Current analytics array
- * @param teamId - Team to update
- * @param raceNumber - Race number for this data point
- * @param estimatedPower - The estimated power value (with error)
- * @returns Updated analytics array (immutable)
- */
-export function addAnalyticsDataPoint(
-  analytics: TeamEngineAnalytics[],
-  teamId: string,
-  raceNumber: number,
-  estimatedPower: number
-): TeamEngineAnalytics[] {
-  return analytics.map((teamAnalytics) => {
-    if (teamAnalytics.teamId !== teamId) return teamAnalytics;
-
-    return {
-      ...teamAnalytics,
-      dataPoints: [
-        ...teamAnalytics.dataPoints,
-        { raceNumber, estimatedPower },
-      ],
-    };
-  });
-}
