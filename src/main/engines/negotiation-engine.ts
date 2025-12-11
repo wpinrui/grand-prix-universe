@@ -32,7 +32,7 @@ import {
   ResponseTone,
 } from '../../shared/domain';
 import { evaluateManufacturerOffer } from './evaluators';
-import { addDaysToDate } from '../../shared/domain/engine-utils';
+import { offsetDate } from '../../shared/utils/date-utils';
 
 // =============================================================================
 // CONSTANTS
@@ -66,7 +66,7 @@ function isResponseDue(
   currentDate: GameDate,
   responseDelayDays: number
 ): boolean {
-  const responseDate = addDaysToDate(round.offeredDate, responseDelayDays);
+  const responseDate = offsetDate(round.offeredDate, responseDelayDays);
   return compareDates(responseDate, currentDate) <= 0;
 }
 
@@ -150,7 +150,7 @@ function createResponseRound(
   result: NegotiationEvaluationResult,
   currentDate: GameDate
 ): NegotiationRound {
-  const expirationDate = addDaysToDate(currentDate, DEFAULT_EXPIRATION_DAYS);
+  const expirationDate = offsetDate(currentDate, DEFAULT_EXPIRATION_DAYS);
 
   return {
     roundNumber: previousRound.roundNumber + 1,
@@ -218,11 +218,13 @@ function processNegotiation(
   const responseRound = createResponseRound(lastRound, result, input.currentDate);
 
   // Update negotiation
-  const updatedNegotiation: Negotiation = {
+  // Type assertion needed because Negotiation is a union type with different round types
+  // The cast is safe because responseRound is created from the same negotiation's lastRound
+  const updatedNegotiation = {
     ...negotiation,
     phase: determineNewPhase(result.responseType),
     rounds: [...negotiation.rounds, responseRound],
-  };
+  } as Negotiation;
 
   // Determine if should stop simulation
   // Always stop for: Accept, Reject (negotiation concluded)
