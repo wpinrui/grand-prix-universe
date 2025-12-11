@@ -649,11 +649,8 @@ function ActiveNegotiationCard({
   const latestRound = negotiation.rounds[negotiation.rounds.length - 1];
   // Get terms from the latest round (either player's offer or counterparty's response)
   const latestTerms: ContractTerms | null = latestRound?.terms ?? null;
-  // @agent: Check offeredBy instead of phase===ResponseReceived due to #160
-  // The negotiation engine sets Counter responses to AwaitingResponse instead of ResponseReceived
-  const canRespond = latestRound?.offeredBy === 'counterparty' &&
-    negotiation.phase !== NegotiationPhase.Completed &&
-    negotiation.phase !== NegotiationPhase.Failed;
+  // Player can respond when counterparty has made an offer/counter
+  const canRespond = negotiation.phase === NegotiationPhase.ResponseReceived;
 
   return (
     <div className="card p-4" style={ACCENT_CARD_STYLE}>
