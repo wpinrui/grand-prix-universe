@@ -67,6 +67,9 @@ const PRESTIGE_UPGRADE_THRESHOLD = 0.2;
 /** Ability gap for staff to consider target team's slot */
 const ABILITY_UPGRADE_THRESHOLD = 5;
 
+/** Default contract duration proposed during staff outreach */
+const DEFAULT_OUTREACH_DURATION = 2;
+
 // =============================================================================
 // LETTER GRADE SCOUTING SYSTEM
 // =============================================================================
@@ -400,7 +403,7 @@ export function evaluateStaffApproach(input: StaffApproachInput): StaffApproachR
         shouldApproach: targetPrestige > APPROACH_PRESTIGE_THRESHOLD,
         reason: 'free_agent',
         proposedSalary: expectedSalary,
-        proposedDuration: 2,
+        proposedDuration: DEFAULT_OUTREACH_DURATION,
       };
     }
     return {
@@ -424,7 +427,7 @@ export function evaluateStaffApproach(input: StaffApproachInput): StaffApproachR
           shouldApproach: true,
           reason: 'seeking_upgrade',
           proposedSalary: expectedSalary,
-          proposedDuration: 2,
+          proposedDuration: DEFAULT_OUTREACH_DURATION,
         };
       }
     }
