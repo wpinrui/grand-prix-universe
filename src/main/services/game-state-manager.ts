@@ -147,6 +147,8 @@ import {
   getSpecBonusesAsEngineStats,
   createManufacturerNegotiation,
   generateBaseContractTerms,
+  OFFER_EXPIRY_DAYS,
+  LATE_SEASON_MONTH,
 } from '../../shared/domain/engine-utils';
 
 /** Current save format version */
@@ -2850,8 +2852,7 @@ export const GameStateManager = {
     // Generate initial offer terms based on manufacturer pricing
     // Desperation: 0 for initial player offer (we don't know their desperation yet)
     // Late season: Check if we're negotiating in the final months
-    const month = state.currentDate.month;
-    const isLateSeason = month >= 10; // October onwards is late season
+    const isLateSeason = state.currentDate.month >= LATE_SEASON_MONTH;
     const initialTerms = generateBaseContractTerms(manufacturer, 0, isLateSeason);
 
     // Create new negotiation
@@ -2914,7 +2915,7 @@ export const GameStateManager = {
         throw new Error('Counter terms required for counter offer');
       }
 
-      const expiresDate = offsetDate(state.currentDate, 14); // 2 weeks expiry
+      const expiresDate = offsetDate(state.currentDate, OFFER_EXPIRY_DAYS);
       const newRound = {
         roundNumber: negotiation.currentRound + 1,
         offeredBy: 'player' as const,

@@ -512,6 +512,21 @@ export const DEFAULT_CONTRACT_DURATION = 2;
 export const OFFER_EXPIRY_DAYS = 14;
 
 /**
+ * Maximum number of negotiation rounds before stalemate
+ */
+export const DEFAULT_MAX_ROUNDS = 5;
+
+/**
+ * Default neutral relationship score (0-100 scale)
+ */
+export const DEFAULT_RELATIONSHIP_SCORE = 50;
+
+/**
+ * Month threshold for late season negotiations (October onwards)
+ */
+export const LATE_SEASON_MONTH = 10;
+
+/**
  * Minimum profit margin manufacturers require (0.1 = 10%)
  * Manufacturers won't offer unprofitable deals below this margin
  */
@@ -710,8 +725,8 @@ export function createManufacturerNegotiation(
       },
     ],
     currentRound: 1,
-    maxRounds: 5,
-    relationshipScoreBefore: 50,
+    maxRounds: DEFAULT_MAX_ROUNDS,
+    relationshipScoreBefore: DEFAULT_RELATIONSHIP_SCORE,
     hasCompetingOffer: false,
     isProactiveOutreach: false,
   };
@@ -743,5 +758,3 @@ export function getCurrentManufacturer(
   );
   return engineContract?.manufacturerId ?? null;
 }
-
-
