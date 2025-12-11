@@ -14,6 +14,10 @@ import { SaveManager } from './save-manager';
 import { EngineManager } from '../engines/engine-manager';
 import { generateStubRaceResult } from '../engines/stubs';
 import {
+  MIN_DESPERATION_MULTIPLIER,
+  DESPERATION_MULTIPLIER_RANGE,
+} from '../engines/evaluators';
+import {
   IpcEvents,
   type IpcEventPayloads,
   type SaveResult,
@@ -493,13 +497,14 @@ function matchesTechProject(component: TechnologyComponent, attribute: Technolog
 
 /**
  * Creates initial runtime state for a driver
- * desperationMultiplier is randomized per driver (0.7-1.0)
+ * desperationMultiplier is randomized per driver (MIN to MIN+RANGE)
  * Lower values = more willing to accept worse contract offers
  */
 function createInitialDriverState(): DriverRuntimeState {
-  // Random desperation multiplier: 0.7 to 1.0
+  // Random desperation multiplier using constants from driver-evaluator
   // Lower = more desperate, higher = more demanding
-  const desperationMultiplier = 0.7 + Math.random() * 0.3;
+  const desperationMultiplier =
+    MIN_DESPERATION_MULTIPLIER + Math.random() * DESPERATION_MULTIPLIER_RANGE;
 
   return {
     morale: INITIAL_MORALE,

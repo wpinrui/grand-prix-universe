@@ -22,5 +22,7 @@ export {
   evaluateDriverOffer,
   calculatePerceivedValue,
   calculateMarketValue,
+  MIN_DESPERATION_MULTIPLIER,
+  DESPERATION_MULTIPLIER_RANGE,
   type DriverEvaluationInput,
 } from './driver-evaluator';

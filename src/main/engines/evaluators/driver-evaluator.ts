@@ -13,6 +13,7 @@
  */
 
 import type { Driver, Team, CareerSeasonRecord } from '../../../shared/domain/types';
+import { DriverRole } from '../../../shared/domain/types';
 import type { NegotiationEvaluationResult } from '../../../shared/domain/engines';
 import { ResponseType, ResponseTone } from '../../../shared/domain';
 
@@ -71,6 +72,21 @@ const MANY_SEATS_THRESHOLD = 5;
 
 /** Multiplier for asking more than required salary when countering a good offer */
 const COUNTER_ASK_MULTIPLIER = 1.1;
+
+/** Threshold below which personal desperation multiplier triggers desperation behavior */
+const PERSONAL_DESPERATION_THRESHOLD = 0.8;
+
+/**
+ * Minimum desperation multiplier value (most desperate drivers)
+ * Exported for use by game-state-manager when initializing driver states
+ */
+export const MIN_DESPERATION_MULTIPLIER = 0.7;
+
+/**
+ * Desperation multiplier range (random value between MIN and MIN + RANGE = 1.0)
+ * Exported for use by game-state-manager when initializing driver states
+ */
+export const DESPERATION_MULTIPLIER_RANGE = 0.3;
 
 // =============================================================================
 // PERCEIVED VALUE CALCULATION
@@ -286,7 +302,7 @@ export function evaluateDriverOffer(input: DriverEvaluationInput): NegotiationEv
   // Determine market desperation (few seats available)
   const isMarketDesperate = availableSeats <= DESPERATION_SEAT_THRESHOLD;
   const isLateRound = currentRound >= maxRounds - 1;
-  const isDesperate = isMarketDesperate || desperationMultiplier < 0.8;
+  const isDesperate = isMarketDesperate || desperationMultiplier < PERSONAL_DESPERATION_THRESHOLD;
 
   // Decision logic
   let responseType: ResponseType;
@@ -337,12 +353,12 @@ export function evaluateDriverOffer(input: DriverEvaluationInput): NegotiationEv
     responseType,
     counterTerms: counterSalary
       ? {
-          // Driver contract terms (simplified - just salary/duration for now)
-          annualCost: counterSalary,
+          salary: counterSalary,
           duration: input.offeredDuration,
-          upgradesIncluded: 0,
-          customisationPointsIncluded: 0,
-          optimisationIncluded: false,
+          signingBonus: 0,
+          performanceBonusPercent: 0,
+          releaseClause: 0,
+          driverStatus: DriverRole.Equal,
         }
       : null,
     responseTone,
