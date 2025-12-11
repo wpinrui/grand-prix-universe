@@ -826,8 +826,8 @@ function TechAttributeCell({
       {/* Allocation */}
       <td className="py-2 w-32">
         {isWorking ? (
-          <div className="flex items-center gap-1">
-            <span className="text-xs font-mono text-primary w-8">{allocation}%</span>
+          <div className="flex items-center justify-center gap-1">
+            <span className="text-xs font-mono text-primary w-8 text-right">{allocation}%</span>
             <StaffAllocationSlider
               id={`tech-alloc-${level}`}
               value={allocation}
