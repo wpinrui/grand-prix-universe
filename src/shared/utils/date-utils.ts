@@ -94,6 +94,16 @@ export function yearToSeason(year: number): number {
 }
 
 /**
+ * Calculate age from date of birth string and game year
+ * @param dateOfBirth - ISO date string (e.g., "1997-07-01")
+ * @param gameYear - The current in-game calendar year
+ */
+export function calculateAge(dateOfBirth: string, gameYear: number): number {
+  const birthYear = new Date(dateOfBirth).getFullYear();
+  return gameYear - birthYear;
+}
+
+/**
  * Create a GameDate from year, month, day
  */
 export function createGameDate(year: number, month: number, day: number): GameDate {

@@ -12,6 +12,7 @@
  */
 
 import type { Driver, Team, TeamPrincipal } from '../../../shared/domain/types';
+import { calculateAge } from '../../../shared/utils/date-utils';
 import { calculatePerceivedValue, calculateDriverAbility } from './driver-evaluator';
 
 // =============================================================================
@@ -95,14 +96,6 @@ function getAgeBracket(age: number): AgeBracket {
   if (age < PRIME_AGE_THRESHOLD) return 'prime';
   if (age < VETERAN_AGE_THRESHOLD) return 'mature';
   return 'veteran';
-}
-
-/**
- * Calculate driver's age from date of birth and game year
- */
-function calculateAge(dateOfBirth: string, gameYear: number): number {
-  const birthYear = new Date(dateOfBirth).getFullYear();
-  return gameYear - birthYear;
 }
 
 /**

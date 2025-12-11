@@ -21,7 +21,7 @@ import {
   getHistoricalPositionStyle,
   getChampionshipPositionStyle,
 } from '../utils/format';
-import { seasonToYear } from '../../shared/utils/date-utils';
+import { seasonToYear, calculateAge } from '../../shared/utils/date-utils';
 import {
   TABLE_HEADER_CLASS,
   TABLE_HEADER_ROW_CLASS,
@@ -55,12 +55,6 @@ const ATTRIBUTE_LABELS: Record<keyof Driver['attributes'], string> = {
 // ===========================================
 // HELPER FUNCTIONS
 // ===========================================
-
-function calculateAge(dateOfBirth: string, currentSeason: number): number {
-  const birthYear = new Date(dateOfBirth).getFullYear();
-  const currentYear = seasonToYear(currentSeason);
-  return currentYear - birthYear;
-}
 
 function formatDateOfBirth(dateOfBirth: string): string {
   const date = new Date(dateOfBirth);
@@ -457,7 +451,7 @@ export function DriverProfileContent({
   onDriverSelect,
   allTeams,
 }: DriverProfileContentProps) {
-  const age = calculateAge(driver.dateOfBirth, currentSeason);
+  const age = calculateAge(driver.dateOfBirth, seasonToYear(currentSeason));
   const fullName = `${driver.firstName} ${driver.lastName}`;
 
   // Build dropdown options if provided
