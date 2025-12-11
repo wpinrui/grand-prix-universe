@@ -813,7 +813,7 @@ export function generateDefaultDriverTerms(
 ): DriverContractTerms {
   return {
     salary: currentSalary,
-    duration: 2, // Default 2-year offer
+    duration: DEFAULT_CONTRACT_DURATION,
     signingBonus: 0,
     performanceBonusPercent: 0,
     releaseClause: Math.round(currentSalary * 2), // 2x salary buyout

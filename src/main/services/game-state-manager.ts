@@ -137,6 +137,7 @@ import {
   DEFAULT_SIMULATION_STATE,
   offsetDate,
   isSameDay,
+  daysBetween,
 } from '../../shared/utils/date-utils';
 import {
   createDefaultTeamEngineState,
@@ -2323,12 +2324,7 @@ function hasRecentDriverOutreach(
     if (n.forSeason !== forSeason) return false;
 
     // Check cooldown period
-    const startedDate = n.startedDate;
-    const daysSinceStart =
-      (currentDate.year - startedDate.year) * 365 +
-      (currentDate.month - startedDate.month) * 30 +
-      (currentDate.day - startedDate.day);
-
+    const daysSinceStart = daysBetween(n.startedDate, currentDate);
     return daysSinceStart < DRIVER_OUTREACH_COOLDOWN_DAYS;
   });
 }
