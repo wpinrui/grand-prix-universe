@@ -23,6 +23,7 @@ export {
   evaluateDriverOffer,
   calculatePerceivedValue,
   calculateMarketValue,
+  calculateDriverAbility,
   MIN_DESPERATION_MULTIPLIER,
   DESPERATION_MULTIPLIER_RANGE,
   MAX_DESPERATION_MULTIPLIER,

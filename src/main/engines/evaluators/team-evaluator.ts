@@ -12,7 +12,7 @@
  */
 
 import type { Driver, Team, TeamPrincipal } from '../../../shared/domain/types';
-import { calculatePerceivedValue } from './driver-evaluator';
+import { calculatePerceivedValue, calculateDriverAbility } from './driver-evaluator';
 
 // =============================================================================
 // CONSTANTS
@@ -106,22 +106,6 @@ function calculateAge(dateOfBirth: string, gameYear: number): number {
 }
 
 /**
- * Calculate attribute sum for a driver (0-700 scale, 7 attributes × 100 max each)
- */
-function calculateAttributeSum(driver: Driver): number {
-  const attrs = driver.attributes;
-  return (
-    attrs.pace +
-    attrs.consistency +
-    attrs.focus +
-    attrs.overtaking +
-    attrs.wetWeather +
-    attrs.smoothness +
-    attrs.defending
-  );
-}
-
-/**
  * Check if driver is considered a rookie (< 2 seasons of F1 history)
  */
 function isRookie(driver: Driver): boolean {
@@ -191,17 +175,16 @@ export function calculateDriverAttractiveness(input: DriverAttractivenessInput):
   let baseAttractiveness: number;
 
   if (isRookie(driver)) {
-    // Rookie: attribute sum with seeded error
-    const attrSum = calculateAttributeSum(driver);
-    const normalizedSum = attrSum / 700; // 0-1 scale
+    // Rookie: ability score with seeded error
+    const normalizedAbility = calculateDriverAbility(driver);
 
     // Generate team-principal-specific error for this driver
     // Convert 0-1 seed to symmetric -1 to +1 range, then scale by error range
     const errorSeed = hashString(`${teamPrincipalId}-${driver.id}`);
     const error = (errorSeed * 2 - 1) * ROOKIE_ERROR_RANGE; // -0.1 to +0.1
 
-    // Apply error to normalized sum, clamped to 0-1
-    baseAttractiveness = clamp01(normalizedSum + error);
+    // Apply error to normalized ability, clamped to 0-1
+    baseAttractiveness = clamp01(normalizedAbility + error);
   } else {
     // Experienced driver: use perceived value
     baseAttractiveness = calculatePerceivedValue(driver.careerHistory);

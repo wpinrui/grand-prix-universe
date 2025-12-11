@@ -184,7 +184,7 @@ function calculateTeamQuality(team: Team, allTeams: Team[], standings: Map<strin
  * Calculate driver ability score (0 to 1) from attributes.
  * Simple average of all attribute values normalized to 0-1.
  */
-function calculateDriverAbility(driver: Driver): number {
+export function calculateDriverAbility(driver: Driver): number {
   const attrs = driver.attributes;
   const sum =
     attrs.pace +
