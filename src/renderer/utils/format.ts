@@ -112,9 +112,6 @@ export function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
-/** Alias for formatCurrency */
-export const formatMoney = formatCurrency;
-
 /**
  * Format a number in compact form (e.g., 1.5M, 500K)
  */

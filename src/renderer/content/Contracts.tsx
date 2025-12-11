@@ -3,7 +3,7 @@ import { useDerivedGameState } from '../hooks';
 import { SectionHeading, TabBar } from '../components';
 import type { Tab } from '../components';
 import { ACCENT_CARD_STYLE, GHOST_BORDERED_BUTTON_CLASSES, PRIMARY_BUTTON_CLASSES } from '../utils/theme-styles';
-import { formatMoney } from '../utils/format';
+import { formatCurrency } from '../utils/format';
 import { seasonToYear } from '../../shared/utils/date-utils';
 import { IpcChannels } from '../../shared/ipc';
 import {
@@ -263,7 +263,7 @@ function CurrentContractTab({
           <div>
             <div className="text-sm text-muted">Annual Cost</div>
             <div className="text-lg font-semibold text-primary">
-              {formatMoney(contract.annualCost)}
+              {formatCurrency(contract.annualCost)}
             </div>
           </div>
           <div>
@@ -312,14 +312,14 @@ function CurrentContractTab({
           <ActionCard
             title="Buy Customisation Points"
             description="Purchase flexibility points to reallocate engine stats (±10 max per stat)"
-            cost={`${formatMoney(manufacturer.costs.customisationPoint)} per point`}
+            cost={`${formatCurrency(manufacturer.costs.customisationPoint)} per point`}
             buttonLabel="Buy 1 Point"
             onClick={onBuyCustomisationPoints}
           />
           <ActionCard
             title="Pre-Season Optimisation"
             description="Tailor the engine to your car for a flat bonus to all stats next season"
-            cost={formatMoney(manufacturer.costs.optimisation)}
+            cost={formatCurrency(manufacturer.costs.optimisation)}
             buttonLabel={engineState.optimisationPurchasedForNextSeason ? 'Purchased' : 'Purchase'}
             disabled={engineState.optimisationPurchasedForNextSeason}
             onClick={onBuyOptimisation}
@@ -327,7 +327,7 @@ function CurrentContractTab({
           <ActionCard
             title="Ad-Hoc Engine Upgrade"
             description="Purchase a fresh engine with the latest spec for one car"
-            cost={`${formatMoney(manufacturer.costs.upgrade)} per engine`}
+            cost={`${formatCurrency(manufacturer.costs.upgrade)} per engine`}
             buttonLabel="Purchase"
             disabled
           />
@@ -608,7 +608,7 @@ function ManufacturerRow({
         {manufacturer.reputation}
       </td>
       <td className="py-3 px-4 text-secondary">
-        {formatMoney(manufacturer.annualCost)}/year
+        {formatCurrency(manufacturer.annualCost)}/year
       </td>
       <td className="py-3 px-4 text-center">
         <button
@@ -671,7 +671,7 @@ function ActiveNegotiationCard({
               <div>
                 <span className="text-muted">Annual Cost:</span>
                 <span className="text-primary ml-2 font-medium">
-                  {formatMoney(latestOffer.terms.annualCost)}
+                  {formatCurrency(latestOffer.terms.annualCost)}
                 </span>
               </div>
               <div>
