@@ -130,25 +130,25 @@ function SponsorLogo({ sponsor, size }: SponsorLogoProps) {
 }
 
 interface IncomeSummaryProps {
-  totalAnnual: number;
+  totalMonthly: number;
   titleIncome: number;
   majorIncome: number;
   minorIncome: number;
 }
 
-function IncomeSummary({ totalAnnual, titleIncome, majorIncome, minorIncome }: IncomeSummaryProps) {
-  const monthlyIncome = totalAnnual / 12;
+function IncomeSummary({ totalMonthly, titleIncome, majorIncome, minorIncome }: IncomeSummaryProps) {
+  const annualIncome = totalMonthly * 12;
 
   return (
     <div className="card p-6" style={ACCENT_CARD_STYLE}>
       <div className="flex justify-between items-start">
         <div>
-          <div className="text-sm text-muted mb-1">Annual Sponsor Income</div>
-          <div className="text-3xl font-bold text-primary">{formatCurrency(totalAnnual)}</div>
-          <div className="text-sm text-secondary mt-1">{formatCurrency(monthlyIncome)}/month</div>
+          <div className="text-sm text-muted mb-1">Monthly Sponsor Income</div>
+          <div className="text-3xl font-bold text-primary">{formatCurrency(totalMonthly)}</div>
+          <div className="text-sm text-secondary mt-1">{formatCurrency(annualIncome)}/year</div>
         </div>
         <div className="text-right text-sm">
-          <div className="text-muted mb-2">Breakdown</div>
+          <div className="text-muted mb-2">Breakdown (monthly)</div>
           <div className="space-y-1">
             <div className="flex justify-between gap-4">
               <span className="text-secondary">Title:</span>
@@ -201,8 +201,8 @@ function SponsorCard({ sponsor, deal, currentSeason, variant }: SponsorCardProps
           </div>
           <div className="text-right flex-shrink-0">
             <div className={`font-bold text-primary ${isLarge ? 'text-xl' : 'text-base'}`}>
-              {formatCurrency(deal.annualPayment)}
-              <span className="text-sm font-normal text-muted">/yr</span>
+              {formatCurrency(deal.monthlyPayment)}
+              <span className="text-sm font-normal text-muted">/mo</span>
             </div>
           </div>
         </div>
@@ -284,7 +284,7 @@ function MinorSponsorChip({ sponsor, deal, currentSeason }: MinorSponsorChipProp
 
       {/* Payment */}
       <div className="text-xs text-secondary mt-1">
-        {formatCurrency(deal.annualPayment / MILLIONS)}M
+        {formatCurrency(deal.monthlyPayment / MILLIONS)}M/mo
       </div>
 
       {/* Contract */}
@@ -375,10 +375,10 @@ interface SponsorData {
   titleDeals: ActiveSponsorDeal[];
   majorDeals: ActiveSponsorDeal[];
   minorDeals: ActiveSponsorDeal[];
-  totalIncome: number;
-  titleIncome: number;
-  majorIncome: number;
-  minorIncome: number;
+  totalMonthly: number;
+  titleMonthly: number;
+  majorMonthly: number;
+  minorMonthly: number;
 }
 
 function computeSponsorData(gameState: GameState, playerTeamId: string): SponsorData {
@@ -388,19 +388,19 @@ function computeSponsorData(gameState: GameState, playerTeamId: string): Sponsor
   const majorDeals = teamDeals.filter((d) => d.tier === SponsorTier.Major);
   const minorDeals = teamDeals.filter((d) => d.tier === SponsorTier.Minor);
 
-  const titleIncome = titleDeals.reduce((sum, d) => sum + d.annualPayment, 0);
-  const majorIncome = majorDeals.reduce((sum, d) => sum + d.annualPayment, 0);
-  const minorIncome = minorDeals.reduce((sum, d) => sum + d.annualPayment, 0);
-  const totalIncome = titleIncome + majorIncome + minorIncome;
+  const titleMonthly = titleDeals.reduce((sum, d) => sum + d.monthlyPayment, 0);
+  const majorMonthly = majorDeals.reduce((sum, d) => sum + d.monthlyPayment, 0);
+  const minorMonthly = minorDeals.reduce((sum, d) => sum + d.monthlyPayment, 0);
+  const totalMonthly = titleMonthly + majorMonthly + minorMonthly;
 
   return {
     titleDeals,
     majorDeals,
     minorDeals,
-    totalIncome,
-    titleIncome,
-    majorIncome,
-    minorIncome,
+    totalMonthly,
+    titleMonthly,
+    majorMonthly,
+    minorMonthly,
   };
 }
 
@@ -439,10 +439,10 @@ export function Sponsors() {
 
       {/* Income Summary */}
       <IncomeSummary
-        totalAnnual={sponsorData.totalIncome}
-        titleIncome={sponsorData.titleIncome}
-        majorIncome={sponsorData.majorIncome}
-        minorIncome={sponsorData.minorIncome}
+        totalMonthly={sponsorData.totalMonthly}
+        titleIncome={sponsorData.titleMonthly}
+        majorIncome={sponsorData.majorMonthly}
+        minorIncome={sponsorData.minorMonthly}
       />
 
       {/* Title Sponsor */}

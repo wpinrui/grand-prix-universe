@@ -129,7 +129,7 @@ function IncomeSection({ deals, sponsors, totalIncome }: IncomeSectionProps) {
                   key={deal.sponsorId}
                   label={sponsor?.name ?? deal.sponsorId}
                   sublabel={SPONSOR_TIER_LABELS[deal.tier]}
-                  amount={deal.annualPayment}
+                  amount={deal.monthlyPayment * 12}
                 />
               );
             })}
@@ -239,7 +239,7 @@ export function Finance() {
   );
 
   // Calculate totals (single source of truth)
-  const totalIncome = teamSponsorDeals.reduce((sum, d) => sum + d.annualPayment, 0);
+  const totalIncome = teamSponsorDeals.reduce((sum, d) => sum + d.monthlyPayment * 12, 0);
   const totalExpenses =
     teamDrivers.reduce((sum, d) => sum + d.salary, 0) +
     teamChiefs.reduce((sum, c) => sum + c.salary, 0) +

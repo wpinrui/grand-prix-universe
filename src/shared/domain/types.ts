@@ -518,7 +518,7 @@ export interface Sponsor {
   name: string; // display name, e.g. "Globex Corporation"
   industry: string; // e.g. "technology", "finance", "automotive"
   tier: SponsorTier;
-  payment: number; // annual payment in dollars
+  baseMonthlyPayment: number; // base monthly payment (negotiable)
   minReputation: number; // 0-100, team must have at least this reputation
   rivalGroup: string | null; // sponsors in same group are mutually exclusive
   logoUrl: string | null; // URL to sponsor logo, null = use industry icon fallback
@@ -1426,16 +1426,14 @@ export enum SponsorPlacement {
  * SponsorContractTerms - Contract terms for sponsor deals
  */
 export interface SponsorContractTerms {
-  /** Annual payment to team */
-  annualPayment: number;
+  /** One-time signing bonus paid when contract is signed */
+  signingBonus: number;
+  /** Monthly payment to team */
+  monthlyPayment: number;
   /** Contract duration in seasons (1-3) */
   duration: number;
   /** Branding placement level */
   placement: SponsorPlacement;
-  /** Bonus payment per championship point */
-  pointsBonus: number;
-  /** Bonus payment per race win */
-  winBonus: number;
   /** Championship position below which sponsor can exit early */
   exitClausePosition?: number;
 }
@@ -1628,9 +1626,9 @@ export interface ActiveSponsorDeal {
   sponsorId: string;
   teamId: string;
   tier: SponsorTier;
-  annualPayment: number; // Negotiated payment
-  bonusLevel: number; // 0-3, affects payment multiplier
-  guaranteed: boolean; // If true, payment never drops
+  signingBonus: number; // One-time payment at contract start
+  monthlyPayment: number; // Negotiated monthly payment
+  guaranteed: boolean; // If true, payment continues even if team underperforms
   startSeason: number;
   endSeason: number; // Last season of contract
 }
