@@ -327,6 +327,9 @@ interface SeasonGridProps {
   lookups: EntityLookups;
   pointsPositions: number;
   playerTeamId: string;
+  drivers: Driver[];
+  teams: Team[];
+  currentSeasonYear: number;
   onRaceClick: (raceNumber: number) => void;
   onDriverClick: (driverId: string) => void;
 }
@@ -337,14 +340,182 @@ function SeasonGrid({
   lookups,
   pointsPositions,
   playerTeamId,
+  drivers,
+  teams,
+  currentSeasonYear,
   onRaceClick,
   onDriverClick,
 }: SeasonGridProps) {
   const { getDriver, getTeam, getCircuit } = lookups;
 
+  // Build season options: current game season + all historical F1 seasons from ALL drivers
+  const seasonOptions = useMemo((): SeasonOption[] => {
+    const options: SeasonOption[] = [];
+
+    // Current game season
+    options.push({
+      value: 'current',
+      label: `${currentSeasonYear} (Current)`,
+      type: 'current',
+      year: currentSeasonYear,
+    });
+
+    // Collect all unique historical years from all drivers' career history
+    const historicalYears = new Set<number>();
+    for (const driver of drivers) {
+      if (driver.careerHistory) {
+        for (const season of driver.careerHistory) {
+          historicalYears.add(season.season);
+        }
+      }
+    }
+
+    // Sort descending and add as options
+    const sortedYears = Array.from(historicalYears).sort((a, b) => b - a);
+    for (const year of sortedYears) {
+      options.push({
+        value: `f1-${year}`,
+        label: `${year} (F1)`,
+        type: 'historical',
+        year,
+      });
+    }
+
+    return options;
+  }, [drivers, currentSeasonYear]);
+
+  const [selectedSeason, setSelectedSeason] = useState<string>('current');
+
+  const selectedSeasonOption = seasonOptions.find((s) => s.value === selectedSeason) ?? seasonOptions[0];
+  const isHistorical = selectedSeasonOption?.type === 'historical';
+
+  // Build historical season data for all drivers
+  const historicalData = useMemo(() => {
+    if (!isHistorical) return null;
+
+    const year = selectedSeasonOption.year;
+    const driverData: Array<{
+      driverId: string;
+      driver: Driver;
+      season: CareerSeasonRecord;
+      team: Team | undefined;
+    }> = [];
+
+    for (const driver of drivers) {
+      if (driver.careerHistory) {
+        const season = driver.careerHistory.find((s) => s.season === year);
+        if (season) {
+          driverData.push({
+            driverId: driver.id,
+            driver,
+            season,
+            team: teams.find((t) => t.id === season.teamId),
+          });
+        }
+      }
+    }
+
+    // Sort by championship position (if available) or total points
+    driverData.sort((a, b) => {
+      const posA = a.season.championshipPosition ?? 999;
+      const posB = b.season.championshipPosition ?? 999;
+      if (posA !== posB) return posA - posB;
+      return b.season.totalPoints - a.season.totalPoints;
+    });
+
+    // Get max number of races from all drivers in this season
+    const maxRaces = Math.max(...driverData.map((d) => d.season.races.length), 0);
+
+    return { driverData, maxRaces, year };
+  }, [isHistorical, selectedSeasonOption?.year, drivers, teams]);
+
+  // Render historical season grid
+  if (isHistorical && historicalData) {
+    return (
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <SectionHeading className="mb-0">{historicalData.year} Season Results</SectionHeading>
+          <div className="w-48">
+            <Dropdown
+              value={selectedSeason}
+              onChange={setSelectedSeason}
+              options={seasonOptions.map((s) => ({ value: s.value, label: s.label }))}
+            />
+          </div>
+        </div>
+        <div className="card overflow-hidden overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className={TABLE_HEADER_CLASS}>
+              <tr className={TABLE_HEADER_ROW_CLASS}>
+                <th className="w-12 px-3 py-3 text-center">Pos</th>
+                <th className="w-40 px-3 py-3 text-left">Driver</th>
+                <th className="w-28 px-2 py-3 text-left">Team</th>
+                {Array.from({ length: historicalData.maxRaces }, (_, i) => (
+                  <th key={i + 1} className="w-9 px-0.5 py-2 text-center">
+                    <span className="text-xs text-muted">R{i + 1}</span>
+                  </th>
+                ))}
+                <th className="w-14 px-3 py-3 text-right">Pts</th>
+              </tr>
+            </thead>
+            <tbody className={TABLE_BODY_CLASS}>
+              {historicalData.driverData.map(({ driverId, driver, season, team }, index) => (
+                <tr key={driverId} className="border-b border-[var(--border-color)] hover:bg-[var(--neutral-800)]/50">
+                  <td className="w-12 px-3 py-2 text-center font-bold text-primary tabular-nums">
+                    {season.championshipPosition ?? index + 1}
+                  </td>
+                  <td className="w-40 px-3 py-2 whitespace-nowrap">
+                    <button
+                      type="button"
+                      onClick={() => onDriverClick(driverId)}
+                      className="hover:underline font-semibold text-left text-primary cursor-pointer"
+                    >
+                      {driver.firstName} {driver.lastName}
+                    </button>
+                  </td>
+                  <td className="w-28 px-2 py-2 text-secondary text-sm whitespace-nowrap">
+                    {team?.shortName ?? season.teamId}
+                  </td>
+                  {Array.from({ length: historicalData.maxRaces }, (_, i) => {
+                    const race = season.races.find((r) => r.round === i + 1);
+                    if (!race) {
+                      return <td key={i + 1} className="w-9 px-0.5 py-1 text-center" />;
+                    }
+                    return (
+                      <HistoricalResultCell
+                        key={i + 1}
+                        result={race}
+                        pointsPositions={10} // F1 top 10 score points
+                      />
+                    );
+                  })}
+                  <td className="w-14 px-3 py-2 text-right font-bold text-primary tabular-nums">
+                    {season.totalPoints}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    );
+  }
+
+  // Render current season grid
   return (
     <section>
-      <SectionHeading>Season Results</SectionHeading>
+      <div className="flex items-center justify-between mb-4">
+        <SectionHeading className="mb-0">Season Results</SectionHeading>
+        {seasonOptions.length > 1 && (
+          <div className="w-48">
+            <Dropdown
+              value={selectedSeason}
+              onChange={setSelectedSeason}
+              options={seasonOptions.map((s) => ({ value: s.value, label: s.label }))}
+            />
+          </div>
+        )}
+      </div>
       <div className="card overflow-hidden overflow-x-auto">
         <table className="w-full text-sm">
           <thead className={TABLE_HEADER_CLASS}>
@@ -929,6 +1100,9 @@ export function Results({ initialRaceNumber, onRaceViewed }: ResultsProps) {
       lookups={lookups}
       pointsPositions={pointsPositions}
       playerTeamId={playerTeam.id}
+      drivers={drivers}
+      teams={teams}
+      currentSeasonYear={seasonToYear(gameState.currentSeason.seasonNumber)}
       onRaceClick={goToRace}
       onDriverClick={goToDriver}
     />
