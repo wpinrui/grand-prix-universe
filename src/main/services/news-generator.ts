@@ -453,6 +453,9 @@ export function generateDailyNews(state: GameState): CalendarEvent[] {
   // 4. Mid-season analysis (hot seat, over/under performers)
   news.push(...generateAnalysisNews(context));
 
+  // 5. Rumors and fan commentary (Reddit/social media flavor)
+  news.push(...generateRumorNews(context));
+
   return news;
 }
 
@@ -1060,4 +1063,254 @@ function generatePerformanceAnalysis(context: NewsGenerationContext): CalendarEv
     body,
     importance: 'medium',
   });
+}
+
+// =============================================================================
+// RUMORS AND COMMENTARY GENERATORS (PR 7)
+// =============================================================================
+
+/**
+ * Probability of each rumor type per day
+ * Low enough to not spam, high enough to be interesting
+ */
+const RUMOR_PROBABILITIES = {
+  driverRumor: 0.05, // 5% chance per day
+  staffRumor: 0.03, // 3% chance per day
+  netizenRoundup: 0.08, // 8% chance per day (more frequent, lighter content)
+};
+
+/**
+ * Fake Reddit usernames for social media flavor
+ */
+const REDDIT_USERNAMES = [
+  'TurboDriver42',
+  'PitLaneInsider',
+  'F1_Analytics',
+  'PaddockSpy',
+  'ApexEnthusiast',
+  'SlipstreamKing',
+  'GrandPrixGuru',
+  'DRSzone_',
+  'UndercutMaster',
+  'BoxBoxBox_',
+  'FormulaDank_',
+  'TyreWhisperer',
+  'AeroExpert',
+  'GravelTrapSurvivor',
+  'ChequeredFlag99',
+];
+
+/**
+ * Generate rumor and fan commentary news
+ * Light-hearted content to add variety
+ */
+function generateRumorNews(context: NewsGenerationContext): CalendarEvent[] {
+  const news: CalendarEvent[] = [];
+
+  // Rumors only during racing season (when there's something to speculate about)
+  if (!context.isRacingSeason) return news;
+
+  // Driver transfer rumors
+  if (checkProbability(RUMOR_PROBABILITIES.driverRumor)) {
+    const driverRumor = maybeGenerateDriverRumor(context);
+    if (driverRumor) news.push(driverRumor);
+  }
+
+  // Staff poaching rumors
+  if (checkProbability(RUMOR_PROBABILITIES.staffRumor)) {
+    const staffRumor = maybeGenerateStaffRumor(context);
+    if (staffRumor) news.push(staffRumor);
+  }
+
+  // Reddit-style fan roundup
+  if (checkProbability(RUMOR_PROBABILITIES.netizenRoundup)) {
+    const netizen = generateNetizenRoundup(context);
+    if (netizen) news.push(netizen);
+  }
+
+  return news;
+}
+
+/**
+ * Generate a driver transfer rumor
+ */
+function maybeGenerateDriverRumor(context: NewsGenerationContext): CalendarEvent | null {
+  const { state, currentDate } = context;
+
+  // Get drivers who might be targets (contract ending soon or underperforming)
+  const potentialTargets = state.drivers.filter((d) => {
+    if (!d.teamId) return false;
+    // Contract ending this season or next
+    return d.contractEnd <= state.currentSeason.year + 1;
+  });
+
+  if (potentialTargets.length === 0) return null;
+
+  const targetDriver = pickRandom(potentialTargets);
+  const currentTeam = state.teams.find((t) => t.id === targetDriver.teamId);
+  if (!currentTeam) return null;
+
+  // Pick a random different team as the rumored destination
+  const otherTeams = state.teams.filter((t) => t.id !== currentTeam.id);
+  if (otherTeams.length === 0) return null;
+  const rumoredTeam = pickRandom(otherTeams);
+
+  const subjects = [
+    `RUMOR: ${getFullName(targetDriver)} linked with ${rumoredTeam.shortName} move`,
+    `Transfer Talk: ${rumoredTeam.shortName} eyeing ${getFullName(targetDriver)}?`,
+    `${getFullName(targetDriver)} to ${rumoredTeam.shortName}? Sources claim talks underway`,
+  ];
+
+  const bodies = [
+    `Speculation is mounting that ${getFullName(targetDriver)} could be on the move from ${currentTeam.name}.\n\n` +
+    `Sources in the paddock suggest ${rumoredTeam.name} have made informal enquiries about the driver's availability, ` +
+    `though nothing concrete has been agreed.\n\n` +
+    `${currentTeam.shortName} declined to comment on "speculation about our drivers' futures."`,
+
+    `The rumor mill is in overdrive following whispers that ${rumoredTeam.shortName} are interested in securing ${getFullName(targetDriver)}'s services.\n\n` +
+    `With the driver's contract at ${currentTeam.shortName} due to expire soon, several teams are believed to be monitoring the situation.\n\n` +
+    `Neither party has confirmed discussions, but sources say "conversations have taken place."`,
+  ];
+
+  const quotes: NewsQuote[] = [
+    createAnonymousQuote(
+      "There's definitely interest. Whether it leads anywhere is another matter.",
+      'paddock sources'
+    ),
+  ];
+
+  return createNewsHeadline({
+    date: currentDate,
+    source: NewsSource.PaddockRumors,
+    category: NewsCategory.Rumor,
+    subject: pickRandom(subjects),
+    body: pickRandom(bodies),
+    quotes,
+    importance: 'low',
+  });
+}
+
+/**
+ * Generate a staff poaching rumor
+ */
+function maybeGenerateStaffRumor(context: NewsGenerationContext): CalendarEvent | null {
+  const { state, currentDate } = context;
+
+  // Get all chiefs
+  const allChiefs = state.chiefs.filter((c) => c.teamId);
+  if (allChiefs.length === 0) return null;
+
+  const targetChief = pickRandom(allChiefs);
+  const currentTeam = state.teams.find((t) => t.id === targetChief.teamId);
+  if (!currentTeam) return null;
+
+  // Pick a team that might want to poach
+  const potentialPoachers = state.teams.filter((t) => t.id !== currentTeam.id);
+  if (potentialPoachers.length === 0) return null;
+  const poachingTeam = pickRandom(potentialPoachers);
+
+  const roleName = CHIEF_ROLE_LABELS[targetChief.role];
+  const fullName = getFullName(targetChief);
+
+  const subject = `${poachingTeam.shortName} reportedly targeting ${currentTeam.shortName}'s ${roleName}`;
+
+  const body = `${poachingTeam.name} are rumored to be making a play for ${fullName}, currently serving as ${roleName} at ${currentTeam.name}.\n\n` +
+    `The experienced engineer has been instrumental in ${currentTeam.shortName}'s development program, making them an attractive target for rivals.\n\n` +
+    `While no official approach has been confirmed, sources indicate preliminary discussions may have taken place.`;
+
+  const quotes: NewsQuote[] = [
+    createAnonymousQuote(
+      "Top technical talent is always in demand. It's the nature of the sport.",
+      'industry insiders'
+    ),
+  ];
+
+  return createNewsHeadline({
+    date: currentDate,
+    source: NewsSource.PaddockRumors,
+    category: NewsCategory.Rumor,
+    subject,
+    body,
+    quotes,
+    importance: 'low',
+  });
+}
+
+/**
+ * Generate a netizen roundup (Reddit/social media style commentary)
+ */
+function generateNetizenRoundup(context: NewsGenerationContext): CalendarEvent | null {
+  const { state, currentDate } = context;
+
+  const standings = state.currentSeason.driverStandings;
+  if (standings.length < 3) return null;
+
+  const leader = state.drivers.find((d) => d.id === standings[0].driverId);
+  const underdog = standings.length > 5
+    ? state.drivers.find((d) => d.id === standings[5].driverId)
+    : null;
+
+  const subjects = [
+    `What the fans are saying: Championship hot takes`,
+    `Social media roundup: The paddock's hottest debates`,
+    `Fan zone: This week's most viral F1 takes`,
+  ];
+
+  const comments = generateNetizenComments(context, leader, underdog);
+
+  const body = `Here's what the F1 community has been discussing this week:\n\n${comments}`;
+
+  return createNewsHeadline({
+    date: currentDate,
+    source: NewsSource.FanVoice,
+    category: NewsCategory.Commentary,
+    subject: pickRandom(subjects),
+    body,
+    importance: 'low',
+  });
+}
+
+/**
+ * Generate fake Reddit-style comments
+ */
+function generateNetizenComments(
+  _context: NewsGenerationContext, // @agent: unused but kept for future expansion (may use completed races, standings, etc.)
+  leader: Driver | undefined,
+  underdog: Driver | undefined
+): string {
+  const comments: string[] = [];
+
+  // Comment about leader
+  if (leader) {
+    const leaderName = getFullName(leader);
+    const leaderComments = [
+      `**u/${pickRandom(REDDIT_USERNAMES)}:** ${leaderName} is just built different. That consistency is unreal.`,
+      `**u/${pickRandom(REDDIT_USERNAMES)}:** People are sleeping on ${leaderName}'s race craft. The tire management alone...`,
+      `**u/${pickRandom(REDDIT_USERNAMES)}:** ${leaderName} for WDC, book it now. Not even close.`,
+    ];
+    comments.push(pickRandom(leaderComments));
+  }
+
+  // Comment about underdog
+  if (underdog) {
+    const underdogName = getFullName(underdog);
+    const underdogComments = [
+      `**u/${pickRandom(REDDIT_USERNAMES)}:** ${underdogName} is so underrated. Give them a top car and watch what happens.`,
+      `**u/${pickRandom(REDDIT_USERNAMES)}:** Everyone's sleeping on ${underdogName}. Mark my words, podium incoming.`,
+      `**u/${pickRandom(REDDIT_USERNAMES)}:** The way ${underdogName} is driving that car... absolute masterclass.`,
+    ];
+    comments.push(pickRandom(underdogComments));
+  }
+
+  // Generic hot take
+  const hotTakes = [
+    `**u/${pickRandom(REDDIT_USERNAMES)}:** This championship is going down to the wire. I can feel it.`,
+    `**u/${pickRandom(REDDIT_USERNAMES)}:** The midfield battles this year are better than the front runners tbh`,
+    `**u/${pickRandom(REDDIT_USERNAMES)}:** DRS needs to go. These cars can follow so much better now.`,
+    `**u/${pickRandom(REDDIT_USERNAMES)}:** Unpopular opinion: sprint races are actually good`,
+    `**u/${pickRandom(REDDIT_USERNAMES)}:** The strategy calls this season have been *chef's kiss*`,
+  ];
+  comments.push(pickRandom(hotTakes));
+
+  return comments.join('\n\n');
 }
