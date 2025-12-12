@@ -18,4 +18,5 @@ export { GlobalSearch, parsePageId } from './GlobalSearch';
 export { StaffAllocationSlider } from './StaffAllocationSlider';
 export type { StaffAllocationSliderProps } from './StaffAllocationSlider';
 export { AppointmentNewsModal } from './AppointmentNewsModal';
-export { NewsCardHero, NewsCardSmall } from './NewsCard';
+export { NewsCardHero, NewsCardSmall, SourceBadge } from './NewsCard';
+export { NewsDetailModal } from './NewsDetailModal';

@@ -28,9 +28,17 @@ function truncateText(text: string, maxLength: number): string {
   return text.slice(0, maxLength).trim() + '...';
 }
 
-function SourceBadge({ source, size = 'normal' }: { source: NewsSource; size?: 'small' | 'normal' }) {
+/**
+ * Shared source badge component for news UI.
+ * Exported for use in NewsDetailModal and other news components.
+ */
+export function SourceBadge({ source, size = 'normal' }: { source: NewsSource; size?: 'small' | 'normal' | 'large' }) {
   const style = NEWS_SOURCE_STYLES[source];
-  const sizeClasses = size === 'small' ? 'text-[10px] px-1.5 py-0.5' : 'text-xs px-2 py-1';
+  const sizeClasses = {
+    small: 'text-[10px] px-1.5 py-0.5',
+    normal: 'text-xs px-2 py-1',
+    large: 'text-sm px-3 py-1',
+  }[size];
 
   return (
     <span className={`${getNewsSourceBadgeClasses(source)} ${sizeClasses} rounded font-medium uppercase tracking-wide`}>
