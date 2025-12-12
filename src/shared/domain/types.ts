@@ -874,6 +874,71 @@ export interface NewsQuote {
   isNamed: boolean; // true = named person, false = anonymous source
 }
 
+// =============================================================================
+// NEWS EVENT TYPES (Event-Driven News System)
+// =============================================================================
+// Events are pushed when things happen in the game (races, contracts, upgrades)
+// and the news generator consumes them to create reactive news articles.
+
+/**
+ * NewsEventType - Types of events that can trigger news generation
+ * Each event type creates specific news content based on what happened
+ */
+export enum NewsEventType {
+  // Race events
+  RaceResult = 'race-result', // Full race result with winner, podium, drama
+  QualifyingResult = 'qualifying-result', // Quali results, surprises
+  RetirementDrama = 'retirement-drama', // DNFs, crashes, collisions
+
+  // Championship events
+  ChampionshipLead = 'championship-lead', // Driver/team takes WDC/WCC lead
+  ChampionshipDecided = 'championship-decided', // Title mathematically won
+  ChampionshipMilestone = 'championship-milestone', // First win, 100 points, etc.
+
+  // Contract/Transfer events
+  DriverSigned = 'driver-signed', // Driver signs with team
+  DriverReleased = 'driver-released', // Driver leaves team
+  StaffHired = 'staff-hired', // Chief hired
+  StaffDeparture = 'staff-departure', // Chief leaves
+
+  // Technical events
+  SpecReleased = 'spec-released', // Engine manufacturer releases new spec
+  MajorUpgrade = 'major-upgrade', // Team completes significant upgrade
+
+  // Season events
+  SeasonStart = 'season-start', // Pre-season begins
+  SeasonPreview = 'season-preview', // Before first race
+  MidSeasonAnalysis = 'mid-season-analysis', // Halfway through season
+}
+
+/**
+ * NewsEvent - An event pushed to the queue when something newsworthy happens
+ * The news generator consumes these to create reactive articles
+ *
+ * @agent: When emitting events, include all relevant data needed to write
+ * a full news article. Don't make the news generator look things up.
+ */
+export interface NewsEvent {
+  /** Unique event ID */
+  id: string;
+  /** What type of event this is */
+  type: NewsEventType;
+  /** When the event occurred */
+  date: GameDate;
+  /** Event importance (affects news priority and card size) */
+  importance: EventImportance;
+  /** Whether this event has been processed into a news article */
+  processed: boolean;
+  /**
+   * Event-specific payload with all data needed to generate the article.
+   * Structure varies by type. Examples:
+   * - RaceResult: { raceNumber, circuitName, winnerId, winnerName, winnerTeam, podium, drama[] }
+   * - DriverSigned: { driverId, driverName, teamId, teamName, previousTeamName, contractYears }
+   * - SpecReleased: { manufacturerId, manufacturerName, specVersion, statImprovements }
+   */
+  data: Record<string, unknown>;
+}
+
 /**
  * EmailCategory - Categorizes emails by source/type
  * Used to style and filter emails appropriately
@@ -1807,6 +1872,10 @@ export interface GameState {
   // Events (for Player Wiki, News, relationships, engine simulations)
   // See proposal.md > Events Infrastructure for full documentation
   events: GameEvent[];
+
+  // News Events Queue (event-driven news generation)
+  // Events are pushed here when things happen, consumed by news generator
+  newsEvents: NewsEvent[];
 
   // Parts & Repairs Log (for Construction screen history)
   partsLog: PartsLogEntry[];

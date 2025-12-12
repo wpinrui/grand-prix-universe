@@ -762,6 +762,7 @@ export function buildGameState(params: BuildGameStateParams): GameState {
 
     pastSeasons: [],
     events: [],
+    newsEvents: [],
     partsLog: [],
     rules,
     pendingAppointmentNews,
