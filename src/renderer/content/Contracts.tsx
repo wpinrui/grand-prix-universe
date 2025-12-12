@@ -3,7 +3,7 @@ import { useDerivedGameState } from '../hooks';
 import { SectionHeading, TabBar } from '../components';
 import type { Tab } from '../components';
 import { ACCENT_CARD_STYLE, GHOST_BORDERED_BUTTON_CLASSES, PRIMARY_BUTTON_CLASSES } from '../utils/theme-styles';
-import { formatCurrency } from '../utils/format';
+import { formatCurrency, getFullName } from '../utils/format';
 import { seasonToYear } from '../../shared/utils/date-utils';
 import { IpcChannels } from '../../shared/ipc';
 import {
@@ -168,7 +168,7 @@ function CarEngineCard({
   );
 
   const isLatestSpec = carEngine.specVersion >= latestSpec;
-  const driverName = driver ? `${driver.firstName} ${driver.lastName}` : `Car ${carNumber}`;
+  const driverName = driver ? getFullName(driver) : `Car ${carNumber}`;
 
   return (
     <div className="card p-4" style={ACCENT_CARD_STYLE}>

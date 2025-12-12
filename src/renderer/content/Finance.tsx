@@ -1,6 +1,6 @@
 import { useDerivedGameState } from '../hooks';
 import { SectionHeading } from '../components';
-import { formatCurrency } from '../utils/format';
+import { formatCurrency, getFullName } from '../utils/format';
 import { ACCENT_CARD_STYLE, ACCENT_TEXT_STYLE } from '../utils/theme-styles';
 import type {
   ActiveSponsorDeal,
@@ -168,7 +168,7 @@ function ExpensesSection({
             {drivers.map((driver) => (
               <LineItem
                 key={driver.id}
-                label={`${driver.firstName} ${driver.lastName}`}
+                label={getFullName(driver)}
                 amount={driver.salary}
                 isExpense
               />
@@ -181,7 +181,7 @@ function ExpensesSection({
             {chiefs.map((chief) => (
               <LineItem
                 key={chief.id}
-                label={`${chief.firstName} ${chief.lastName}`}
+                label={getFullName(chief)}
                 sublabel={chief.role}
                 amount={chief.salary}
                 isExpense

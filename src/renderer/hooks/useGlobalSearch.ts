@@ -7,6 +7,7 @@ import { useMemo, useState, useCallback } from 'react';
 import { useDerivedGameState } from './useDerivedGameState';
 import { sections } from '../navigation';
 import type { EntityType } from '../utils/entity-navigation';
+import { getFullName } from '../utils/format';
 
 // ===========================================
 // TYPES
@@ -105,7 +106,7 @@ export function useGlobalSearch() {
         items.push({
           id: driver.id,
           type: 'driver',
-          label: `${driver.firstName} ${driver.lastName}`,
+          label: getFullName(driver),
           sublabel: team?.name ?? 'Free Agent',
         });
       }
@@ -118,7 +119,7 @@ export function useGlobalSearch() {
         items.push({
           id: chief.id,
           type: 'chief',
-          label: `${chief.firstName} ${chief.lastName}`,
+          label: getFullName(chief),
           sublabel: `${chief.role.charAt(0).toUpperCase() + chief.role.slice(1)}${team ? ` • ${team.name}` : ' • Free Agent'}`,
         });
       }

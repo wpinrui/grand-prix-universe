@@ -10,6 +10,7 @@ import {
   estimateTestCompletionDays,
   MAX_TEST_PROGRESS,
 } from '../../shared/domain/testing-utils';
+import { getFullName } from '../utils/format';
 
 // ===========================================
 // TYPES
@@ -135,7 +136,7 @@ function SetupState({
   onCancel,
 }: SetupStateProps) {
   const driverOptions: DropdownOption<string>[] = useMemo(
-    () => drivers.map((d) => ({ value: d.id, label: `${d.firstName} ${d.lastName}` })),
+    () => drivers.map((d) => ({ value: d.id, label: getFullName(d) })),
     [drivers]
   );
 
@@ -525,7 +526,7 @@ export function Testing() {
   const testDriverName = useMemo(() => {
     if (!testSession.driverId) return 'Unknown';
     const driver = teamDrivers.find((d) => d.id === testSession.driverId);
-    return driver ? `${driver.firstName} ${driver.lastName}` : 'Unknown';
+    return driver ? getFullName(driver) : 'Unknown';
   }, [testSession.driverId, teamDrivers]);
 
   // Find latest discovered problem (for results view)

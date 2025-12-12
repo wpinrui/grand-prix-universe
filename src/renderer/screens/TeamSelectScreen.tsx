@@ -12,7 +12,7 @@ import { BackgroundLayer } from '../components';
 import { TeamBadge } from '../components/TeamBadge';
 import { IconButton } from '../components/NavButtons';
 import { PRIMARY_BUTTON_CLASSES, GHOST_BUTTON_CLASSES } from '../utils/theme-styles';
-import { formatCurrency, DRIVER_ROLE_LABELS } from '../utils/format';
+import { formatCurrency, DRIVER_ROLE_LABELS, getFullName } from '../utils/format';
 
 interface LocationState {
   playerName: string;
@@ -85,7 +85,7 @@ function DriverPhoto({ driver, teamColors }: DriverPhotoProps) {
     return (
       <img
         src={driver.photoUrl}
-        alt={`${driver.firstName} ${driver.lastName}`}
+        alt={getFullName(driver)}
         className="w-12 h-12 rounded-full object-cover"
         onError={() => setImageError(true)}
       />
@@ -332,7 +332,7 @@ export function TeamSelectScreen() {
                     <DriverPhoto driver={driver} teamColors={teamColors} />
                     <div className="flex-1 min-w-0">
                       <p className="text-primary font-medium truncate">
-                        {driver.firstName} {driver.lastName}
+                        {getFullName(driver)}
                       </p>
                       <p className="text-muted text-sm">{DRIVER_ROLE_LABELS[driver.role]}</p>
                     </div>

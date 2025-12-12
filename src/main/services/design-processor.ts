@@ -40,6 +40,7 @@ import {
   type PendingPart,
 } from '../../shared/domain/types';
 import { offsetDate } from '../../shared/utils/date-utils';
+import { getFullName } from '../../shared/utils/format';
 
 /** Days to build a part after design completes */
 const PART_BUILD_TIME_DAYS = 7;
@@ -87,7 +88,7 @@ export function createDesignEmail(
  */
 export function formatChiefSender(chief: Chief | null): string {
   if (!chief) return 'Design Department';
-  return `${chief.firstName} ${chief.lastName} (Chief Designer)`;
+  return `${getFullName(chief)} (Chief Designer)`;
 }
 
 /**

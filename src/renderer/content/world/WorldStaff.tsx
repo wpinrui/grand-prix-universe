@@ -14,6 +14,7 @@ import {
 } from '../../components';
 import { ChiefRole, type Chief, type Team, type TeamPrincipal } from '../../../shared/domain';
 import { FREE_AGENT_COLORS } from '../../utils/face-generator';
+import { getFullName } from '../../utils/format';
 
 // ===========================================
 // TYPES
@@ -144,7 +145,7 @@ export function WorldStaff({ initialStaffId }: WorldStaffProps) {
   // Build dropdown options
   const dropdownOptions = filteredStaff.map((s) => ({
     id: s.id,
-    label: `${s.firstName} ${s.lastName}`,
+    label: getFullName(s),
   }));
 
   // Get team info for selected staff
@@ -176,7 +177,7 @@ export function WorldStaff({ initialStaffId }: WorldStaffProps) {
         <div className="space-y-6">
           {/* Header with dropdown */}
           <PersonHeader
-            name={`${selectedStaff.firstName} ${selectedStaff.lastName}`}
+            name={getFullName(selectedStaff)}
             nationality={selectedStaff.nationality ?? 'UN'}
             photoUrl={null}
             teamName={staffTeam?.name ?? null}

@@ -4,7 +4,7 @@ import { SectionHeading, Dropdown, EntityLink } from '../components';
 import type { DropdownOption } from '../components';
 import { ACCENT_CARD_STYLE } from '../utils/theme-styles';
 import { formatGameDate, seasonToYear } from '../../shared/utils/date-utils';
-import { formatCurrency } from '../utils/format';
+import { formatCurrency, getFullName } from '../utils/format';
 import { PartsLogEntryType, type PartsLogEntry, type Driver } from '../../shared/domain';
 
 // ===========================================
@@ -42,7 +42,7 @@ function buildSeasonOptions(
 /** Get driver display name from ID */
 function getDriverName(driverId: string, drivers: Driver[]): string {
   const driver = drivers.find((d) => d.id === driverId);
-  return driver ? `${driver.firstName} ${driver.lastName}` : 'Unknown Driver';
+  return driver ? getFullName(driver) : 'Unknown Driver';
 }
 
 /** Format details column based on entry type */

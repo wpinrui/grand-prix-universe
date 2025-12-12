@@ -43,6 +43,7 @@ import {
   generateEstimatedPower,
 } from '../../shared/domain/engine-utils';
 import { getWeekNumber } from '../../shared/utils/date-utils';
+import { getFullName } from '../../shared/utils/format';
 
 /** Post-Race Repair Costs - values per proposal.md, simplified for MVP */
 const REPAIR_COST_BASE = 50000; // Routine maintenance after every race
@@ -208,7 +209,7 @@ function calculateCarRepairCost(
   return {
     carNumber,
     driverId: driver.id,
-    driverName: `${driver.firstName} ${driver.lastName}`,
+    driverName: getFullName(driver),
     baseCost: REPAIR_COST_BASE,
     incidentCost,
     totalCost: REPAIR_COST_BASE + incidentCost,

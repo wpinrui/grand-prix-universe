@@ -31,6 +31,7 @@ import {
   EntityType,
 } from '../../shared/domain';
 import { NegotiationPhase } from '../../shared/domain/types';
+import { getFullName } from '../../shared/utils/format';
 
 /** Initial bonus level for new contracts (0 = no bonus) */
 const INITIAL_BONUS_LEVEL = 0;
@@ -243,7 +244,7 @@ export function generateDriverSigningEvent(
 
   if (!driver || !newTeam) return;
 
-  const driverName = `${driver.firstName} ${driver.lastName}`;
+  const driverName = getFullName(driver);
   const isSwitching = oldTeam && oldTeam.id !== newTeam.id;
   const isRenewal = oldTeam && oldTeam.id === newTeam.id;
 
@@ -369,7 +370,7 @@ export function generateStaffSigningEvent(
 
   if (!chief || !newTeam) return;
 
-  const chiefName = `${chief.firstName} ${chief.lastName}`;
+  const chiefName = getFullName(chief);
   const roleName = getChiefRoleDisplayName(result.role);
   const isPoaching = oldTeam && oldTeam.id !== newTeam.id;
   const isRenewal = oldTeam && oldTeam.id === newTeam.id;
