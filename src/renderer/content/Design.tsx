@@ -512,7 +512,7 @@ function NextYearChassisTab({
                 <button
                   type="button"
                   onClick={onStartWork}
-                  className={`btn px-4 py-2 text-sm font-medium rounded-lg border cursor-pointer ${GHOST_BORDERED_BUTTON_CLASSES}`}
+                  className={`btn px-4 py-2 text-sm font-medium rounded-lg border ${GHOST_BORDERED_BUTTON_CLASSES}`}
                 >
                   Start Work
                 </button>
@@ -605,7 +605,7 @@ function NextYearChassisTab({
         <div className="flex justify-end mt-4">
           <button
             type="button"
-            className={`btn px-4 py-2 text-sm font-medium rounded-lg border cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${GHOST_BORDERED_BUTTON_CLASSES}`}
+            className={`btn px-4 py-2 text-sm font-medium rounded-lg border disabled:opacity-50 disabled:cursor-not-allowed ${GHOST_BORDERED_BUTTON_CLASSES}`}
             disabled={overallProgress < 100}
           >
             Build Chassis
@@ -712,7 +712,7 @@ function CurrentYearChassisTab({
           <div className="flex items-center gap-4 mb-4">
             <button
               type="button"
-              className={`btn px-4 py-2 text-sm font-medium rounded-lg border cursor-pointer ${GHOST_BORDERED_BUTTON_CLASSES}`}
+              className={`btn px-4 py-2 text-sm font-medium rounded-lg border ${GHOST_BORDERED_BUTTON_CLASSES}`}
             >
               Start Work
             </button>
@@ -769,7 +769,7 @@ function CurrentYearChassisTab({
         <div className="flex justify-end mt-4">
           <button
             type="button"
-            className={`btn px-4 py-2 text-sm font-medium rounded-lg border cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${GHOST_BORDERED_BUTTON_CLASSES}`}
+            className={`btn px-4 py-2 text-sm font-medium rounded-lg border disabled:opacity-50 disabled:cursor-not-allowed ${GHOST_BORDERED_BUTTON_CLASSES}`}
             disabled={!activeProblemState?.solutionDesigned}
           >
             Build Component

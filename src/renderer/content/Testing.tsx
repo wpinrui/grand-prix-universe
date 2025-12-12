@@ -244,7 +244,7 @@ function SetupState({
         </button>
         <button
           type="button"
-          className={`${GHOST_BORDERED_BUTTON_CLASSES} px-6 py-3 rounded-lg cursor-pointer`}
+          className={`${GHOST_BORDERED_BUTTON_CLASSES} px-6 py-3 rounded-lg`}
           onClick={onCancel}
         >
           Cancel
@@ -318,7 +318,7 @@ function InProgressState({
       <div>
         <button
           type="button"
-          className={`${GHOST_BORDERED_BUTTON_CLASSES} px-6 py-3 rounded-lg cursor-pointer`}
+          className={`${GHOST_BORDERED_BUTTON_CLASSES} px-6 py-3 rounded-lg`}
           onClick={onStop}
         >
           Stop Test
