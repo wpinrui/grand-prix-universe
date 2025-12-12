@@ -9,7 +9,7 @@
       "headquarters": "United Kingdom",
       "principal": "Andrea Stella",
       "description": "One of the most successful teams in Formula One history, McLaren has won 8 Constructors' Championships. After years in the midfield, the Woking-based team has returned to the front under Andrea Stella's leadership, challenging for race wins and championships once again.",
-      "logoUrl": "https://media.formula1.com/content/dam/fom-website/teams/2024/mclaren-logo.png",
+      "logoUrl": "https://media.formula1.com/image/upload/c_lfill,w_128/q_auto/v1740000000/common/f1/2025/mclaren/2025mclarenlogowhite.webp",
       "budget": 220000000,
       "factory": {
         "facilities": [
@@ -45,7 +45,7 @@
       "headquarters": "United Kingdom",
       "principal": "Toto Wolff",
       "description": "The dominant force of the turbo-hybrid era, Mercedes won 8 consecutive Constructors' Championships from 2014-2021. Based in Brackley, the Silver Arrows are fighting to return to the top after regulatory changes shifted the competitive order.",
-      "logoUrl": "https://media.formula1.com/content/dam/fom-website/teams/2024/mercedes-logo.png",
+      "logoUrl": "https://media.formula1.com/image/upload/c_lfill,w_128/q_auto/v1740000000/common/f1/2025/mercedes/2025mercedeslogowhite.webp",
       "budget": 200000000,
       "factory": {
         "facilities": [
@@ -81,7 +81,7 @@
       "headquarters": "United Kingdom",
       "principal": "Christian Horner",
       "description": "The energy drink giant's racing team has become the benchmark for excellence in modern F1. With legendary designer Adrian Newey's creations and Max Verstappen behind the wheel, Red Bull has dominated recent seasons with unprecedented success.",
-      "logoUrl": "https://media.formula1.com/content/dam/fom-website/teams/2024/red-bull-racing-logo.png",
+      "logoUrl": "https://media.formula1.com/image/upload/c_lfill,w_128/q_auto/v1740000000/common/f1/2025/redbullracing/2025redbullracinglogowhite.webp",
       "budget": 195000000,
       "factory": {
         "facilities": [
@@ -117,7 +117,7 @@
       "headquarters": "Italy",
       "principal": "Frédéric Vasseur",
       "description": "The most iconic name in motorsport, Ferrari is the only team to have competed in every Formula One season since 1950. The Prancing Horse carries the passion of the Tifosi and boasts more race wins and championships than any other constructor.",
-      "logoUrl": "https://media.formula1.com/content/dam/fom-website/teams/2024/ferrari-logo.png",
+      "logoUrl": "https://media.formula1.com/image/upload/c_lfill,w_128/q_auto/v1740000000/common/f1/2025/ferrari/2025ferrarilogowhite.webp",
       "budget": 190000000,
       "factory": {
         "facilities": [
@@ -153,7 +153,7 @@
       "headquarters": "United Kingdom",
       "principal": "James Vowles",
       "description": "A legendary constructor with 9 Constructors' Championships, Williams has fallen on hard times since their dominant 1990s era. Under new Team Principal James Vowles, the Grove-based team is embarking on a long-term rebuild to return to the front.",
-      "logoUrl": "https://media.formula1.com/content/dam/fom-website/teams/2024/williams-logo.png",
+      "logoUrl": "https://media.formula1.com/image/upload/c_lfill,w_128/q_auto/v1740000000/common/f1/2025/williams/2025williamslogowhite.webp",
       "budget": 120000000,
       "factory": {
         "facilities": [
@@ -189,7 +189,7 @@
       "headquarters": "Italy",
       "principal": "Laurent Mekies",
       "description": "Red Bull's junior team, formerly known as AlphaTauri and Toro Rosso, serves as a development pathway for young talent. Based in Faenza, Italy, the team occasionally punches above its weight with innovative designs and hungry young drivers.",
-      "logoUrl": "https://media.formula1.com/content/dam/fom-website/teams/2024/rb-logo.png",
+      "logoUrl": "https://media.formula1.com/image/upload/c_lfill,w_128/q_auto/v1740000000/common/f1/2025/racingbulls/2025racingbullslogowhite.webp",
       "budget": 100000000,
       "factory": {
         "facilities": [
@@ -225,7 +225,7 @@
       "headquarters": "United Kingdom",
       "principal": "Mike Krack",
       "description": "Backed by billionaire Lawrence Stroll, Aston Martin has invested heavily in a new state-of-the-art factory and recruited top talent from rival teams. The British racing green livery represents their ambition to become a championship-winning constructor.",
-      "logoUrl": "https://media.formula1.com/content/dam/fom-website/teams/2024/aston-martin-logo.png",
+      "logoUrl": "https://media.formula1.com/image/upload/c_lfill,w_128/q_auto/v1740000000/common/f1/2025/astonmartin/2025astonmartinlogowhite.webp",
       "budget": 95000000,
       "factory": {
         "facilities": [
@@ -261,7 +261,7 @@
       "headquarters": "United States",
       "principal": "Ayao Komatsu",
       "description": "The only American team on the grid, Haas F1 entered the sport in 2016 with a unique partnership model leveraging Ferrari technology. Despite limited resources, the team has shown flashes of potential and remains committed to establishing America in F1.",
-      "logoUrl": "https://media.formula1.com/content/dam/fom-website/teams/2024/haas-logo.png",
+      "logoUrl": "https://media.formula1.com/image/upload/c_lfill,w_128/q_auto/v1740000000/common/f1/2025/haasf1team/2025haasf1teamlogowhite.webp",
       "budget": 90000000,
       "factory": {
         "facilities": [
@@ -297,7 +297,7 @@
       "headquarters": "Switzerland",
       "principal": "Alessandro Alunni Bravi",
       "description": "The Swiss team has been a fixture in Formula One since 1993, known for developing young talent and operating efficiently on modest budgets. With Audi set to take over in 2026, the team is in transition while preparing for a new manufacturer era.",
-      "logoUrl": "https://media.formula1.com/content/dam/fom-website/teams/2024/kick-sauber-logo.png",
+      "logoUrl": "https://media.formula1.com/image/upload/c_lfill,w_128/q_auto/v1740000000/common/f1/2025/kicksauber/2025kicksauberlogowhite.webp",
       "budget": 75000000,
       "factory": {
         "facilities": [
@@ -333,7 +333,7 @@
       "headquarters": "France",
       "principal": "Oliver Oakes",
       "description": "The French national team, backed by Renault, carries the legacy of the manufacturer's Formula One involvement. Despite significant investment, results have been inconsistent, with frequent management changes hindering progress toward the front of the grid.",
-      "logoUrl": "https://media.formula1.com/content/dam/fom-website/teams/2024/alpine-logo.png",
+      "logoUrl": "https://media.formula1.com/image/upload/c_lfill,w_128/q_auto/v1740000000/common/f1/2025/alpine/2025alpinelogowhite.webp",
       "budget": 60000000,
       "factory": {
         "facilities": [

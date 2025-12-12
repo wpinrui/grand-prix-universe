@@ -12,7 +12,7 @@ interface TeamBadgeProps {
  * Displays team logo or color swatch fallback.
  * Shows gray placeholder when no team is provided.
  */
-export function TeamBadge({ team, className = 'w-14 h-12' }: TeamBadgeProps) {
+export function TeamBadge({ team, className = 'w-12 h-12' }: TeamBadgeProps) {
   const primaryColor = team?.primaryColor ?? FALLBACK_PRIMARY_COLOR;
   const secondaryColor = team?.secondaryColor ?? FALLBACK_SECONDARY_COLOR;
   const badgeGlow = `0 4px 12px ${primaryColor}33, 0 0 20px ${primaryColor}22`;
@@ -20,8 +20,8 @@ export function TeamBadge({ team, className = 'w-14 h-12' }: TeamBadgeProps) {
   if (team?.logoUrl) {
     return (
       <div
-        className={`${className} rounded-lg overflow-hidden shadow-md`}
-        style={{ boxShadow: badgeGlow }}
+        className={`${className} rounded-full overflow-hidden shadow-md flex items-center justify-center p-1.5`}
+        style={{ boxShadow: badgeGlow, backgroundColor: primaryColor }}
       >
         <img
           src={team.logoUrl}
