@@ -9,6 +9,7 @@ import {
   getChiefRoleDisplayName,
   getSponsorTierDisplayName,
 } from '../engines/evaluators';
+import { pushNewsEvent } from './news-generator';
 import type {
   GameState,
   ActiveManufacturerContract,
@@ -29,9 +30,11 @@ import {
   teamRef,
   ChiefRole,
   EntityType,
+  NewsEventType,
 } from '../../shared/domain';
 import { NegotiationPhase } from '../../shared/domain/types';
 import { getFullName } from '../../shared/utils/format';
+import { seasonToYear } from '../../shared/utils/date-utils';
 
 /** Initial bonus level for new contracts (0 = no bonus) */
 const INITIAL_BONUS_LEVEL = 0;
@@ -246,34 +249,34 @@ export function generateDriverSigningEvent(
 
   const driverName = getFullName(driver);
   const isSwitching = oldTeam && oldTeam.id !== newTeam.id;
-  const isRenewal = oldTeam && oldTeam.id === newTeam.id;
 
-  // Generate news headline for all signings
-  let headline: string;
-  let body: string;
+  // Calculate the season year for the contract start
+  const forSeasonYear = seasonToYear(state.currentSeason.seasonNumber + 1);
 
-  if (isSwitching) {
-    headline = `${driverName} joins ${newTeam.name}`;
-    body = `${driverName} has signed a ${result.contractDuration}-year deal with ${newTeam.name}, leaving ${oldTeam.name}.`;
-  } else if (isRenewal) {
-    headline = `${newTeam.name} extends ${driverName} contract`;
-    body = `${newTeam.name} has renewed ${driverName}'s contract for ${result.contractDuration} seasons.`;
-  } else {
-    headline = `${driverName} signs for ${newTeam.name}`;
-    body = `${driverName} has signed a ${result.contractDuration}-year contract with ${newTeam.name}.`;
-  }
-
-  // News headline (visible to everyone)
-  state.calendarEvents.push({
-    id: randomUUID(),
-    date: state.currentDate,
-    type: CalendarEventType.Headline,
-    subject: headline,
-    body,
-    critical: false,
+  // Emit news event for reactive news generation
+  pushNewsEvent(state, NewsEventType.DriverSigned, isSwitching ? 'high' : 'medium', {
+    driverId: driver.id,
+    driverName,
+    teamId: newTeam.id,
+    teamName: newTeam.name,
+    previousTeamName: oldTeam && oldTeam.id !== newTeam.id ? oldTeam.name : undefined,
+    contractYears: result.contractDuration,
+    forSeason: forSeasonYear,
   });
 
   // Email to player (for all signings, but don't stop sim)
+  const headline = isSwitching
+    ? `${driverName} joins ${newTeam.name}`
+    : oldTeam && oldTeam.id === newTeam.id
+      ? `${newTeam.name} extends ${driverName} contract`
+      : `${driverName} signs for ${newTeam.name}`;
+
+  const body = isSwitching
+    ? `${driverName} has signed a ${result.contractDuration}-year deal with ${newTeam.name}, leaving ${oldTeam!.name}.`
+    : oldTeam && oldTeam.id === newTeam.id
+      ? `${newTeam.name} has renewed ${driverName}'s contract for ${result.contractDuration} seasons.`
+      : `${driverName} has signed a ${result.contractDuration}-year contract with ${newTeam.name}.`;
+
   state.calendarEvents.push({
     id: randomUUID(),
     date: state.currentDate,
