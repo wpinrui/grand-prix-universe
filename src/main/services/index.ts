@@ -17,5 +17,7 @@ export {
   pickRandom,
   checkProbability,
   isDaysBeforeRace,
+  pushNewsEvent,
+  processNewsEvents,
 } from './news-generator';
 export type { NewsGenerationContext, CreateHeadlineParams } from './news-generator';

@@ -1,18 +1,19 @@
 /**
  * News Generator Service
  *
- * Generates daily news headlines for the News screen.
- * Creates a living, breathing F1 world with abundant coverage.
+ * Generates daily news headlines for the News screen using an event-driven architecture.
+ * Events are pushed to state.newsEvents when things happen (races, contracts, upgrades),
+ * and this service consumes them to create reactive news articles.
  *
  * This module provides:
- * - Context building for news generation
+ * - Event consumption and article generation
  * - Helper functions for creating news headlines and quotes
- * - Entry point for daily news generation (called by turn processor)
+ * - Event pushing utility for other modules
  *
- * Content generators are added in subsequent PRs:
- * - PR 5: Race coverage
- * - PR 6: Pre-season & analysis
- * - PR 7: Rumors & commentary
+ * Event emission is added in subsequent PRs:
+ * - Race events from race-processor
+ * - Contract events from negotiation-processor
+ * - Technical events from design-processor
  */
 
 import { randomUUID } from 'crypto';
@@ -26,11 +27,13 @@ import type {
   Chief,
   Team,
   Circuit,
+  NewsEvent,
 } from '../../shared/domain';
 import {
   CalendarEventType,
   NewsSource,
   NewsCategory,
+  NewsEventType,
   GamePhase,
 } from '../../shared/domain';
 import type { EventImportance } from '../../shared/domain/types';
@@ -206,6 +209,218 @@ export function createAnonymousQuote(
 }
 
 // =============================================================================
+// EVENT QUEUE MANAGEMENT
+// =============================================================================
+
+/**
+ * Push a news event to the queue (mutates state)
+ * Called by other modules when newsworthy things happen
+ */
+export function pushNewsEvent(
+  state: GameState,
+  type: NewsEventType,
+  importance: EventImportance,
+  data: Record<string, unknown>
+): void {
+  const event: NewsEvent = {
+    id: randomUUID(),
+    type,
+    date: state.currentDate,
+    importance,
+    processed: false,
+    data,
+  };
+  state.newsEvents.push(event);
+}
+
+/**
+ * Process all unprocessed news events and generate articles
+ * Returns array of CalendarEvents to add to state.calendarEvents
+ */
+export function processNewsEvents(state: GameState): CalendarEvent[] {
+  const news: CalendarEvent[] = [];
+
+  for (const event of state.newsEvents) {
+    if (event.processed) continue;
+
+    const article = generateArticleFromEvent(state, event);
+    if (article) {
+      news.push(article);
+    }
+
+    // Mark as processed even if no article was generated
+    // (some events may not warrant coverage)
+    event.processed = true;
+  }
+
+  return news;
+}
+
+/**
+ * Generate a news article from a specific event
+ * Returns null if no article should be generated for this event
+ */
+function generateArticleFromEvent(state: GameState, event: NewsEvent): CalendarEvent | null {
+  // Event type handlers - each creates appropriate article content
+  // Additional handlers will be added as event types are implemented
+  switch (event.type) {
+    case NewsEventType.RaceResult:
+      return generateRaceResultArticle(state, event);
+
+    case NewsEventType.ChampionshipLead:
+      return generateChampionshipLeadArticle(state, event);
+
+    case NewsEventType.DriverSigned:
+      return generateDriverSignedArticle(state, event);
+
+    case NewsEventType.SpecReleased:
+      return generateSpecReleasedArticle(state, event);
+
+    // Placeholder handlers - return null until implemented
+    case NewsEventType.QualifyingResult:
+    case NewsEventType.RetirementDrama:
+    case NewsEventType.ChampionshipDecided:
+    case NewsEventType.ChampionshipMilestone:
+    case NewsEventType.DriverReleased:
+    case NewsEventType.StaffHired:
+    case NewsEventType.StaffDeparture:
+    case NewsEventType.MajorUpgrade:
+    case NewsEventType.SeasonStart:
+    case NewsEventType.SeasonPreview:
+    case NewsEventType.MidSeasonAnalysis:
+      return null;
+
+    default:
+      return null;
+  }
+}
+
+// =============================================================================
+// EVENT ARTICLE GENERATORS
+// =============================================================================
+
+/**
+ * Generate article for a race result event
+ */
+function generateRaceResultArticle(state: GameState, event: NewsEvent): CalendarEvent | null {
+  const data = event.data as {
+    raceNumber: number;
+    circuitName: string;
+    circuitCountry: string;
+    winnerId: string;
+    winnerName: string;
+    winnerTeamName: string;
+    secondName: string;
+    thirdName: string;
+    winnerMargin: string; // e.g., "+5.234s" or "+1 lap"
+  };
+
+  const subject = `${data.winnerName} wins ${data.circuitCountry} GP`;
+  const body = `${data.winnerName} took victory at ${data.circuitName} in Round ${data.raceNumber} of the championship.\n\n` +
+    `The ${data.winnerTeamName} driver crossed the line ${data.winnerMargin} ahead of ${data.secondName}, ` +
+    `with ${data.thirdName} completing the podium.\n\n` +
+    `Full race report and analysis to follow.`;
+
+  return createNewsHeadline({
+    date: event.date,
+    source: NewsSource.F1Official,
+    category: NewsCategory.RaceResult,
+    subject,
+    body,
+    importance: event.importance,
+  });
+}
+
+/**
+ * Generate article for championship lead change
+ */
+function generateChampionshipLeadArticle(state: GameState, event: NewsEvent): CalendarEvent | null {
+  const data = event.data as {
+    newLeaderId: string;
+    newLeaderName: string;
+    newLeaderTeam: string;
+    newLeaderPoints: number;
+    previousLeaderName: string;
+    pointsGap: number;
+    raceNumber: number;
+  };
+
+  const subject = `${data.newLeaderName} takes championship lead`;
+  const body = `${data.newLeaderName} has moved to the top of the Drivers' Championship standings after Round ${data.raceNumber}.\n\n` +
+    `The ${data.newLeaderTeam} driver now leads by ${data.pointsGap} points from ${data.previousLeaderName}, ` +
+    `with ${data.newLeaderPoints} points to their name.\n\n` +
+    `"It's great to be leading but there's a long way to go," said ${data.newLeaderName}. "We'll take it one race at a time."`;
+
+  return createNewsHeadline({
+    date: event.date,
+    source: NewsSource.TheRace,
+    category: NewsCategory.Championship,
+    subject,
+    body,
+    importance: event.importance,
+  });
+}
+
+/**
+ * Generate article for driver signing
+ */
+function generateDriverSignedArticle(state: GameState, event: NewsEvent): CalendarEvent | null {
+  const data = event.data as {
+    driverId: string;
+    driverName: string;
+    teamId: string;
+    teamName: string;
+    previousTeamName?: string;
+    contractYears: number;
+    forSeason: number;
+  };
+
+  const moveText = data.previousTeamName
+    ? `makes the move from ${data.previousTeamName} to ${data.teamName}`
+    : `joins ${data.teamName}`;
+
+  const subject = `OFFICIAL: ${data.driverName} signs for ${data.teamName}`;
+  const body = `${data.teamName} has confirmed the signing of ${data.driverName} on a ${data.contractYears}-year deal.\n\n` +
+    `The driver ${moveText} starting from the ${data.forSeason} season.\n\n` +
+    `"I'm thrilled to be joining ${data.teamName}," said ${data.driverName}. "This is an exciting opportunity and I can't wait to get started."`;
+
+  return createNewsHeadline({
+    date: event.date,
+    source: NewsSource.F1Official,
+    category: NewsCategory.Transfer,
+    subject,
+    body,
+    importance: event.importance,
+  });
+}
+
+/**
+ * Generate article for spec release
+ */
+function generateSpecReleasedArticle(state: GameState, event: NewsEvent): CalendarEvent | null {
+  const data = event.data as {
+    manufacturerId: string;
+    manufacturerName: string;
+    specVersion: number;
+    statImprovements: string; // e.g., "Power +3, Reliability +2"
+  };
+
+  const subject = `${data.manufacturerName} unveils Spec ${data.specVersion}.0 power unit`;
+  const body = `${data.manufacturerName} has released their latest engine specification, bringing significant improvements to their power unit.\n\n` +
+    `The Spec ${data.specVersion}.0 engine features upgrades to: ${data.statImprovements}.\n\n` +
+    `Teams running ${data.manufacturerName} power units will have the option to upgrade at the next race.`;
+
+  return createNewsHeadline({
+    date: event.date,
+    source: NewsSource.TechAnalysis,
+    category: NewsCategory.Technical,
+    subject,
+    body,
+    importance: event.importance,
+  });
+}
+
+// =============================================================================
 // DAILY NEWS GENERATION
 // =============================================================================
 
@@ -213,18 +428,22 @@ export function createAnonymousQuote(
  * Generate daily news for the current game state
  * Called by turn processor after each day advances
  *
+ * Two news sources:
+ * 1. Event-driven: Process newsEvents queue for reactive articles (e.g., race results)
+ * 2. Time-based: Generate scheduled content (e.g., race previews) based on calendar
+ *
  * Returns array of CalendarEvents to add to state.calendarEvents
  */
 export function generateDailyNews(state: GameState): CalendarEvent[] {
   const context = buildNewsContext(state);
   const news: CalendarEvent[] = [];
 
-  // Race coverage (PR 5)
-  news.push(...generateRaceCoverage(context));
+  // 1. Process event queue (race results, signings, etc.)
+  // Events are pushed by other modules when newsworthy things happen
+  news.push(...processNewsEvents(state));
 
-  // Content generators to be added in subsequent PRs:
-  // - PR 6: Pre-season & analysis (season preview, rankings, hot seat)
-  // - PR 7: Rumors & commentary (transfer rumors, netizen roundups)
+  // 2. Time-based content (previews, analysis scheduled around race calendar)
+  news.push(...generateRaceCoverage(context));
 
   return news;
 }
