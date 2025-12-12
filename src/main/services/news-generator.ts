@@ -863,8 +863,8 @@ function generateDriverRankings(context: NewsGenerationContext): CalendarEvent |
   const raceDrivers = state.drivers
     .filter((d) => d.teamId && d.role !== DriverRole.Test)
     .sort((a, b) => {
-      const aRating = (a.stats.speed + a.stats.consistency + a.stats.racecraft) / 3;
-      const bRating = (b.stats.speed + b.stats.consistency + b.stats.racecraft) / 3;
+      const aRating = (a.attributes.pace + a.attributes.consistency + a.attributes.overtaking) / 3;
+      const bRating = (b.attributes.pace + b.attributes.consistency + b.attributes.overtaking) / 3;
       return bRating - aRating;
     });
 
@@ -876,7 +876,7 @@ function generateDriverRankings(context: NewsGenerationContext): CalendarEvent |
   const rankings = top5.map((driver, index) => {
     const team = state.teams.find((t) => t.id === driver.teamId);
     const teamName = team?.shortName ?? 'Unknown';
-    const avgRating = Math.round((driver.stats.speed + driver.stats.consistency + driver.stats.racecraft) / 3);
+    const avgRating = Math.round((driver.attributes.pace + driver.attributes.consistency + driver.attributes.overtaking) / 3);
     return `**${index + 1}. ${getFullName(driver)}** (${teamName}) - Rating: ${avgRating}`;
   });
 
@@ -1010,15 +1010,15 @@ function generatePerformanceAnalysis(context: NewsGenerationContext): CalendarEv
 
   if (constructorStandings.length < 4) return null;
 
-  // Find teams whose position differs significantly from expected (based on budget/prestige)
+  // Find teams whose position differs significantly from expected (based on budget)
   // For simplicity, we'll compare current position to a rough expectation
   const teamsWithPerformance = constructorStandings.map((standing, index) => {
     const team = state.teams.find((t) => t.id === standing.teamId);
     if (!team) return null;
 
-    // Simple expectation: sort teams by prestige
-    const expectedPosition = state.teams
-      .sort((a, b) => b.prestige - a.prestige)
+    // Simple expectation: sort teams by budget (higher budget = expected to be higher)
+    const expectedPosition = [...state.teams]
+      .sort((a, b) => b.budget - a.budget)
       .findIndex((t) => t.id === team.id) + 1;
 
     const actualPosition = index + 1;
@@ -1141,7 +1141,7 @@ function maybeGenerateDriverRumor(context: NewsGenerationContext): CalendarEvent
   const potentialTargets = state.drivers.filter((d) => {
     if (!d.teamId) return false;
     // Contract ending this season or next
-    return d.contractEnd <= state.currentSeason.year + 1;
+    return d.contractEnd <= state.currentSeason.seasonNumber + 1;
   });
 
   if (potentialTargets.length === 0) return null;
