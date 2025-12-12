@@ -1,14 +1,15 @@
 import { useNavigate } from 'react-router-dom';
-import { Play, Plus, FolderOpen, Loader2 } from 'lucide-react';
+import { Play, Plus, FolderOpen, Loader2, Power } from 'lucide-react';
 import { RoutePaths } from '../routes';
-import { PRIMARY_BUTTON_CLASSES, GHOST_BUTTON_CLASSES, ERROR_ALERT_CLASSES } from '../utils/theme-styles';
-import { useSavesList, useLoadGameHandler, TEAM_ID_ALL } from '../hooks';
+import { PRIMARY_BUTTON_CLASSES, NEUTRAL_BUTTON_CLASSES, DANGER_BUTTON_CLASSES, ERROR_ALERT_CLASSES } from '../utils/theme-styles';
+import { useSavesList, useLoadGameHandler, useQuitApp, TEAM_ID_ALL } from '../hooks';
 import { BackgroundLayer } from '../components';
 
 export function TitleScreen() {
   const navigate = useNavigate();
   const { data: saves } = useSavesList();
   const { loadingFilename, loadError, handleLoad } = useLoadGameHandler();
+  const quitApp = useQuitApp();
 
   const hasSaves = saves && saves.length > 0;
   const mostRecentSave = hasSaves ? saves[0] : null;
@@ -66,7 +67,7 @@ export function TitleScreen() {
               <button
                 type="button"
                 onClick={() => navigate(RoutePaths.LOAD_GAME)}
-                className={`${GHOST_BUTTON_CLASSES} px-8 py-3 text-lg justify-center`}
+                className={`${NEUTRAL_BUTTON_CLASSES} px-8 py-3 text-lg justify-center`}
               >
                 <FolderOpen size={20} />
                 <span>Load Game</span>
@@ -76,10 +77,18 @@ export function TitleScreen() {
           <button
             type="button"
             onClick={() => navigate(RoutePaths.PLAYER_NAME)}
-            className={`${hasSaves ? GHOST_BUTTON_CLASSES : PRIMARY_BUTTON_CLASSES} px-8 py-3 text-lg justify-center`}
+            className={`${hasSaves ? NEUTRAL_BUTTON_CLASSES : PRIMARY_BUTTON_CLASSES} px-8 py-3 text-lg justify-center`}
           >
             <Plus size={20} />
             <span>New Game</span>
+          </button>
+          <button
+            type="button"
+            onClick={quitApp}
+            className={`${DANGER_BUTTON_CLASSES} px-8 py-3 text-lg justify-center`}
+          >
+            <Power size={20} />
+            <span>Quit</span>
           </button>
         </div>
       </div>
