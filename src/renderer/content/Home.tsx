@@ -186,25 +186,28 @@ export function Home() {
             onViewDriver={handleViewDriver}
           />
         </div>
+
+        {/* Mail & News side by side */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Unread Mail */}
+          <MailWidget
+            emails={unreadEmails}
+            onViewAll={handleViewMail}
+            onEmailClick={handleEmailClick}
+          />
+
+          {/* Latest Headlines */}
+          <NewsWidget headlines={recentHeadlines} onViewAll={handleViewNews} />
+        </div>
       </main>
 
-      {/* RIGHT COLUMN - Alerts, Mail, News */}
+      {/* RIGHT COLUMN - Alerts */}
       <aside className="w-80 shrink-0 space-y-4 overflow-y-auto">
         {/* Attention Required */}
         <div>
           <WidgetHeading>Attention Required</WidgetHeading>
           <AlertsWidget alerts={alerts} onAlertClick={handleAlertClick} />
         </div>
-
-        {/* Unread Mail */}
-        <MailWidget
-          emails={unreadEmails}
-          onViewAll={handleViewMail}
-          onEmailClick={handleEmailClick}
-        />
-
-        {/* Latest Headlines */}
-        <NewsWidget headlines={recentHeadlines} onViewAll={handleViewNews} />
       </aside>
     </div>
   );
