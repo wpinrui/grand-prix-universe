@@ -1024,7 +1024,7 @@ export interface CalendarEvent {
   newsSource?: NewsSource; // Which fictional outlet published this
   newsCategory?: NewsCategory; // Topic category for filtering
   quotes?: NewsQuote[]; // Embedded quotes in the article
-  importance?: 'high' | 'medium' | 'low'; // Affects card size in News UI
+  importance?: EventImportance; // Affects card size in News UI
 }
 
 // -----------------------------------------------------------------------------
