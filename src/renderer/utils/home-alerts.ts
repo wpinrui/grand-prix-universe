@@ -11,7 +11,6 @@ import {
   type Team,
   type CalendarEvent,
 } from '../../shared/domain';
-import { daysBetween } from '../../shared/utils/date-utils';
 import { getFullName } from './format';
 
 // ===========================================
@@ -160,41 +159,6 @@ function generateUnfilledSponsorAlerts(
         },
       });
     }
-  }
-
-  return alerts;
-}
-
-/**
- * Generate alerts for parts ready to install
- */
-function generatePartsReadyAlerts(
-  gameState: GameState,
-  playerTeam: Team
-): HomePageAlert[] {
-  const alerts: HomePageAlert[] = [];
-  const teamState = gameState.teamStates[playerTeam.id];
-  if (!teamState) return alerts;
-
-  // Find parts that are ready but not fully installed
-  // Part is ready if readyDate <= currentDate (daysBetween returns positive if second arg is after first)
-  const readyParts = teamState.pendingParts.filter(
-    (part) => daysBetween(part.readyDate, gameState.currentDate) >= 0 && part.installedOnCars.length < 2
-  );
-
-  for (const part of readyParts) {
-    const carsRemaining = 2 - part.installedOnCars.length;
-    alerts.push({
-      id: `part-ready-${part.id}`,
-      severity: 'info',
-      category: 'Parts',
-      message: `${part.item} ready to install (${carsRemaining} car${carsRemaining > 1 ? 's' : ''})`,
-      action: {
-        label: 'View Construction',
-        section: 'engineering',
-        subItem: 'construction',
-      },
-    });
   }
 
   return alerts;
@@ -356,7 +320,6 @@ export function generateHomePageAlerts(
   const alerts: HomePageAlert[] = [
     ...generateExpiringContractAlerts(gameState, playerTeam),
     ...generateUnfilledSponsorAlerts(gameState, playerTeam),
-    ...generatePartsReadyAlerts(gameState, playerTeam),
     ...generateNegotiationAlerts(gameState, playerTeam),
     ...generateStaffAllocationAlerts(gameState, playerTeam),
   ];

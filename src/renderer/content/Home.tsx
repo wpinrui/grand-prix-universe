@@ -21,7 +21,6 @@ import {
   getUnreadEmails,
   getRecentHeadlines,
 } from '../utils/home-alerts';
-import { daysBetween } from '../../shared/utils/date-utils';
 import { ChiefRole } from '../../shared/domain';
 
 // ===========================================
@@ -91,14 +90,6 @@ export function Home() {
   const nextRaceCircuit = nextRace
     ? gameState.circuits.find((c) => c.id === nextRace.circuitId)
     : undefined;
-
-  // Pending parts ready to install (readyDate <= currentDate, not fully installed)
-  const readyParts = useMemo(() => {
-    if (!teamState) return [];
-    return teamState.pendingParts.filter(
-      (part) => daysBetween(part.readyDate, gameState.currentDate) >= 0 && part.installedOnCars.length < 2
-    );
-  }, [teamState, gameState.currentDate]);
 
   // Navigation handlers
   // Note: These use window.dispatchEvent to communicate with MainLayout
@@ -178,7 +169,6 @@ export function Home() {
         {teamState && (
           <DesignProgressSection
             designState={teamState.designState}
-            pendingParts={readyParts}
             onViewDesign={handleViewDesign}
             staffCounts={teamState.staffCounts.design}
             facilities={playerTeam.factory.facilities}

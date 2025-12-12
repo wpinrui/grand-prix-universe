@@ -23,7 +23,6 @@ import {
   type Circuit,
   type CalendarEvent,
   type DesignState,
-  type PendingPart,
   type GameDate,
   type StaffCounts,
   type Facility,
@@ -251,7 +250,6 @@ export function TeamStatusGrid({ budget, wccPosition, points, wins }: TeamStatus
 
 interface DesignProgressSectionProps {
   designState: DesignState;
-  pendingParts: PendingPart[];
   onViewDesign: () => void;
   // For estimated completion dates
   staffCounts: StaffCounts;
@@ -262,7 +260,6 @@ interface DesignProgressSectionProps {
 
 export function DesignProgressSection({
   designState,
-  pendingParts,
   onViewDesign,
   staffCounts,
   facilities,
@@ -286,7 +283,7 @@ export function DesignProgressSection({
     activeTechnologyProjects.length > 0 ||
     activeProblemState;
 
-  if (!hasActiveWork && pendingParts.length === 0) {
+  if (!hasActiveWork) {
     return null;
   }
 
@@ -361,15 +358,6 @@ export function DesignProgressSection({
         </div>
       )}
 
-      {/* Pending Parts (ready to install) */}
-      {pendingParts.filter((p) => p.installedOnCars.length < 2).map((part) => (
-        <div key={part.id} className="card p-4 border-l-2 border-l-emerald-500">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-primary">{part.item}</span>
-            <span className="text-xs text-emerald-400">Ready to install</span>
-          </div>
-        </div>
-      ))}
     </div>
   );
 }
