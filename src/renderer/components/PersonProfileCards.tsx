@@ -3,11 +3,11 @@
  * Used by WorldDrivers and WorldStaff pages.
  * Modular design allows reuse across different person types.
  */
-import { useState, useRef, useEffect, type CSSProperties } from 'react';
+import { useState, useRef, useEffect, useMemo, type CSSProperties } from 'react';
 import { FlagIcon } from './FlagIcon';
 import { EntityLink } from './EntityLink';
 import { ACCENT_TEXT_STYLE, ACCENT_CARD_STYLE } from '../utils/theme-styles';
-import { generateFace, type TeamColors } from '../utils/face-generator';
+import { generateFaceDataUri, type TeamColors } from '../utils/face-generator';
 import { seasonToYear } from '../../shared/utils/date-utils';
 import { formatAnnualSalary, pluralize } from '../utils/format';
 import { getPercentageColorClass } from './ContentPrimitives';
@@ -63,9 +63,9 @@ interface PersonHeaderProps {
   subtitle?: string;
   /** Optional race number for drivers */
   raceNumber?: number;
-  /** Unique ID for faces.js generation (required if no photoUrl) */
+  /** Unique ID for avatar generation (required if no photoUrl) */
   personId?: string;
-  /** Team colors for faces.js (required if no photoUrl) */
+  /** Team colors for avatar generation (required if no photoUrl) */
   teamColors?: TeamColors;
   /** All available options for dropdown selector */
   allOptions?: { id: string; label: string }[];
@@ -98,7 +98,6 @@ export function PersonHeader({
 }: PersonHeaderProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const faceContainerRef = useRef<HTMLDivElement>(null);
 
   const showDropdown = allOptions && allOptions.length > 0 && onSelect;
 
@@ -113,13 +112,12 @@ export function PersonHeader({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Generate face when no photo URL but faces.js props are provided
-  useEffect(() => {
-    if (!photoUrl && personId && teamColors && faceContainerRef.current) {
-      // Clear previous content
-      faceContainerRef.current.innerHTML = '';
-      generateFace(faceContainerRef.current, personId, nationality, teamColors, 128);
+  // Generate face data URI when no photo URL but avatar props are provided
+  const faceDataUri = useMemo(() => {
+    if (!photoUrl && personId && teamColors) {
+      return generateFaceDataUri(personId, nationality, teamColors);
     }
+    return null;
   }, [photoUrl, personId, nationality, teamColors]);
 
   const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
@@ -129,7 +127,7 @@ export function PersonHeader({
     onSelect?.(optionId);
   };
 
-  const showFacejs = !photoUrl && personId && teamColors;
+  const showGeneratedFace = !photoUrl && faceDataUri;
 
   return (
     <div className="flex gap-6">
@@ -137,8 +135,12 @@ export function PersonHeader({
       <div className="w-32 h-40 rounded-lg overflow-hidden shrink-0 surface-inset relative">
         {photoUrl ? (
           <img src={photoUrl} alt={name} className="w-full h-full object-cover" />
-        ) : showFacejs ? (
-          <div ref={faceContainerRef} className="w-full h-full" />
+        ) : showGeneratedFace ? (
+          <img
+            src={faceDataUri}
+            alt={name}
+            className="w-full h-full object-contain"
+          />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <span className="text-muted text-sm">No Photo</span>

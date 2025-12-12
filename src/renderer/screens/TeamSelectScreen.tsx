@@ -1,12 +1,12 @@
 import type { CSSProperties } from 'react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { RoutePaths } from '../routes';
 import { IpcChannels } from '../../shared/ipc';
 import type { Team, Driver } from '../../shared/domain';
 import { DriverRole } from '../../shared/domain';
-import { generateFace, type TeamColors } from '../utils/face-generator';
+import { generateFaceDataUri, type TeamColors } from '../utils/face-generator';
 import { TEAM_ID_ALL, useNewGame } from '../hooks';
 import { BackgroundLayer } from '../components';
 import { TeamBadge } from '../components/TeamBadge';
@@ -56,10 +56,7 @@ interface DriverPhotoProps {
   teamColors: TeamColors;
 }
 
-const FACE_VERTICAL_OFFSET = -6;
-
 function DriverPhoto({ driver, teamColors }: DriverPhotoProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
@@ -68,17 +65,10 @@ function DriverPhoto({ driver, teamColors }: DriverPhotoProps) {
 
   const shouldGenerateFace = !driver.photoUrl || imageError;
 
-  useEffect(() => {
-    const container = containerRef.current;
-    if (shouldGenerateFace && container) {
-      container.innerHTML = '';
-      generateFace(container, driver.id, driver.nationality, teamColors, 44);
-    }
-    return () => {
-      if (container) {
-        container.innerHTML = '';
-      }
-    };
+  // Generate face data URI when needed
+  const faceDataUri = useMemo(() => {
+    if (!shouldGenerateFace) return null;
+    return generateFaceDataUri(driver.id, driver.nationality, teamColors);
   }, [driver.id, driver.nationality, teamColors, shouldGenerateFace]);
 
   if (driver.photoUrl && !imageError) {
@@ -93,8 +83,14 @@ function DriverPhoto({ driver, teamColors }: DriverPhotoProps) {
   }
 
   return (
-    <div className="w-12 h-12 rounded-full overflow-hidden bg-[var(--neutral-700)] flex justify-center">
-      <div ref={containerRef} style={{ marginTop: FACE_VERTICAL_OFFSET }} />
+    <div className="w-12 h-12 rounded-full overflow-hidden bg-[var(--neutral-700)] flex items-center justify-center">
+      {faceDataUri && (
+        <img
+          src={faceDataUri}
+          alt={getFullName(driver)}
+          className="w-full h-full object-contain"
+        />
+      )}
     </div>
   );
 }

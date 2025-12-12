@@ -426,7 +426,7 @@ interface DriverProfileContentProps {
   recentResults: RecentRaceResult[];
   /** Relationship to the player's team */
   contractRelationship: ContractRelationship;
-  /** Team colors for faces.js (if no photo) */
+  /** Team colors for avatar generation (if no photo) */
   teamColors?: TeamColors;
   /** Called when contract action button is clicked */
   onEnterContractTalks?: () => void;

@@ -92,7 +92,7 @@ export function WorldDrivers({ initialDriverId }: WorldDriversProps) {
   // Get driver's team (if any)
   const driverTeam = selectedDriver.teamId ? teamMap.get(selectedDriver.teamId) ?? null : null;
 
-  // Build team colors for faces.js
+  // Build team colors for avatar generation
   const teamColors = driverTeam
     ? { primary: driverTeam.primaryColor, secondary: driverTeam.secondaryColor }
     : FREE_AGENT_COLORS;
