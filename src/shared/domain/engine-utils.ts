@@ -17,6 +17,8 @@ import type {
   ManufacturerNegotiation,
   DriverNegotiation,
   DriverContractTerms,
+  SponsorNegotiation,
+  SponsorContractTerms,
   GameDate,
 } from './types';
 import { ManufacturerType, NegotiationPhase, StakeholderType, DriverRole } from './types';
@@ -864,5 +866,47 @@ export function createDriverOutreach(
     relationshipScoreBefore: DEFAULT_RELATIONSHIP_SCORE,
     hasCompetingOffer: false,
     isProactiveOutreach: true,
+  };
+}
+
+// =============================================================================
+// SPONSOR NEGOTIATION UTILITIES
+// =============================================================================
+
+/**
+ * Creates a new sponsor negotiation (player initiates contact)
+ */
+export function createSponsorNegotiation(
+  teamId: string,
+  sponsorId: string,
+  forSeason: number,
+  currentDate: GameDate,
+  initialTerms: SponsorContractTerms
+): SponsorNegotiation {
+  const expiresDate = offsetDate(currentDate, OFFER_EXPIRY_DAYS);
+
+  return {
+    id: `neg-sponsor-${sponsorId}-${Date.now()}`,
+    stakeholderType: StakeholderType.Sponsor,
+    teamId,
+    sponsorId,
+    phase: NegotiationPhase.AwaitingResponse,
+    forSeason,
+    startedDate: { ...currentDate },
+    lastActivityDate: { ...currentDate },
+    rounds: [
+      {
+        roundNumber: 1,
+        offeredBy: 'player',
+        terms: initialTerms,
+        offeredDate: { ...currentDate },
+        expiresDate,
+      },
+    ],
+    currentRound: 1,
+    maxRounds: DEFAULT_MAX_ROUNDS,
+    relationshipScoreBefore: DEFAULT_RELATIONSHIP_SCORE,
+    hasCompetingOffer: false,
+    isProactiveOutreach: false,
   };
 }

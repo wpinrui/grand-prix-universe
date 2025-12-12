@@ -11,6 +11,7 @@ export { Design } from './Design';
 export { Construction } from './Construction';
 export { Contracts } from './Contracts';
 export { Sponsors } from './Sponsors';
+export { Deals } from './Deals';
 export { SavedGames } from './SavedGames';
 export { GameOptions } from './GameOptions';
 export { ActionScreen, ACTION_CONFIGS, isActionType, type ActionType } from './ActionScreen';

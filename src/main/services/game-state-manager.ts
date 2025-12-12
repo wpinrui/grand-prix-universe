@@ -39,6 +39,8 @@ import {
 import {
   createContractFromNegotiation,
   generateContractSigningHeadline,
+  createSponsorContractFromNegotiation,
+  generateSponsorSigningEvent,
 } from './contract-creator';
 import type {
   GameState,
@@ -48,8 +50,10 @@ import type {
   TeamRuntimeState,
   ActiveManufacturerContract,
   ManufacturerNegotiation,
+  SponsorNegotiation,
   TechnologyDesignProject,
   EngineCustomisation,
+  SponsorContractTerms,
 } from '../../shared/domain';
 import {
   GamePhase,
@@ -80,6 +84,7 @@ import {
   isValidCustomisation,
   MAX_CUSTOMISATION_PER_STAT,
   createManufacturerNegotiation,
+  createSponsorNegotiation,
   generateBaseContractTerms,
   OFFER_EXPIRY_DAYS,
   LATE_SEASON_MONTH,
@@ -900,6 +905,117 @@ export const GameStateManager = {
         negotiation.teamId,
         negotiation.manufacturerId
       );
+    } else if (response === 'reject') {
+      // Reject - negotiation failed
+      negotiation.phase = NegotiationPhase.Failed;
+      negotiation.lastActivityDate = { ...state.currentDate };
+    } else if (response === 'counter') {
+      // Counter with new terms - add a new round
+      if (!counterTerms) {
+        throw new Error('Counter terms required for counter offer');
+      }
+
+      const expiresDate = offsetDate(state.currentDate, OFFER_EXPIRY_DAYS);
+      const newRound = {
+        roundNumber: negotiation.currentRound + 1,
+        offeredBy: 'player' as const,
+        terms: counterTerms,
+        offeredDate: { ...state.currentDate },
+        expiresDate,
+        isUltimatum,
+      };
+
+      negotiation.rounds.push(newRound);
+      negotiation.currentRound = newRound.roundNumber;
+      negotiation.phase = NegotiationPhase.AwaitingResponse;
+      negotiation.lastActivityDate = { ...state.currentDate };
+    }
+
+    return state;
+  },
+
+  // ===========================================================================
+  // SPONSOR NEGOTIATION
+  // ===========================================================================
+
+  /**
+   * Starts a new negotiation with a sponsor.
+   * Player initiates contact with proposed terms.
+   */
+  startSponsorNegotiation(sponsorId: string, terms: SponsorContractTerms): GameState {
+    const state = GameStateManager.currentState;
+    if (!state) throw new Error('No game in progress');
+
+    const playerTeamId = state.player.teamId;
+
+    // Check if already negotiating with this sponsor
+    const existing = state.negotiations.find(
+      (n) =>
+        n.stakeholderType === StakeholderType.Sponsor &&
+        n.teamId === playerTeamId &&
+        (n as SponsorNegotiation).sponsorId === sponsorId &&
+        n.phase !== NegotiationPhase.Completed &&
+        n.phase !== NegotiationPhase.Failed
+    );
+    if (existing) {
+      throw new Error('Already negotiating with this sponsor');
+    }
+
+    // Verify sponsor exists
+    const sponsor = state.sponsors.find((s) => s.id === sponsorId);
+    if (!sponsor) {
+      throw new Error('Sponsor not found');
+    }
+
+    // Create new negotiation for next season
+    const negotiation = createSponsorNegotiation(
+      playerTeamId,
+      sponsorId,
+      state.currentSeason.seasonNumber + 1,
+      state.currentDate,
+      terms
+    );
+
+    state.negotiations.push(negotiation);
+
+    return state;
+  },
+
+  /**
+   * Responds to a sponsor offer (accept, reject, or counter).
+   */
+  respondToSponsorOffer(
+    negotiationId: string,
+    response: 'accept' | 'reject' | 'counter',
+    counterTerms?: SponsorContractTerms,
+    isUltimatum?: boolean
+  ): GameState {
+    const state = GameStateManager.currentState;
+    if (!state) throw new Error('No game in progress');
+
+    // Find the negotiation by ID
+    const negotiationIndex = state.negotiations.findIndex((n) => n.id === negotiationId);
+    if (negotiationIndex === -1) {
+      throw new Error('Negotiation not found');
+    }
+
+    const negotiation = state.negotiations[negotiationIndex] as SponsorNegotiation;
+
+    // Ensure it's a sponsor negotiation
+    if (negotiation.stakeholderType !== StakeholderType.Sponsor) {
+      throw new Error('Not a sponsor negotiation');
+    }
+
+    if (response === 'accept') {
+      // Accept the counterparty's terms - negotiation complete
+      negotiation.phase = NegotiationPhase.Completed;
+      negotiation.lastActivityDate = { ...state.currentDate };
+
+      // Create the contract and generate signing event
+      const result = createSponsorContractFromNegotiation(negotiation, state);
+      if (result) {
+        generateSponsorSigningEvent(state, result, true); // Player team is always involved
+      }
     } else if (response === 'reject') {
       // Reject - negotiation failed
       negotiation.phase = NegotiationPhase.Failed;

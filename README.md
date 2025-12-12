@@ -58,17 +58,17 @@ Grand Prix Universe recreates the depth and feel of GPW with:
 - [x] Staff
 - [x] Stats
 
-**ENGINEERING** (3/6)
+**ENGINEERING** (6/6)
 - [x] Cars
-- [ ] Testing
-- [x] Design (partial - 2/4 tabs)
-- [ ] Construction
-- [ ] Contracts
+- [x] Testing
+- [x] Design
+- [x] Construction
+- [x] Contracts
 - [x] Factory
 
-**COMMERCIAL** (0/4)
-- [ ] Sponsors
-- [ ] Deals
+**COMMERCIAL** (2/4)
+- [x] Sponsors
+- [x] Deals
 - [ ] Hospitality
 - [ ] Licensing
 
