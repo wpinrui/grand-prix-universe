@@ -23,16 +23,16 @@ export function getEntityRoute(type: EntityType, id: string): EntityRoute {
     case 'principal':
       return { section: 'world', subItem: 'staff', entityId: id };
     case 'circuit':
-      return { section: 'fia', subItem: 'races', entityId: id };
+      return { section: 'championship', subItem: 'races', entityId: id };
     case 'race':
       // For races, id is the race number as string
-      return { section: 'fia', subItem: 'results', entityId: id };
+      return { section: 'championship', subItem: 'results', entityId: id };
     case 'player-wiki':
       // Navigate to player wiki page (id is ignored)
-      return { section: 'team', subItem: 'wiki', entityId: '' };
+      return { section: 'home', subItem: 'profile', entityId: '' };
     case 'engineering-design':
-      // Navigate to engineering design screen (id is ignored)
-      return { section: 'engineering', subItem: 'design', entityId: '' };
+      // Navigate to design screen (id is ignored)
+      return { section: 'design', subItem: 'summary', entityId: '' };
   }
 }
 

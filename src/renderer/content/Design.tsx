@@ -1,8 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useDerivedGameState, useRegulationsBySeason, queryKeys } from '../hooks';
-import { SectionHeading, ProgressBar, TabBar } from '../components';
-import type { Tab } from '../components';
+import { SectionHeading, ProgressBar } from '../components';
 import { GHOST_BORDERED_BUTTON_CLASSES } from '../utils/theme-styles';
 import { IpcChannels } from '../../shared/ipc';
 import {
@@ -26,18 +25,19 @@ import {
 
 type DesignTab = 'summary' | 'next-year' | 'current-year' | 'technology';
 
+// Map navigation subpage IDs to internal tab IDs
+type DesignSubpage = 'summary' | 'current-chassis' | 'next-chassis' | 'technology';
+
+const SUBPAGE_TO_TAB: Record<DesignSubpage, DesignTab> = {
+  'summary': 'summary',
+  'current-chassis': 'current-year',
+  'next-chassis': 'next-year',
+  'technology': 'technology',
+};
+
 // ===========================================
 // CONSTANTS
 // ===========================================
-
-function getTabs(currentYear: number): Tab<DesignTab>[] {
-  return [
-    { id: 'summary', label: 'Summary' },
-    { id: 'current-year', label: `${currentYear} Chassis` },
-    { id: 'next-year', label: `${currentYear + 1} Chassis` },
-    { id: 'technology', label: 'Technology' },
-  ];
-}
 
 const STAGE_LABELS: Record<ChassisDesignStage, string> = {
   [ChassisDesignStage.Design]: 'Design',
@@ -975,8 +975,13 @@ function TechnologyTab({
 // MAIN COMPONENT
 // ===========================================
 
-export function Design() {
-  const [activeTab, setActiveTab] = useState<DesignTab>('summary');
+interface DesignProps {
+  initialTab?: DesignSubpage;
+}
+
+export function Design({ initialTab = 'summary' }: DesignProps) {
+  // Map navigation subpage to internal tab
+  const activeTab = SUBPAGE_TO_TAB[initialTab];
   const { gameState, playerTeam } = useDerivedGameState();
   const queryClient = useQueryClient();
 
@@ -1043,8 +1048,6 @@ export function Design() {
 
   return (
     <div>
-      <TabBar tabs={getTabs(currentYear)} activeTab={activeTab} onTabChange={(tab) => setActiveTab(tab)} />
-
       {activeTab === 'summary' && (
         <SummaryTab designState={designState} currentYear={currentYear} />
       )}

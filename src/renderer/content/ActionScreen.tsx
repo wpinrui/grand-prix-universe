@@ -4,17 +4,10 @@ import { WARNING_BUTTON_CLASSES, DANGER_BUTTON_CLASSES } from '../utils/theme-st
 // TYPES
 // ===========================================
 
-export type ActionType = 'restart' | 'quit';
+export type ActionType = 'quit';
 
 export function isActionType(id: string): id is ActionType {
-  return id in ACTION_CONFIGS;
-}
-
-interface ActionScreenConfig {
-  title: string;
-  message: string;
-  buttonLabel: string;
-  buttonClassName: string;
+  return id === 'quit';
 }
 
 interface ActionDialogConfig {
@@ -25,7 +18,6 @@ interface ActionDialogConfig {
 }
 
 export interface ActionConfig {
-  screen: ActionScreenConfig;
   dialog: ActionDialogConfig;
 }
 
@@ -34,27 +26,7 @@ export interface ActionConfig {
 // ===========================================
 
 export const ACTION_CONFIGS: Record<ActionType, ActionConfig> = {
-  restart: {
-    screen: {
-      title: 'Restart Game',
-      message: 'Start over from the title screen. Your current game progress will be lost unless you have saved.',
-      buttonLabel: 'Restart Game',
-      buttonClassName: WARNING_BUTTON_CLASSES,
-    },
-    dialog: {
-      title: 'Restart Game?',
-      message: 'Are you sure you want to restart? Any unsaved progress will be lost.',
-      confirmLabel: 'Restart',
-      variant: 'warning',
-    },
-  },
   quit: {
-    screen: {
-      title: 'Quit Game',
-      message: 'Exit the application. Your current game progress will be lost unless you have saved.',
-      buttonLabel: 'Quit Game',
-      buttonClassName: DANGER_BUTTON_CLASSES,
-    },
     dialog: {
       title: 'Quit Game?',
       message: 'Are you sure you want to quit? Any unsaved progress will be lost.',
@@ -68,18 +40,35 @@ export const ACTION_CONFIGS: Record<ActionType, ActionConfig> = {
 // COMPONENT
 // ===========================================
 
-type ActionScreenProps = ActionScreenConfig & {
-  onShowDialog: () => void;
-};
+interface ActionScreenProps {
+  onBackToMainMenu: () => void;
+  onShowQuitDialog: () => void;
+}
 
-export function ActionScreen({ title, message, buttonLabel, buttonClassName, onShowDialog }: ActionScreenProps) {
+export function ActionScreen({ onBackToMainMenu, onShowQuitDialog }: ActionScreenProps) {
   return (
     <div className="space-y-6 max-w-2xl">
-      <h1 className="text-xl font-bold text-primary">{title}</h1>
-      <p className="text-secondary">{message}</p>
-      <button type="button" onClick={onShowDialog} className={buttonClassName}>
-        {buttonLabel}
-      </button>
+      <h1 className="text-xl font-bold text-primary">Quit</h1>
+      <p className="text-secondary">
+        Choose whether to return to the main menu or exit the game entirely.
+        Your current game progress will be lost unless you have saved.
+      </p>
+      <div className="flex gap-4">
+        <button
+          type="button"
+          onClick={onBackToMainMenu}
+          className={`cursor-pointer ${WARNING_BUTTON_CLASSES}`}
+        >
+          Back to Main Menu
+        </button>
+        <button
+          type="button"
+          onClick={onShowQuitDialog}
+          className={`cursor-pointer ${DANGER_BUTTON_CLASSES}`}
+        >
+          Quit Game
+        </button>
+      </div>
     </div>
   );
 }

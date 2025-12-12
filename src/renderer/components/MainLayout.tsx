@@ -34,13 +34,10 @@ import {
   Construction,
   Contracts,
   Sponsors,
-  Deals,
   SavedGames,
   GameOptions,
   ActionScreen,
   ACTION_CONFIGS,
-  isActionType,
-  type ActionType,
   Championship,
   Races,
   Results,
@@ -53,7 +50,7 @@ import {
 import { GamePhase } from '../../shared/domain';
 import { RoutePaths } from '../routes';
 
-type ActiveDialog = ActionType | null;
+type ActiveDialog = 'quit' | null;
 
 // Navigation history entry
 interface HistoryEntry {
@@ -65,31 +62,29 @@ interface HistoryEntry {
 
 // Route map for simple components (no props needed)
 const ROUTE_COMPONENTS: Partial<Record<SectionId, Record<string, React.ComponentType>>> = {
-  team: {
-    profile: TeamProfile,
-    mail: Mail,
-    finance: Finance,
-    staff: Staff,
-    wiki: PlayerWiki,
+  home: {
+    profile: PlayerWiki,
   },
-  world: {
+  inbox: {
+    inbox: Mail,
     news: News,
-    stats: WorldStats,
+  },
+  team: {
+    overview: TeamProfile,
+    staff: Staff,
+    factory: Factory,
   },
   engineering: {
     cars: Cars,
     testing: Testing,
-    factory: Factory,
-    design: Design,
     construction: Construction,
-    contracts: Contracts,
+  },
+  world: {
+    stats: WorldStats,
   },
   commercial: {
-    sponsors: Sponsors,
-    deals: Deals,
-  },
-  fia: {
-    // championship, races, results handled separately (need navigation props)
+    finance: Finance,
+    contracts: Contracts,
   },
   options: {
     'game-options': GameOptions,
@@ -207,7 +202,7 @@ export function MainLayout() {
   const canGoBack = navHistory.index > 0;
   const canGoForward = navHistory.index < navHistory.entries.length - 1;
 
-  // Safe: selectedSectionId always matches a valid section (defaults to 'team')
+  // Safe: selectedSectionId always matches a valid section (defaults to 'home')
   const selectedSection = sections.find((s) => s.id === selectedSectionId) ?? sections[0];
   const selectedSubItem =
     selectedSection.subItems.find((sub) => sub.id === selectedSubItemId) ?? selectedSection.subItems[0];
@@ -238,27 +233,20 @@ export function MainLayout() {
 
   // Navigation helper for content components
   const navigateToProfile = () => {
-    setSelectedSectionId('team');
+    setSelectedSectionId('home');
     setSelectedSubItemId('profile');
-    pushHistory({ sectionId: 'team', subItemId: 'profile' });
+    pushHistory({ sectionId: 'home', subItemId: 'profile' });
   };
 
   const navigateToRaceReport = (raceNumber: number) => {
     setTargetRaceNumber(raceNumber);
-    setSelectedSectionId('fia');
+    setSelectedSectionId('championship');
     setSelectedSubItemId('results');
-    pushHistory({ sectionId: 'fia', subItemId: 'results', entityType: 'race', entityId: String(raceNumber) });
+    pushHistory({ sectionId: 'championship', subItemId: 'results', entityType: 'race', entityId: String(raceNumber) });
   };
 
   // Dialog handlers
-  const actionHandlers: Record<ActionType, () => void> = {
-    restart: () => {
-      clearGameState();
-      navigate(RoutePaths.TITLE);
-    },
-    quit: () => quitApp(),
-  };
-
+  const handleQuitConfirm = () => quitApp();
   const closeDialog = () => setActiveDialog(null);
 
   // Calendar preview handlers
@@ -344,7 +332,7 @@ export function MainLayout() {
   }
 
   const renderContent = () => {
-    // Routes with props - handle explicitly
+    // World section - entity views with props
     if (selectedSectionId === 'world' && selectedSubItemId === 'teams') {
       return <WorldTeams initialTeamId={targetTeamId} />;
     }
@@ -354,13 +342,15 @@ export function MainLayout() {
     if (selectedSectionId === 'world' && selectedSubItemId === 'staff') {
       return <WorldStaff initialStaffId={targetStaffId} />;
     }
-    if (selectedSectionId === 'fia' && selectedSubItemId === 'championship') {
+
+    // Championship section
+    if (selectedSectionId === 'championship' && selectedSubItemId === 'standings') {
       return <Championship onNavigateToDriver={(driverId) => navigateToEntity('driver', driverId)} />;
     }
-    if (selectedSectionId === 'fia' && selectedSubItemId === 'races') {
+    if (selectedSectionId === 'championship' && selectedSubItemId === 'races') {
       return <Races onViewRaceReport={navigateToRaceReport} />;
     }
-    if (selectedSectionId === 'fia' && selectedSubItemId === 'results') {
+    if (selectedSectionId === 'championship' && selectedSubItemId === 'results') {
       return (
         <Results
           initialRaceNumber={targetRaceNumber}
@@ -369,14 +359,29 @@ export function MainLayout() {
         />
       );
     }
+
+    // Design section - pass subpage to determine which view to render
+    if (selectedSectionId === 'design') {
+      return <Design initialTab={selectedSubItemId as 'summary' | 'current-chassis' | 'next-chassis' | 'technology'} />;
+    }
+
+    // Commercial > Sponsors - now includes Deals as tabs
+    if (selectedSectionId === 'commercial' && selectedSubItemId === 'sponsors') {
+      return <Sponsors />;
+    }
+
+    // Options section
     if (selectedSectionId === 'options' && selectedSubItemId === 'saved-games') {
       return <SavedGames onNavigateToProfile={navigateToProfile} />;
     }
-    if (selectedSectionId === 'options' && isActionType(selectedSubItemId)) {
+    if (selectedSectionId === 'options' && selectedSubItemId === 'quit') {
       return (
         <ActionScreen
-          {...ACTION_CONFIGS[selectedSubItemId].screen}
-          onShowDialog={() => setActiveDialog(selectedSubItemId)}
+          onBackToMainMenu={() => {
+            clearGameState();
+            navigate(RoutePaths.TITLE);
+          }}
+          onShowQuitDialog={() => setActiveDialog('quit')}
         />
       );
     }
@@ -466,11 +471,11 @@ export function MainLayout() {
           />
         </div>
 
-        {/* Confirmation Dialog */}
-        {activeDialog && (
+        {/* Quit Confirmation Dialog */}
+        {activeDialog === 'quit' && (
           <ConfirmDialog
-            {...ACTION_CONFIGS[activeDialog].dialog}
-            onConfirm={actionHandlers[activeDialog]}
+            {...ACTION_CONFIGS.quit.dialog}
+            onConfirm={handleQuitConfirm}
             onCancel={closeDialog}
           />
         )}

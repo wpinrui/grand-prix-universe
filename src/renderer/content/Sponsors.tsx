@@ -1,7 +1,9 @@
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useDerivedGameState } from '../hooks';
-import { SectionHeading } from '../components';
+import { SectionHeading, TabBar } from '../components';
+import type { Tab } from '../components';
 import { ACCENT_CARD_STYLE } from '../utils/theme-styles';
+import { Deals } from './Deals';
 import { formatCurrency, formatCompact } from '../utils/format';
 import { seasonToYear } from '../../shared/utils/date-utils';
 import {
@@ -12,8 +14,19 @@ import {
 } from '../../shared/domain';
 
 // ===========================================
+// TYPES
+// ===========================================
+
+type SponsorsTab = 'summary' | 'deals';
+
+// ===========================================
 // CONSTANTS
 // ===========================================
+
+const TABS: Tab<SponsorsTab>[] = [
+  { id: 'summary', label: 'Summary' },
+  { id: 'deals', label: 'Deals' },
+];
 
 /** Fixed slot counts per tier */
 const SLOT_COUNTS: Record<SponsorTier, number> = {
@@ -402,7 +415,7 @@ function computeSponsorData(gameState: GameState, playerTeamId: string): Sponsor
   };
 }
 
-export function Sponsors() {
+function SponsorsSummary() {
   const { gameState, isLoading } = useDerivedGameState();
 
   const sponsorData = useMemo(() => {
@@ -411,21 +424,11 @@ export function Sponsors() {
   }, [gameState]);
 
   if (isLoading) {
-    return (
-      <div className="p-4">
-        <SectionHeading>Sponsors</SectionHeading>
-        <p className="text-muted">Loading...</p>
-      </div>
-    );
+    return <p className="text-muted">Loading...</p>;
   }
 
   if (!gameState || !sponsorData) {
-    return (
-      <div className="p-4">
-        <SectionHeading>Sponsors</SectionHeading>
-        <p className="text-muted">No game data available.</p>
-      </div>
-    );
+    return <p className="text-muted">No game data available.</p>;
   }
 
   const currentSeason = gameState.currentSeason.seasonNumber;
@@ -433,8 +436,6 @@ export function Sponsors() {
 
   return (
     <div className="space-y-6">
-      <SectionHeading>Sponsors</SectionHeading>
-
       {/* Income Summary */}
       <IncomeSummary
         totalMonthly={sponsorData.totalMonthly}
@@ -472,6 +473,25 @@ export function Sponsors() {
         currentSeason={currentSeason}
         slotCount={SLOT_COUNTS[SponsorTier.Minor]}
       />
+    </div>
+  );
+}
+
+export function Sponsors() {
+  const [activeTab, setActiveTab] = useState<SponsorsTab>('summary');
+
+  return (
+    <div className="space-y-4">
+      <SectionHeading>Sponsors</SectionHeading>
+
+      <TabBar<SponsorsTab>
+        tabs={TABS}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
+
+      {activeTab === 'summary' && <SponsorsSummary />}
+      {activeTab === 'deals' && <Deals embedded />}
     </div>
   );
 }

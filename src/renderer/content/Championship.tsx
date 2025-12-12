@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { useDerivedGameState } from '../hooks';
-import { SectionHeading, HeaderCell } from '../components';
+import { SectionHeading, HeaderCell, TabBar } from '../components';
+import type { Tab } from '../components';
 import {
   TABLE_CELL_BASE,
   TABLE_HEADER_CLASS,
@@ -16,8 +18,19 @@ import type {
 } from '../../shared/domain';
 
 // ===========================================
+// TYPES
+// ===========================================
+
+type StandingsTab = 'wdc' | 'wcc';
+
+// ===========================================
 // CONSTANTS
 // ===========================================
+
+const TABS: Tab<StandingsTab>[] = [
+  { id: 'wdc', label: 'World Drivers\' Championship' },
+  { id: 'wcc', label: 'World Constructors\' Championship' },
+];
 
 const CELL_PRIMARY = 'font-bold text-primary tabular-nums';
 const CELL_STAT_BASE = `${TABLE_CELL_BASE} text-center tabular-nums`;
@@ -133,6 +146,7 @@ interface ChampionshipProps {
 }
 
 export function Championship({ onNavigateToDriver }: ChampionshipProps) {
+  const [activeTab, setActiveTab] = useState<StandingsTab>('wdc');
   const { gameState, playerTeam } = useDerivedGameState();
 
   if (!gameState || !playerTeam) {
@@ -150,10 +164,17 @@ export function Championship({ onNavigateToDriver }: ChampionshipProps) {
   const getTeam = (id: string) => gameState.teams.find((t) => t.id === id);
 
   return (
-    <div className="space-y-8 max-w-6xl">
+    <div className="space-y-4 max-w-6xl">
+      <SectionHeading>Standings</SectionHeading>
+
+      <TabBar<StandingsTab>
+        tabs={TABS}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
+
       {/* Drivers Championship */}
-      <section>
-        <SectionHeading>Drivers Championship</SectionHeading>
+      {activeTab === 'wdc' && (
         <div className="card overflow-hidden">
           <table className="w-full">
             <thead className={TABLE_HEADER_CLASS}>
@@ -183,11 +204,10 @@ export function Championship({ onNavigateToDriver }: ChampionshipProps) {
             </tbody>
           </table>
         </div>
-      </section>
+      )}
 
       {/* Constructors Championship */}
-      <section>
-        <SectionHeading>Constructors Championship</SectionHeading>
+      {activeTab === 'wcc' && (
         <div className="card overflow-hidden">
           <table className="w-full">
             <thead className={TABLE_HEADER_CLASS}>
@@ -212,7 +232,7 @@ export function Championship({ onNavigateToDriver }: ChampionshipProps) {
             </tbody>
           </table>
         </div>
-      </section>
+      )}
     </div>
   );
 }
