@@ -5,11 +5,13 @@
 import {
   SponsorTier,
   NegotiationPhase,
+  StakeholderType,
   CalendarEventType,
   type GameState,
   type Team,
   type CalendarEvent,
 } from '../../shared/domain';
+import { daysBetween } from '../../shared/utils/date-utils';
 import { getFullName } from './format';
 
 // ===========================================
@@ -53,9 +55,7 @@ function generateExpiringContractAlerts(
   playerTeam: Team
 ): HomePageAlert[] {
   const alerts: HomePageAlert[] = [];
-  const currentSeason = gameState.currentSeason.calendar[0]?.result
-    ? gameState.currentDate.year
-    : gameState.currentDate.year;
+  const currentSeason = gameState.currentDate.year;
 
   // Check driver contracts
   const teamDrivers = gameState.drivers.filter((d) => d.teamId === playerTeam.id);
@@ -177,18 +177,10 @@ function generatePartsReadyAlerts(
   if (!teamState) return alerts;
 
   // Find parts that are ready but not fully installed
-  const readyParts = teamState.pendingParts.filter((part) => {
-    // Part is ready if readyDate <= currentDate and not installed on both cars
-    const isReady =
-      part.readyDate.year < gameState.currentDate.year ||
-      (part.readyDate.year === gameState.currentDate.year &&
-        part.readyDate.month < gameState.currentDate.month) ||
-      (part.readyDate.year === gameState.currentDate.year &&
-        part.readyDate.month === gameState.currentDate.month &&
-        part.readyDate.day <= gameState.currentDate.day);
-    const notFullyInstalled = part.installedOnCars.length < 2;
-    return isReady && notFullyInstalled;
-  });
+  // Part is ready if readyDate <= currentDate (daysBetween returns positive if second arg is after first)
+  const readyParts = teamState.pendingParts.filter(
+    (part) => daysBetween(part.readyDate, gameState.currentDate) >= 0 && part.installedOnCars.length < 2
+  );
 
   for (const part of readyParts) {
     const carsRemaining = 2 - part.installedOnCars.length;
@@ -227,28 +219,26 @@ function generateNegotiationAlerts(
     let actionSubItem = 'contracts';
 
     switch (negotiation.stakeholderType) {
-      case 'driver': {
-        const driver = gameState.drivers.find((d) => d.id === (negotiation as { driverId: string }).driverId);
+      case StakeholderType.Driver: {
+        const driver = gameState.drivers.find((d) => d.id === negotiation.driverId);
         stakeholderName = driver ? getFullName(driver) : 'Driver';
         actionSubItem = 'staff';
         break;
       }
-      case 'staff': {
-        const staff = gameState.chiefs.find((c) => c.id === (negotiation as { staffId: string }).staffId);
+      case StakeholderType.Staff: {
+        const staff = gameState.chiefs.find((c) => c.id === negotiation.staffId);
         stakeholderName = staff ? getFullName(staff) : 'Staff';
         actionSubItem = 'staff';
         break;
       }
-      case 'sponsor': {
-        const sponsor = gameState.sponsors.find((s) => s.id === (negotiation as { sponsorId: string }).sponsorId);
+      case StakeholderType.Sponsor: {
+        const sponsor = gameState.sponsors.find((s) => s.id === negotiation.sponsorId);
         stakeholderName = sponsor?.name ?? 'Sponsor';
         actionSubItem = 'sponsors';
         break;
       }
-      case 'manufacturer': {
-        const manufacturer = gameState.manufacturers.find(
-          (m) => m.id === (negotiation as { manufacturerId: string }).manufacturerId
-        );
+      case StakeholderType.Manufacturer: {
+        const manufacturer = gameState.manufacturers.find((m) => m.id === negotiation.manufacturerId);
         stakeholderName = manufacturer?.name ?? 'Manufacturer';
         actionSubItem = 'contracts';
         break;

@@ -21,6 +21,7 @@ import {
   getUnreadEmails,
   getRecentHeadlines,
 } from '../utils/home-alerts';
+import { daysBetween } from '../../shared/utils/date-utils';
 
 // ===========================================
 // MAIN COMPONENT
@@ -85,19 +86,12 @@ export function Home() {
     ? gameState.circuits.find((c) => c.id === nextRace.circuitId)
     : undefined;
 
-  // Pending parts ready to install
+  // Pending parts ready to install (readyDate <= currentDate, not fully installed)
   const readyParts = useMemo(() => {
     if (!teamState) return [];
-    return teamState.pendingParts.filter((part) => {
-      const isReady =
-        part.readyDate.year < gameState.currentDate.year ||
-        (part.readyDate.year === gameState.currentDate.year &&
-          part.readyDate.month < gameState.currentDate.month) ||
-        (part.readyDate.year === gameState.currentDate.year &&
-          part.readyDate.month === gameState.currentDate.month &&
-          part.readyDate.day <= gameState.currentDate.day);
-      return isReady && part.installedOnCars.length < 2;
-    });
+    return teamState.pendingParts.filter(
+      (part) => daysBetween(part.readyDate, gameState.currentDate) >= 0 && part.installedOnCars.length < 2
+    );
   }, [teamState, gameState.currentDate]);
 
   // Navigation handlers
@@ -179,7 +173,6 @@ export function Home() {
           <DesignProgressSection
             designState={teamState.designState}
             pendingParts={readyParts}
-            currentDate={gameState.currentDate}
             onViewDesign={handleViewDesign}
           />
         )}
@@ -206,7 +199,6 @@ export function Home() {
         {/* Unread Mail */}
         <MailWidget
           emails={unreadEmails}
-          currentDate={gameState.currentDate}
           onViewAll={handleViewMail}
           onEmailClick={handleEmailClick}
         />

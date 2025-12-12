@@ -6,13 +6,12 @@ import { useMemo } from 'react';
 import { AlertCircle, AlertTriangle, Info, Mail, Newspaper, ChevronRight } from 'lucide-react';
 import { FlagIcon } from './FlagIcon';
 import { ProgressBar } from './ContentPrimitives';
-import { NEWS_SOURCE_COLORS } from '../utils/theme-styles';
+import { NEWS_SOURCE_STYLES } from '../utils/theme-styles';
 import { formatCurrency, formatOrdinal, getFullName } from '../utils/format';
-import { formatGameDate, daysBetween, seasonToYear } from '../../shared/utils/date-utils';
+import { formatGameDate, daysBetween, seasonToYear, getRaceSunday } from '../../shared/utils/date-utils';
 import type { HomePageAlert, AlertSeverity } from '../utils/home-alerts';
 import {
   ChassisDesignStage,
-  NewsSource,
   type Team,
   type Driver,
   type DriverStanding,
@@ -34,16 +33,6 @@ const CHASSIS_STAGE_LABELS: Record<ChassisDesignStage, string> = {
   [ChassisDesignStage.CFD]: 'CFD',
   [ChassisDesignStage.Model]: 'Model',
   [ChassisDesignStage.WindTunnel]: 'Wind Tunnel',
-};
-
-const NEWS_SOURCE_LABELS: Record<NewsSource, string> = {
-  [NewsSource.F1Official]: 'F1 Official',
-  [NewsSource.TheRace]: 'The Race',
-  [NewsSource.LocalMedia]: 'Local Media',
-  [NewsSource.PitlaneInsider]: 'Pitlane Insider',
-  [NewsSource.TechAnalysis]: 'Tech Analysis',
-  [NewsSource.PaddockRumors]: 'Paddock Rumors',
-  [NewsSource.FanVoice]: 'Fan Voice',
 };
 
 // ===========================================
@@ -182,11 +171,10 @@ interface NextRaceCardProps {
 
 export function NextRaceCard({ nextRace, circuit, currentDate, totalRaces, onViewRaces }: NextRaceCardProps) {
   const daysUntil = useMemo(() => {
-    if (!circuit) return 0;
-    // Calculate days until race
-    const raceDate = { year: currentDate.year, month: nextRace.raceNumber, day: 1 }; // Simplified
+    // Calculate days until race Sunday
+    const raceDate = getRaceSunday(currentDate.year, nextRace.weekNumber);
     return Math.max(0, daysBetween(currentDate, raceDate));
-  }, [currentDate, nextRace, circuit]);
+  }, [currentDate, nextRace]);
 
   return (
     <div
@@ -258,14 +246,12 @@ export function TeamStatusGrid({ budget, wccPosition, points, wins }: TeamStatus
 interface DesignProgressSectionProps {
   designState: DesignState;
   pendingParts: PendingPart[];
-  currentDate: GameDate;
   onViewDesign: () => void;
 }
 
 export function DesignProgressSection({
   designState,
   pendingParts,
-  currentDate: _currentDate,
   onViewDesign,
 }: DesignProgressSectionProps) {
   const { nextYearChassis, activeTechnologyProjects, currentYearChassis } = designState;
@@ -273,12 +259,16 @@ export function DesignProgressSection({
   // Find current chassis stage
   const currentStage = nextYearChassis?.stages.find((s) => !s.completed);
   const activeHandlingProblem = currentYearChassis.activeDesignProblem;
+  // Find the problem state for the active handling problem
+  const activeProblemState = activeHandlingProblem
+    ? currentYearChassis.problems.find((p) => p.problem === activeHandlingProblem)
+    : null;
 
   // Check if there's any active design work
   const hasActiveWork =
     (nextYearChassis && currentStage) ||
     activeTechnologyProjects.length > 0 ||
-    activeHandlingProblem;
+    activeProblemState;
 
   if (!hasActiveWork && pendingParts.length === 0) {
     return null;
@@ -299,7 +289,7 @@ export function DesignProgressSection({
               {CHASSIS_STAGE_LABELS[currentStage.stage]}
             </span>
           </div>
-          <ProgressBar value={currentStage.progress * 10} max={100} />
+          <ProgressBar value={currentStage.progress * 10} />
         </div>
       )}
 
@@ -315,10 +305,7 @@ export function DesignProgressSection({
             </span>
           </div>
           {project.phase === 'development' && project.workUnitsRequired && (
-            <ProgressBar
-              value={project.workUnitsCompleted}
-              max={project.workUnitsRequired}
-            />
+            <ProgressBar value={(project.workUnitsCompleted / project.workUnitsRequired) * 100} />
           )}
           {project.phase === 'discovery' && (
             <div className="text-xs text-muted italic">Awaiting breakthrough...</div>
@@ -327,14 +314,14 @@ export function DesignProgressSection({
       ))}
 
       {/* Handling Solution */}
-      {activeHandlingProblem && (
+      {activeProblemState && (
         <div className="card p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-primary">
-              Handling: {activeHandlingProblem.problem.replace(/([A-Z])/g, ' $1').trim()}
+              Handling: {activeProblemState.problem.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
             </span>
           </div>
-          <ProgressBar value={activeHandlingProblem.solutionProgress * 10} max={100} />
+          <ProgressBar value={activeProblemState.solutionProgress * 10} />
         </div>
       )}
 
@@ -449,12 +436,11 @@ export function AlertsWidget({ alerts, onAlertClick }: AlertsWidgetProps) {
 
 interface MailWidgetProps {
   emails: CalendarEvent[];
-  currentDate: GameDate;
   onViewAll: () => void;
   onEmailClick: (emailId: string) => void;
 }
 
-export function MailWidget({ emails, currentDate: _currentDate, onViewAll, onEmailClick }: MailWidgetProps) {
+export function MailWidget({ emails, onViewAll, onEmailClick }: MailWidgetProps) {
   const unreadEmails = emails.slice(0, 5);
   const unreadCount = emails.length;
 
@@ -519,17 +505,17 @@ export function NewsWidget({ headlines, onViewAll }: NewsWidgetProps) {
       ) : (
         <div className="space-y-3">
           {headlines.map((headline) => {
-            const sourceColors = headline.newsSource
-              ? NEWS_SOURCE_COLORS[headline.newsSource]
-              : { bg: 'bg-neutral-700', text: 'text-neutral-300' };
+            const sourceStyle = headline.newsSource
+              ? NEWS_SOURCE_STYLES[headline.newsSource]
+              : null;
 
             return (
               <div key={headline.id} className="border-b border-subtle last:border-b-0 pb-3 last:pb-0">
-                {headline.newsSource && (
+                {sourceStyle && (
                   <span
-                    className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium mb-1 ${sourceColors.bg} ${sourceColors.text}`}
+                    className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium mb-1 ${sourceStyle.bgClass} ${sourceStyle.textClass}`}
                   >
-                    {NEWS_SOURCE_LABELS[headline.newsSource]}
+                    {sourceStyle.label}
                   </span>
                 )}
                 <div className="text-sm text-primary">{headline.subject}</div>
