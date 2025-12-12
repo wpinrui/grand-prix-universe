@@ -8,7 +8,7 @@
 import { Newspaper, ArrowRight } from 'lucide-react';
 import type { AppointmentNews, AppointmentDriverSummary } from '../../shared/domain';
 import { formatCurrency } from '../utils/format';
-import { seasonToYear } from '../../shared/utils/date-utils';
+import { seasonToYear, yearToSeason } from '../../shared/utils/date-utils';
 import { PRIMARY_BUTTON_CLASSES } from '../utils/theme-styles';
 
 interface AppointmentNewsModalProps {
@@ -19,17 +19,19 @@ interface AppointmentNewsModalProps {
 interface DriverCardProps {
   driver: AppointmentDriverSummary;
   seasonNumber: number;
+  lastSeasonYear: number;
 }
 
 /**
  * Renders a single driver card with photo, stats, and contract info
  */
-function DriverCard({ driver, seasonNumber }: DriverCardProps) {
+function DriverCard({ driver, seasonNumber, lastSeasonYear }: DriverCardProps) {
   const contractEndYear = seasonToYear(driver.contractEnd);
   const contractYears = driver.contractEnd - seasonNumber;
+  // contractYears: 0 = final year, 1 = 2 years left (this + next), etc.
   const contractText = contractYears <= 0
     ? 'Final year'
-    : `${contractYears + 1} ${contractYears === 0 ? 'year' : 'years'}`;
+    : `${contractYears + 1} years`;
 
   return (
     <div className="flex items-center gap-4 p-4 rounded-lg bg-[var(--neutral-850)] border border-[var(--neutral-700)]">
@@ -63,7 +65,7 @@ function DriverCard({ driver, seasonNumber }: DriverCardProps) {
         <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
           {driver.lastSeasonPosition !== undefined && (
             <span className="text-secondary">
-              <span className="text-muted">2024:</span>{' '}
+              <span className="text-muted">{lastSeasonYear}:</span>{' '}
               <span className="text-primary font-medium">P{driver.lastSeasonPosition}</span>
               {driver.lastSeasonPoints !== undefined && (
                 <span className="text-muted"> ({driver.lastSeasonPoints} pts)</span>
@@ -97,8 +99,8 @@ function DriverCard({ driver, seasonNumber }: DriverCardProps) {
  * Main appointment news modal component
  */
 export function AppointmentNewsModal({ news, onContinue }: AppointmentNewsModalProps) {
-  // Derive season number from year (reverse of seasonToYear)
-  const seasonNumber = news.year - 2024;
+  const seasonNumber = yearToSeason(news.year);
+  const lastSeasonYear = news.year - 1;
 
   return (
     <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
@@ -173,6 +175,7 @@ export function AppointmentNewsModal({ news, onContinue }: AppointmentNewsModalP
                 key={driver.driverId || 'tba'}
                 driver={driver}
                 seasonNumber={seasonNumber}
+                lastSeasonYear={lastSeasonYear}
               />
             ))}
           </div>

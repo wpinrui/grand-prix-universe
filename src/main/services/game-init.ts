@@ -96,6 +96,12 @@ const INITIAL_CAR_CONDITION = 100;
 /** Number of cars per team (modern F1) */
 const CARS_PER_TEAM = 2;
 
+/** Budget threshold for top teams (used for contextual news articles) */
+const TOP_TEAM_BUDGET_THRESHOLD = 180_000_000;
+
+/** Budget threshold for midfield teams (used for contextual news articles) */
+const MIDFIELD_BUDGET_THRESHOLD = 100_000_000;
+
 /** First race typically in March (week 11) */
 const FIRST_RACE_WEEK = 11;
 
@@ -510,9 +516,9 @@ function generateAppointmentArticleBody(
   outgoingPrincipalName: string,
   year: number
 ): string {
-  // Extract team context from description to inform the narrative
-  const isTopTeam = team.budget >= 180000000;
-  const isMidfield = team.budget >= 100000000 && team.budget < 180000000;
+  // Determine team tier based on budget for contextual narrative
+  const isTopTeam = team.budget >= TOP_TEAM_BUDGET_THRESHOLD;
+  const isMidfield = team.budget >= MIDFIELD_BUDGET_THRESHOLD && team.budget < TOP_TEAM_BUDGET_THRESHOLD;
 
   // Build article paragraphs
   const paragraphs: string[] = [];
