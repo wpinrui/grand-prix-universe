@@ -20,7 +20,7 @@ export function TeamBadge({ team, className = 'w-12 h-12' }: TeamBadgeProps) {
   if (team?.logoUrl) {
     return (
       <div
-        className={`${className} rounded-full overflow-hidden shadow-md flex items-center justify-center p-1.5`}
+        className={`${className} aspect-square rounded-full overflow-hidden shadow-md flex items-center justify-center p-1.5`}
         style={{ boxShadow: badgeGlow, backgroundColor: primaryColor }}
       >
         <img
