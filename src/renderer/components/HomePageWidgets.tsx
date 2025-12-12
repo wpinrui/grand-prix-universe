@@ -311,7 +311,7 @@ export function DesignProgressSection({
               const daysRemaining = estimateChassisStageCompletion(nextYearChassis, projectionInput);
               if (daysRemaining !== null && daysRemaining > 0) {
                 const estDate = offsetDate(currentDate, daysRemaining);
-                return <span className="text-xs text-muted ml-2 shrink-0">Est. {formatGameDate(estDate, 'short')}</span>;
+                return <span className="text-xs text-muted ml-2 shrink-0">Estimated Completion: {formatGameDate(estDate, 'short')}</span>;
               }
               return null;
             })()}
@@ -337,7 +337,7 @@ export function DesignProgressSection({
                 const daysRemaining = estimateTechProjectDaysRemaining(project, projectionInput);
                 if (daysRemaining !== null && daysRemaining > 0) {
                   const estDate = offsetDate(currentDate, daysRemaining);
-                  return <span className="text-xs text-muted ml-2 shrink-0">Est. {formatGameDate(estDate, 'short')}</span>;
+                  return <span className="text-xs text-muted ml-2 shrink-0">Estimated Completion: {formatGameDate(estDate, 'short')}</span>;
                 }
                 return null;
               })()}
