@@ -331,6 +331,17 @@ function generateStaffAllocationAlerts(
 }
 
 // ===========================================
+// HELPERS
+// ===========================================
+
+/** Sort events by date descending (newest first) */
+function sortByDateDescending(a: CalendarEvent, b: CalendarEvent): number {
+  if (a.date.year !== b.date.year) return b.date.year - a.date.year;
+  if (a.date.month !== b.date.month) return b.date.month - a.date.month;
+  return b.date.day - a.date.day;
+}
+
+// ===========================================
 // MAIN EXPORT
 // ===========================================
 
@@ -366,12 +377,7 @@ export function generateHomePageAlerts(
 export function getUnreadEmails(calendarEvents: CalendarEvent[]): CalendarEvent[] {
   return calendarEvents
     .filter((e) => e.type === CalendarEventType.Email && !e.read)
-    .sort((a, b) => {
-      // Sort by date descending (newest first)
-      if (a.date.year !== b.date.year) return b.date.year - a.date.year;
-      if (a.date.month !== b.date.month) return b.date.month - a.date.month;
-      return b.date.day - a.date.day;
-    });
+    .sort(sortByDateDescending);
 }
 
 /**
@@ -383,11 +389,6 @@ export function getRecentHeadlines(
 ): CalendarEvent[] {
   return calendarEvents
     .filter((e) => e.type === CalendarEventType.Headline)
-    .sort((a, b) => {
-      // Sort by date descending (newest first)
-      if (a.date.year !== b.date.year) return b.date.year - a.date.year;
-      if (a.date.month !== b.date.month) return b.date.month - a.date.month;
-      return b.date.day - a.date.day;
-    })
+    .sort(sortByDateDescending)
     .slice(0, limit);
 }
