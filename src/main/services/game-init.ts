@@ -624,7 +624,7 @@ export function createAppointmentNews(
     });
   }
 
-  const headline = `${playerName} appointed as ${team.name} Team Principal`;
+  const headline = `${playerName} appointed as ${team.shortName} Team Principal`;
   const articleBody = generateAppointmentArticleBody(
     playerName,
     team,
