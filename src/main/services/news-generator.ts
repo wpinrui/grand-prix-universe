@@ -25,6 +25,7 @@ import type {
   Driver,
   Chief,
   Team,
+  Circuit,
 } from '../../shared/domain';
 import {
   CalendarEventType,
@@ -231,17 +232,15 @@ export function createAnonymousQuote(
  * Returns array of CalendarEvents to add to state.calendarEvents
  */
 export function generateDailyNews(state: GameState): CalendarEvent[] {
-  // Build context for news generators
-  // @agent: Context will be used when content generators are added in PRs 5-7
-  const _context = buildNewsContext(state);
+  const context = buildNewsContext(state);
   const news: CalendarEvent[] = [];
 
-  // Content generators will be added in subsequent PRs:
-  // - PR 5: Race coverage (preview, predictions, local media)
+  // Race coverage (PR 5)
+  news.push(...generateRaceCoverage(context));
+
+  // Content generators to be added in subsequent PRs:
   // - PR 6: Pre-season & analysis (season preview, rankings, hot seat)
   // - PR 7: Rumors & commentary (transfer rumors, netizen roundups)
-  //
-  // Generators will use: news.push(...generateRaceCoverage(_context));
 
   return news;
 }
@@ -305,4 +304,267 @@ export function pickRandom<T>(items: T[]): T {
  */
 export function checkProbability(probability: number): boolean {
   return Math.random() < probability;
+}
+
+// =============================================================================
+// RACE COVERAGE GENERATORS (PR 5)
+// =============================================================================
+
+/**
+ * Generate all race-related coverage for the day
+ */
+function generateRaceCoverage(context: NewsGenerationContext): CalendarEvent[] {
+  const news: CalendarEvent[] = [];
+
+  // Only generate during racing season
+  if (!context.isRacingSeason) return news;
+
+  const nextRace = context.upcomingRaces[0];
+  if (!nextRace) return news;
+
+  const circuit = context.state.circuits.find((c) => c.id === nextRace.circuitId);
+  if (!circuit) return news;
+
+  // Race preview - 2 days before race (Friday before Sunday)
+  if (isDaysBeforeRace(context, nextRace, 2)) {
+    const preview = generateRacePreview(context, nextRace, circuit);
+    if (preview) news.push(preview);
+
+    // Race predictions - also on Friday, different source
+    const predictions = generateRacePredictions(context, nextRace, circuit);
+    if (predictions) news.push(predictions);
+  }
+
+  // Local media coverage - 3 days before race (Thursday)
+  if (isDaysBeforeRace(context, nextRace, 3)) {
+    const localCoverage = generateLocalCoverage(context, nextRace, circuit);
+    if (localCoverage) news.push(localCoverage);
+  }
+
+  return news;
+}
+
+/**
+ * Generate race preview article (TheRace style)
+ */
+function generateRacePreview(
+  context: NewsGenerationContext,
+  race: CalendarEntry,
+  circuit: Circuit
+): CalendarEvent | null {
+  const { state, currentDate } = context;
+  const standings = state.currentSeason.driverStandings;
+
+  // Get championship leader
+  const leader = standings[0];
+  const leaderDriver = state.drivers.find((d) => d.id === leader?.driverId);
+  const leaderTeam = state.teams.find((t) => t.id === leader?.teamId);
+
+  // Get second place for gap
+  const second = standings[1];
+  const gap = leader && second ? leader.points - second.points : 0;
+
+  // Pick a template based on circuit characteristics
+  const { subject, body } = pickRacePreviewContent(circuit, race, leaderDriver, gap);
+
+  // Add a driver quote about the upcoming race
+  const quotes: NewsQuote[] = [];
+  if (leaderDriver && leaderTeam) {
+    const quoteText = pickRandom(DRIVER_PREVIEW_QUOTES);
+    quotes.push(createDriverQuote(quoteText, leaderDriver, leaderTeam));
+  }
+
+  return createNewsHeadline({
+    date: currentDate,
+    source: NewsSource.TheRace,
+    category: NewsCategory.RacePreview,
+    subject,
+    body,
+    quotes,
+    importance: 'medium',
+  });
+}
+
+/**
+ * Generate race predictions article (TheRace opinionated style)
+ */
+function generateRacePredictions(
+  context: NewsGenerationContext,
+  _race: CalendarEntry, // @agent: unused but kept for consistency with other generators
+  circuit: Circuit
+): CalendarEvent | null {
+  const { state, currentDate } = context;
+  const standings = state.currentSeason.driverStandings;
+
+  // Get top 3 for predictions
+  const top3 = standings.slice(0, 3);
+  const drivers = top3
+    .map((s) => state.drivers.find((d) => d.id === s.driverId))
+    .filter((d): d is Driver => d !== undefined);
+
+  if (drivers.length < 3) return null;
+
+  const { subject, body } = pickRacePredictionsContent(circuit, drivers);
+
+  return createNewsHeadline({
+    date: currentDate,
+    source: NewsSource.TheRace,
+    category: NewsCategory.RacePreview,
+    subject,
+    body,
+    importance: 'low',
+  });
+}
+
+/**
+ * Generate local media coverage (regional flavor)
+ */
+function generateLocalCoverage(
+  context: NewsGenerationContext,
+  race: CalendarEntry,
+  circuit: Circuit
+): CalendarEvent | null {
+  const { currentDate } = context;
+
+  const { subject, body, senderName } = pickLocalCoverageContent(circuit, race.raceNumber);
+
+  // Prepend the local paper name to the body for authenticity
+  const bodyWithSource = `*${senderName}*\n\n${body}`;
+
+  return createNewsHeadline({
+    date: currentDate,
+    source: NewsSource.LocalMedia,
+    category: NewsCategory.RacePreview,
+    subject,
+    body: bodyWithSource,
+    importance: 'low',
+  });
+}
+
+// =============================================================================
+// RACE COVERAGE TEMPLATES
+// =============================================================================
+
+type CircuitType = 'highspeed' | 'street' | 'technical' | 'balanced';
+
+const DRIVER_PREVIEW_QUOTES = [
+  "I'm feeling confident heading into this weekend. The car has been performing well and we've made some good progress.",
+  "It's always a challenging circuit but one I really enjoy. We'll be pushing hard from FP1.",
+  "The team has done a fantastic job preparing for this race. I think we can have a strong result.",
+  "Every race is an opportunity. We're focused on maximizing our potential this weekend.",
+  "The championship is tight but we're taking it one race at a time. This is a circuit that suits us.",
+];
+
+function pickRacePreviewContent(
+  circuit: Circuit,
+  race: CalendarEntry,
+  leader: Driver | undefined,
+  gap: number
+): { subject: string; body: string } {
+  const circuitType = getCircuitType(circuit);
+  const leaderName = leader ? `${leader.firstName} ${leader.lastName}` : 'The championship leader';
+
+  const subjects = [
+    `${circuit.name} Preview: All eyes on the ${circuit.country} GP`,
+    `${circuit.country} GP Preview: ${leaderName} looks to extend lead`,
+    `Race ${race.raceNumber} Preview: Can anyone challenge at ${circuit.location}?`,
+  ];
+
+  const bodyIntros = [
+    `Formula One heads to ${circuit.location} this weekend for Round ${race.raceNumber} of the championship.`,
+    `The paddock descends on ${circuit.country} this weekend as the championship battle continues.`,
+    `${circuit.name} plays host to the next chapter of the ${circuit.country} Grand Prix.`,
+  ];
+
+  const circuitDescriptions: Record<CircuitType, string> = {
+    street: `The tight and twisty street circuit will test driver precision, with overtaking at a premium.`,
+    highspeed: `The high-speed layout will reward brave drivers, with several flat-out sections separating the brave from the cautious.`,
+    technical: `The technical nature of the circuit means setup and driver skill will be crucial to finding lap time.`,
+    balanced: `A balanced layout that rewards both straight-line speed and cornering ability awaits the drivers.`,
+  };
+
+  const championshipContext = gap > 0
+    ? `${leaderName} arrives with a ${gap}-point advantage, looking to strengthen their championship position.`
+    : `The championship is finely balanced heading into this crucial race weekend.`;
+
+  return {
+    subject: pickRandom(subjects),
+    body: `${pickRandom(bodyIntros)}\n\n${circuitDescriptions[circuitType]}\n\n${championshipContext}`,
+  };
+}
+
+function pickRacePredictionsContent(
+  circuit: Circuit,
+  topDrivers: Driver[]
+): { subject: string; body: string } {
+  const subjects = [
+    `${circuit.country} GP Predictions: Who will top the podium?`,
+    `Our ${circuit.name} predictions: Here's who we think will win`,
+    `${circuit.country} GP: Three to watch this weekend`,
+  ];
+
+  const [d1, d2, d3] = topDrivers;
+  const body = `As we approach race day at ${circuit.name}, here are our predictions for the weekend.\n\n` +
+    `**Race Winner:** ${d1.firstName} ${d1.lastName} - Current form and championship momentum make them the favorite.\n\n` +
+    `**Podium Contender:** ${d2.firstName} ${d2.lastName} - Has shown strong pace and will be pushing hard.\n\n` +
+    `**Dark Horse:** ${d3.firstName} ${d3.lastName} - Could spring a surprise if conditions play into their hands.`;
+
+  return {
+    subject: pickRandom(subjects),
+    body,
+  };
+}
+
+function pickLocalCoverageContent(
+  circuit: Circuit,
+  raceNumber: number
+): { subject: string; body: string; senderName: string } {
+  const localPapers: Record<string, string> = {
+    'Monaco': 'Monaco Tribune',
+    'Italy': 'Gazzetta dello Sport',
+    'United Kingdom': 'The Guardian',
+    'Spain': 'Marca',
+    'Australia': 'The Herald Sun',
+    'Japan': 'Nikkan Sports',
+    'Brazil': 'Globo Esporte',
+    'Mexico': 'Récord',
+    'USA': 'ESPN',
+    'default': `${circuit.country} Sports Daily`,
+  };
+
+  const senderName = localPapers[circuit.country] ?? localPapers['default'];
+
+  const subjects = [
+    `${circuit.location} prepares for Formula One's return`,
+    `${circuit.country} GP: City buzzing with anticipation`,
+    `Local excitement builds ahead of ${circuit.name} race weekend`,
+  ];
+
+  const bodies = [
+    `The streets of ${circuit.location} are buzzing with excitement as Formula One prepares to visit for Round ${raceNumber} of the championship.\n\n` +
+    `Hotels are reporting near-capacity bookings, with fans from around the world descending on the city. Local businesses are expecting a significant boost from the influx of visitors.\n\n` +
+    `"It's always special when Formula One comes to town," said a local event organizer. "The atmosphere is electric and the whole city comes alive."`,
+
+    `${circuit.location} is gearing up for what promises to be an exciting weekend of racing at ${circuit.name}.\n\n` +
+    `The circuit has undergone preparations in recent weeks, with organizers promising an improved experience for spectators. The grandstands are expected to be packed for Sunday's main event.\n\n` +
+    `Local authorities have confirmed traffic management plans will be in place throughout the weekend.`,
+  ];
+
+  return {
+    subject: pickRandom(subjects),
+    body: pickRandom(bodies),
+    senderName,
+  };
+}
+
+/**
+ * Determine circuit type based on characteristics
+ */
+function getCircuitType(circuit: Circuit): CircuitType {
+  const { speedRating, downforceRequirement, overtakingOpportunity } = circuit.characteristics;
+
+  if (speedRating > 70 && overtakingOpportunity > 60) return 'highspeed';
+  if (downforceRequirement > 70 && overtakingOpportunity < 40) return 'street';
+  if (speedRating < 60 && downforceRequirement > 60) return 'technical';
+  return 'balanced';
 }
