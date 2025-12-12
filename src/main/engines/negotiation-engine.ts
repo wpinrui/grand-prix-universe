@@ -360,7 +360,7 @@ function processNegotiation(
   const shouldStop =
     result.responseType === ResponseType.Accept ||
     result.responseType === ResponseType.Reject ||
-    (result.responseType === ResponseType.Counter && result.isUltimatum);
+    (result.responseType === ResponseType.Counter && (result.isUltimatum ?? false));
 
   return {
     negotiationId: negotiation.id,

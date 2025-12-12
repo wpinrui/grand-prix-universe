@@ -1260,7 +1260,7 @@ function generateNetizenRoundup(context: NewsGenerationContext): CalendarEvent |
     `Fan zone: This week's most viral F1 takes`,
   ];
 
-  const comments = generateNetizenComments(context, leader, underdog);
+  const comments = generateNetizenComments(context, leader, underdog ?? undefined);
 
   const body = `Here's what the F1 community has been discussing this week:\n\n${comments}`;
 
