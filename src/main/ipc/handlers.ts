@@ -20,6 +20,8 @@ import type {
   ApplyCustomisationParams,
   StartNegotiationParams,
   RespondToOfferParams,
+  StartSponsorNegotiationParams,
+  RespondToSponsorOfferParams,
 } from '../../shared/ipc';
 import type { NewGameParams, EventQuery } from '../../shared/domain';
 import { queryEvents } from '../../shared/domain';
@@ -258,4 +260,24 @@ export function registerIpcHandlers(): void {
       params.isUltimatum
     );
   });
+
+  // Sponsor negotiation handlers
+  ipcMain.handle(
+    IpcChannels.SPONSOR_START_NEGOTIATION,
+    (_event, params: StartSponsorNegotiationParams) => {
+      return GameStateManager.startSponsorNegotiation(params.sponsorId, params.terms);
+    }
+  );
+
+  ipcMain.handle(
+    IpcChannels.SPONSOR_RESPOND_TO_OFFER,
+    (_event, params: RespondToSponsorOfferParams) => {
+      return GameStateManager.respondToSponsorOffer(
+        params.negotiationId,
+        params.response,
+        params.counterTerms,
+        params.isUltimatum
+      );
+    }
+  );
 }

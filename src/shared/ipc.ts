@@ -26,6 +26,7 @@ import type {
   HandlingProblem,
   EngineCustomisation,
   ContractTerms,
+  SponsorContractTerms,
 } from './domain';
 import type { TurnBlocked, DayStopReason } from './domain/engines';
 
@@ -214,6 +215,30 @@ export interface RespondToOfferParams {
 }
 
 // =============================================================================
+// SPONSOR NEGOTIATION TYPES
+// =============================================================================
+
+/**
+ * Parameters for starting a negotiation with a sponsor
+ */
+export interface StartSponsorNegotiationParams {
+  sponsorId: string;
+  /** Initial contract terms proposed by the player */
+  terms: SponsorContractTerms;
+}
+
+/**
+ * Parameters for responding to a sponsor offer
+ */
+export interface RespondToSponsorOfferParams {
+  negotiationId: string;
+  response: OfferResponse;
+  counterTerms?: SponsorContractTerms;
+  /** If true, marks this as a "take it or leave it" offer */
+  isUltimatum?: boolean;
+}
+
+// =============================================================================
 // TESTING TYPES
 // =============================================================================
 
@@ -310,6 +335,10 @@ export const IpcChannels = {
   // Engine Negotiation
   ENGINE_START_NEGOTIATION: 'engine:startNegotiation',
   ENGINE_RESPOND_TO_OFFER: 'engine:respondToOffer',
+
+  // Sponsor Negotiation
+  SPONSOR_START_NEGOTIATION: 'sponsor:startNegotiation',
+  SPONSOR_RESPOND_TO_OFFER: 'sponsor:respondToOffer',
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];
@@ -524,6 +553,16 @@ export interface IpcInvokeMap {
   };
   [IpcChannels.ENGINE_RESPOND_TO_OFFER]: {
     args: [params: RespondToOfferParams];
+    result: GameState;
+  };
+
+  // Sponsor Negotiation
+  [IpcChannels.SPONSOR_START_NEGOTIATION]: {
+    args: [params: StartSponsorNegotiationParams];
+    result: GameState;
+  };
+  [IpcChannels.SPONSOR_RESPOND_TO_OFFER]: {
+    args: [params: RespondToSponsorOfferParams];
     result: GameState;
   };
 }
