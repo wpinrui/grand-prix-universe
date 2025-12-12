@@ -395,7 +395,12 @@ function NegotiationCard({ negotiation, sponsor, onAccept, onReject }: Negotiati
 // MAIN COMPONENT
 // ===========================================
 
-export function Deals() {
+interface DealsProps {
+  /** When true, hides the section heading (used when embedded in Sponsors) */
+  embedded?: boolean;
+}
+
+export function Deals({ embedded = false }: DealsProps) {
   const [activeTab, setActiveTab] = useState<DealsTab>('browse');
   const [tierFilter, setTierFilter] = useState<TierFilter>('all');
   const [contactingSponsor, setContactingSponsor] = useState<Sponsor | null>(null);
@@ -504,7 +509,7 @@ export function Deals() {
 
   return (
     <div className="space-y-4">
-      <SectionHeading>Deals</SectionHeading>
+      {!embedded && <SectionHeading>Deals</SectionHeading>}
 
       <TabBar<DealsTab>
         tabs={TABS}

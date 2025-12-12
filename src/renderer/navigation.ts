@@ -13,29 +13,24 @@ import {
   Factory,
   Handshake,
   BadgeDollarSign,
-  UtensilsCrossed,
-  Award,
-  ClipboardList,
-  SlidersHorizontal,
-  Wrench,
-  Flag,
   Trophy,
   Medal,
   MapPin,
-  BarChart3,
-  Scale,
   History,
   Save,
   Settings,
-  RotateCcw,
   LogOut,
   Globe,
   User,
   LineChart,
+  Home,
+  Inbox,
+  Wrench,
+  LayoutDashboard,
   type LucideIcon,
 } from 'lucide-react';
 
-export type SectionId = 'team' | 'world' | 'engineering' | 'commercial' | 'racing' | 'fia' | 'options';
+export type SectionId = 'home' | 'inbox' | 'team' | 'engineering' | 'design' | 'world' | 'commercial' | 'championship' | 'options';
 
 export interface SubItem {
   id: string;
@@ -52,27 +47,32 @@ export interface Section {
 
 export const sections: Section[] = [
   {
+    id: 'home',
+    label: 'HOME',
+    icon: Home,
+    subItems: [
+      { id: 'home', label: 'Home', icon: Home },
+      { id: 'profile', label: 'My Profile', icon: BookUser },
+    ],
+  },
+  {
+    id: 'inbox',
+    label: 'INBOX',
+    icon: Inbox,
+    subItems: [
+      { id: 'inbox', label: 'Inbox', icon: Mail },
+      { id: 'news', label: 'News', icon: Newspaper },
+    ],
+  },
+  {
     id: 'team',
     label: 'TEAM',
     icon: Users,
     subItems: [
-      { id: 'profile', label: 'Profile', icon: Users },
-      { id: 'mail', label: 'Mail', icon: Mail },
-      { id: 'finance', label: 'Finance', icon: DollarSign },
-      { id: 'staff', label: 'Staff', icon: UserCog },
-      { id: 'wiki', label: 'Player Wiki', icon: BookUser },
-    ],
-  },
-  {
-    id: 'world',
-    label: 'WORLD',
-    icon: Globe,
-    subItems: [
-      { id: 'news', label: 'News', icon: Newspaper },
-      { id: 'teams', label: 'Teams', icon: Users },
+      { id: 'overview', label: 'Overview', icon: LayoutDashboard },
       { id: 'drivers', label: 'Drivers', icon: User },
       { id: 'staff', label: 'Staff', icon: UserCog },
-      { id: 'stats', label: 'Stats', icon: LineChart },
+      { id: 'factory', label: 'Factory', icon: Factory },
     ],
   },
   {
@@ -82,10 +82,29 @@ export const sections: Section[] = [
     subItems: [
       { id: 'cars', label: 'Cars', icon: Car },
       { id: 'testing', label: 'Testing', icon: FlaskConical },
-      { id: 'design', label: 'Design', icon: PenTool },
       { id: 'construction', label: 'Construction', icon: Hammer },
-      { id: 'contracts', label: 'Contracts', icon: FileText },
-      { id: 'factory', label: 'Factory', icon: Factory },
+    ],
+  },
+  {
+    id: 'design',
+    label: 'DESIGN',
+    icon: PenTool,
+    subItems: [
+      { id: 'summary', label: 'Summary', icon: PenTool },
+      { id: 'current-chassis', label: 'Current Chassis', icon: Car },
+      { id: 'next-chassis', label: 'Next Chassis', icon: Car },
+      { id: 'technology', label: 'Technology', icon: FlaskConical },
+    ],
+  },
+  {
+    id: 'world',
+    label: 'WORLD',
+    icon: Globe,
+    subItems: [
+      { id: 'teams', label: 'Teams', icon: Users },
+      { id: 'drivers', label: 'Drivers', icon: User },
+      { id: 'staff', label: 'Staff', icon: UserCog },
+      { id: 'stats', label: 'Stats', icon: LineChart },
     ],
   },
   {
@@ -93,33 +112,19 @@ export const sections: Section[] = [
     label: 'COMMERCIAL',
     icon: Handshake,
     subItems: [
+      { id: 'finance', label: 'Finance', icon: DollarSign },
       { id: 'sponsors', label: 'Sponsors', icon: BadgeDollarSign },
-      { id: 'deals', label: 'Deals', icon: Handshake },
-      { id: 'hospitality', label: 'Hospitality', icon: UtensilsCrossed },
-      { id: 'licensing', label: 'Licensing', icon: Award },
+      { id: 'contracts', label: 'Contracts', icon: FileText },
     ],
   },
   {
-    id: 'racing',
-    label: 'RACING',
-    icon: Flag,
-    subItems: [
-      { id: 'orders', label: 'Orders', icon: ClipboardList },
-      { id: 'setup', label: 'Car Set-Up', icon: SlidersHorizontal },
-      { id: 'assembly', label: 'Assembly', icon: Wrench },
-      { id: 'pitlane', label: 'Pit Lane', icon: Flag },
-    ],
-  },
-  {
-    id: 'fia',
-    label: 'FIA',
+    id: 'championship',
+    label: 'CHAMPIONSHIP',
     icon: Trophy,
     subItems: [
-      { id: 'championship', label: 'Championship', icon: Trophy },
-      { id: 'results', label: 'Results', icon: Medal },
+      { id: 'standings', label: 'Standings', icon: Trophy },
+      { id: 'results', label: 'Full Results', icon: Medal },
       { id: 'races', label: 'Races', icon: MapPin },
-      { id: 'ranking', label: 'Ranking', icon: BarChart3 },
-      { id: 'regulations', label: 'Regulations', icon: Scale },
       { id: 'history', label: 'History', icon: History },
     ],
   },
@@ -130,11 +135,10 @@ export const sections: Section[] = [
     subItems: [
       { id: 'saved-games', label: 'Saved Games', icon: Save },
       { id: 'game-options', label: 'Game Options', icon: Settings },
-      { id: 'restart', label: 'Restart Game', icon: RotateCcw },
       { id: 'quit', label: 'Quit', icon: LogOut },
     ],
   },
 ];
 
-export const defaultSection: SectionId = 'team';
-export const defaultSubItem = 'profile';
+export const defaultSection: SectionId = 'home';
+export const defaultSubItem = 'home';
