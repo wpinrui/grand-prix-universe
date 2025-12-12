@@ -38,6 +38,7 @@ import {
   ChiefRole,
   DriverRole,
   CalendarEventType,
+  NewsEventType,
 } from '../../shared/domain';
 import { isSameDay } from '../../shared/utils/date-utils';
 import { getFullName } from '../../shared/utils/format';
@@ -52,7 +53,7 @@ import {
   ENGINE_STAT_KEYS,
   ENGINE_STAT_DISPLAY_NAMES,
 } from '../../shared/domain/engine-utils';
-import { generateDailyNews } from './news-generator';
+import { generateDailyNews, pushNewsEvent } from './news-generator';
 
 /** Shared engine manager instance */
 const engineManager = new EngineManager();
@@ -239,7 +240,15 @@ export function processSpecReleases(state: GameState, currentDate: GameDate): vo
     // Check if this affects the player's team
     const affectsPlayer = playerEngineContract?.manufacturerId === manufacturer.id;
 
-    // Create email for player if it affects them, news headline otherwise
+    // Emit news event for all spec releases (will be processed into news articles)
+    pushNewsEvent(state, NewsEventType.SpecReleased, 'medium', {
+      manufacturerId: manufacturer.id,
+      manufacturerName: manufacturer.name,
+      specVersion: specState.latestSpecVersion,
+      statImprovements: statSummary,
+    });
+
+    // Create email for player if it affects their team
     if (affectsPlayer) {
       const data: SpecReleaseData = {
         category: EmailCategory.SpecRelease,
@@ -264,19 +273,6 @@ export function processSpecReleases(state: GameState, currentDate: GameDate): vo
         emailCategory: EmailCategory.SpecRelease,
         sender: `${manufacturer.name} Technical Department`,
         data,
-      });
-    } else {
-      // News headline for other manufacturers' spec releases
-      const body = `${manufacturer.name} has released a new engine specification. ` +
-        `The update brings improvements to: ${statSummary}.`;
-
-      state.calendarEvents.push({
-        id: randomUUID(),
-        date: currentDate,
-        type: CalendarEventType.Headline,
-        subject,
-        body,
-        critical: false,
       });
     }
   }
