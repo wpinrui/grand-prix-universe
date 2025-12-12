@@ -68,7 +68,6 @@ const ROUTE_COMPONENTS: Partial<Record<SectionId, Record<string, React.Component
     profile: PlayerWiki,
   },
   inbox: {
-    inbox: Mail,
     news: News,
   },
   team: {
@@ -103,6 +102,7 @@ export function MainLayout() {
   const [targetTeamId, setTargetTeamId] = useState<string | null>(null);
   const [targetDriverId, setTargetDriverId] = useState<string | null>(null);
   const [targetStaffId, setTargetStaffId] = useState<string | null>(null);
+  const [targetEmailId, setTargetEmailId] = useState<string | null>(null);
 
   // Search modal state
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -141,16 +141,17 @@ export function MainLayout() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Listen for navigation events from child components (e.g., Home page)
+  // Listen for navigation events from child components (e.g., Home page, AdvanceWeekButton)
   useEffect(() => {
-    const handleNavigate = (e: CustomEvent<{ section: string; subItem: string }>) => {
-      const { section, subItem } = e.detail;
+    const handleNavigate = (e: CustomEvent<{ section: string; subItem: string; emailId?: string }>) => {
+      const { section, subItem, emailId } = e.detail;
       setSelectedSectionId(section as SectionId);
       setSelectedSubItemId(subItem);
       setTargetRaceNumber(null);
       setTargetTeamId(null);
       setTargetDriverId(null);
       setTargetStaffId(null);
+      setTargetEmailId(emailId ?? null);
       setNavHistory((prev) => ({
         entries: [...prev.entries.slice(0, prev.index + 1), { sectionId: section as SectionId, subItemId: subItem }],
         index: prev.index + 1,
@@ -167,6 +168,7 @@ export function MainLayout() {
     setTargetTeamId(null);
     setTargetDriverId(null);
     setTargetStaffId(null);
+    setTargetEmailId(null);
   }, []);
 
   // Apply a history entry to navigation state
@@ -354,6 +356,11 @@ export function MainLayout() {
   }
 
   const renderContent = () => {
+    // Inbox section - Mail with initial email selection
+    if (selectedSectionId === 'inbox' && selectedSubItemId === 'inbox') {
+      return <Mail initialEmailId={targetEmailId} onEmailViewed={() => setTargetEmailId(null)} />;
+    }
+
     // World section - entity views with props
     if (selectedSectionId === 'world' && selectedSubItemId === 'teams') {
       return <WorldTeams initialTeamId={targetTeamId} />;
