@@ -6,6 +6,7 @@
  */
 
 import type { CSSProperties } from 'react';
+import { NewsSource } from '../../shared/domain';
 
 // ===========================================
 // ACCENT BUTTON STYLES
@@ -214,4 +215,65 @@ export function getHighlightedRowStyles(isHighlighted: boolean): HighlightedRowS
     rowClass: isHighlighted ? 'bg-[var(--accent-900)]/30' : '',
     nameStyle: isHighlighted ? ACCENT_TEXT_STYLE : {},
   };
+}
+
+// ===========================================
+// NEWS SOURCE STYLING
+// ===========================================
+
+/**
+ * Styling configuration for news sources
+ * Each source has distinct colors to visually differentiate them in the News UI
+ */
+export interface NewsSourceStyle {
+  label: string; // Display name
+  bgClass: string; // Background color class
+  textClass: string; // Text color class
+  borderClass: string; // Border color class
+}
+
+/**
+ * News source styling configuration
+ * Maps NewsSource enum values to visual styling
+ */
+export const NEWS_SOURCE_STYLES: Record<NewsSource, NewsSourceStyle> = {
+  [NewsSource.F1Official]: {
+    label: 'F1 Official',
+    bgClass: 'bg-red-600/20',
+    textClass: 'text-red-400',
+    borderClass: 'border-red-600/30',
+  },
+  [NewsSource.TheRace]: {
+    label: 'The Race',
+    bgClass: 'bg-purple-600/20',
+    textClass: 'text-purple-400',
+    borderClass: 'border-purple-600/30',
+  },
+  [NewsSource.LocalMedia]: {
+    label: 'Local Media',
+    bgClass: 'bg-teal-600/20',
+    textClass: 'text-teal-400',
+    borderClass: 'border-teal-600/30',
+  },
+  [NewsSource.PitlaneInsider]: {
+    label: 'Pitlane Insider',
+    bgClass: 'bg-orange-600/20',
+    textClass: 'text-orange-400',
+    borderClass: 'border-orange-600/30',
+  },
+  [NewsSource.TechAnalysis]: {
+    label: 'Tech Analysis',
+    bgClass: 'bg-blue-600/20',
+    textClass: 'text-blue-400',
+    borderClass: 'border-blue-600/30',
+  },
+};
+
+/**
+ * Get combined badge classes for a news source
+ * Returns Tailwind classes for a styled badge/pill
+ */
+export function getNewsSourceBadgeClasses(source: NewsSource): string {
+  const style = NEWS_SOURCE_STYLES[source];
+  return `${style.bgClass} ${style.textClass} ${style.borderClass} border`;
 }

@@ -837,6 +837,44 @@ export enum CalendarEventType {
 }
 
 /**
+ * NewsSource - Fictional news outlets with distinct tones
+ * Used for news articles to create variety and authentic journalism feel
+ */
+export enum NewsSource {
+  F1Official = 'f1-official', // Formal, press release style
+  TheRace = 'the-race', // Opinionated, analytical sports journalism
+  LocalMedia = 'local-media', // Regional race coverage, local angle
+  PitlaneInsider = 'pitlane-insider', // Insider rumors and speculation
+  TechAnalysis = 'tech-analysis', // Technical deep dives
+}
+
+/**
+ * NewsCategory - Categorizes news articles by topic
+ * Used for filtering and styling in the News screen
+ */
+export enum NewsCategory {
+  PreSeason = 'pre-season', // Season previews, predictions
+  RacePreview = 'race-preview', // Before each race
+  RaceResult = 'race-result', // Post-race coverage
+  Transfer = 'transfer', // Driver/staff moves
+  Technical = 'technical', // Design and development
+  Championship = 'championship', // Standings analysis
+  Rumor = 'rumor', // Speculation and gossip
+  Commentary = 'commentary', // Opinion pieces, roundups
+}
+
+/**
+ * NewsQuote - A quote from a person in a news article
+ * Can be named (real character) or anonymous (sources close to...)
+ */
+export interface NewsQuote {
+  text: string;
+  attribution: string; // "Christian Horner" or "sources close to the team"
+  attributionRole?: string; // "Red Bull Team Principal" (only for named quotes)
+  isNamed: boolean; // true = named person, false = anonymous source
+}
+
+/**
  * EmailCategory - Categorizes emails by source/type
  * Used to style and filter emails appropriately
  */
@@ -982,6 +1020,11 @@ export interface CalendarEvent {
   senderId?: string; // Chief ID for face generation lookup
   body?: string;     // Full email body text
   data?: EmailData;  // Structured data for rich detail panel rendering
+  // News-specific fields (only set when type is Headline)
+  newsSource?: NewsSource; // Which fictional outlet published this
+  newsCategory?: NewsCategory; // Topic category for filtering
+  quotes?: NewsQuote[]; // Embedded quotes in the article
+  importance?: 'high' | 'medium' | 'low'; // Affects card size in News UI
 }
 
 // -----------------------------------------------------------------------------
