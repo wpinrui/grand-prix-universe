@@ -1,46 +1,23 @@
 /**
- * Shared formatting utilities
+ * Renderer-specific formatting utilities
+ *
+ * Re-exports shared constants from src/shared/utils/format.ts
+ * and adds renderer-specific helpers
  */
 
-import {
-  type DriverRole,
-  Department,
-  StaffQuality,
-  ChiefRole,
-} from '../../shared/domain';
+import { Department, StaffQuality, ChiefRole } from '../../shared/domain';
 import { compareSavesByNewest, type SaveSlotInfo } from '../../shared/ipc';
 import { formatGameDate, seasonToYear } from '../../shared/utils/date-utils';
 
-// ===========================================
-// ROLE & LABEL CONSTANTS
-// ===========================================
-
-export const DRIVER_ROLE_LABELS: Record<DriverRole, string> = {
-  first: '1st Driver',
-  second: '2nd Driver',
-  equal: 'Driver',
-  test: 'Test Driver',
-};
-
-export const DEPARTMENT_LABELS: Record<Department, string> = {
-  [Department.Commercial]: 'Commercial',
-  [Department.Design]: 'Design',
-  [Department.Mechanics]: 'Mechanics',
-};
-
-export const CHIEF_ROLE_LABELS: Record<ChiefRole, string> = {
-  [ChiefRole.Commercial]: 'Commercial Manager',
-  [ChiefRole.Designer]: 'Chief Designer',
-  [ChiefRole.Mechanic]: 'Chief Mechanic',
-};
-
-export const STAFF_QUALITY_LABELS: Record<StaffQuality, string> = {
-  [StaffQuality.Excellent]: 'Excellent',
-  [StaffQuality.VeryGood]: 'Very Good',
-  [StaffQuality.Good]: 'Good',
-  [StaffQuality.Average]: 'Average',
-  [StaffQuality.Trainee]: 'Trainee',
-};
+// Re-export shared constants and helpers
+export {
+  DRIVER_ROLE_LABELS,
+  DEPARTMENT_LABELS,
+  CHIEF_ROLE_LABELS,
+  STAFF_QUALITY_LABELS,
+  getFullName,
+  type HasName,
+} from '../../shared/utils/format';
 
 // ===========================================
 // DISPLAY ORDER ARRAYS

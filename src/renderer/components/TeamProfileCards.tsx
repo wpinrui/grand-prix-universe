@@ -14,6 +14,7 @@ import {
   formatContractLine,
   DRIVER_ROLE_LABELS,
   CHIEF_ROLE_LABELS,
+  getFullName,
 } from '../utils/format';
 import type { Team, Driver, Chief, DriverStanding, ConstructorStanding } from '../../shared/domain';
 
@@ -93,7 +94,7 @@ export function DriverCard({ driver, standing }: DriverCardProps) {
         {driver.photoUrl ? (
           <img
             src={driver.photoUrl}
-            alt={`${driver.firstName} ${driver.lastName}`}
+            alt={getFullName(driver)}
             className="w-full h-full object-cover"
           />
         ) : (
@@ -103,7 +104,7 @@ export function DriverCard({ driver, standing }: DriverCardProps) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <EntityLink type="driver" id={driver.id} className="font-bold">
-            {driver.firstName} {driver.lastName}
+            {getFullName(driver)}
           </EntityLink>
           <FlagIcon country={driver.nationality} size="sm" />
         </div>
@@ -134,7 +135,7 @@ export function ChiefCard({ chief }: ChiefCardProps) {
         {CHIEF_ROLE_LABELS[chief.role] ?? chief.role}
       </div>
       <EntityLink type="chief" id={chief.id} className="font-bold block">
-        {chief.firstName} {chief.lastName}
+        {getFullName(chief)}
       </EntityLink>
       <div className="text-xs text-muted mt-2 space-y-0.5">
         <div>Ability: {chief.ability}</div>

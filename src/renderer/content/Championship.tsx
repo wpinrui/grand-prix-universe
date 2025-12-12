@@ -7,6 +7,7 @@ import {
   TABLE_BODY_CLASS,
   getHighlightedRowStyles,
 } from '../utils/theme-styles';
+import { getFullName } from '../utils/format';
 import type {
   DriverStanding,
   ConstructorStanding,
@@ -71,7 +72,7 @@ interface DriverRowProps {
 function DriverRow({ standing, driver, team, isPlayerTeam, onDriverClick }: DriverRowProps) {
   const styles = getHighlightedRowStyles(isPlayerTeam);
   const driverName = driver
-    ? `${driver.firstName} ${driver.lastName}`
+    ? getFullName(driver)
     : standing.driverId;
 
   return (

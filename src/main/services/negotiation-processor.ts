@@ -53,6 +53,7 @@ import {
   offsetDate,
   daysBetween,
 } from '../../shared/utils/date-utils';
+import { getFullName } from '../../shared/utils/format';
 import {
   generateBaseContractTerms,
   generateDefaultDriverTerms,
@@ -171,7 +172,7 @@ export function applyNegotiationUpdates(state: GameState, updates: NegotiationUp
 
           const driver = state.drivers.find((d) => d.id === driverNeg.driverId);
           if (driver) {
-            const driverName = `${driver.firstName} ${driver.lastName}`;
+            const driverName = getFullName(driver);
             const latestRound = driverNeg.rounds[driverNeg.rounds.length - 1];
             generateNegotiationUpdateEmail(
               state,
@@ -263,7 +264,7 @@ export function applyNegotiationUpdates(state: GameState, updates: NegotiationUp
           // Generate email for player
           const chief = state.chiefs.find((c) => c.id === staffNeg.staffId);
           if (chief) {
-            const chiefName = `${chief.firstName} ${chief.lastName}`;
+            const chiefName = getFullName(chief);
             const latestRound = staffNeg.rounds[staffNeg.rounds.length - 1];
             generateNegotiationUpdateEmail(
               state,
@@ -589,12 +590,13 @@ export function processDriverOutreach(state: GameState): boolean {
                 ? 'has noticed you may have a seat available'
                 : 'is exploring their options for next season';
 
+          const driverFullName = getFullName(driver);
           state.calendarEvents.push({
             id: randomUUID(),
             date: currentDate,
             type: CalendarEventType.Email,
-            subject: `${driver.firstName} ${driver.lastName} expresses interest in joining`,
-            body: `${driver.firstName} ${driver.lastName} has reached out to your team. The driver ${reasonText} and would like to discuss a contract for the ${seasonToYear(nextSeason)} season.`,
+            subject: `${driverFullName} expresses interest in joining`,
+            body: `${driverFullName} has reached out to your team. The driver ${reasonText} and would like to discuss a contract for the ${seasonToYear(nextSeason)} season.`,
             critical: true,
           });
         }
@@ -677,7 +679,7 @@ export function processStaffOutreach(state: GameState): boolean {
 
       // Create outreach negotiation
       const roleName = getChiefRoleDisplayName(chief.role);
-      const chiefName = `${chief.firstName} ${chief.lastName}`;
+      const chiefName = getFullName(chief);
 
       const negotiation: StaffNegotiation = {
         id: `neg-staff-${chief.id}-${targetTeam.id}-${Date.now()}`,

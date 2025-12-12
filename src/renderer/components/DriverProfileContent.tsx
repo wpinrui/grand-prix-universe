@@ -20,6 +20,7 @@ import {
   isHistoricalRetiredStatus,
   getHistoricalPositionStyle,
   getChampionshipPositionStyle,
+  getFullName,
 } from '../utils/format';
 import { seasonToYear, calculateAge } from '../../shared/utils/date-utils';
 import {
@@ -452,12 +453,12 @@ export function DriverProfileContent({
   allTeams,
 }: DriverProfileContentProps) {
   const age = calculateAge(driver.dateOfBirth, seasonToYear(currentSeason));
-  const fullName = `${driver.firstName} ${driver.lastName}`;
+  const fullName = getFullName(driver);
 
   // Build dropdown options if provided
   const dropdownOptions = allDrivers?.map((driverOption) => ({
     id: driverOption.id,
-    label: `${driverOption.firstName} ${driverOption.lastName}`,
+    label: getFullName(driverOption),
   }));
 
   return (

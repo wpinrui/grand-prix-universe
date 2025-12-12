@@ -9,6 +9,7 @@ import {
   STAFF_QUALITY_ORDER,
   CHIEF_ROLE_ORDER,
   ROLE_TO_DEPARTMENT,
+  getFullName,
 } from '../utils/format';
 import { ACCENT_CARD_STYLE } from '../utils/theme-styles';
 import {
@@ -56,7 +57,7 @@ function ChiefCard({ chief, departmentMorale }: ChiefCardProps) {
             {CHIEF_ROLE_LABELS[chief.role]}
           </div>
           <div className="text-lg font-semibold text-primary">
-            {chief.firstName} {chief.lastName}
+            {getFullName(chief)}
           </div>
         </div>
         <div className="text-right">

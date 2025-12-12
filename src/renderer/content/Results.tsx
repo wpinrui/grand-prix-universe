@@ -7,6 +7,7 @@ import {
   isHistoricalRetiredStatus,
   getHistoricalPositionStyle,
   getMedalPositionStyle,
+  getFullName,
 } from '../utils/format';
 import {
   TABLE_CELL_BASE,
@@ -107,7 +108,7 @@ function createEntityLookups(
 }
 
 function formatDriverName(driver: Driver | undefined, fallbackId: string): string {
-  return driver ? `${driver.firstName} ${driver.lastName}` : fallbackId;
+  return driver ? getFullName(driver) : fallbackId;
 }
 
 function sortRaceResults(results: DriverRaceResult[]): DriverRaceResult[] {
@@ -542,7 +543,7 @@ function SeasonGrid({
                       onClick={() => onDriverClick(driverId)}
                       className="hover:underline font-semibold text-left text-primary cursor-pointer"
                     >
-                      {driver.firstName} {driver.lastName}
+                      {getFullName(driver)}
                     </button>
                   </td>
                   <td className="w-28 px-2 py-2 text-secondary text-sm whitespace-nowrap">

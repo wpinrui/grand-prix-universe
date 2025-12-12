@@ -17,6 +17,7 @@ import type {
 import type { DropdownOption } from '../components/Dropdown';
 import { getFilteredCalendarEvents } from '../utils/calendar-event-utils';
 import { formatGameDate, formatDateGroupHeader, dateKey } from '../../shared/utils/date-utils';
+import { getFullName } from '../utils/format';
 import { generateFace, FREE_AGENT_COLORS } from '../utils/face-generator';
 import { ACCENT_BORDERED_BUTTON_STYLE } from '../utils/theme-styles';
 
@@ -352,7 +353,7 @@ function ChiefDesignerLink({ chief }: { chief: Chief | null }) {
     <div className="text-sm text-secondary">
       Chief Designer:{' '}
       <EntityLink type="chief" id={chief.id}>
-        {chief.firstName} {chief.lastName}
+        {getFullName(chief)}
       </EntityLink>
     </div>
   );

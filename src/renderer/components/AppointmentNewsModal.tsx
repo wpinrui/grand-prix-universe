@@ -7,7 +7,7 @@
 
 import { Newspaper, ArrowRight } from 'lucide-react';
 import type { AppointmentNews, AppointmentDriverSummary } from '../../shared/domain';
-import { formatCurrency } from '../utils/format';
+import { formatCurrency, getFullName } from '../utils/format';
 import { seasonToYear, yearToSeason } from '../../shared/utils/date-utils';
 import { PRIMARY_BUTTON_CLASSES } from '../utils/theme-styles';
 
@@ -40,7 +40,7 @@ function DriverCard({ driver, seasonNumber, lastSeasonYear }: DriverCardProps) {
         {driver.photoUrl ? (
           <img
             src={driver.photoUrl}
-            alt={`${driver.firstName} ${driver.lastName}`}
+            alt={getFullName(driver)}
             className="w-full h-full object-cover object-top"
           />
         ) : (
@@ -57,7 +57,7 @@ function DriverCard({ driver, seasonNumber, lastSeasonYear }: DriverCardProps) {
             <span className="text-xs font-bold text-muted">#{driver.raceNumber}</span>
           )}
           <span className="font-semibold text-primary truncate">
-            {driver.firstName} {driver.lastName}
+            {getFullName(driver)}
           </span>
         </div>
 

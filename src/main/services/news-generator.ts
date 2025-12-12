@@ -32,10 +32,10 @@ import {
   NewsSource,
   NewsCategory,
   GamePhase,
-  ChiefRole,
 } from '../../shared/domain';
 import type { EventImportance } from '../../shared/domain/types';
 import { daysBetween } from '../../shared/utils/date-utils';
+import { getFullName, CHIEF_ROLE_LABELS } from '../../shared/utils/format';
 
 // =============================================================================
 // TYPES
@@ -157,7 +157,7 @@ export function createNamedQuote(
 ): NewsQuote {
   return {
     text,
-    attribution: `${person.firstName} ${person.lastName}`,
+    attribution: getFullName(person),
     attributionRole: role,
     isNamed: true,
   };
@@ -187,24 +187,8 @@ export function createPrincipalQuote(text: string, team: Team): NewsQuote {
  * Create a quote from a department chief
  */
 export function createChiefQuote(text: string, chief: Chief, team: Team): NewsQuote {
-  const roleTitle = getChiefRoleTitle(chief.role);
+  const roleTitle = CHIEF_ROLE_LABELS[chief.role];
   return createNamedQuote(text, chief, `${team.shortName} ${roleTitle}`);
-}
-
-/**
- * Get display title for a chief role
- */
-function getChiefRoleTitle(role: ChiefRole): string {
-  switch (role) {
-    case ChiefRole.Designer:
-      return 'Chief Designer';
-    case ChiefRole.Mechanic:
-      return 'Chief Mechanic';
-    case ChiefRole.Commercial:
-      return 'Commercial Manager';
-    default:
-      return 'Chief';
-  }
 }
 
 /**
@@ -462,7 +446,7 @@ function pickRacePreviewContent(
   gap: number
 ): { subject: string; body: string } {
   const circuitType = getCircuitType(circuit);
-  const leaderName = leader ? `${leader.firstName} ${leader.lastName}` : 'The championship leader';
+  const leaderName = leader ? getFullName(leader) : 'The championship leader';
 
   const subjects = [
     `${circuit.name} Preview: All eyes on the ${circuit.country} GP`,
@@ -505,9 +489,9 @@ function pickRacePredictionsContent(
 
   const [d1, d2, d3] = topDrivers;
   const body = `As we approach race day at ${circuit.name}, here are our predictions for the weekend.\n\n` +
-    `**Race Winner:** ${d1.firstName} ${d1.lastName} - Current form and championship momentum make them the favorite.\n\n` +
-    `**Podium Contender:** ${d2.firstName} ${d2.lastName} - Has shown strong pace and will be pushing hard.\n\n` +
-    `**Dark Horse:** ${d3.firstName} ${d3.lastName} - Could spring a surprise if conditions play into their hands.`;
+    `**Race Winner:** ${getFullName(d1)} - Current form and championship momentum make them the favorite.\n\n` +
+    `**Podium Contender:** ${getFullName(d2)} - Has shown strong pace and will be pushing hard.\n\n` +
+    `**Dark Horse:** ${getFullName(d3)} - Could spring a surprise if conditions play into their hands.`;
 
   return {
     subject: pickRandom(subjects),

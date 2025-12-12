@@ -40,6 +40,7 @@ import {
   CalendarEventType,
 } from '../../shared/domain';
 import { isSameDay } from '../../shared/utils/date-utils';
+import { getFullName } from '../../shared/utils/format';
 import {
   type PartReadyData,
   type SpecReleaseData,
@@ -157,15 +158,15 @@ export function checkPendingParts(state: GameState, currentDate: GameDate): bool
       baseCost: pendingPart.baseCost,
       recommendedCar,
       recommendedDriverId: recommendedDriver.id,
-      recommendedDriverName: `${recommendedDriver.firstName} ${recommendedDriver.lastName}`,
+      recommendedDriverName: getFullName(recommendedDriver),
       otherDriverId: otherDriver.id,
-      otherDriverName: `${otherDriver.firstName} ${otherDriver.lastName}`,
+      otherDriverName: getFullName(otherDriver),
       chiefId: chiefDesigner?.id,
     };
 
     const subject = `Part ready: ${pendingPart.item}`;
     const body = `The ${pendingPart.item} is now ready for installation. ` +
-      `We recommend installing on ${recommendedDriver.firstName} ${recommendedDriver.lastName}'s car first. ` +
+      `We recommend installing on ${getFullName(recommendedDriver)}'s car first. ` +
       `Installation cost: $${pendingPart.baseCost.toLocaleString()} per car, ` +
       `or $${(pendingPart.baseCost * 3).toLocaleString()} for both cars (rush).`;
 
