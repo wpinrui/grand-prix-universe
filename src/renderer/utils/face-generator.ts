@@ -1,11 +1,13 @@
 /**
  * Face generation utilities for procedurally generating driver portraits
- * using facesjs with nationality-appropriate appearance traits.
+ * using DiceBear avataaars with nationality-appropriate appearance traits.
  */
-import { display, generate } from 'facesjs';
+import { createAvatar } from '@dicebear/core';
+import { avataaars } from '@dicebear/collection';
 
 /**
  * Appearance profile for nationality-based face generation
+ * Colors are hex strings without # prefix (DiceBear format)
  */
 interface AppearanceProfile {
   skinColors: string[];
@@ -25,53 +27,36 @@ function hashString(str: string): number {
   return Math.abs(hash);
 }
 
-// Park-Miller PRNG constants (MINSTD variant)
-const PRNG_MULTIPLIER = 16807;
-const PRNG_MODULUS = 2147483647; // 2^31 - 1
-const PRNG_SCALE = 2147483646; // PRNG_MODULUS - 1
-
-/**
- * Creates a seeded random number generator using Park-Miller PRNG.
- * Produces deterministic sequence for consistent face generation.
- */
-function seededRandom(seed: number): () => number {
-  // Ensure seed is non-zero to avoid PRNG returning negative values
-  let s = seed || 1;
-  return function () {
-    s = (s * PRNG_MULTIPLIER) % PRNG_MODULUS;
-    return (s - 1) / PRNG_SCALE;
-  };
-}
-
 // Appearance profiles by regional grouping
+// Colors are hex without # prefix for DiceBear
 const APPEARANCE_PROFILES: Record<string, AppearanceProfile> = {
   eastAsian: {
-    skinColors: ['#f5e1d0', '#ecd4c0', '#e8c9a8', '#dfc19d'],
-    hairColors: ['#090806', '#1c1c1c', '#2a2a2a', '#0f0f0f'],
+    skinColors: ['ffdbb4', 'edb98a', 'd08b5b'],
+    hairColors: ['2c1b18', '4a312c'],
   },
   southAsian: {
-    skinColors: ['#c9a16a', '#b8935a', '#a67c52', '#c4a574'],
-    hairColors: ['#090806', '#1c1c1c', '#2a2a2a'],
+    skinColors: ['d08b5b', 'ae5d29', 'c68642'],
+    hairColors: ['2c1b18', '4a312c'],
   },
   northernEuropean: {
-    skinColors: ['#ffe0c0', '#ffd5b5', '#ffccaa', '#f5d0b0'],
-    hairColors: ['#b89778', '#a67b5b', '#8b7355', '#3b3024', '#1c1c1c', '#d4a76a'],
+    skinColors: ['ffdbb4', 'edb98a', 'f8d9c4'],
+    hairColors: ['b58143', 'd6b370', 'a55728', '2c1b18', '724133', 'c93305'],
   },
   mediterranean: {
-    skinColors: ['#e8c9a8', '#d4a574', '#c9a16a', '#deb887'],
-    hairColors: ['#2a2a2a', '#3b3024', '#1c1c1c', '#4a3728'],
+    skinColors: ['edb98a', 'd08b5b', 'c68642'],
+    hairColors: ['2c1b18', '4a312c', '724133'],
   },
   latinAmerican: {
-    skinColors: ['#d4a574', '#c9a16a', '#b8935a', '#deb887', '#e8c9a8'],
-    hairColors: ['#1c1c1c', '#2a2a2a', '#3b3024', '#090806'],
+    skinColors: ['d08b5b', 'c68642', 'ae5d29', 'edb98a'],
+    hairColors: ['2c1b18', '4a312c', '724133'],
   },
   african: {
-    skinColors: ['#8d5524', '#6b4226', '#5a3825', '#704020'],
-    hairColors: ['#090806', '#0f0f0f', '#1c1c1c'],
+    skinColors: ['ae5d29', '614335', '8d5524'],
+    hairColors: ['2c1b18', '4a312c'],
   },
   middleEastern: {
-    skinColors: ['#c9a16a', '#b8935a', '#d4a574', '#c4a574'],
-    hairColors: ['#090806', '#1c1c1c', '#2a2a2a'],
+    skinColors: ['c68642', 'd08b5b', 'ae5d29'],
+    hairColors: ['2c1b18', '4a312c'],
   },
 };
 
@@ -128,18 +113,25 @@ const NATIONALITY_PROFILE_MAP: Record<string, AppearanceProfile> = {
   SA: APPEARANCE_PROFILES.middleEastern,
 };
 
-/**
- * Pick item from array using seeded random
- */
-function pickFromArray<T>(arr: T[], rand: () => number): T {
-  return arr[Math.floor(rand() * arr.length)];
-}
+// Professional-only options for avataaars (no wacky expressions)
+const PROFESSIONAL_EYES = ['default', 'happy', 'squint'] as const;
+const PROFESSIONAL_EYEBROWS = ['default', 'defaultNatural', 'flatNatural', 'raisedExcitedNatural'] as const;
+const PROFESSIONAL_MOUTH = ['default', 'smile', 'serious', 'twinkle'] as const;
+// Valid hair styles from DiceBear avataaars
+const PROFESSIONAL_TOP = [
+  'shortFlat',
+  'shortWaved',
+  'shortCurly',
+  'shortRound',
+  'theCaesar',
+  'theCaesarAndSidePart',
+  'dreads01',
+  'frizzle',
+] as const;
 
-// Seed offset ensures facesjs internal randomization uses a different sequence than appearance selection
-const FACEJS_SEED_OFFSET = 1000;
-
-// Racing suit jersey style from facesjs library
-const RACING_SUIT_JERSEY_ID = 'jersey2';
+// Light facial hair options (professional stubble/beard look)
+// Note: avataaars doesn't have 'blank' - we use facialHairProbability instead
+const FACIAL_HAIR_OPTIONS = ['beardLight', 'beardMedium', 'moustacheFancy'] as const;
 
 /**
  * Team colors for racing suit
@@ -156,47 +148,75 @@ export const FREE_AGENT_COLORS: TeamColors = {
 };
 
 /**
- * Generates a face into the provided container element.
+ * Convert hex color to DiceBear format (without #)
+ */
+function hexToDiceBear(hex: string): string {
+  return hex.replace('#', '');
+}
+
+/**
+ * Generates a face SVG string.
  * Uses deterministic seeding based on the provided ID for consistent results.
  *
- * @param container - The DOM element to render the face into
  * @param id - Unique identifier used for deterministic seeding
  * @param nationality - ISO country code for nationality-appropriate appearance
- * @param teamColors - Team colors for the racing suit
- * @param size - Width of the rendered face (default: 64)
+ * @param teamColors - Team colors for the clothing
+ * @returns SVG string of the generated face
  */
-export function generateFace(
-  container: HTMLElement,
+export function generateFaceSvg(
   id: string,
   nationality: string,
-  teamColors: TeamColors,
-  size = 64
-): void {
+  teamColors: TeamColors
+): string {
   const seed = hashString(id);
-  const rand = seededRandom(seed);
-
   const profile = NATIONALITY_PROFILE_MAP[nationality] ?? APPEARANCE_PROFILES.northernEuropean;
-  const skinColor = pickFromArray(profile.skinColors, rand);
-  const hairColor = pickFromArray(profile.hairColors, rand);
 
-  // Temporarily override Math.random for facesjs internal randomization
-  const originalRandom = Math.random;
-  Math.random = seededRandom(seed + FACEJS_SEED_OFFSET);
+  // Use seed to deterministically pick from arrays
+  const skinColor = profile.skinColors[seed % profile.skinColors.length];
+  const hairColor = profile.hairColors[seed % profile.hairColors.length];
+  const eyes = PROFESSIONAL_EYES[seed % PROFESSIONAL_EYES.length];
+  const eyebrows = PROFESSIONAL_EYEBROWS[(seed >> 2) % PROFESSIONAL_EYEBROWS.length];
+  const mouth = PROFESSIONAL_MOUTH[(seed >> 4) % PROFESSIONAL_MOUTH.length];
+  const top = PROFESSIONAL_TOP[(seed >> 6) % PROFESSIONAL_TOP.length];
+  const facialHair = FACIAL_HAIR_OPTIONS[(seed >> 8) % FACIAL_HAIR_OPTIONS.length];
 
-  try {
-    const face = generate({
-      teamColors: [teamColors.primary, teamColors.secondary, '#ffffff'],
-      body: { color: skinColor },
-      jersey: { id: RACING_SUIT_JERSEY_ID },
-      hair: { color: hairColor },
-      // Subtle stubble effect: 5-20% opacity black overlay on head
-      head: { shave: `rgba(0,0,0,${0.05 + rand() * 0.15})` },
-      // Remove extras - drivers are in racing suits, not casual wear
-      accessories: { id: 'none' },
-      glasses: { id: 'none' },
-    });
-    display(container, face, { width: size, height: size });
-  } finally {
-    Math.random = originalRandom;
-  }
+  // Determine if this person has facial hair (50% chance based on seed)
+  const hasFacialHair = (seed >> 10) % 2 === 0;
+
+  const avatar = createAvatar(avataaars, {
+    seed: id,
+    skinColor: [skinColor],
+    hairColor: [hairColor],
+    top: [top],
+    eyes: [eyes],
+    eyebrows: [eyebrows],
+    mouth: [mouth],
+    facialHair: [facialHair],
+    facialHairProbability: hasFacialHair ? 100 : 0,
+    facialHairColor: [hairColor],
+    clothing: ['shirtCrewNeck'],
+    clothesColor: [hexToDiceBear(teamColors.primary)],
+    accessoriesProbability: 0,
+    backgroundColor: ['transparent'],
+  });
+
+  return avatar.toString();
+}
+
+/**
+ * Generates a face as a data URI for use in img src.
+ * Uses deterministic seeding based on the provided ID for consistent results.
+ *
+ * @param id - Unique identifier used for deterministic seeding
+ * @param nationality - ISO country code for nationality-appropriate appearance
+ * @param teamColors - Team colors for the clothing
+ * @returns Data URI string of the generated face SVG
+ */
+export function generateFaceDataUri(
+  id: string,
+  nationality: string,
+  teamColors: TeamColors
+): string {
+  const svg = generateFaceSvg(id, nationality, teamColors);
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }

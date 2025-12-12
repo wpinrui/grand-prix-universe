@@ -18,7 +18,7 @@ import type { DropdownOption } from '../components/Dropdown';
 import { getFilteredCalendarEvents } from '../utils/calendar-event-utils';
 import { formatGameDate, formatDateGroupHeader, dateKey } from '../../shared/utils/date-utils';
 import { getFullName } from '../utils/format';
-import { generateFace, FREE_AGENT_COLORS } from '../utils/face-generator';
+import { generateFaceDataUri, FREE_AGENT_COLORS } from '../utils/face-generator';
 import { ACCENT_BORDERED_BUTTON_STYLE } from '../utils/theme-styles';
 
 // ===========================================
@@ -124,23 +124,21 @@ interface SenderAvatarProps {
 }
 
 function SenderAvatar({ email, chiefs, teams, size = 32 }: SenderAvatarProps) {
-  const faceContainerRef = useRef<HTMLDivElement>(null);
   const chief = email.senderId ? chiefs.find((c) => c.id === email.senderId) : null;
   const team = chief?.teamId ? teams.find((t) => t.id === chief.teamId) : null;
 
-  useEffect(() => {
-    if (chief && faceContainerRef.current) {
-      faceContainerRef.current.innerHTML = '';
-      const teamColors = team
-        ? { primary: team.primaryColor, secondary: team.secondaryColor }
-        : FREE_AGENT_COLORS;
-      // Chiefs don't have nationality in the data model, use empty string for default appearance
-      generateFace(faceContainerRef.current, chief.id, '', teamColors, size);
-    }
-  }, [chief, team, size]);
+  // Generate face data URI for chief avatars
+  const faceDataUri = useMemo(() => {
+    if (!chief) return null;
+    const teamColors = team
+      ? { primary: team.primaryColor, secondary: team.secondaryColor }
+      : FREE_AGENT_COLORS;
+    // Chiefs don't have nationality in the data model, use empty string for default appearance
+    return generateFaceDataUri(chief.id, '', teamColors);
+  }, [chief, team]);
 
   // No senderId or chief not found - show fallback icon
-  if (!chief) {
+  if (!chief || !faceDataUri) {
     return (
       <div
         className="rounded-full bg-[var(--neutral-700)] flex items-center justify-center shrink-0"
@@ -152,9 +150,10 @@ function SenderAvatar({ email, chiefs, teams, size = 32 }: SenderAvatarProps) {
   }
 
   return (
-    <div
-      ref={faceContainerRef}
-      className="rounded-full overflow-hidden shrink-0 bg-[var(--neutral-700)]"
+    <img
+      src={faceDataUri}
+      alt={getFullName(chief)}
+      className="rounded-full overflow-hidden shrink-0 bg-[var(--neutral-700)] object-contain"
       style={{ width: size, height: size }}
     />
   );
