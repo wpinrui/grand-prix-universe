@@ -15,7 +15,7 @@ function sortByDateAscending(a: CalendarEvent, b: CalendarEvent): number {
 /**
  * Get all unread emails sorted by date (oldest first)
  */
-export function getUnreadEmails(calendarEvents: CalendarEvent[]): CalendarEvent[] {
+function getUnreadEmails(calendarEvents: CalendarEvent[]): CalendarEvent[] {
   return calendarEvents
     .filter((e) => e.type === CalendarEventType.Email && !e.read)
     .sort(sortByDateAscending);
