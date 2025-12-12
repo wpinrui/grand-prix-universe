@@ -8,6 +8,7 @@ import { randomUUID } from 'crypto';
 import { EngineManager } from '../engines/engine-manager';
 import { generateStubRaceResult } from '../engines/stubs';
 import { clampPercentage } from './state-utils';
+import { pushNewsEvent } from './news-generator';
 import type {
   GameState,
   CalendarEntry,
@@ -28,6 +29,7 @@ import {
   ManufacturerType,
   hasRaceSeat,
   DriverRole,
+  NewsEventType,
 } from '../../shared/domain';
 import {
   RaceFinishStatus,
@@ -35,6 +37,7 @@ import {
   type CarRepairCost,
   type PostRaceRepairData,
   type DriverRaceResult,
+  type DriverStanding,
 } from '../../shared/domain/types';
 import {
   getEffectiveEngineStats,
@@ -363,6 +366,107 @@ export function generateEngineAnalyticsData(state: GameState, raceNumber: number
 }
 
 // =============================================================================
+// NEWS EVENT EMISSION
+// =============================================================================
+
+/**
+ * Emit race result news event with all data needed for article generation
+ */
+function emitRaceResultEvent(
+  state: GameState,
+  raceResult: RaceWeekendResult,
+  circuitId: string
+): void {
+  const circuit = state.circuits.find((c) => c.id === circuitId);
+  if (!circuit) return;
+
+  // Get podium finishers
+  const sortedResults = [...raceResult.race]
+    .filter((r) => r.finishPosition !== null)
+    .sort((a, b) => (a.finishPosition ?? 99) - (b.finishPosition ?? 99));
+
+  const winner = sortedResults[0];
+  const second = sortedResults[1];
+  const third = sortedResults[2];
+
+  if (!winner || !second || !third) return;
+
+  const winnerDriver = state.drivers.find((d) => d.id === winner.driverId);
+  const winnerTeam = state.teams.find((t) => t.id === winner.teamId);
+  const secondDriver = state.drivers.find((d) => d.id === second.driverId);
+  const thirdDriver = state.drivers.find((d) => d.id === third.driverId);
+
+  if (!winnerDriver || !winnerTeam || !secondDriver || !thirdDriver) return;
+
+  // Format gap to second place
+  let winnerMargin = '';
+  if (winner.gapToWinner === 0 && second.gapToWinner) {
+    const gap = second.gapToWinner / 1000; // Convert ms to seconds
+    winnerMargin = `+${gap.toFixed(3)}s`;
+  } else if (second.lapsBehind) {
+    winnerMargin = second.lapsBehind === 1 ? '+1 lap' : `+${second.lapsBehind} laps`;
+  } else {
+    winnerMargin = '+0.000s';
+  }
+
+  pushNewsEvent(state, NewsEventType.RaceResult, 'high', {
+    raceNumber: raceResult.raceNumber,
+    circuitName: circuit.name,
+    circuitCountry: circuit.country,
+    winnerId: winnerDriver.id,
+    winnerName: getFullName(winnerDriver),
+    winnerTeamName: winnerTeam.name,
+    secondName: getFullName(secondDriver),
+    thirdName: getFullName(thirdDriver),
+    winnerMargin,
+  });
+}
+
+/**
+ * Emit championship lead change event if the leader changed after this race
+ */
+function emitChampionshipLeadEvent(
+  state: GameState,
+  previousStandings: DriverStanding[],
+  raceNumber: number
+): void {
+  const currentStandings = state.currentSeason.driverStandings;
+  if (currentStandings.length === 0) return;
+
+  const newLeader = currentStandings[0];
+  const previousLeader = previousStandings[0];
+
+  // Check if leader changed (or if this is the first race with standings)
+  const leaderChanged = !previousLeader || previousLeader.driverId !== newLeader.driverId;
+
+  if (!leaderChanged) return;
+
+  const newLeaderDriver = state.drivers.find((d) => d.id === newLeader.driverId);
+  const newLeaderTeam = state.teams.find((t) => t.id === newLeader.teamId);
+  const previousLeaderDriver = previousLeader
+    ? state.drivers.find((d) => d.id === previousLeader.driverId)
+    : null;
+
+  if (!newLeaderDriver || !newLeaderTeam) return;
+
+  const pointsGap = currentStandings[1]
+    ? newLeader.points - currentStandings[1].points
+    : newLeader.points;
+
+  pushNewsEvent(state, NewsEventType.ChampionshipLead, 'high', {
+    newLeaderId: newLeaderDriver.id,
+    newLeaderName: getFullName(newLeaderDriver),
+    newLeaderTeam: newLeaderTeam.name,
+    newLeaderPoints: newLeader.points,
+    previousLeaderName: previousLeaderDriver
+      ? getFullName(previousLeaderDriver)
+      : 'no previous leader',
+    pointsGap,
+    raceNumber,
+  });
+}
+
+// =============================================================================
 // RACE WEEKEND PROCESSING
 // =============================================================================
 
@@ -371,6 +475,9 @@ export function generateEngineAnalyticsData(state: GameState, raceNumber: number
  * Called when the game is in RaceWeekend phase.
  */
 export function processRaceWeekend(state: GameState, currentRace: CalendarEntry): void {
+  // Capture standings before race for comparison
+  const previousStandings = [...state.currentSeason.driverStandings];
+
   // Generate stub race result
   const raceResult = generateStubRaceResult(
     state,
@@ -387,6 +494,10 @@ export function processRaceWeekend(state: GameState, currentRace: CalendarEntry)
 
   // Mark race as complete
   markRaceComplete(state, currentRace.circuitId, raceResult);
+
+  // Emit news events for race result and championship changes
+  emitRaceResultEvent(state, raceResult, currentRace.circuitId);
+  emitChampionshipLeadEvent(state, previousStandings, currentRace.raceNumber);
 
   // Process post-race repairs for all teams
   processPostRaceRepairs(state, raceResult, currentRace.circuitId);
