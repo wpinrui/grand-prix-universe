@@ -10,7 +10,7 @@ import { X } from 'lucide-react';
 import type { CalendarEvent, NewsQuote } from '../../shared/domain';
 import { NewsSource, NewsCategory } from '../../shared/domain';
 import { formatGameDate } from '../../shared/utils/date-utils';
-import { NEWS_SOURCE_STYLES, getNewsSourceBadgeClasses } from '../utils/theme-styles';
+import { SourceBadge } from './NewsCard';
 
 // ===========================================
 // TYPES
@@ -39,15 +39,6 @@ const CATEGORY_LABELS: Record<NewsCategory, string> = {
 // ===========================================
 // SUB-COMPONENTS
 // ===========================================
-
-function SourceBadge({ source }: { source: NewsSource }) {
-  const style = NEWS_SOURCE_STYLES[source];
-  return (
-    <span className={`${getNewsSourceBadgeClasses(source)} px-3 py-1 rounded text-sm font-medium uppercase tracking-wide`}>
-      {style.label}
-    </span>
-  );
-}
 
 function CategoryBadge({ category }: { category: NewsCategory }) {
   return (
@@ -119,7 +110,7 @@ export function NewsDetailModal({ item, onClose }: NewsDetailModalProps) {
         {/* Header */}
         <div className="sticky top-0 surface-primary border-b border-subtle px-6 py-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 flex-wrap">
-            <SourceBadge source={source} />
+            <SourceBadge source={source} size="large" />
             {category && <CategoryBadge category={category} />}
           </div>
           <div className="flex items-center gap-4">
