@@ -195,7 +195,7 @@ export function TeamHeader({ team, allTeams, onTeamSelect, principalName, isPlay
 
   return (
     <div className="flex items-start gap-6">
-      <TeamBadge team={team} className="w-24 h-20" />
+      <TeamBadge team={team} className="w-20" />
       <div className="flex-1">
         <div className="relative inline-flex items-center gap-2" ref={dropdownRef}>
           <h1
