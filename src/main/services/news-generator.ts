@@ -302,7 +302,8 @@ function generateArticleFromEvent(state: GameState, event: NewsEvent): CalendarE
 /**
  * Generate article for a race result event
  */
-function generateRaceResultArticle(state: GameState, event: NewsEvent): CalendarEvent | null {
+function generateRaceResultArticle(_state: GameState, event: NewsEvent): CalendarEvent | null {
+  // @agent: _state kept for API consistency - future handlers may need to look up additional data
   const data = event.data as {
     raceNumber: number;
     circuitName: string;
@@ -334,7 +335,7 @@ function generateRaceResultArticle(state: GameState, event: NewsEvent): Calendar
 /**
  * Generate article for championship lead change
  */
-function generateChampionshipLeadArticle(state: GameState, event: NewsEvent): CalendarEvent | null {
+function generateChampionshipLeadArticle(_state: GameState, event: NewsEvent): CalendarEvent | null {
   const data = event.data as {
     newLeaderId: string;
     newLeaderName: string;
@@ -364,7 +365,7 @@ function generateChampionshipLeadArticle(state: GameState, event: NewsEvent): Ca
 /**
  * Generate article for driver signing
  */
-function generateDriverSignedArticle(state: GameState, event: NewsEvent): CalendarEvent | null {
+function generateDriverSignedArticle(_state: GameState, event: NewsEvent): CalendarEvent | null {
   const data = event.data as {
     driverId: string;
     driverName: string;
@@ -397,7 +398,7 @@ function generateDriverSignedArticle(state: GameState, event: NewsEvent): Calend
 /**
  * Generate article for spec release
  */
-function generateSpecReleasedArticle(state: GameState, event: NewsEvent): CalendarEvent | null {
+function generateSpecReleasedArticle(_state: GameState, event: NewsEvent): CalendarEvent | null {
   const data = event.data as {
     manufacturerId: string;
     manufacturerName: string;
