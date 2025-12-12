@@ -10,6 +10,7 @@ import { Search } from 'lucide-react';
 import { useDerivedGameState } from '../hooks';
 import { SectionHeading, Dropdown } from '../components';
 import { NewsCardHero, NewsCardSmall } from '../components/NewsCard';
+import { NewsDetailModal } from '../components/NewsDetailModal';
 import { CalendarEventType, type CalendarEvent } from '../../shared/domain';
 import { daysBetween, seasonToYear } from '../../shared/utils/date-utils';
 import type { DropdownOption } from '../components';
@@ -173,6 +174,7 @@ export function News() {
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [displayCount, setDisplayCount] = useState(INITIAL_DISPLAY_COUNT);
+  const [selectedArticle, setSelectedArticle] = useState<CalendarEvent | null>(null);
 
   // Loading state
   if (!gameState) {
@@ -243,8 +245,7 @@ export function News() {
   }
 
   const handleCardClick = (item: CalendarEvent) => {
-    // TODO: Open NewsDetailModal (PR 3)
-    console.log('Open news detail:', item);
+    setSelectedArticle(item);
   };
 
   const handleLoadMore = () => {
@@ -315,6 +316,14 @@ export function News() {
             </div>
           )}
         </div>
+      )}
+
+      {/* News Detail Modal */}
+      {selectedArticle && (
+        <NewsDetailModal
+          item={selectedArticle}
+          onClose={() => setSelectedArticle(null)}
+        />
       )}
     </div>
   );
