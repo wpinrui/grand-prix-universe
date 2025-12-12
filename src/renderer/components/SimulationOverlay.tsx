@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { GameDate, CalendarEvent, CalendarEntry, Circuit, Team } from '../../shared/domain';
 import { TopBar } from './TopBar';
@@ -11,6 +11,9 @@ import { CALENDAR_PANEL_HEIGHT, PANEL_TRANSLUCENT_BG_CLASSES, PANEL_FOOTER_CLASS
 const PAST_DAY_INDEX = 0;
 const CURRENT_DAY_INDEX = 1;
 const TOTAL_DAYS = 9;
+
+/** Delay before closing overlay after simulation stops (ms) - allows final day animation to complete */
+const POST_SIMULATION_DELAY_MS = 1500;
 
 /** Slide animation offset (1/9 of width as percentage) */
 const SLIDE_OFFSET_PERCENT = `${(100 / TOTAL_DAYS).toFixed(2)}%`;
@@ -37,6 +40,23 @@ export function SimulationOverlay({
   isPostSeason,
   playerTeam,
 }: SimulationOverlayProps) {
+  // Track delayed visibility - keeps overlay visible briefly after simulation stops
+  // so the final day animation completes and events are visible
+  const [delayedVisible, setDelayedVisible] = useState(isVisible);
+
+  useEffect(() => {
+    if (isVisible) {
+      // Simulation started - show immediately
+      setDelayedVisible(true);
+    } else {
+      // Simulation stopped - delay before hiding
+      const timer = setTimeout(() => {
+        setDelayedVisible(false);
+      }, POST_SIMULATION_DELAY_MS);
+      return () => clearTimeout(timer);
+    }
+  }, [isVisible]);
+
   const animationKey = dateKey(currentDate);
 
   // Memoize days to prevent unnecessary recalculations
@@ -58,7 +78,7 @@ export function SimulationOverlay({
 
   return (
     <AnimatePresence>
-      {isVisible && (
+      {delayedVisible && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
