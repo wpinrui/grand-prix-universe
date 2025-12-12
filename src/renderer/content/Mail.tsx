@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { User, ChevronDown, ChevronRight, Search, ArrowRight } from 'lucide-react';
 import { useDerivedGameState, useMarkEmailRead } from '../hooks';
 import { SectionHeading, Dropdown, EntityLink } from '../components';
@@ -16,7 +16,7 @@ import type {
 } from '../../shared/domain';
 import type { DropdownOption } from '../components/Dropdown';
 import { getFilteredCalendarEvents } from '../utils/calendar-event-utils';
-import { formatGameDate, formatDateGroupHeader, dateKey } from '../../shared/utils/date-utils';
+import { formatGameDate, formatDateGroupHeader, dateKey, getOldestUnreadEmail } from '../../shared/utils';
 import { getFullName } from '../utils/format';
 import { generateFaceDataUri, FREE_AGENT_COLORS } from '../utils/face-generator';
 import { ACCENT_BORDERED_BUTTON_STYLE } from '../utils/theme-styles';
@@ -632,6 +632,10 @@ export function Mail({ initialEmailId, onEmailViewed }: MailProps = {}) {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilterValue>('all');
 
+  // Track simulation state to detect when it ends
+  const isSimulating = gameState?.simulation?.isSimulating ?? false;
+  const wasSimulatingRef = useRef(isSimulating);
+
   // Handler to select an email and mark it as read
   const handleSelectEmail = useCallback(
     (emailId: string) => {
@@ -652,6 +656,20 @@ export function Mail({ initialEmailId, onEmailViewed }: MailProps = {}) {
       onEmailViewed?.();
     }
   }, [initialEmailId, handleSelectEmail, onEmailViewed]);
+
+  // Auto-select oldest unread email when simulation ends
+  useEffect(() => {
+    const wasSimulating = wasSimulatingRef.current;
+    wasSimulatingRef.current = isSimulating;
+
+    // If simulation just ended, select the oldest unread email
+    if (wasSimulating && !isSimulating && gameState) {
+      const oldestUnread = getOldestUnreadEmail(gameState.calendarEvents);
+      if (oldestUnread) {
+        handleSelectEmail(oldestUnread.id);
+      }
+    }
+  }, [isSimulating, gameState, handleSelectEmail]);
 
   const allMailItems = useMemo(() => {
     if (!gameState) return [];
@@ -687,15 +705,18 @@ export function Mail({ initialEmailId, onEmailViewed }: MailProps = {}) {
 
   const dateGroups = useMemo(() => groupEmailsByDate(mailItems), [mailItems]);
 
-  // Auto-select first email (and mark as read), or reset if current selection becomes invalid
+  // Auto-select oldest unread email, or first email if all read, or reset if list empty
   useEffect(() => {
     const selectionIsValid = selectedEmailId && mailItems.some((e) => e.id === selectedEmailId);
     if (!selectionIsValid && mailItems.length > 0) {
-      handleSelectEmail(mailItems[0].id);
+      // Prefer oldest unread email, fall back to first in list (newest) if all read
+      const oldestUnread = getOldestUnreadEmail(gameState?.calendarEvents ?? []);
+      const targetId = oldestUnread?.id ?? mailItems[0].id;
+      handleSelectEmail(targetId);
     } else if (!selectionIsValid) {
       setSelectedEmailId(null);
     }
-  }, [mailItems, selectedEmailId, handleSelectEmail]);
+  }, [mailItems, selectedEmailId, handleSelectEmail, gameState?.calendarEvents]);
 
   const selectedEmail = useMemo(
     () => mailItems.find((e) => e.id === selectedEmailId) || null,

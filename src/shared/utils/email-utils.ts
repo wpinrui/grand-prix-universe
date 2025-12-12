@@ -1,13 +1,15 @@
 import type { CalendarEvent, GameState } from '../domain/types';
 import { CalendarEventType } from '../domain/types';
+import { daysBetween } from './date-utils';
 
 /**
- * Compare two GameDate objects for sorting (ascending order)
+ * Sort calendar events by date ascending (oldest first)
+ * Uses daysBetween for consistency with rest of codebase
  */
-function compareDates(a: CalendarEvent, b: CalendarEvent): number {
-  if (a.date.year !== b.date.year) return a.date.year - b.date.year;
-  if (a.date.month !== b.date.month) return a.date.month - b.date.month;
-  return a.date.day - b.date.day;
+function sortByDateAscending(a: CalendarEvent, b: CalendarEvent): number {
+  // daysBetween(a, b) returns positive when b > a (b is later)
+  // Negating gives us ascending order (older dates first)
+  return -daysBetween(a.date, b.date);
 }
 
 /**
@@ -16,7 +18,7 @@ function compareDates(a: CalendarEvent, b: CalendarEvent): number {
 export function getUnreadEmails(calendarEvents: CalendarEvent[]): CalendarEvent[] {
   return calendarEvents
     .filter((e) => e.type === CalendarEventType.Email && !e.read)
-    .sort(compareDates);
+    .sort(sortByDateAscending);
 }
 
 /**
@@ -56,7 +58,7 @@ export function getUnrespondedMustRespondEmails(
 ): CalendarEvent[] {
   return calendarEvents
     .filter((e) => e.type === CalendarEventType.Email && isEmailResponseRequired(e, gameState))
-    .sort(compareDates);
+    .sort(sortByDateAscending);
 }
 
 /**
