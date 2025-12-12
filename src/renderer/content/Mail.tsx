@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { User, ChevronDown, ChevronRight, Search, ArrowRight } from 'lucide-react';
 import { useDerivedGameState, useMarkEmailRead } from '../hooks';
 import { SectionHeading, Dropdown, EntityLink } from '../components';
