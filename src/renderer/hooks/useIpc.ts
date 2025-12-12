@@ -291,6 +291,20 @@ export function useDismissAppointmentNews() {
 }
 
 /**
+ * Mark an email as read and update game state cache
+ * Used when player views an email in the inbox
+ */
+export function useMarkEmailRead() {
+  const queryClient = useQueryClient();
+  return useMutation<GameState, Error, string>({
+    mutationFn: (emailId) => window.electronAPI.invoke(IpcChannels.MAIL_MARK_READ, emailId),
+    onSuccess: (state) => {
+      queryClient.setQueryData(queryKeys.gameState, state);
+    },
+  });
+}
+
+/**
  * Quit the application
  */
 export function useQuitApp() {

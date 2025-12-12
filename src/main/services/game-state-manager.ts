@@ -271,6 +271,22 @@ export const GameStateManager = {
   },
 
   /**
+   * Mark an email as read.
+   * Returns the updated game state
+   */
+  markEmailRead(emailId: string): GameState {
+    const state = GameStateManager.currentState;
+    if (!state) {
+      throw new Error('No active game');
+    }
+    const email = state.calendarEvents.find((e) => e.id === emailId);
+    if (email) {
+      email.read = true;
+    }
+    return cloneDeep(state);
+  },
+
+  /**
    * Advances the game by one week.
    * Does NOT run races - use runRace for that.
    */

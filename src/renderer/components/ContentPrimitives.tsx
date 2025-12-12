@@ -71,6 +71,7 @@ interface ProgressBarProps {
 /** Horizontal progress bar with percentage display */
 export function ProgressBar({ value, colorClass }: ProgressBarProps) {
   const barColor = colorClass ?? getPercentageColorClass(value);
+  const roundedValue = Math.round(value);
 
   return (
     <div className="flex items-center gap-2">
@@ -80,7 +81,7 @@ export function ProgressBar({ value, colorClass }: ProgressBarProps) {
           style={{ width: `${value}%` }}
         />
       </div>
-      <span className="text-xs text-muted w-8">{value}%</span>
+      <span className="text-xs text-muted w-8">{roundedValue}%</span>
     </div>
   );
 }

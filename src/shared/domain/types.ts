@@ -1082,6 +1082,7 @@ export interface CalendarEvent {
   type: CalendarEventType;
   subject: string;   // Brief text shown on calendar
   critical: boolean; // If true, auto-stops simulation
+  read?: boolean;    // Only for Email type - true if user has viewed it
   emailCategory?: EmailCategory; // Only set when type is Email
   sender?: string;   // Email sender name (e.g., "Adrian Newey (Chief Designer)")
   senderId?: string; // Chief ID for face generation lookup
