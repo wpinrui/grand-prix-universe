@@ -91,8 +91,8 @@ export const sections: Section[] = [
     icon: PenTool,
     subItems: [
       { id: 'summary', label: 'Summary', icon: PenTool },
-      { id: 'current-chassis', label: '2025 Chassis', icon: Car },
-      { id: 'next-chassis', label: '2026 Chassis', icon: Car },
+      { id: 'current-chassis', label: 'Current Chassis', icon: Car },
+      { id: 'next-chassis', label: 'Next Chassis', icon: Car },
       { id: 'technology', label: 'Technology', icon: FlaskConical },
     ],
   },

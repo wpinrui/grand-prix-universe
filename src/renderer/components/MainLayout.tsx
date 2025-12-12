@@ -37,7 +37,7 @@ import {
   SavedGames,
   GameOptions,
   ActionScreen,
-  ACTION_CONFIGS,
+  QUIT_DIALOG_CONFIG,
   Championship,
   Races,
   Results,
@@ -362,7 +362,7 @@ export function MainLayout() {
 
     // Design section - pass subpage to determine which view to render
     if (selectedSectionId === 'design') {
-      return <Design initialTab={selectedSubItemId as 'summary' | 'current-chassis' | 'next-chassis' | 'technology'} />;
+      return <Design initialTab={selectedSubItemId} />;
     }
 
     // Commercial > Sponsors - now includes Deals as tabs
@@ -474,7 +474,7 @@ export function MainLayout() {
         {/* Quit Confirmation Dialog */}
         {activeDialog === 'quit' && (
           <ConfirmDialog
-            {...ACTION_CONFIGS.quit.dialog}
+            {...QUIT_DIALOG_CONFIG}
             onConfirm={handleQuitConfirm}
             onCancel={closeDialog}
           />

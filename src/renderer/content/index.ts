@@ -13,7 +13,7 @@ export { Contracts } from './Contracts';
 export { Sponsors } from './Sponsors';
 export { SavedGames } from './SavedGames';
 export { GameOptions } from './GameOptions';
-export { ActionScreen, ACTION_CONFIGS } from './ActionScreen';
+export { ActionScreen, QUIT_DIALOG_CONFIG } from './ActionScreen';
 export { Championship } from './Championship';
 export { Races } from './Races';
 export { Results } from './Results';

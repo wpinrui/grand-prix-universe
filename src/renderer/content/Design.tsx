@@ -26,9 +26,7 @@ import {
 type DesignTab = 'summary' | 'next-year' | 'current-year' | 'technology';
 
 // Map navigation subpage IDs to internal tab IDs
-type DesignSubpage = 'summary' | 'current-chassis' | 'next-chassis' | 'technology';
-
-const SUBPAGE_TO_TAB: Record<DesignSubpage, DesignTab> = {
+const SUBPAGE_TO_TAB: Record<string, DesignTab> = {
   'summary': 'summary',
   'current-chassis': 'current-year',
   'next-chassis': 'next-year',
@@ -976,12 +974,12 @@ function TechnologyTab({
 // ===========================================
 
 interface DesignProps {
-  initialTab?: DesignSubpage;
+  initialTab?: string;
 }
 
 export function Design({ initialTab = 'summary' }: DesignProps) {
-  // Map navigation subpage to internal tab
-  const activeTab = SUBPAGE_TO_TAB[initialTab];
+  // Map navigation subpage to internal tab, default to summary if invalid
+  const activeTab = SUBPAGE_TO_TAB[initialTab] ?? 'summary';
   const { gameState, playerTeam } = useDerivedGameState();
   const queryClient = useQueryClient();
 
