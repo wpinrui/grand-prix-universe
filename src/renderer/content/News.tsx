@@ -11,9 +11,32 @@ import { useDerivedGameState } from '../hooks';
 import { SectionHeading, Dropdown } from '../components';
 import { NewsCardHero, NewsCardSmall } from '../components/NewsCard';
 import { NewsDetailModal } from '../components/NewsDetailModal';
-import { CalendarEventType, type CalendarEvent } from '../../shared/domain';
+import { CalendarEventType, NewsSource, NewsCategory, type CalendarEvent } from '../../shared/domain';
 import { daysBetween, seasonToYear } from '../../shared/utils/date-utils';
 import type { DropdownOption } from '../components';
+
+// ===========================================
+// SOURCE & CATEGORY LABELS
+// ===========================================
+
+const SOURCE_LABELS: Record<NewsSource, string> = {
+  [NewsSource.F1Official]: 'F1 Official',
+  [NewsSource.TheRace]: 'The Race',
+  [NewsSource.LocalMedia]: 'Local Media',
+  [NewsSource.PitlaneInsider]: 'Pitlane Insider',
+  [NewsSource.TechAnalysis]: 'Tech Analysis',
+};
+
+const CATEGORY_LABELS: Record<NewsCategory, string> = {
+  [NewsCategory.PreSeason]: 'Pre-Season',
+  [NewsCategory.RacePreview]: 'Race Preview',
+  [NewsCategory.RaceResult]: 'Race Result',
+  [NewsCategory.Transfer]: 'Transfer',
+  [NewsCategory.Technical]: 'Technical',
+  [NewsCategory.Championship]: 'Championship',
+  [NewsCategory.Rumor]: 'Rumor',
+  [NewsCategory.Commentary]: 'Commentary',
+};
 
 // ===========================================
 // CONSTANTS
@@ -61,6 +84,8 @@ function filterNewsEvents(
   selectedMonth: number | null,
   selectedYear: number,
   searchQuery: string,
+  selectedSource: NewsSource | null,
+  selectedCategory: NewsCategory | null,
   currentDate: { year: number; month: number; day: number }
 ): CalendarEvent[] {
   let filtered = events
@@ -71,6 +96,16 @@ function filterNewsEvents(
   // Filter by month if selected
   if (selectedMonth !== null) {
     filtered = filtered.filter((e) => e.date.month === selectedMonth);
+  }
+
+  // Filter by source if selected
+  if (selectedSource !== null) {
+    filtered = filtered.filter((e) => e.newsSource === selectedSource);
+  }
+
+  // Filter by category if selected
+  if (selectedCategory !== null) {
+    filtered = filtered.filter((e) => e.newsCategory === selectedCategory);
   }
 
   // Filter by search query
@@ -175,6 +210,8 @@ export function News() {
   const [searchQuery, setSearchQuery] = useState('');
   const [displayCount, setDisplayCount] = useState(INITIAL_DISPLAY_COUNT);
   const [selectedArticle, setSelectedArticle] = useState<CalendarEvent | null>(null);
+  const [selectedSource, setSelectedSource] = useState<NewsSource | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<NewsCategory | null>(null);
 
   // Loading state
   if (!gameState) {
@@ -219,9 +256,11 @@ export function News() {
         selectedMonth,
         selectedYear,
         searchQuery,
+        selectedSource,
+        selectedCategory,
         gameState.currentDate
       ),
-    [gameState.calendarEvents, selectedMonth, selectedYear, searchQuery, gameState.currentDate]
+    [gameState.calendarEvents, selectedMonth, selectedYear, searchQuery, selectedSource, selectedCategory, gameState.currentDate]
   );
 
   // Split into hero (first high importance) and grid items
@@ -244,6 +283,18 @@ export function News() {
     yearOptions.push({ value: currentYear.toString(), label: currentYear.toString() });
   }
 
+  // Build source dropdown options
+  const sourceOptions: DropdownOption<string>[] = [
+    { value: '', label: 'All Sources' },
+    ...Object.entries(SOURCE_LABELS).map(([value, label]) => ({ value, label })),
+  ];
+
+  // Build category dropdown options
+  const categoryOptions: DropdownOption<string>[] = [
+    { value: '', label: 'All Categories' },
+    ...Object.entries(CATEGORY_LABELS).map(([value, label]) => ({ value, label })),
+  ];
+
   const handleCardClick = (item: CalendarEvent) => {
     setSelectedArticle(item);
   };
@@ -256,7 +307,7 @@ export function News() {
     <div className="h-full flex flex-col">
       <SectionHeading>News</SectionHeading>
 
-      {/* Toolbar: Month Pills | Search | Year */}
+      {/* Toolbar: Month Pills | Filters | Search | Year */}
       <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
         {/* Month Pills */}
         <div className="flex-1 min-w-0">
@@ -270,8 +321,26 @@ export function News() {
           />
         </div>
 
-        {/* Search + Year Dropdown */}
-        <div className="flex items-center gap-3 flex-shrink-0">
+        {/* Filters + Search + Year Dropdown */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <Dropdown
+            options={sourceOptions}
+            value={selectedSource ?? ''}
+            onChange={(v) => {
+              setSelectedSource(v ? (v as NewsSource) : null);
+              setDisplayCount(INITIAL_DISPLAY_COUNT);
+            }}
+            className="w-32"
+          />
+          <Dropdown
+            options={categoryOptions}
+            value={selectedCategory ?? ''}
+            onChange={(v) => {
+              setSelectedCategory(v ? (v as NewsCategory) : null);
+              setDisplayCount(INITIAL_DISPLAY_COUNT);
+            }}
+            className="w-36"
+          />
           <SearchInput value={searchQuery} onChange={setSearchQuery} />
           <Dropdown
             options={yearOptions}
@@ -284,7 +353,7 @@ export function News() {
 
       {/* Content */}
       {filteredNews.length === 0 ? (
-        <EmptyState hasSearch={searchQuery.length > 0 || selectedMonth !== null} />
+        <EmptyState hasSearch={searchQuery.length > 0 || selectedMonth !== null || selectedSource !== null || selectedCategory !== null} />
       ) : (
         <div className="flex-1 overflow-y-auto">
           {/* Hero Card */}
