@@ -256,7 +256,7 @@ function ContactModal({ sponsor, currentSeason, onClose, onSubmit }: ContactModa
 
           <div>
             <label className="block text-sm text-secondary mb-1">Duration</label>
-            <Dropdown
+            <Dropdown<DurationValue>
               options={DURATION_OPTIONS}
               value={duration}
               onChange={setDuration}
@@ -542,7 +542,7 @@ export function Deals({ embedded = false }: DealsProps) {
           <div className="flex items-center gap-4">
             <span className="text-sm text-secondary">Filter by tier:</span>
             <div className="w-40">
-              <Dropdown
+              <Dropdown<TierFilter>
                 options={TIER_FILTER_OPTIONS}
                 value={tierFilter}
                 onChange={setTierFilter}

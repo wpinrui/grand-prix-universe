@@ -278,7 +278,7 @@ function SummaryTab({ designState, currentYear }: SummaryTabProps) {
               <tr>
                 <td className="py-1.5 text-secondary">SA{currentYear}-A</td>
                 <td className="py-1.5 text-center font-mono text-primary">
-                  {designState.currentYearChassis.handlingRevealed > 0
+                  {(designState.currentYearChassis.handlingRevealed ?? 0) > 0
                     ? `${designState.currentYearChassis.handlingRevealed}%`
                     : '?'}
                 </td>
@@ -664,12 +664,12 @@ function CurrentYearChassisTab({
           <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted">Tests</span>
-              <LevelBar value={chassisState.handlingRevealed} />
+              <LevelBar value={chassisState.handlingRevealed ?? 0} />
             </div>
             <div className="flex justify-between">
               <span className="text-muted">Handling</span>
               <span className="text-primary font-mono">
-                {chassisState.handlingRevealed > 0 ? `${chassisState.handlingRevealed}%` : '?'}
+                {(chassisState.handlingRevealed ?? 0) > 0 ? `${chassisState.handlingRevealed}%` : '?'}
               </span>
             </div>
             <div className="flex justify-between">
