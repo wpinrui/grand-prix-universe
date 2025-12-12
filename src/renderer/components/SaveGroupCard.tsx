@@ -80,7 +80,7 @@ export function SaveGroupCard({
         {/* Team badge */}
         <div className="shrink-0">
           {team ? (
-            <TeamBadge team={team} className={`${BADGE_COLUMN_WIDTH} ${BADGE_HEIGHT}`} />
+            <TeamBadge team={team} className={BADGE_COLUMN_WIDTH} />
           ) : (
             <div className={`${BADGE_COLUMN_WIDTH} ${BADGE_HEIGHT} rounded surface-inset flex items-center justify-center`}>
               <span className="text-xs text-muted">?</span>

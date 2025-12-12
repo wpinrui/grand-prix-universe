@@ -278,7 +278,7 @@ export function TeamSelectScreen() {
             {/* Team info */}
             <div className="flex-1 flex items-center gap-5">
               {/* Team logo */}
-              <TeamBadge team={selectedTeam} className="w-16 h-14" />
+              <TeamBadge team={selectedTeam} className="w-14" />
 
               {/* Team name & info */}
               <div className="flex-1 min-w-0">
