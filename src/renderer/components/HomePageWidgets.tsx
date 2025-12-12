@@ -8,10 +8,13 @@ import { FlagIcon } from './FlagIcon';
 import { ProgressBar } from './ContentPrimitives';
 import { NEWS_SOURCE_STYLES } from '../utils/theme-styles';
 import { formatCurrency, formatOrdinal, getFullName } from '../utils/format';
-import { formatGameDate, daysBetween, seasonToYear, getRaceSunday } from '../../shared/utils/date-utils';
+import { formatGameDate, daysBetween, seasonToYear, getRaceSunday, offsetDate } from '../../shared/utils/date-utils';
 import type { HomePageAlert, AlertSeverity } from '../utils/home-alerts';
 import {
   ChassisDesignStage,
+  TechnologyProjectPhase,
+  estimateChassisStageCompletion,
+  estimateTechProjectDaysRemaining,
   type Team,
   type Driver,
   type DriverStanding,
@@ -22,6 +25,9 @@ import {
   type DesignState,
   type PendingPart,
   type GameDate,
+  type StaffCounts,
+  type Facility,
+  type Chief,
 } from '../../shared/domain';
 
 // ===========================================
@@ -247,14 +253,24 @@ interface DesignProgressSectionProps {
   designState: DesignState;
   pendingParts: PendingPart[];
   onViewDesign: () => void;
+  // For estimated completion dates
+  staffCounts: StaffCounts;
+  facilities: Facility[];
+  chiefDesigner: Chief | null;
+  currentDate: GameDate;
 }
 
 export function DesignProgressSection({
   designState,
   pendingParts,
   onViewDesign,
+  staffCounts,
+  facilities,
+  chiefDesigner,
+  currentDate,
 }: DesignProgressSectionProps) {
   const { nextYearChassis, activeTechnologyProjects, currentYearChassis } = designState;
+  const projectionInput = { staffCounts, facilities, chiefDesigner };
 
   // Find current chassis stage
   const currentStage = nextYearChassis?.stages.find((s) => !s.completed);
@@ -289,7 +305,17 @@ export function DesignProgressSection({
               {CHASSIS_STAGE_LABELS[currentStage.stage]}
             </span>
           </div>
-          <ProgressBar value={currentStage.progress * 10} />
+          <div className="flex items-center justify-between">
+            <ProgressBar value={currentStage.progress * 10} />
+            {nextYearChassis.designersAssigned > 0 && (() => {
+              const daysRemaining = estimateChassisStageCompletion(nextYearChassis, projectionInput);
+              if (daysRemaining !== null && daysRemaining > 0) {
+                const estDate = offsetDate(currentDate, daysRemaining);
+                return <span className="text-xs text-muted ml-2 shrink-0">{formatGameDate(estDate, 'short')}</span>;
+              }
+              return null;
+            })()}
+          </div>
         </div>
       )}
 
@@ -301,13 +327,23 @@ export function DesignProgressSection({
               {project.component} {project.attribute}
             </span>
             <span className="text-xs text-muted">
-              {project.phase === 'discovery' ? 'Discovery' : `+${project.payoff ?? '?'}`}
+              {project.phase === TechnologyProjectPhase.Discovery ? 'Discovery' : `+${project.payoff ?? '?'}`}
             </span>
           </div>
-          {project.phase === 'development' && project.workUnitsRequired && (
-            <ProgressBar value={(project.workUnitsCompleted / project.workUnitsRequired) * 100} />
+          {project.phase === TechnologyProjectPhase.Development && project.workUnitsRequired && (
+            <div className="flex items-center justify-between">
+              <ProgressBar value={(project.workUnitsCompleted / project.workUnitsRequired) * 100} />
+              {project.designersAssigned > 0 && (() => {
+                const daysRemaining = estimateTechProjectDaysRemaining(project, projectionInput);
+                if (daysRemaining !== null && daysRemaining > 0) {
+                  const estDate = offsetDate(currentDate, daysRemaining);
+                  return <span className="text-xs text-muted ml-2 shrink-0">{formatGameDate(estDate, 'short')}</span>;
+                }
+                return null;
+              })()}
+            </div>
           )}
-          {project.phase === 'discovery' && (
+          {project.phase === TechnologyProjectPhase.Discovery && (
             <div className="text-xs text-muted italic">Awaiting breakthrough...</div>
           )}
         </div>

@@ -22,6 +22,7 @@ import {
   getRecentHeadlines,
 } from '../utils/home-alerts';
 import { daysBetween } from '../../shared/utils/date-utils';
+import { ChiefRole } from '../../shared/domain';
 
 // ===========================================
 // MAIN COMPONENT
@@ -56,6 +57,11 @@ export function Home() {
   // Player's drivers
   const teamDrivers = gameState.drivers.filter((d) => d.teamId === playerTeam.id);
   const teamDriverIds = teamDrivers.map((d) => d.id);
+
+  // Chief designer for projection calculations
+  const chiefDesigner = gameState.chiefs.find(
+    (c) => c.teamId === playerTeam.id && c.role === ChiefRole.Designer
+  ) ?? null;
 
   // Driver standings map
   const driverStandingsMap = useMemo(
@@ -174,6 +180,10 @@ export function Home() {
             designState={teamState.designState}
             pendingParts={readyParts}
             onViewDesign={handleViewDesign}
+            staffCounts={teamState.staffCounts.design}
+            facilities={playerTeam.factory.facilities}
+            chiefDesigner={chiefDesigner}
+            currentDate={gameState.currentDate}
           />
         )}
 
