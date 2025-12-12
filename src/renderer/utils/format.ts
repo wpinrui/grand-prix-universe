@@ -5,7 +5,7 @@
  * and adds renderer-specific helpers
  */
 
-import { Department, StaffQuality, ChiefRole } from '../../shared/domain';
+import { Department, StaffQuality, ChiefRole, SponsorTier } from '../../shared/domain';
 import { compareSavesByNewest, type SaveSlotInfo } from '../../shared/ipc';
 import { formatGameDate, seasonToYear } from '../../shared/utils/date-utils';
 
@@ -51,6 +51,13 @@ export const ROLE_TO_DEPARTMENT: Record<ChiefRole, Department> = {
   [ChiefRole.Commercial]: Department.Commercial,
   [ChiefRole.Designer]: Department.Design,
   [ChiefRole.Mechanic]: Department.Mechanics,
+};
+
+/** Display labels for sponsor tiers */
+export const SPONSOR_TIER_LABELS: Record<SponsorTier, string> = {
+  [SponsorTier.Title]: 'Title',
+  [SponsorTier.Major]: 'Major',
+  [SponsorTier.Minor]: 'Minor',
 };
 
 // ===========================================

@@ -34,6 +34,7 @@ import {
   Construction,
   Contracts,
   Sponsors,
+  Deals,
   SavedGames,
   GameOptions,
   ActionScreen,
@@ -85,6 +86,7 @@ const ROUTE_COMPONENTS: Partial<Record<SectionId, Record<string, React.Component
   },
   commercial: {
     sponsors: Sponsors,
+    deals: Deals,
   },
   fia: {
     // championship, races, results handled separately (need navigation props)

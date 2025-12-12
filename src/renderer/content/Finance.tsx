@@ -1,6 +1,6 @@
 import { useDerivedGameState } from '../hooks';
 import { SectionHeading } from '../components';
-import { formatCurrency, getFullName } from '../utils/format';
+import { formatCurrency, getFullName, SPONSOR_TIER_LABELS } from '../utils/format';
 import { ACCENT_CARD_STYLE, ACCENT_TEXT_STYLE } from '../utils/theme-styles';
 import type {
   ActiveSponsorDeal,
@@ -9,19 +9,12 @@ import type {
   Chief,
   Sponsor,
   Manufacturer,
-  SponsorTier,
   ManufacturerType,
 } from '../../shared/domain';
 
 // ===========================================
 // CONSTANTS
 // ===========================================
-
-const SPONSOR_TIER_LABELS: Record<SponsorTier, string> = {
-  title: 'Title',
-  major: 'Major',
-  minor: 'Minor',
-};
 
 const MANUFACTURER_TYPE_LABELS: Record<ManufacturerType, string> = {
   engine: 'Engine',
