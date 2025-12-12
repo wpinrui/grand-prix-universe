@@ -619,7 +619,12 @@ function EmailDetailPanel({ email, chiefs, teams }: EmailDetailPanelProps) {
 // MAIN COMPONENT
 // ===========================================
 
-export function Mail() {
+interface MailProps {
+  initialEmailId?: string | null;
+  onEmailViewed?: () => void;
+}
+
+export function Mail({ initialEmailId, onEmailViewed }: MailProps = {}) {
   const { gameState } = useDerivedGameState();
   const markEmailRead = useMarkEmailRead();
   const [selectedEmailId, setSelectedEmailId] = useState<string | null>(null);
@@ -639,6 +644,14 @@ export function Mail() {
     },
     [gameState?.calendarEvents, markEmailRead]
   );
+
+  // Handle initial email from navigation (e.g., from AdvanceWeekButton)
+  useEffect(() => {
+    if (initialEmailId) {
+      handleSelectEmail(initialEmailId);
+      onEmailViewed?.();
+    }
+  }, [initialEmailId, handleSelectEmail, onEmailViewed]);
 
   const allMailItems = useMemo(() => {
     if (!gameState) return [];
@@ -674,13 +687,15 @@ export function Mail() {
 
   const dateGroups = useMemo(() => groupEmailsByDate(mailItems), [mailItems]);
 
-  // Auto-select first email, or reset if current selection becomes invalid
+  // Auto-select first email (and mark as read), or reset if current selection becomes invalid
   useEffect(() => {
     const selectionIsValid = selectedEmailId && mailItems.some((e) => e.id === selectedEmailId);
-    if (!selectionIsValid) {
-      setSelectedEmailId(mailItems.length > 0 ? mailItems[0].id : null);
+    if (!selectionIsValid && mailItems.length > 0) {
+      handleSelectEmail(mailItems[0].id);
+    } else if (!selectionIsValid) {
+      setSelectedEmailId(null);
     }
-  }, [mailItems, selectedEmailId]);
+  }, [mailItems, selectedEmailId, handleSelectEmail]);
 
   const selectedEmail = useMemo(
     () => mailItems.find((e) => e.id === selectedEmailId) || null,

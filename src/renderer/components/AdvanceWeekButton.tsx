@@ -1,11 +1,11 @@
-import { useEffect } from 'react';
-import { Play, Square, Loader2, MapPin, type LucideIcon } from 'lucide-react';
+import { useEffect, useMemo, useCallback } from 'react';
+import { Play, Square, Loader2, MapPin, Mail, type LucideIcon } from 'lucide-react';
 import { useDerivedGameState, useGoToCircuit, useStartSimulation, useStopSimulation, useSimulationTickListener } from '../hooks';
 import { GamePhase, CalendarEntry } from '../../shared/domain';
 import { ACCENT_MUTED_BUTTON_CLASSES, ACCENT_BORDERED_BUTTON_STYLE } from '../utils/theme-styles';
-import { getWeekNumber } from '../../shared/utils/date-utils';
+import { getWeekNumber, getOldestUnreadEmail, getUnrespondedMustRespondEmails } from '../../shared/utils';
 
-type ButtonAction = 'startSimulation' | 'stopSimulation' | 'goToCircuit' | 'disabled';
+type ButtonAction = 'startSimulation' | 'stopSimulation' | 'goToCircuit' | 'disabled' | 'nextUnreadEmail' | 'mustRespond';
 
 /** Icon for each button action */
 const ACTION_ICONS: Record<ButtonAction, LucideIcon> = {
@@ -13,6 +13,8 @@ const ACTION_ICONS: Record<ButtonAction, LucideIcon> = {
   stopSimulation: Square,
   goToCircuit: MapPin,
   disabled: Play,
+  nextUnreadEmail: Mail,
+  mustRespond: Mail,
 };
 
 /**
@@ -23,7 +25,9 @@ function getButtonConfig(
   currentWeek: number,
   nextRace: CalendarEntry | null,
   raceName: string,
-  isSimulating: boolean
+  isSimulating: boolean,
+  hasMustRespond: boolean,
+  hasUnreadEmails: boolean
 ): { action: ButtonAction; text: string } {
   if (phase === GamePhase.PostSeason) {
     return { action: 'disabled', text: 'Season Complete' };
@@ -32,6 +36,16 @@ function getButtonConfig(
   // If simulating, show stop button
   if (isSimulating) {
     return { action: 'stopSimulation', text: 'Stop' };
+  }
+
+  // Must Respond takes highest priority - blocks time advancement
+  if (hasMustRespond) {
+    return { action: 'mustRespond', text: 'Must Respond' };
+  }
+
+  // Next Unread Mail - navigate to oldest unread email
+  if (hasUnreadEmails) {
+    return { action: 'nextUnreadEmail', text: 'Next Unread Mail' };
   }
 
   // Check if current week has a race (next uncompleted race is this week)
@@ -52,6 +66,41 @@ export function AdvanceWeekButton() {
   useSimulationTickListener();
 
   const isSimulating = gameState?.simulation?.isSimulating ?? false;
+
+  // Email state calculation for button behavior
+  const emailState = useMemo(() => {
+    if (!gameState) return { hasUnread: false, hasMustRespond: false, targetEmailId: null };
+
+    const mustRespondEmails = getUnrespondedMustRespondEmails(gameState.calendarEvents, gameState);
+    const oldestUnread = getOldestUnreadEmail(gameState.calendarEvents);
+
+    // Priority: must-respond > unread
+    if (mustRespondEmails.length > 0) {
+      // If there are unread emails, go to oldest unread first
+      // Otherwise go to oldest must-respond
+      const target = oldestUnread ?? mustRespondEmails[0];
+      return {
+        hasUnread: !!oldestUnread,
+        hasMustRespond: true,
+        targetEmailId: target.id,
+      };
+    }
+
+    return {
+      hasUnread: !!oldestUnread,
+      hasMustRespond: false,
+      targetEmailId: oldestUnread?.id ?? null,
+    };
+  }, [gameState]);
+
+  // Navigate to email helper
+  const navigateToEmail = useCallback((emailId: string) => {
+    window.dispatchEvent(
+      new CustomEvent('app:navigate', {
+        detail: { section: 'inbox', subItem: 'inbox', emailId },
+      })
+    );
+  }, []);
 
   // Esc key handler to stop simulation
   useEffect(() => {
@@ -84,7 +133,9 @@ export function AdvanceWeekButton() {
     currentWeek,
     nextRace,
     raceName,
-    isSimulating
+    isSimulating,
+    emailState.hasMustRespond,
+    emailState.hasUnread
   );
 
   const handleClick = () => {
@@ -94,6 +145,8 @@ export function AdvanceWeekButton() {
       startSimulation.mutate();
     } else if (action === 'stopSimulation') {
       stopSimulation.mutate();
+    } else if ((action === 'nextUnreadEmail' || action === 'mustRespond') && emailState.targetEmailId) {
+      navigateToEmail(emailState.targetEmailId);
     }
   };
 

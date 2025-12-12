@@ -1083,6 +1083,7 @@ export interface CalendarEvent {
   subject: string;   // Brief text shown on calendar
   critical: boolean; // If true, auto-stops simulation
   read?: boolean;    // Only for Email type - true if user has viewed it
+  mustRespond?: boolean; // Only for Email type - true if blocks time advancement until responded
   emailCategory?: EmailCategory; // Only set when type is Email
   sender?: string;   // Email sender name (e.g., "Adrian Newey (Chief Designer)")
   senderId?: string; // Chief ID for face generation lookup
