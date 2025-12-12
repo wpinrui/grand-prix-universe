@@ -95,6 +95,12 @@ export const GHOST_BORDERED_BUTTON_CLASSES =
   'cursor-pointer bg-[var(--neutral-800)] border-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-750)] hover:text-primary hover:border-[var(--neutral-600)]';
 
 /**
+ * Neutral button - secondary actions with background (Load Game, etc.)
+ */
+export const NEUTRAL_BUTTON_CLASSES =
+  'btn px-4 py-2 font-semibold bg-[var(--neutral-700)] text-primary border border-[var(--neutral-600)] rounded-lg cursor-pointer hover:bg-[var(--neutral-600)] transition-all duration-200 flex items-center gap-2';
+
+/**
  * Danger button - destructive actions (Delete confirmation, etc.)
  */
 export const DANGER_BUTTON_CLASSES =
