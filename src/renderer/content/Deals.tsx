@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { SectionHeading, TabBar, Dropdown } from '../components';
 import type { Tab, DropdownOption } from '../components';
 import { ACCENT_CARD_STYLE, ACCENT_BORDERED_BUTTON_STYLE, GHOST_BORDERED_BUTTON_CLASSES } from '../utils/theme-styles';
-import { formatCurrency } from '../utils/format';
+import { formatCurrency, SPONSOR_TIER_LABELS } from '../utils/format';
 import { seasonToYear } from '../../shared/utils/date-utils';
 import { IpcChannels } from '../../shared/ipc';
 import {
@@ -94,17 +94,6 @@ function getPlacementForTier(tier: SponsorTier): SponsorPlacement {
   }
 }
 
-function getTierLabel(tier: SponsorTier): string {
-  switch (tier) {
-    case SponsorTier.Title:
-      return 'Title';
-    case SponsorTier.Major:
-      return 'Major';
-    case SponsorTier.Minor:
-      return 'Minor';
-  }
-}
-
 function getPhaseLabel(phase: NegotiationPhase): string {
   switch (phase) {
     case NegotiationPhase.AwaitingResponse:
@@ -168,7 +157,7 @@ function SponsorCard({ sponsor, isContracted, isNegotiating, onContact }: Sponso
         <div className="flex items-center gap-2">
           <h3 className="font-semibold text-primary truncate">{sponsor.name}</h3>
           <span className="text-xs px-2 py-0.5 rounded bg-neutral-700 text-muted">
-            {getTierLabel(sponsor.tier)}
+            {SPONSOR_TIER_LABELS[sponsor.tier]}
           </span>
         </div>
         <p className="text-sm text-muted capitalize">{sponsor.industry.replace(/-/g, ' ')}</p>
@@ -227,7 +216,7 @@ function ContactModal({ sponsor, currentSeason, onClose, onSubmit }: ContactModa
           <SponsorLogo sponsor={sponsor} size="md" />
           <div>
             <p className="text-sm text-muted capitalize">{sponsor.industry.replace(/-/g, ' ')}</p>
-            <p className="text-xs text-secondary">{getTierLabel(sponsor.tier)} Sponsor</p>
+            <p className="text-xs text-secondary">{SPONSOR_TIER_LABELS[sponsor.tier]} Sponsor</p>
           </div>
         </div>
 
@@ -318,7 +307,7 @@ function NegotiationCard({ negotiation, sponsor, onAccept, onReject }: Negotiati
           <div className="flex items-center gap-2 mb-1">
             <h3 className="font-semibold text-primary">{sponsor.name}</h3>
             <span className="text-xs px-2 py-0.5 rounded bg-neutral-700 text-muted">
-              {getTierLabel(sponsor.tier)}
+              {SPONSOR_TIER_LABELS[sponsor.tier]}
             </span>
           </div>
 
