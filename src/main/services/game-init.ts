@@ -604,6 +604,7 @@ export function createAppointmentNews(
       lastName: driver.lastName,
       nationality: driver.nationality,
       raceNumber: driver.raceNumber,
+      photoUrl: driver.photoUrl,
       lastSeasonPosition: lastSeason?.championshipPosition,
       lastSeasonPoints: lastSeason?.totalPoints,
       contractEnd: driver.contractEnd,

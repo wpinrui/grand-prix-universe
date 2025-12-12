@@ -5,10 +5,8 @@
  * FM-style layout with headline, article body, and driver cards.
  */
 
-import { useRef, useEffect } from 'react';
 import { Newspaper, ArrowRight } from 'lucide-react';
 import type { AppointmentNews, AppointmentDriverSummary } from '../../shared/domain';
-import { generateFace, type TeamColors } from '../utils/face-generator';
 import { formatCurrency } from '../utils/format';
 import { seasonToYear } from '../../shared/utils/date-utils';
 import { PRIMARY_BUTTON_CLASSES } from '../utils/theme-styles';
@@ -20,31 +18,13 @@ interface AppointmentNewsModalProps {
 
 interface DriverCardProps {
   driver: AppointmentDriverSummary;
-  teamColors: TeamColors;
   seasonNumber: number;
 }
 
-const FACE_VERTICAL_OFFSET = -8;
-
 /**
- * Renders a single driver card with face, stats, and contract info
+ * Renders a single driver card with photo, stats, and contract info
  */
-function DriverCard({ driver, teamColors, seasonNumber }: DriverCardProps) {
-  const faceContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const container = faceContainerRef.current;
-    if (container && driver.driverId) {
-      container.innerHTML = '';
-      generateFace(container, driver.driverId, driver.nationality, teamColors, 64);
-    }
-    return () => {
-      if (container) {
-        container.innerHTML = '';
-      }
-    };
-  }, [driver.driverId, driver.nationality, teamColors]);
-
+function DriverCard({ driver, seasonNumber }: DriverCardProps) {
   const contractEndYear = seasonToYear(driver.contractEnd);
   const contractYears = driver.contractEnd - seasonNumber;
   const contractText = contractYears <= 0
@@ -53,9 +33,19 @@ function DriverCard({ driver, teamColors, seasonNumber }: DriverCardProps) {
 
   return (
     <div className="flex items-center gap-4 p-4 rounded-lg bg-[var(--neutral-850)] border border-[var(--neutral-700)]">
-      {/* Driver face */}
-      <div className="w-16 h-16 rounded-full overflow-hidden bg-[var(--neutral-700)] flex justify-center flex-shrink-0">
-        <div ref={faceContainerRef} style={{ marginTop: FACE_VERTICAL_OFFSET }} />
+      {/* Driver photo */}
+      <div className="w-16 h-16 rounded-full overflow-hidden bg-[var(--neutral-700)] flex-shrink-0">
+        {driver.photoUrl ? (
+          <img
+            src={driver.photoUrl}
+            alt={`${driver.firstName} ${driver.lastName}`}
+            className="w-full h-full object-cover object-top"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-muted text-xl font-bold">
+            {driver.firstName[0]}{driver.lastName[0]}
+          </div>
+        )}
       </div>
 
       {/* Driver info */}
@@ -107,11 +97,6 @@ function DriverCard({ driver, teamColors, seasonNumber }: DriverCardProps) {
  * Main appointment news modal component
  */
 export function AppointmentNewsModal({ news, onContinue }: AppointmentNewsModalProps) {
-  const teamColors: TeamColors = {
-    primary: news.teamPrimaryColor,
-    secondary: news.teamSecondaryColor,
-  };
-
   // Derive season number from year (reverse of seasonToYear)
   const seasonNumber = news.year - 2024;
 
@@ -187,7 +172,6 @@ export function AppointmentNewsModal({ news, onContinue }: AppointmentNewsModalP
               <DriverCard
                 key={driver.driverId || 'tba'}
                 driver={driver}
-                teamColors={teamColors}
                 seasonNumber={seasonNumber}
               />
             ))}

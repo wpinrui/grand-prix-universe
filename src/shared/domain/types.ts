@@ -1661,6 +1661,8 @@ export interface AppointmentDriverSummary {
   lastName: string;
   nationality: string;
   raceNumber?: number;
+  /** Driver photo URL */
+  photoUrl?: string;
   /** Last season's championship position (if available) */
   lastSeasonPosition?: number;
   /** Last season's points total (if available) */
