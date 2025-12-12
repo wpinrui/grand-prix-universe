@@ -446,6 +446,12 @@ export function generateDailyNews(state: GameState): CalendarEvent[] {
   // 2. Time-based content (previews, analysis scheduled around race calendar)
   news.push(...generateRaceCoverage(context));
 
+  // 3. Pre-season content (season preview, driver rankings)
+  news.push(...generatePreSeasonNews(context));
+
+  // 4. Mid-season analysis (hot seat, over/under performers)
+  news.push(...generateAnalysisNews(context));
+
   return news;
 }
 
@@ -771,4 +777,286 @@ function getCircuitType(circuit: Circuit): CircuitType {
   if (downforceRequirement > 70 && overtakingOpportunity < 40) return 'street';
   if (speedRating < 60 && downforceRequirement > 60) return 'technical';
   return 'balanced';
+}
+
+// =============================================================================
+// PRE-SEASON NEWS GENERATORS (PR 6)
+// =============================================================================
+
+/**
+ * Generate pre-season news content
+ * Runs only during PreSeason phase
+ */
+function generatePreSeasonNews(context: NewsGenerationContext): CalendarEvent[] {
+  const news: CalendarEvent[] = [];
+
+  if (!context.isPreSeason) return news;
+
+  // Season preview - generate once on specific day (day 15 of year = mid-January)
+  if (context.dayOfYear === 15) {
+    const preview = generateSeasonPreview(context);
+    if (preview) news.push(preview);
+  }
+
+  // Driver rankings - generate once on specific day (day 30 = late January)
+  if (context.dayOfYear === 30) {
+    const rankings = generateDriverRankings(context);
+    if (rankings) news.push(rankings);
+  }
+
+  return news;
+}
+
+/**
+ * Generate season preview article
+ */
+function generateSeasonPreview(context: NewsGenerationContext): CalendarEvent | null {
+  const { state, currentDate } = context;
+  const teams = state.teams;
+
+  // Get constructor standings from last season (if any)
+  const lastSeasonStandings = state.currentSeason.constructorStandings;
+  const defendingChampTeam = lastSeasonStandings.length > 0
+    ? state.teams.find((t) => t.id === lastSeasonStandings[0].teamId)
+    : null;
+
+  const totalRaces = state.currentSeason.calendar.length;
+
+  const subject = `${currentDate.year} Season Preview: ${totalRaces} races, infinite possibilities`;
+
+  const introTemplates = [
+    `The ${currentDate.year} Formula One World Championship is almost upon us, and the anticipation in the paddock is palpable.`,
+    `As the new season dawns, teams have been working tirelessly over the winter to find those crucial tenths of a second.`,
+    `Formula One enters a new chapter in ${currentDate.year}, with ${teams.length} teams ready to battle for glory.`,
+  ];
+
+  const championContext = defendingChampTeam
+    ? `${defendingChampTeam.name} enter the season as defending champions, but the competition is hungry to dethrone them.`
+    : `With no clear favorite emerging from testing, the season promises to be one of the most open in years.`;
+
+  const body = `${pickRandom(introTemplates)}\n\n` +
+    `${championContext}\n\n` +
+    `With ${totalRaces} races scheduled across five continents, the ${currentDate.year} championship will test the endurance, skill, and strategy of every team on the grid.\n\n` +
+    `"Pre-season testing has been encouraging but we know the real challenge begins when the lights go out," said one team principal. "Every team believes this is their year."`;
+
+  return createNewsHeadline({
+    date: currentDate,
+    source: NewsSource.TheRace,
+    category: NewsCategory.PreSeason,
+    subject,
+    body,
+    importance: 'high',
+  });
+}
+
+/**
+ * Generate driver power rankings article
+ */
+function generateDriverRankings(context: NewsGenerationContext): CalendarEvent | null {
+  const { state, currentDate } = context;
+
+  // Get all race drivers sorted by rating
+  const raceDrivers = state.drivers
+    .filter((d) => d.teamId && d.role !== 'test')
+    .sort((a, b) => {
+      const aRating = (a.stats.speed + a.stats.consistency + a.stats.racecraft) / 3;
+      const bRating = (b.stats.speed + b.stats.consistency + b.stats.racecraft) / 3;
+      return bRating - aRating;
+    });
+
+  if (raceDrivers.length < 5) return null;
+
+  const top5 = raceDrivers.slice(0, 5);
+  const subject = `Our Top 5 Drivers Heading Into ${currentDate.year}`;
+
+  const rankings = top5.map((driver, index) => {
+    const team = state.teams.find((t) => t.id === driver.teamId);
+    const teamName = team?.shortName ?? 'Unknown';
+    const avgRating = Math.round((driver.stats.speed + driver.stats.consistency + driver.stats.racecraft) / 3);
+    return `**${index + 1}. ${getFullName(driver)}** (${teamName}) - Rating: ${avgRating}`;
+  });
+
+  const body = `As we approach the season opener, we've ranked the drivers we think will make the biggest impact in ${currentDate.year}.\n\n` +
+    `${rankings.join('\n\n')}\n\n` +
+    `Of course, raw talent is only part of the equation - machinery, team support, and luck all play their part. But these five have the tools to fight at the front.`;
+
+  return createNewsHeadline({
+    date: currentDate,
+    source: NewsSource.TheRace,
+    category: NewsCategory.PreSeason,
+    subject,
+    body,
+    importance: 'high',
+  });
+}
+
+// =============================================================================
+// MID-SEASON ANALYSIS GENERATORS (PR 6)
+// =============================================================================
+
+/**
+ * Generate mid-season analysis news
+ * Hot seat analysis, over/under performers
+ */
+function generateAnalysisNews(context: NewsGenerationContext): CalendarEvent[] {
+  const news: CalendarEvent[] = [];
+
+  if (!context.isRacingSeason) return news;
+
+  const completedRaces = context.recentRaces.length > 0
+    ? context.state.currentSeason.calendar.filter((r) => r.completed).length
+    : 0;
+
+  // Hot seat analysis - check every 3 races after race 3
+  if (completedRaces >= 3 && completedRaces % 3 === 0) {
+    // Only generate on the day after a race completes (check if we just completed a race)
+    const justCompletedRace = context.recentRaces[0];
+    if (justCompletedRace && isDaysBeforeRace(context, justCompletedRace, -1)) {
+      const hotSeat = generateHotSeatAnalysis(context);
+      if (hotSeat) news.push(hotSeat);
+    }
+  }
+
+  // Over/under performers - generate after race 5, then every 5 races
+  if (completedRaces >= 5 && completedRaces % 5 === 0) {
+    const justCompletedRace = context.recentRaces[0];
+    if (justCompletedRace && isDaysBeforeRace(context, justCompletedRace, -1)) {
+      const performers = generatePerformanceAnalysis(context);
+      if (performers) news.push(performers);
+    }
+  }
+
+  return news;
+}
+
+/**
+ * Generate hot seat analysis when a driver is underperforming
+ */
+function generateHotSeatAnalysis(context: NewsGenerationContext): CalendarEvent | null {
+  const { state, currentDate } = context;
+  const standings = state.currentSeason.driverStandings;
+
+  // Find drivers significantly behind their teammates
+  const hotSeatCandidates: Array<{
+    driver: Driver;
+    teammate: Driver;
+    pointsGap: number;
+    team: Team;
+  }> = [];
+
+  for (const team of state.teams) {
+    const teamDrivers = standings.filter((s) => s.teamId === team.id);
+    if (teamDrivers.length < 2) continue;
+
+    const [first, second] = teamDrivers.sort((a, b) => b.points - a.points);
+    const gap = first.points - second.points;
+
+    // Significant gap (more than 20 points behind teammate)
+    if (gap >= 20) {
+      const underperformer = state.drivers.find((d) => d.id === second.driverId);
+      const leader = state.drivers.find((d) => d.id === first.driverId);
+
+      if (underperformer && leader) {
+        hotSeatCandidates.push({
+          driver: underperformer,
+          teammate: leader,
+          pointsGap: gap,
+          team,
+        });
+      }
+    }
+  }
+
+  if (hotSeatCandidates.length === 0) return null;
+
+  // Pick the worst underperformer
+  const worst = hotSeatCandidates.sort((a, b) => b.pointsGap - a.pointsGap)[0];
+  const { driver, teammate, pointsGap, team } = worst;
+
+  const subject = `Hot Seat: Is ${getFullName(driver)}'s future at ${team.shortName} in doubt?`;
+
+  const body = `Questions are being asked about ${getFullName(driver)}'s future at ${team.name} following a difficult start to the season.\n\n` +
+    `After ${context.state.currentSeason.calendar.filter((r) => r.completed).length} races, ${getFullName(driver)} sits ${pointsGap} points behind teammate ${getFullName(teammate)}, raising eyebrows in the paddock.\n\n` +
+    `While ${team.shortName} have publicly backed their driver, sources suggest the team hierarchy is monitoring the situation closely.`;
+
+  const quotes: NewsQuote[] = [
+    createAnonymousQuote(
+      "There's definitely pressure. The team invested heavily and they expect results.",
+      'sources close to the team'
+    ),
+  ];
+
+  return createNewsHeadline({
+    date: currentDate,
+    source: NewsSource.TheRace,
+    category: NewsCategory.Commentary,
+    subject,
+    body,
+    quotes,
+    importance: 'medium',
+  });
+}
+
+/**
+ * Generate over/under performers analysis
+ */
+function generatePerformanceAnalysis(context: NewsGenerationContext): CalendarEvent | null {
+  const { state, currentDate } = context;
+  const constructorStandings = state.currentSeason.constructorStandings;
+
+  if (constructorStandings.length < 4) return null;
+
+  // Find teams whose position differs significantly from expected (based on budget/prestige)
+  // For simplicity, we'll compare current position to a rough expectation
+  const teamsWithPerformance = constructorStandings.map((standing, index) => {
+    const team = state.teams.find((t) => t.id === standing.teamId);
+    if (!team) return null;
+
+    // Simple expectation: sort teams by prestige
+    const expectedPosition = state.teams
+      .sort((a, b) => b.prestige - a.prestige)
+      .findIndex((t) => t.id === team.id) + 1;
+
+    const actualPosition = index + 1;
+    const positionDelta = expectedPosition - actualPosition; // Positive = overperforming
+
+    return { team, actualPosition, expectedPosition, positionDelta, points: standing.points };
+  }).filter((t): t is NonNullable<typeof t> => t !== null);
+
+  // Find biggest over and under performers
+  const overperformer = teamsWithPerformance
+    .filter((t) => t.positionDelta >= 2)
+    .sort((a, b) => b.positionDelta - a.positionDelta)[0];
+
+  const underperformer = teamsWithPerformance
+    .filter((t) => t.positionDelta <= -2)
+    .sort((a, b) => a.positionDelta - b.positionDelta)[0];
+
+  if (!overperformer && !underperformer) return null;
+
+  const completedRaces = state.currentSeason.calendar.filter((r) => r.completed).length;
+  const subject = `Season Analysis: Who's exceeding expectations?`;
+
+  let body = `After ${completedRaces} races, the championship picture is becoming clearer. Here's our analysis of who's exceeding - and falling short of - expectations.\n\n`;
+
+  if (overperformer) {
+    body += `**Overperformer: ${overperformer.team.name}**\n` +
+      `Currently P${overperformer.actualPosition} with ${overperformer.points} points. ` +
+      `Expected to be around P${overperformer.expectedPosition} based on their resources, they've been punching well above their weight.\n\n`;
+  }
+
+  if (underperformer) {
+    body += `**Underperformer: ${underperformer.team.name}**\n` +
+      `Currently P${underperformer.actualPosition} with ${underperformer.points} points. ` +
+      `Expected to challenge for P${underperformer.expectedPosition}, they've struggled to find consistent pace.`;
+  }
+
+  return createNewsHeadline({
+    date: currentDate,
+    source: NewsSource.TheRace,
+    category: NewsCategory.Commentary,
+    subject,
+    body,
+    importance: 'medium',
+  });
 }
