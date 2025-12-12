@@ -93,6 +93,10 @@ export function registerIpcHandlers(): void {
     GameStateManager.clearState();
   });
 
+  ipcMain.handle(IpcChannels.GAME_DISMISS_APPOINTMENT_NEWS, () => {
+    return GameStateManager.dismissAppointmentNews();
+  });
+
   ipcMain.handle(IpcChannels.GAME_ADVANCE_WEEK, () => {
     return GameStateManager.advanceWeek();
   });

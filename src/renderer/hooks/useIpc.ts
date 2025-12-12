@@ -277,6 +277,20 @@ export function useClearGameState() {
 }
 
 /**
+ * Dismiss the pending appointment news and update game state cache
+ * Used when player dismisses the appointment news modal on game start
+ */
+export function useDismissAppointmentNews() {
+  const queryClient = useQueryClient();
+  return useMutation<GameState, Error, void>({
+    mutationFn: () => window.electronAPI.invoke(IpcChannels.GAME_DISMISS_APPOINTMENT_NEWS),
+    onSuccess: (state) => {
+      queryClient.setQueryData(queryKeys.gameState, state);
+    },
+  });
+}
+
+/**
  * Quit the application
  */
 export function useQuitApp() {

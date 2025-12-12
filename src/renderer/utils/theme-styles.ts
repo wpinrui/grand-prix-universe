@@ -69,7 +69,7 @@ export const BORDERED_BUTTON_BASE = 'btn rounded-lg transition-all duration-200 
  * Primary action button - emerald CTA (New Game, OK, Start, etc.)
  */
 export const PRIMARY_BUTTON_CLASSES =
-  'btn px-6 py-2 font-semibold bg-emerald-600 text-white border border-emerald-500 rounded-lg hover:bg-emerald-500 disabled:bg-[var(--neutral-700)] disabled:border-[var(--neutral-600)] disabled:text-muted disabled:cursor-not-allowed transition-all duration-200';
+  'btn px-6 py-2 font-semibold bg-emerald-600 text-white border border-emerald-500 rounded-lg cursor-pointer hover:bg-emerald-500 disabled:bg-[var(--neutral-700)] disabled:border-[var(--neutral-600)] disabled:text-muted disabled:cursor-not-allowed transition-all duration-200';
 
 /**
  * Primary accent button classes - for main accent actions
