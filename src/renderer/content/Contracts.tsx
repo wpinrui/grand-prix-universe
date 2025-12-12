@@ -205,7 +205,7 @@ function CarEngineCard({
       <div className="flex gap-2">
         <button
           type="button"
-          className={`${GHOST_BORDERED_BUTTON_CLASSES} flex-1 text-sm cursor-pointer`}
+          className={`${GHOST_BORDERED_BUTTON_CLASSES} flex-1 text-sm`}
           onClick={onUpgrade}
           disabled={isLatestSpec}
           title={isLatestSpec ? 'Already on latest spec' : 'Purchase fresh engine with latest spec'}
@@ -214,7 +214,7 @@ function CarEngineCard({
         </button>
         <button
           type="button"
-          className={`${GHOST_BORDERED_BUTTON_CLASSES} flex-1 text-sm cursor-pointer`}
+          className={`${GHOST_BORDERED_BUTTON_CLASSES} flex-1 text-sm`}
           onClick={onCustomise}
           title="Reallocate engine stats"
         >
@@ -366,7 +366,7 @@ function ActionCard({ title, description, cost, buttonLabel, disabled, onClick }
       <div className="text-sm text-secondary mb-2">{cost}</div>
       <button
         type="button"
-        className={`${GHOST_BORDERED_BUTTON_CLASSES} w-full text-sm cursor-pointer`}
+        className={`${GHOST_BORDERED_BUTTON_CLASSES} w-full text-sm`}
         disabled={disabled}
         onClick={onClick}
       >
@@ -623,7 +623,7 @@ function ManufacturerRow({
       <td className="py-3 px-4 text-center">
         <button
           type="button"
-          className={`${GHOST_BORDERED_BUTTON_CLASSES} text-sm cursor-pointer`}
+          className={`${GHOST_BORDERED_BUTTON_CLASSES} text-sm`}
           onClick={onStartNegotiation}
           disabled={hasActiveNegotiation}
         >
@@ -726,14 +726,14 @@ function ActiveNegotiationCard({
           <div className="flex gap-2">
             <button
               type="button"
-              className={`${PRIMARY_BUTTON_CLASSES} flex-1 cursor-pointer`}
+              className={`${PRIMARY_BUTTON_CLASSES} flex-1`}
               onClick={() => onRespondToOffer(negotiation.id, 'accept')}
             >
               Accept Offer
             </button>
             <button
               type="button"
-              className={`${GHOST_BORDERED_BUTTON_CLASSES} flex-1 cursor-pointer`}
+              className={`${GHOST_BORDERED_BUTTON_CLASSES} flex-1`}
               onClick={() => onRespondToOffer(negotiation.id, 'reject')}
             >
               Reject

@@ -63,7 +63,7 @@ export const ACCENT_CARD_STYLE: CSSProperties = {
 // ===========================================
 
 /** Shared base classes for bordered buttons */
-export const BORDERED_BUTTON_BASE = 'btn rounded-lg transition-all duration-200 border';
+export const BORDERED_BUTTON_BASE = 'btn rounded-lg cursor-pointer transition-all duration-200 border';
 
 /**
  * Primary action button - emerald CTA (New Game, OK, Start, etc.)
@@ -85,49 +85,49 @@ export const ACCENT_MUTED_BUTTON_CLASSES = `${BORDERED_BUTTON_BASE} text-sm font
  * Ghost button - secondary actions (Back, Cancel, etc.)
  */
 export const GHOST_BUTTON_CLASSES =
-  'btn px-4 py-2 text-secondary hover:text-primary transition-colors';
+  'btn px-4 py-2 cursor-pointer text-secondary hover:text-primary transition-colors';
 
 /**
  * Ghost button with border - nav buttons, icon buttons in unselected state
  */
 export const GHOST_BORDERED_BUTTON_CLASSES =
-  'bg-[var(--neutral-800)] border-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-750)] hover:text-primary hover:border-[var(--neutral-600)]';
+  'cursor-pointer bg-[var(--neutral-800)] border-[var(--neutral-700)] text-secondary hover:bg-[var(--neutral-750)] hover:text-primary hover:border-[var(--neutral-600)]';
 
 /**
  * Danger button - destructive actions (Delete confirmation, etc.)
  */
 export const DANGER_BUTTON_CLASSES =
-  'btn px-4 py-2 font-semibold bg-red-600 text-white border border-red-500 rounded-lg hover:bg-red-500 transition-all duration-200';
+  'btn px-4 py-2 font-semibold bg-red-600 text-white border border-red-500 rounded-lg cursor-pointer hover:bg-red-500 transition-all duration-200';
 
 /**
  * Warning button - caution actions (Restart, etc.)
  */
 export const WARNING_BUTTON_CLASSES =
-  'btn px-4 py-2 font-semibold bg-amber-600 text-white border border-amber-500 rounded-lg hover:bg-amber-500 transition-all duration-200';
+  'btn px-4 py-2 font-semibold bg-amber-600 text-white border border-amber-500 rounded-lg cursor-pointer hover:bg-amber-500 transition-all duration-200';
 
 /**
  * Icon button - success variant (Load, Download, etc.)
  */
 export const ICON_BUTTON_SUCCESS_CLASSES =
-  'btn p-2 rounded-lg bg-emerald-600/20 text-emerald-400 border border-emerald-600/30 hover:bg-emerald-600/30 disabled:opacity-50 transition-all';
+  'btn p-2 rounded-lg cursor-pointer bg-emerald-600/20 text-emerald-400 border border-emerald-600/30 hover:bg-emerald-600/30 disabled:opacity-50 transition-all';
 
 /**
  * Icon button - danger variant (Delete, Remove, etc.)
  */
 export const ICON_BUTTON_DANGER_CLASSES =
-  'btn p-2 rounded-lg bg-red-600/20 text-red-400 border border-red-600/30 hover:bg-red-600/30 transition-all';
+  'btn p-2 rounded-lg cursor-pointer bg-red-600/20 text-red-400 border border-red-600/30 hover:bg-red-600/30 transition-all';
 
 /**
  * Icon button - neutral variant (Expand, Toggle, etc.)
  */
 export const ICON_BUTTON_NEUTRAL_CLASSES =
-  'btn p-2 rounded-lg bg-neutral-700/50 text-secondary hover:bg-neutral-700 hover:text-primary transition-all';
+  'btn p-2 rounded-lg cursor-pointer bg-neutral-700/50 text-secondary hover:bg-neutral-700 hover:text-primary transition-all';
 
 /**
  * Icon button - ghost variant (panel controls, minimal buttons)
  */
 export const ICON_BUTTON_GHOST_CLASSES =
-  'rounded hover:bg-[var(--neutral-700)] text-secondary hover:text-primary transition-colors';
+  'rounded cursor-pointer hover:bg-[var(--neutral-700)] text-secondary hover:text-primary transition-colors';
 
 // ===========================================
 // ALERT CLASS CONSTANTS
