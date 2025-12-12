@@ -200,7 +200,7 @@ function getChiefRoleTitle(role: ChiefRole): string {
     case ChiefRole.Mechanic:
       return 'Chief Mechanic';
     case ChiefRole.Commercial:
-      return 'Commercial Director';
+      return 'Commercial Manager';
     default:
       return 'Chief';
   }
@@ -291,8 +291,12 @@ function getRaceDate(year: number, weekNumber: number): GameDate {
 
 /**
  * Pick a random item from an array
+ * @throws Error if array is empty
  */
 export function pickRandom<T>(items: T[]): T {
+  if (items.length === 0) {
+    throw new Error('pickRandom called with empty array');
+  }
   return items[Math.floor(Math.random() * items.length)];
 }
 
