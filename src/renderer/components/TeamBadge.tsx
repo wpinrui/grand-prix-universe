@@ -1,4 +1,5 @@
 import type { Team } from '../../shared/domain';
+import { getTeamLogo } from '../utils/team-logos';
 
 const FALLBACK_PRIMARY_COLOR = '#52525e';
 const FALLBACK_SECONDARY_COLOR = '#3f3f48';
@@ -17,15 +18,17 @@ export function TeamBadge({ team, className = 'w-12 h-12' }: TeamBadgeProps) {
   const secondaryColor = team?.secondaryColor ?? FALLBACK_SECONDARY_COLOR;
   const badgeGlow = `0 4px 12px ${primaryColor}33, 0 0 20px ${primaryColor}22`;
 
-  if (team?.logoUrl) {
+  const logoUrl = team ? getTeamLogo(team.id) : undefined;
+
+  if (logoUrl) {
     return (
       <div
         className={`${className} aspect-square rounded-full overflow-hidden shadow-md flex items-center justify-center p-1.5`}
         style={{ boxShadow: badgeGlow, backgroundColor: primaryColor }}
       >
         <img
-          src={team.logoUrl}
-          alt={team.name}
+          src={logoUrl}
+          alt={team?.name ?? 'Team'}
           className="w-full h-full object-contain"
         />
       </div>
