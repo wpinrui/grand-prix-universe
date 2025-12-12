@@ -35,6 +35,7 @@ import {
   NewsCategory,
   NewsEventType,
   GamePhase,
+  DriverRole,
 } from '../../shared/domain';
 import type { EventImportance } from '../../shared/domain/types';
 import { daysBetween } from '../../shared/utils/date-utils';
@@ -857,7 +858,7 @@ function generateDriverRankings(context: NewsGenerationContext): CalendarEvent |
 
   // Get all race drivers sorted by rating
   const raceDrivers = state.drivers
-    .filter((d) => d.teamId && d.role !== 'test')
+    .filter((d) => d.teamId && d.role !== DriverRole.Test)
     .sort((a, b) => {
       const aRating = (a.stats.speed + a.stats.consistency + a.stats.racecraft) / 3;
       const bRating = (b.stats.speed + b.stats.consistency + b.stats.racecraft) / 3;
