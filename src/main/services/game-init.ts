@@ -51,6 +51,7 @@ import {
   TechnologyComponent,
   HandlingProblem,
   DriverRole,
+  CalendarEventType,
   hasRaceSeat,
   createDefaultTestSession,
 } from '../../shared/domain';
@@ -704,6 +705,20 @@ export function buildGameState(params: BuildGameStateParams): GameState {
     ? createAppointmentNews(playerName, playerTeam, teamDrivers, seasonNumber)
     : null;
 
+  // Create initial calendar event for the appointment headline
+  const initialCalendarEvents = pendingAppointmentNews
+    ? [
+        {
+          id: randomUUID(),
+          date: currentDate,
+          type: CalendarEventType.Headline,
+          subject: pendingAppointmentNews.headline,
+          body: pendingAppointmentNews.articleBody,
+          critical: false,
+        },
+      ]
+    : [];
+
   // Assemble complete game state
   const now = new Date().toISOString();
   return {
@@ -716,7 +731,7 @@ export function buildGameState(params: BuildGameStateParams): GameState {
     currentDate,
     phase: GamePhase.PreSeason,
     simulation: { ...DEFAULT_SIMULATION_STATE },
-    calendarEvents: [],
+    calendarEvents: initialCalendarEvents,
 
     currentSeason,
 
