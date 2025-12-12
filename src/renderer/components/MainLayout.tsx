@@ -7,7 +7,7 @@ import {
   type SectionId,
   type Section,
 } from '../navigation';
-import { useDerivedGameState, useTeamTheme, useClearGameState, useQuitApp, useAutoSaveListener } from '../hooks';
+import { useDerivedGameState, useTeamTheme, useClearGameState, useQuitApp, useAutoSaveListener, useDismissAppointmentNews } from '../hooks';
 import { EntityNavigationContext, getEntityRoute, type EntityType } from '../utils/entity-navigation';
 import { SectionButton } from './NavButtons';
 import { TopBar } from './TopBar';
@@ -18,6 +18,7 @@ import { ConfirmDialog } from './ConfirmDialog';
 import { AutoSaveToast } from './AutoSaveToast';
 import { BackgroundLayer } from './BackgroundLayer';
 import { GlobalSearch, parsePageId } from './GlobalSearch';
+import { AppointmentNewsModal } from './AppointmentNewsModal';
 import type { SearchResultType } from '../hooks/useGlobalSearch';
 import {
   TeamProfile,
@@ -116,6 +117,7 @@ export function MainLayout() {
   const navigate = useNavigate();
   const clearGameState = useClearGameState();
   const quitApp = useQuitApp();
+  const dismissAppointmentNews = useDismissAppointmentNews();
 
   const { gameState, playerTeam, nextRace } = useDerivedGameState();
 
@@ -495,6 +497,14 @@ export function MainLayout() {
           onClose={closeSearch}
           onSelect={handleSearchSelect}
         />
+
+        {/* Appointment News Modal - shown on game start */}
+        {gameState?.pendingAppointmentNews && (
+          <AppointmentNewsModal
+            news={gameState.pendingAppointmentNews}
+            onContinue={() => dismissAppointmentNews.mutate()}
+          />
+        )}
       </div>
     </EntityNavigationContext.Provider>
   );

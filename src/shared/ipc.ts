@@ -264,6 +264,7 @@ export const IpcChannels = {
   GAME_NEW: 'game:new',
   GAME_GET_STATE: 'game:getState',
   GAME_CLEAR_STATE: 'game:clearState',
+  GAME_DISMISS_APPOINTMENT_NEWS: 'game:dismissAppointmentNews',
   GAME_ADVANCE_WEEK: 'game:advanceWeek',
   GAME_GO_TO_CIRCUIT: 'game:goToCircuit',
   GAME_RUN_RACE: 'game:runRace',
@@ -388,6 +389,10 @@ export interface IpcInvokeMap {
   [IpcChannels.GAME_CLEAR_STATE]: {
     args: [];
     result: void;
+  };
+  [IpcChannels.GAME_DISMISS_APPOINTMENT_NEWS]: {
+    args: [];
+    result: GameState;
   };
   [IpcChannels.GAME_ADVANCE_WEEK]: {
     args: [];

@@ -1648,6 +1648,58 @@ export interface ActiveManufacturerContract {
 }
 
 // -----------------------------------------------------------------------------
+// Appointment News (shown on game start / team change)
+// -----------------------------------------------------------------------------
+
+/**
+ * Driver summary info for appointment news modal
+ * Contains key stats shown on the "meet your drivers" banner
+ */
+export interface AppointmentDriverSummary {
+  driverId: string;
+  firstName: string;
+  lastName: string;
+  nationality: string;
+  raceNumber?: number;
+  /** Last season's championship position (if available) */
+  lastSeasonPosition?: number;
+  /** Last season's points total (if available) */
+  lastSeasonPoints?: number;
+  /** Contract end season number */
+  contractEnd: number;
+  /** Annual salary */
+  salary: number;
+  /** Driver reputation (0-100) */
+  reputation: number;
+}
+
+/**
+ * AppointmentNews - Data for the "You've been appointed" news modal
+ * Shown when player joins a team (game start or team change)
+ */
+export interface AppointmentNews {
+  /** Player's name */
+  playerName: string;
+  /** Team the player is joining */
+  teamId: string;
+  teamName: string;
+  teamShortName: string;
+  teamPrimaryColor: string;
+  teamSecondaryColor: string;
+  teamLogoUrl: string | null;
+  /** Outgoing team principal being replaced */
+  outgoingPrincipalName: string;
+  /** News headline (e.g., "John Smith appointed as McLaren Team Principal") */
+  headline: string;
+  /** Full article body text */
+  articleBody: string;
+  /** The two drivers the player will manage */
+  drivers: [AppointmentDriverSummary, AppointmentDriverSummary];
+  /** Year this is happening (for display) */
+  year: number;
+}
+
+// -----------------------------------------------------------------------------
 // Main Game State Container
 // -----------------------------------------------------------------------------
 
@@ -1716,4 +1768,8 @@ export interface GameState {
 
   // Game Rules (copied from config, could theoretically change)
   rules: GameRules;
+
+  // Pending appointment news (shown on game start / team change)
+  // Cleared after player dismisses the modal
+  pendingAppointmentNews: AppointmentNews | null;
 }

@@ -40,6 +40,8 @@ import type {
   TechnologyLevel,
   CurrentYearChassisState,
   HandlingProblemState,
+  AppointmentNews,
+  AppointmentDriverSummary,
 } from '../../shared/domain';
 import {
   GamePhase,
@@ -48,12 +50,14 @@ import {
   ManufacturerDealType,
   TechnologyComponent,
   HandlingProblem,
+  DriverRole,
   hasRaceSeat,
   createDefaultTestSession,
 } from '../../shared/domain';
 import {
   getPreSeasonStartDate,
   DEFAULT_SIMULATION_STATE,
+  seasonToYear,
 } from '../../shared/utils/date-utils';
 import {
   createDefaultTeamEngineState,
@@ -483,6 +487,168 @@ export function createInitialManufacturerContracts(
 }
 
 /**
+ * Gets driver role priority for sorting (first > second > equal > test)
+ */
+function getDriverRolePriority(role: DriverRole): number {
+  switch (role) {
+    case DriverRole.First: return 0;
+    case DriverRole.Second: return 1;
+    case DriverRole.Equal: return 2;
+    case DriverRole.Test: return 3;
+    default: return 4;
+  }
+}
+
+/**
+ * Generates the article body for an appointment news story
+ * Creates believable, dynamic text based on team context
+ */
+function generateAppointmentArticleBody(
+  playerName: string,
+  team: Team,
+  outgoingPrincipalName: string,
+  year: number
+): string {
+  // Extract team context from description to inform the narrative
+  const isTopTeam = team.budget >= 180000000;
+  const isMidfield = team.budget >= 100000000 && team.budget < 180000000;
+
+  // Build article paragraphs
+  const paragraphs: string[] = [];
+
+  // Opening paragraph - the announcement
+  paragraphs.push(
+    `${team.name} has announced the appointment of ${playerName} as their new Team Principal, ` +
+    `effective immediately. The appointment sees ${outgoingPrincipalName} depart the ${team.headquarters}-based outfit ` +
+    `ahead of the ${year} Formula One season.`
+  );
+
+  // Second paragraph - context about the outgoing principal
+  if (isTopTeam) {
+    paragraphs.push(
+      `${outgoingPrincipalName}'s tenure at ${team.shortName} saw the team establish itself as one of the ` +
+      `leading forces in the paddock. However, the team's ownership group has decided to bring in fresh ` +
+      `leadership as they look to build on recent successes and push for championship glory.`
+    );
+  } else if (isMidfield) {
+    paragraphs.push(
+      `${outgoingPrincipalName} led ${team.shortName} through a period of steady development, though ` +
+      `the team has yet to achieve a breakthrough to the front of the grid. The change in leadership ` +
+      `signals the team's intent to accelerate their progress and challenge for podium positions.`
+    );
+  } else {
+    paragraphs.push(
+      `${outgoingPrincipalName}'s time at ${team.shortName} was marked by the challenges of operating ` +
+      `at the back of the grid with limited resources. The team's stakeholders have opted for a change ` +
+      `in direction, hoping ${playerName} can bring new ideas and energy to the struggling outfit.`
+    );
+  }
+
+  // Third paragraph - expectations for the new principal
+  if (isTopTeam) {
+    paragraphs.push(
+      `${playerName} takes the helm of a well-resourced operation with championship aspirations. ` +
+      `The team's state-of-the-art facilities and talented driver lineup provide a strong foundation, ` +
+      `but the pressure to deliver immediate results will be immense.`
+    );
+  } else if (isMidfield) {
+    paragraphs.push(
+      `${playerName} inherits a team with potential but in need of direction. The ${year} season ` +
+      `presents an opportunity to make a mark, with the team's infrastructure and budget capable of ` +
+      `supporting a push into the top five.`
+    );
+  } else {
+    paragraphs.push(
+      `${playerName} faces a significant challenge at ${team.shortName}, where limited resources ` +
+      `have hampered progress in recent seasons. The new Team Principal will need to maximize every ` +
+      `opportunity and build a culture of improvement if the team is to move up the grid.`
+    );
+  }
+
+  // Closing paragraph - looking ahead
+  paragraphs.push(
+    `${playerName}'s first task will be to assess the team's current state and prepare for the ` +
+    `upcoming season. With pre-season testing just around the corner, there is no time to waste ` +
+    `as the new Team Principal looks to make their mark on Formula One.`
+  );
+
+  return paragraphs.join('\n\n');
+}
+
+/**
+ * Creates appointment news data for when a player joins a team
+ */
+export function createAppointmentNews(
+  playerName: string,
+  team: Team,
+  teamDrivers: Driver[],
+  seasonNumber: number
+): AppointmentNews {
+  const year = seasonToYear(seasonNumber);
+
+  // Sort drivers by role priority and take first two (should be race drivers)
+  const sortedDrivers = [...teamDrivers]
+    .filter((d) => d.role !== DriverRole.Test)
+    .sort((a, b) => getDriverRolePriority(a.role) - getDriverRolePriority(b.role))
+    .slice(0, 2);
+
+  // Create driver summaries
+  const driverSummaries: AppointmentDriverSummary[] = sortedDrivers.map((driver) => {
+    // Get last season stats from career history if available
+    const lastSeason = driver.careerHistory?.find((h) => h.season === year - 1);
+
+    return {
+      driverId: driver.id,
+      firstName: driver.firstName,
+      lastName: driver.lastName,
+      nationality: driver.nationality,
+      raceNumber: driver.raceNumber,
+      lastSeasonPosition: lastSeason?.championshipPosition,
+      lastSeasonPoints: lastSeason?.totalPoints,
+      contractEnd: driver.contractEnd,
+      salary: driver.salary,
+      reputation: driver.reputation,
+    };
+  });
+
+  // Ensure we have exactly 2 drivers (pad with empty if needed - shouldn't happen)
+  while (driverSummaries.length < 2) {
+    driverSummaries.push({
+      driverId: '',
+      firstName: 'TBA',
+      lastName: '',
+      nationality: '',
+      contractEnd: seasonNumber,
+      salary: 0,
+      reputation: 0,
+    });
+  }
+
+  const headline = `${playerName} appointed as ${team.name} Team Principal`;
+  const articleBody = generateAppointmentArticleBody(
+    playerName,
+    team,
+    team.principal,
+    year
+  );
+
+  return {
+    playerName,
+    teamId: team.id,
+    teamName: team.name,
+    teamShortName: team.shortName,
+    teamPrimaryColor: team.primaryColor,
+    teamSecondaryColor: team.secondaryColor,
+    teamLogoUrl: team.logoUrl,
+    outgoingPrincipalName: team.principal,
+    headline,
+    articleBody,
+    drivers: [driverSummaries[0], driverSummaries[1]],
+    year,
+  };
+}
+
+/**
  * Assembles all components into a complete GameState object
  */
 export function buildGameState(params: BuildGameStateParams): GameState {
@@ -531,6 +697,13 @@ export function buildGameState(params: BuildGameStateParams): GameState {
   // Start at pre-season (January 1st of the season's year)
   const currentDate: GameDate = getPreSeasonStartDate(seasonNumber);
 
+  // Generate appointment news for game start
+  const playerTeam = teams.find((t) => t.id === teamId);
+  const teamDrivers = drivers.filter((d) => d.teamId === teamId);
+  const pendingAppointmentNews = playerTeam
+    ? createAppointmentNews(playerName, playerTeam, teamDrivers, seasonNumber)
+    : null;
+
   // Assemble complete game state
   const now = new Date().toISOString();
   return {
@@ -569,5 +742,6 @@ export function buildGameState(params: BuildGameStateParams): GameState {
     events: [],
     partsLog: [],
     rules,
+    pendingAppointmentNews,
   };
 }

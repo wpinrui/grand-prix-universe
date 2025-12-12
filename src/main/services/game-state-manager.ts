@@ -253,6 +253,19 @@ export const GameStateManager = {
   },
 
   /**
+   * Dismisses the pending appointment news (player has seen it)
+   * Returns the updated game state
+   */
+  dismissAppointmentNews(): GameState {
+    const state = GameStateManager.currentState;
+    if (!state) {
+      throw new Error('No active game');
+    }
+    state.pendingAppointmentNews = null;
+    return cloneDeep(state);
+  },
+
+  /**
    * Advances the game by one week.
    * Does NOT run races - use runRace for that.
    */
