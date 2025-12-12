@@ -4,7 +4,7 @@ import { ACCENT_MUTED_BUTTON_CLASSES, ACCENT_MUTED_BUTTON_STYLE, ICON_BUTTON_GHO
 import { AdvanceWeekButton } from './AdvanceWeekButton';
 import { formatGameDate } from '../../shared/utils/date-utils';
 
-const NAV_BUTTON_CLASSES = `${ICON_BUTTON_GHOST_CLASSES} p-1.5 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed`;
+const NAV_BUTTON_CLASSES = `${ICON_BUTTON_GHOST_CLASSES} p-1.5 disabled:opacity-30 disabled:cursor-not-allowed`;
 
 interface TopBarProps {
   currentDate: GameDate | null;
