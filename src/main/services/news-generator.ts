@@ -390,7 +390,7 @@ function generateRacePreview(
  */
 function generateRacePredictions(
   context: NewsGenerationContext,
-  race: CalendarEntry,
+  _race: CalendarEntry, // @agent: unused but kept for consistency with other generators
   circuit: Circuit
 ): CalendarEvent | null {
   const { state, currentDate } = context;
@@ -426,14 +426,17 @@ function generateLocalCoverage(
 ): CalendarEvent | null {
   const { currentDate } = context;
 
-  const { subject, body } = pickLocalCoverageContent(circuit, race.raceNumber);
+  const { subject, body, senderName } = pickLocalCoverageContent(circuit, race.raceNumber);
+
+  // Prepend the local paper name to the body for authenticity
+  const bodyWithSource = `*${senderName}*\n\n${body}`;
 
   return createNewsHeadline({
     date: currentDate,
     source: NewsSource.LocalMedia,
     category: NewsCategory.RacePreview,
     subject,
-    body,
+    body: bodyWithSource,
     importance: 'low',
   });
 }
@@ -441,6 +444,8 @@ function generateLocalCoverage(
 // =============================================================================
 // RACE COVERAGE TEMPLATES
 // =============================================================================
+
+type CircuitType = 'highspeed' | 'street' | 'technical' | 'balanced';
 
 const DRIVER_PREVIEW_QUOTES = [
   "I'm feeling confident heading into this weekend. The car has been performing well and we've made some good progress.",
@@ -471,7 +476,7 @@ function pickRacePreviewContent(
     `${circuit.name} plays host to the next chapter of the ${circuit.country} Grand Prix.`,
   ];
 
-  const circuitDescriptions: Record<string, string> = {
+  const circuitDescriptions: Record<CircuitType, string> = {
     street: `The tight and twisty street circuit will test driver precision, with overtaking at a premium.`,
     highspeed: `The high-speed layout will reward brave drivers, with several flat-out sections separating the brave from the cautious.`,
     technical: `The technical nature of the circuit means setup and driver skill will be crucial to finding lap time.`,
@@ -555,7 +560,7 @@ function pickLocalCoverageContent(
 /**
  * Determine circuit type based on characteristics
  */
-function getCircuitType(circuit: Circuit): string {
+function getCircuitType(circuit: Circuit): CircuitType {
   const { speedRating, downforceRequirement, overtakingOpportunity } = circuit.characteristics;
 
   if (speedRating > 70 && overtakingOpportunity > 60) return 'highspeed';
