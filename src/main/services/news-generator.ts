@@ -520,6 +520,14 @@ export function checkProbability(probability: number): boolean {
   return Math.random() < probability;
 }
 
+/**
+ * Calculate a driver's overall rating for news rankings
+ * Uses pace, consistency, and overtaking as primary indicators
+ */
+function getDriverRating(driver: Driver): number {
+  return (driver.attributes.pace + driver.attributes.consistency + driver.attributes.overtaking) / 3;
+}
+
 // =============================================================================
 // RACE COVERAGE GENERATORS (PR 5)
 // =============================================================================
@@ -862,11 +870,7 @@ function generateDriverRankings(context: NewsGenerationContext): CalendarEvent |
   // Get all race drivers sorted by rating
   const raceDrivers = state.drivers
     .filter((d) => d.teamId && d.role !== DriverRole.Test)
-    .sort((a, b) => {
-      const aRating = (a.attributes.pace + a.attributes.consistency + a.attributes.overtaking) / 3;
-      const bRating = (b.attributes.pace + b.attributes.consistency + b.attributes.overtaking) / 3;
-      return bRating - aRating;
-    });
+    .sort((a, b) => getDriverRating(b) - getDriverRating(a));
 
   if (raceDrivers.length < 5) return null;
 
@@ -876,7 +880,7 @@ function generateDriverRankings(context: NewsGenerationContext): CalendarEvent |
   const rankings = top5.map((driver, index) => {
     const team = state.teams.find((t) => t.id === driver.teamId);
     const teamName = team?.shortName ?? 'Unknown';
-    const avgRating = Math.round((driver.attributes.pace + driver.attributes.consistency + driver.attributes.overtaking) / 3);
+    const avgRating = Math.round(getDriverRating(driver));
     return `**${index + 1}. ${getFullName(driver)}** (${teamName}) - Rating: ${avgRating}`;
   });
 
