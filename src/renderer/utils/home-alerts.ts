@@ -261,6 +261,75 @@ function generateNegotiationAlerts(
   return alerts;
 }
 
+/**
+ * Generate alerts for unallocated staff
+ * Shows info-level alerts when designers or mechanics aren't fully utilized
+ */
+function generateStaffAllocationAlerts(
+  gameState: GameState,
+  playerTeam: Team
+): HomePageAlert[] {
+  const alerts: HomePageAlert[] = [];
+  const teamState = gameState.teamStates[playerTeam.id];
+  if (!teamState) return alerts;
+
+  const { designState, testSession } = teamState;
+
+  // Calculate total designer allocation
+  let designerAllocation = 0;
+
+  // Next year chassis
+  if (designState.nextYearChassis) {
+    designerAllocation += designState.nextYearChassis.designersAssigned;
+  }
+
+  // Technology projects
+  for (const project of designState.activeTechnologyProjects) {
+    designerAllocation += project.designersAssigned;
+  }
+
+  // Current year chassis handling fixes
+  if (designState.currentYearChassis.activeDesignProblem) {
+    designerAllocation += designState.currentYearChassis.designersAssigned;
+  }
+
+  // Alert if designers not fully allocated (cap at 100 for display)
+  const unallocatedDesigners = Math.max(0, 100 - designerAllocation);
+  if (unallocatedDesigners > 0) {
+    alerts.push({
+      id: 'staff-designers-unallocated',
+      severity: 'info',
+      category: 'Staff',
+      message: `${unallocatedDesigners}% designers unallocated`,
+      action: {
+        label: 'View Design',
+        section: 'design',
+        subItem: 'summary',
+      },
+    });
+  }
+
+  // Alert if mechanics not fully allocated during active testing
+  if (testSession.active) {
+    const unallocatedMechanics = Math.max(0, 100 - testSession.mechanicsAllocated);
+    if (unallocatedMechanics > 0) {
+      alerts.push({
+        id: 'staff-mechanics-unallocated',
+        severity: 'info',
+        category: 'Staff',
+        message: `${unallocatedMechanics}% mechanics unallocated`,
+        action: {
+          label: 'View Testing',
+          section: 'engineering',
+          subItem: 'testing',
+        },
+      });
+    }
+  }
+
+  return alerts;
+}
+
 // ===========================================
 // MAIN EXPORT
 // ===========================================
@@ -278,6 +347,7 @@ export function generateHomePageAlerts(
     ...generateUnfilledSponsorAlerts(gameState, playerTeam),
     ...generatePartsReadyAlerts(gameState, playerTeam),
     ...generateNegotiationAlerts(gameState, playerTeam),
+    ...generateStaffAllocationAlerts(gameState, playerTeam),
   ];
 
   // Sort by severity
