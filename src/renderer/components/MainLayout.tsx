@@ -21,6 +21,7 @@ import { GlobalSearch, parsePageId } from './GlobalSearch';
 import { AppointmentNewsModal } from './AppointmentNewsModal';
 import type { SearchResultType } from '../hooks/useGlobalSearch';
 import {
+  Home,
   TeamProfile,
   News,
   Mail,
@@ -63,6 +64,7 @@ interface HistoryEntry {
 // Route map for simple components (no props needed)
 const ROUTE_COMPONENTS: Partial<Record<SectionId, Record<string, React.ComponentType>>> = {
   home: {
+    home: Home,
     profile: PlayerWiki,
   },
   inbox: {
@@ -137,6 +139,26 @@ export function MainLayout() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Listen for navigation events from child components (e.g., Home page)
+  useEffect(() => {
+    const handleNavigate = (e: CustomEvent<{ section: string; subItem: string }>) => {
+      const { section, subItem } = e.detail;
+      setSelectedSectionId(section as SectionId);
+      setSelectedSubItemId(subItem);
+      setTargetRaceNumber(null);
+      setTargetTeamId(null);
+      setTargetDriverId(null);
+      setTargetStaffId(null);
+      setNavHistory((prev) => ({
+        entries: [...prev.entries.slice(0, prev.index + 1), { sectionId: section as SectionId, subItemId: subItem }],
+        index: prev.index + 1,
+      }));
+    };
+
+    window.addEventListener('app:navigate', handleNavigate as EventListener);
+    return () => window.removeEventListener('app:navigate', handleNavigate as EventListener);
   }, []);
 
   // Clear all entity target states

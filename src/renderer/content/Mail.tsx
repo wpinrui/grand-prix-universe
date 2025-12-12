@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { User, ChevronDown, ChevronRight, Search, ArrowRight } from 'lucide-react';
-import { useDerivedGameState } from '../hooks';
+import { useDerivedGameState, useMarkEmailRead } from '../hooks';
 import { SectionHeading, Dropdown, EntityLink } from '../components';
 import { CalendarEventType, EmailCategory, CHASSIS_STAGE_DISPLAY_NAMES, CHASSIS_STAGE_ORDER } from '../../shared/domain';
 import { useEntityNavigation } from '../utils/entity-navigation';
@@ -206,6 +206,8 @@ interface EmailListItemProps {
 }
 
 function EmailListItem({ email, isSelected, onSelect, chiefs, teams }: EmailListItemProps) {
+  const isUnread = !email.read;
+
   return (
     <button
       type="button"
@@ -217,11 +219,15 @@ function EmailListItem({ email, isSelected, onSelect, chiefs, teams }: EmailList
       }`}
     >
       <div className="flex items-start gap-3">
+        {/* Unread indicator */}
+        <div className="w-2 shrink-0 pt-3">
+          {isUnread && <div className="w-2 h-2 rounded-full bg-[var(--accent-500)]" />}
+        </div>
         <SenderAvatar email={email} chiefs={chiefs} teams={teams} size={32} />
         <div className="flex-1 min-w-0">
           {/* Sender + time row */}
           <div className="flex items-center justify-between gap-2">
-            <span className={`text-sm truncate ${isSelected ? 'text-primary font-medium' : 'text-secondary'}`}>
+            <span className={`text-sm truncate ${isSelected || isUnread ? 'text-primary font-medium' : 'text-secondary'}`}>
               {getSenderDisplay(email)}
             </span>
             <span className="text-xs text-muted shrink-0">
@@ -229,7 +235,7 @@ function EmailListItem({ email, isSelected, onSelect, chiefs, teams }: EmailList
             </span>
           </div>
           {/* Subject row */}
-          <p className={`text-sm truncate mt-0.5 ${isSelected ? 'text-secondary' : 'text-muted'}`}>
+          <p className={`text-sm truncate mt-0.5 ${isSelected ? 'text-secondary' : 'text-muted'} ${isUnread ? 'font-medium' : ''}`}>
             {email.subject}
           </p>
           {/* Category badge + Critical badge */}
@@ -616,10 +622,24 @@ function EmailDetailPanel({ email, chiefs, teams }: EmailDetailPanelProps) {
 
 export function Mail() {
   const { gameState } = useDerivedGameState();
+  const markEmailRead = useMarkEmailRead();
   const [selectedEmailId, setSelectedEmailId] = useState<string | null>(null);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilterValue>('all');
+
+  // Handler to select an email and mark it as read
+  const handleSelectEmail = useCallback(
+    (emailId: string) => {
+      setSelectedEmailId(emailId);
+      // Mark as read if not already
+      const email = gameState?.calendarEvents.find((e) => e.id === emailId);
+      if (email && !email.read) {
+        markEmailRead.mutate(emailId);
+      }
+    },
+    [gameState?.calendarEvents, markEmailRead]
+  );
 
   const allMailItems = useMemo(() => {
     if (!gameState) return [];
@@ -722,7 +742,7 @@ export function Mail() {
             <EmailListPanel
               groups={dateGroups}
               selectedId={selectedEmailId}
-              onSelectEmail={setSelectedEmailId}
+              onSelectEmail={handleSelectEmail}
               chiefs={gameState.chiefs}
               teams={gameState.teams}
               collapsedGroups={collapsedGroups}

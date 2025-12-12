@@ -20,3 +20,14 @@ export type { StaffAllocationSliderProps } from './StaffAllocationSlider';
 export { AppointmentNewsModal } from './AppointmentNewsModal';
 export { NewsCardHero, NewsCardSmall, SourceBadge } from './NewsCard';
 export { NewsDetailModal } from './NewsDetailModal';
+export {
+  WidgetHeading,
+  StandingsTable,
+  NextRaceCard,
+  TeamStatusGrid,
+  DesignProgressSection,
+  DriversAtGlance,
+  AlertsWidget,
+  MailWidget,
+  NewsWidget,
+} from './HomePageWidgets';

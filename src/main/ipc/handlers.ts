@@ -280,4 +280,9 @@ export function registerIpcHandlers(): void {
       );
     }
   );
+
+  // Mail handlers
+  ipcMain.handle(IpcChannels.MAIL_MARK_READ, (_event, emailId: string) => {
+    return GameStateManager.markEmailRead(emailId);
+  });
 }

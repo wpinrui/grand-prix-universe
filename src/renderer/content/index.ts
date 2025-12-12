@@ -1,3 +1,4 @@
+export { Home } from './Home';
 export { TeamProfile } from './TeamProfile';
 export { News } from './News';
 export { Mail } from './Mail';

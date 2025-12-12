@@ -339,6 +339,9 @@ export const IpcChannels = {
   // Sponsor Negotiation
   SPONSOR_START_NEGOTIATION: 'sponsor:startNegotiation',
   SPONSOR_RESPOND_TO_OFFER: 'sponsor:respondToOffer',
+
+  // Mail
+  MAIL_MARK_READ: 'mail:markRead',
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];
@@ -563,6 +566,12 @@ export interface IpcInvokeMap {
   };
   [IpcChannels.SPONSOR_RESPOND_TO_OFFER]: {
     args: [params: RespondToSponsorOfferParams];
+    result: GameState;
+  };
+
+  // Mail
+  [IpcChannels.MAIL_MARK_READ]: {
+    args: [emailId: string];
     result: GameState;
   };
 }
