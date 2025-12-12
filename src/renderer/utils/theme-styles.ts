@@ -267,6 +267,18 @@ export const NEWS_SOURCE_STYLES: Record<NewsSource, NewsSourceStyle> = {
     textClass: 'text-blue-400',
     borderClass: 'border-blue-600/30',
   },
+  [NewsSource.PaddockRumors]: {
+    label: 'Paddock Rumors',
+    bgClass: 'bg-amber-600/20',
+    textClass: 'text-amber-400',
+    borderClass: 'border-amber-600/30',
+  },
+  [NewsSource.FanVoice]: {
+    label: 'Fan Voice',
+    bgClass: 'bg-pink-600/20',
+    textClass: 'text-pink-400',
+    borderClass: 'border-pink-600/30',
+  },
 };
 
 /**

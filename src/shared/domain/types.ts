@@ -846,6 +846,8 @@ export enum NewsSource {
   LocalMedia = 'local-media', // Regional race coverage, local angle
   PitlaneInsider = 'pitlane-insider', // Insider rumors and speculation
   TechAnalysis = 'tech-analysis', // Technical deep dives
+  PaddockRumors = 'paddock-rumors', // Transfer rumors and paddock gossip
+  FanVoice = 'fan-voice', // Social media reactions and fan commentary
 }
 
 /**

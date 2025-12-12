@@ -111,29 +111,42 @@ export interface Tab<T extends string> {
   label: string;
 }
 
+interface TabBadge<T extends string> {
+  tabId: T;
+  count: number;
+}
+
 interface TabBarProps<T extends string> {
   tabs: Tab<T>[];
   activeTab: T;
   onTabChange: (tab: T) => void;
+  /** Optional badge to show notification count on a specific tab */
+  badge?: TabBadge<T>;
 }
 
 /** Horizontal tab bar using team accent colors */
-export function TabBar<T extends string>({ tabs, activeTab, onTabChange }: TabBarProps<T>) {
+export function TabBar<T extends string>({ tabs, activeTab, onTabChange, badge }: TabBarProps<T>) {
   return (
     <div className="flex gap-2 mb-6">
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
+        const badgeCount = badge?.tabId === tab.id ? badge.count : 0;
         return (
           <button
             key={tab.id}
             type="button"
             onClick={() => onTabChange(tab.id)}
-            className={`btn px-5 py-2 text-sm font-medium cursor-pointer transition-all rounded-lg border ${
+            className={`btn px-5 py-2 text-sm font-medium cursor-pointer transition-all rounded-lg border relative ${
               isActive ? '' : GHOST_BORDERED_BUTTON_CLASSES
             }`}
             style={isActive ? ACCENT_BORDERED_BUTTON_STYLE : undefined}
           >
             {tab.label}
+            {badgeCount > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-amber-500 text-black text-xs font-bold px-1">
+                {badgeCount}
+              </span>
+            )}
           </button>
         );
       })}

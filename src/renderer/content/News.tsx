@@ -25,6 +25,8 @@ const SOURCE_LABELS: Record<NewsSource, string> = {
   [NewsSource.LocalMedia]: 'Local Media',
   [NewsSource.PitlaneInsider]: 'Pitlane Insider',
   [NewsSource.TechAnalysis]: 'Tech Analysis',
+  [NewsSource.PaddockRumors]: 'Paddock Rumors',
+  [NewsSource.FanVoice]: 'Fan Voice',
 };
 
 const CATEGORY_LABELS: Record<NewsCategory, string> = {

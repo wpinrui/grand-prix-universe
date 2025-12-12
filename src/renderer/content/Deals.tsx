@@ -40,10 +40,12 @@ const TIER_FILTER_OPTIONS: DropdownOption<TierFilter>[] = [
   { value: SponsorTier.Minor, label: 'Minor' },
 ];
 
-const DURATION_OPTIONS: DropdownOption<number>[] = [
-  { value: 1, label: '1 Year' },
-  { value: 2, label: '2 Years' },
-  { value: 3, label: '3 Years' },
+type DurationValue = '1' | '2' | '3';
+
+const DURATION_OPTIONS: DropdownOption<DurationValue>[] = [
+  { value: '1', label: '1 Year' },
+  { value: '2', label: '2 Years' },
+  { value: '3', label: '3 Years' },
 ];
 
 /** Industry icons */
@@ -194,7 +196,7 @@ interface ContactModalProps {
 }
 
 function ContactModal({ sponsor, currentSeason, onClose, onSubmit }: ContactModalProps) {
-  const [duration, setDuration] = useState(2);
+  const [duration, setDuration] = useState<DurationValue>('2');
   const [monthlyPayment, setMonthlyPayment] = useState(sponsor.baseMonthlyPayment);
   const [signingBonus, setSigningBonus] = useState(Math.round(sponsor.baseMonthlyPayment * 2));
 
@@ -202,7 +204,7 @@ function ContactModal({ sponsor, currentSeason, onClose, onSubmit }: ContactModa
     onSubmit({
       monthlyPayment,
       signingBonus,
-      duration,
+      duration: parseInt(duration, 10),
       placement: getPlacementForTier(sponsor.tier),
     });
   };
