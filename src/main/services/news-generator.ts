@@ -222,8 +222,10 @@ export function generateDailyNews(state: GameState): CalendarEvent[] {
   // Race coverage (PR 5)
   news.push(...generateRaceCoverage(context));
 
+  // Pre-season & analysis content (PR 6)
+  news.push(...generatePreSeasonAnalysis(context));
+
   // Content generators to be added in subsequent PRs:
-  // - PR 6: Pre-season & analysis (season preview, rankings, hot seat)
   // - PR 7: Rumors & commentary (transfer rumors, netizen roundups)
 
   return news;
@@ -551,4 +553,338 @@ function getCircuitType(circuit: Circuit): CircuitType {
   if (downforceRequirement > 70 && overtakingOpportunity < 40) return 'street';
   if (speedRating < 60 && downforceRequirement > 60) return 'technical';
   return 'balanced';
+}
+
+// =============================================================================
+// PRE-SEASON & ANALYSIS GENERATORS (PR 6)
+// =============================================================================
+
+/**
+ * Generate pre-season and analysis content for the day
+ */
+function generatePreSeasonAnalysis(context: NewsGenerationContext): CalendarEvent[] {
+  const news: CalendarEvent[] = [];
+
+  // Pre-season content
+  if (context.isPreSeason) {
+    // Season preview - once at start of pre-season (day 15 = mid-January)
+    if (context.dayOfYear === 15) {
+      const preview = generateSeasonPreview(context);
+      if (preview) news.push(preview);
+    }
+
+    // Driver power rankings - later in pre-season (day 45 = mid-February)
+    if (context.dayOfYear === 45) {
+      const rankings = generateDriverRankings(context);
+      if (rankings) news.push(rankings);
+    }
+  }
+
+  // Mid-season analysis (during racing season)
+  if (context.isRacingSeason) {
+    const completedRaces = context.recentRaces.length;
+
+    // Hot seat analysis - after race 5 and every 5 races thereafter
+    if (completedRaces > 0 && completedRaces % 5 === 0) {
+      // Only generate on specific day to avoid duplicates
+      if (context.dayOfYear % 7 === 0) {
+        const hotSeat = generateHotSeatAnalysis(context);
+        if (hotSeat) news.push(hotSeat);
+      }
+    }
+
+    // Team performance analysis - every ~30 days during season
+    if (context.dayOfYear % 30 === 0 && completedRaces >= 3) {
+      const performance = generateTeamPerformanceAnalysis(context);
+      if (performance) news.push(performance);
+    }
+  }
+
+  return news;
+}
+
+/**
+ * Generate season preview article (F1 Official style)
+ */
+function generateSeasonPreview(context: NewsGenerationContext): CalendarEvent | null {
+  const { state, currentDate } = context;
+  const year = currentDate.year;
+
+  // Get defending champion (if any)
+  const prevSeasonStandings = state.currentSeason.driverStandings;
+  const defendingChampion = prevSeasonStandings[0];
+  const championDriver = defendingChampion
+    ? state.drivers.find((d) => d.id === defendingChampion.driverId)
+    : null;
+  const championTeam = defendingChampion
+    ? state.teams.find((t) => t.id === defendingChampion.teamId)
+    : null;
+
+  const { subject, body } = pickSeasonPreviewContent(year, championDriver, championTeam);
+
+  const quotes: NewsQuote[] = [];
+  if (championDriver && championTeam) {
+    quotes.push(createDriverQuote(
+      pickRandom(CHAMPION_PREVIEW_QUOTES),
+      championDriver,
+      championTeam
+    ));
+  }
+
+  return createNewsHeadline({
+    date: currentDate,
+    source: NewsSource.F1Official,
+    category: NewsCategory.PreSeason,
+    subject,
+    body,
+    quotes,
+    importance: 'high',
+  });
+}
+
+/**
+ * Generate driver power rankings (TheRace style)
+ */
+function generateDriverRankings(context: NewsGenerationContext): CalendarEvent | null {
+  const { state, currentDate } = context;
+
+  // Get top 10 drivers by overall rating
+  const rankedDrivers = [...state.drivers]
+    .filter((d) => d.teamId) // Only contracted drivers
+    .sort((a, b) => {
+      const aRating = (a.stats.speed + a.stats.racecraft + a.stats.awareness + a.stats.consistency) / 4;
+      const bRating = (b.stats.speed + b.stats.racecraft + b.stats.awareness + b.stats.consistency) / 4;
+      return bRating - aRating;
+    })
+    .slice(0, 10);
+
+  if (rankedDrivers.length < 10) return null;
+
+  const { subject, body } = pickDriverRankingsContent(currentDate.year, rankedDrivers, state.teams);
+
+  return createNewsHeadline({
+    date: currentDate,
+    source: NewsSource.TheRace,
+    category: NewsCategory.PreSeason,
+    subject,
+    body,
+    importance: 'high',
+  });
+}
+
+/**
+ * Generate hot seat analysis (PitlaneInsider style)
+ */
+function generateHotSeatAnalysis(context: NewsGenerationContext): CalendarEvent | null {
+  const { state, currentDate } = context;
+  const standings = state.currentSeason.driverStandings;
+
+  // Find drivers in the bottom half of standings who might be under pressure
+  const bottomHalf = standings.slice(Math.floor(standings.length / 2));
+
+  // Look for drivers with poor recent performance
+  const hotSeatCandidates = bottomHalf.filter((entry) => {
+    const driver = state.drivers.find((d) => d.id === entry.driverId);
+    // Drivers with contract ending soon or poor points
+    return driver && entry.points < 20;
+  });
+
+  if (hotSeatCandidates.length === 0) return null;
+
+  const targetEntry = pickRandom(hotSeatCandidates);
+  const targetDriver = state.drivers.find((d) => d.id === targetEntry.driverId);
+  const targetTeam = state.teams.find((t) => t.id === targetEntry.teamId);
+
+  if (!targetDriver || !targetTeam) return null;
+
+  const { subject, body } = pickHotSeatContent(targetDriver, targetTeam, targetEntry.points);
+
+  const quotes: NewsQuote[] = [
+    createAnonymousQuote(
+      pickRandom(HOT_SEAT_ANONYMOUS_QUOTES),
+      'a paddock insider'
+    ),
+  ];
+
+  return createNewsHeadline({
+    date: currentDate,
+    source: NewsSource.PitlaneInsider,
+    category: NewsCategory.Commentary,
+    subject,
+    body,
+    quotes,
+    importance: 'medium',
+  });
+}
+
+/**
+ * Generate team performance analysis (TechAnalysis style)
+ */
+function generateTeamPerformanceAnalysis(context: NewsGenerationContext): CalendarEvent | null {
+  const { state, currentDate } = context;
+  const teamStandings = state.currentSeason.teamStandings;
+
+  if (teamStandings.length < 2) return null;
+
+  // Find a team that's over or under performing
+  // Compare current position to expected based on car performance
+  const teamsWithPerformance = teamStandings.map((entry, index) => {
+    const team = state.teams.find((t) => t.id === entry.teamId);
+    const teamState = state.teamStates[entry.teamId];
+    const carPerformance = teamState?.carPerformance?.overall ?? 50;
+    // Expected position based on car (higher performance = lower position number)
+    const expectedPosition = Math.ceil((100 - carPerformance) / 10);
+    const actualPosition = index + 1;
+    const delta = expectedPosition - actualPosition; // Positive = overperforming
+
+    return { entry, team, delta, actualPosition, carPerformance };
+  });
+
+  // Find biggest over/under performer
+  const sorted = [...teamsWithPerformance].sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+  const featured = sorted[0];
+
+  if (!featured?.team || Math.abs(featured.delta) < 2) return null;
+
+  const isOverperforming = featured.delta > 0;
+  const { subject, body } = pickPerformanceAnalysisContent(
+    featured.team,
+    featured.actualPosition,
+    isOverperforming,
+    featured.entry.points
+  );
+
+  return createNewsHeadline({
+    date: currentDate,
+    source: NewsSource.TechAnalysis,
+    category: NewsCategory.Technical,
+    subject,
+    body,
+    importance: 'medium',
+  });
+}
+
+// =============================================================================
+// PRE-SEASON & ANALYSIS TEMPLATES
+// =============================================================================
+
+const CHAMPION_PREVIEW_QUOTES = [
+  "We're not resting on our laurels. The team has worked incredibly hard over the winter and we're ready to defend our title.",
+  "Every season is a fresh start. We know the competition will be fierce, but we're confident in our preparation.",
+  "The target is simple - win the championship again. We have the team to do it.",
+];
+
+const HOT_SEAT_ANONYMOUS_QUOTES = [
+  "The team is definitely looking at their options for next year. Performance hasn't been where it needs to be.",
+  "There's been discussions at board level about the driver situation. Nothing is decided yet, but changes could be coming.",
+  "Let's just say the pressure is mounting. Results need to improve quickly.",
+];
+
+function pickSeasonPreviewContent(
+  year: number,
+  champion: Driver | null,
+  championTeam: Team | null
+): { subject: string; body: string } {
+  const subjects = [
+    `${year} Season Preview: A new era begins`,
+    `Formula One ${year}: Everything you need to know`,
+    `The countdown begins: ${year} season preview`,
+  ];
+
+  let body = `The ${year} Formula One season is almost upon us, and anticipation is building across the paddock.\n\n`;
+
+  if (champion && championTeam) {
+    body += `${getFullName(champion)} enters the season as the driver to beat, with ${championTeam.name} ` +
+      `looking to defend their title against a hungry field of challengers.\n\n`;
+  }
+
+  body += `Teams have been working tirelessly during the off-season, with significant development ` +
+    `expected across the grid. The new regulations have given engineers fresh challenges to solve, ` +
+    `and the results of that work will soon become apparent.\n\n` +
+    `Pre-season testing begins shortly, giving us our first glimpse of the new machinery.`;
+
+  return { subject: pickRandom(subjects), body };
+}
+
+function pickDriverRankingsContent(
+  year: number,
+  drivers: Driver[],
+  teams: Team[]
+): { subject: string; body: string } {
+  const subjects = [
+    `Power Rankings: Our top 10 drivers heading into ${year}`,
+    `${year} Driver Rankings: Who's on top?`,
+    `Rating the grid: Pre-season driver power rankings`,
+  ];
+
+  let body = `As we approach the new season, here are our rankings of the current grid.\n\n`;
+
+  drivers.slice(0, 5).forEach((driver, index) => {
+    const team = teams.find((t) => t.id === driver.teamId);
+    const teamName = team?.shortName ?? 'Unknown';
+    body += `**${index + 1}. ${getFullName(driver)}** (${teamName})\n`;
+  });
+
+  body += `\n...and the rest of our top 10 continues with some exciting young talent ` +
+    `looking to make their mark this season.`;
+
+  return { subject: pickRandom(subjects), body };
+}
+
+function pickHotSeatContent(
+  driver: Driver,
+  team: Team,
+  points: number
+): { subject: string; body: string } {
+  const driverName = getFullName(driver);
+
+  const subjects = [
+    `${driverName}'s seat under threat?`,
+    `Pressure mounting on ${driverName} at ${team.shortName}`,
+    `Hot seat watch: ${driverName}'s future uncertain`,
+  ];
+
+  const body = `${driverName}'s position at ${team.name} is reportedly under scrutiny ` +
+    `following a challenging start to the season.\n\n` +
+    `With just ${points} points on the board so far, the ${team.shortName} driver ` +
+    `has failed to meet expectations. Sources within the paddock suggest the team ` +
+    `is actively considering its options for the future.\n\n` +
+    `Several young drivers have been linked with the seat, though the team has ` +
+    `publicly stated its commitment to the current lineup.`;
+
+  return { subject: pickRandom(subjects), body };
+}
+
+function pickPerformanceAnalysisContent(
+  team: Team,
+  position: number,
+  isOverperforming: boolean,
+  points: number
+): { subject: string; body: string } {
+  const subjects = isOverperforming
+    ? [
+        `${team.shortName}'s remarkable season: How are they doing it?`,
+        `Punching above their weight: ${team.name}'s success story`,
+        `Technical analysis: ${team.shortName}'s overperformance explained`,
+      ]
+    : [
+        `What's gone wrong at ${team.shortName}?`,
+        `Underperforming: ${team.name}'s season struggles`,
+        `Technical analysis: Why ${team.shortName} is falling short`,
+      ];
+
+  const body = isOverperforming
+    ? `${team.name} currently sits P${position} in the constructors' standings with ${points} points, ` +
+      `exceeding many pre-season predictions.\n\n` +
+      `The team's success can be attributed to several factors: strong operational performance, ` +
+      `excellent driver execution, and clever development choices. Their engineers have maximized ` +
+      `the potential of their package.\n\n` +
+      `The question now is whether they can maintain this level of performance as the season progresses.`
+    : `${team.name} finds itself P${position} in the constructors' standings with just ${points} points, ` +
+      `well below expectations heading into the season.\n\n` +
+      `Sources suggest the team's struggles stem from correlation issues between wind tunnel data ` +
+      `and on-track performance. Development updates have not delivered the expected gains.\n\n` +
+      `The team has acknowledged the need for a reset and is working on solutions for upcoming races.`;
+
+  return { subject: pickRandom(subjects), body };
 }
