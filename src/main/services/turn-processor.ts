@@ -51,6 +51,7 @@ import {
   ENGINE_STAT_KEYS,
   ENGINE_STAT_DISPLAY_NAMES,
 } from '../../shared/domain/engine-utils';
+import { generateDailyNews } from './news-generator';
 
 /** Shared engine manager instance */
 const engineManager = new EngineManager();
@@ -325,6 +326,10 @@ export function applyTurnResult(state: GameState, result: TurnProcessingResult):
 
   // Update projected milestone dates based on current progress
   updateProjectedMilestones(state);
+
+  // Generate daily news headlines
+  const dailyNews = generateDailyNews(state);
+  state.calendarEvents.push(...dailyNews);
 
   return playerHadDesignMilestone || playerHadTestCompletion || playerHadReadyPart || negotiationStopped || playerReceivedManufacturerOutreach || playerReceivedDriverOutreach || playerReceivedSponsorOutreach || playerReceivedStaffOutreach;
 }
