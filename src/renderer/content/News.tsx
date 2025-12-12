@@ -57,7 +57,6 @@ function getYearsWithNews(events: CalendarEvent[]): number[] {
  */
 function filterNewsEvents(
   events: CalendarEvent[],
-  currentYear: number,
   selectedMonth: number | null,
   selectedYear: number,
   searchQuery: string,
@@ -113,17 +112,20 @@ interface MonthPillsProps {
 }
 
 function MonthPills({ months, selectedMonth, onSelect }: MonthPillsProps) {
+  const getPillClasses = (isSelected: boolean) =>
+    `px-3 py-1.5 rounded-full text-sm font-medium transition-all cursor-pointer whitespace-nowrap ${
+      isSelected
+        ? 'bg-[var(--accent-600)] text-white'
+        : 'bg-[var(--neutral-800)] text-secondary hover:bg-[var(--neutral-700)] hover:text-primary'
+    }`;
+
   return (
     <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-thin">
       {/* "All" pill */}
       <button
         type="button"
         onClick={() => onSelect(null)}
-        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all cursor-pointer whitespace-nowrap ${
-          selectedMonth === null
-            ? 'bg-[var(--accent-600)] text-white'
-            : 'bg-[var(--neutral-800)] text-secondary hover:bg-[var(--neutral-700)] hover:text-primary'
-        }`}
+        className={getPillClasses(selectedMonth === null)}
       >
         All
       </button>
@@ -133,11 +135,7 @@ function MonthPills({ months, selectedMonth, onSelect }: MonthPillsProps) {
           key={month}
           type="button"
           onClick={() => onSelect(month)}
-          className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all cursor-pointer whitespace-nowrap ${
-            selectedMonth === month
-              ? 'bg-[var(--accent-600)] text-white'
-              : 'bg-[var(--neutral-800)] text-secondary hover:bg-[var(--neutral-700)] hover:text-primary'
-          }`}
+          className={getPillClasses(selectedMonth === month)}
         >
           {MONTH_NAMES[month - 1]}
         </button>
@@ -216,13 +214,12 @@ export function News() {
     () =>
       filterNewsEvents(
         gameState.calendarEvents,
-        currentYear,
         selectedMonth,
         selectedYear,
         searchQuery,
         gameState.currentDate
       ),
-    [gameState.calendarEvents, currentYear, selectedMonth, selectedYear, searchQuery, gameState.currentDate]
+    [gameState.calendarEvents, selectedMonth, selectedYear, searchQuery, gameState.currentDate]
   );
 
   // Split into hero (first high importance) and grid items
