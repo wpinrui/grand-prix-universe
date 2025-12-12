@@ -712,7 +712,7 @@ function CurrentYearChassisTab({
           <div className="flex items-center gap-4 mb-4">
             <button
               type="button"
-              className={`btn px-4 py-2 text-sm font-medium rounded-lg border cursor-pointer ${GHOST_BORDERED_BUTTON_CLASSES}`}
+              className={`btn px-4 py-2 text-sm font-medium rounded-lg border ${GHOST_BORDERED_BUTTON_CLASSES}`}
             >
               Start Work
             </button>
