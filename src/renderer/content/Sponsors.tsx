@@ -477,8 +477,19 @@ function SponsorsSummary() {
   );
 }
 
-export function Sponsors() {
-  const [activeTab, setActiveTab] = useState<SponsorsTab>('summary');
+interface SponsorsProps {
+  initialTab?: string;
+  onTabChange?: (tab: SponsorsTab) => void;
+}
+
+export function Sponsors({ initialTab, onTabChange }: SponsorsProps) {
+  const resolvedInitialTab = (initialTab === 'summary' || initialTab === 'deals') ? initialTab : 'summary';
+  const [activeTab, setActiveTab] = useState<SponsorsTab>(resolvedInitialTab);
+
+  const handleTabChange = (tab: SponsorsTab) => {
+    setActiveTab(tab);
+    onTabChange?.(tab);
+  };
 
   return (
     <div className="space-y-4">
@@ -487,7 +498,7 @@ export function Sponsors() {
       <TabBar<SponsorsTab>
         tabs={TABS}
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={handleTabChange}
       />
 
       {activeTab === 'summary' && <SponsorsSummary />}
