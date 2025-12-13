@@ -113,6 +113,12 @@ export function MainLayout() {
     index: 0,
   });
 
+  // Track last visited sub-item per section (for restoring on section click)
+  const [lastSubItemPerSection, setLastSubItemPerSection] = useState<Partial<Record<SectionId, string>>>({});
+
+  // Track internal page tabs (for pages like Sponsors that have their own tabs)
+  const [pageTabState, setPageTabState] = useState<Record<string, string>>({});
+
   const navigate = useNavigate();
   const clearGameState = useClearGameState();
   const quitApp = useQuitApp();
@@ -147,6 +153,7 @@ export function MainLayout() {
       const { section, subItem, emailId } = e.detail;
       setSelectedSectionId(section as SectionId);
       setSelectedSubItemId(subItem);
+      setLastSubItemPerSection(prev => ({ ...prev, [section as SectionId]: subItem }));
       setTargetRaceNumber(null);
       setTargetTeamId(null);
       setTargetDriverId(null);
@@ -232,10 +239,11 @@ export function MainLayout() {
     selectedSection.subItems.find((sub) => sub.id === selectedSubItemId) ?? selectedSection.subItems[0];
 
   const handleSectionClick = (section: Section) => {
+    const lastSubItem = lastSubItemPerSection[section.id] ?? section.subItems[0].id;
     setSelectedSectionId(section.id);
-    setSelectedSubItemId(section.subItems[0].id);
+    setSelectedSubItemId(lastSubItem);
     clearAllTargets();
-    pushHistory({ sectionId: section.id, subItemId: section.subItems[0].id });
+    pushHistory({ sectionId: section.id, subItemId: lastSubItem });
   };
 
   const handleSubItemClick = (subItemId: string) => {
@@ -252,6 +260,7 @@ export function MainLayout() {
       setTargetStaffId(null);
     }
     setSelectedSubItemId(subItemId);
+    setLastSubItemPerSection(prev => ({ ...prev, [selectedSectionId]: subItemId }));
     pushHistory({ sectionId: selectedSectionId, subItemId });
   };
 
@@ -259,6 +268,7 @@ export function MainLayout() {
   const navigateToProfile = () => {
     setSelectedSectionId('home');
     setSelectedSubItemId('profile');
+    setLastSubItemPerSection(prev => ({ ...prev, home: 'profile' }));
     pushHistory({ sectionId: 'home', subItemId: 'profile' });
   };
 
@@ -266,6 +276,7 @@ export function MainLayout() {
     setTargetRaceNumber(raceNumber);
     setSelectedSectionId('championship');
     setSelectedSubItemId('results');
+    setLastSubItemPerSection(prev => ({ ...prev, championship: 'results' }));
     pushHistory({ sectionId: 'championship', subItemId: 'results', entityType: 'race', entityId: String(raceNumber) });
   };
 
@@ -290,6 +301,7 @@ export function MainLayout() {
     const route = getEntityRoute(type, id);
     setSelectedSectionId(route.section);
     setSelectedSubItemId(route.subItem);
+    setLastSubItemPerSection(prev => ({ ...prev, [route.section]: route.subItem }));
     // Pass entityId to the appropriate page
     if (type === 'race') {
       const raceNum = parseInt(id, 10);
@@ -310,6 +322,7 @@ export function MainLayout() {
       if (parsed) {
         setSelectedSectionId(parsed.section);
         setSelectedSubItemId(parsed.subItem);
+        setLastSubItemPerSection(prev => ({ ...prev, [parsed.section]: parsed.subItem }));
         clearAllTargets();
         pushHistory({ sectionId: parsed.section, subItemId: parsed.subItem });
       }
@@ -396,7 +409,12 @@ export function MainLayout() {
 
     // Commercial > Sponsors - now includes Deals as tabs
     if (selectedSectionId === 'commercial' && selectedSubItemId === 'sponsors') {
-      return <Sponsors />;
+      return (
+        <Sponsors
+          initialTab={pageTabState['sponsors']}
+          onTabChange={(tab) => setPageTabState(prev => ({ ...prev, sponsors: tab }))}
+        />
+      );
     }
 
     // Options section
