@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useDerivedGameState, queryKeys } from '../hooks';
 import { useQueryClient } from '@tanstack/react-query';
 import { SectionHeading, TabBar, Dropdown } from '../components';
@@ -400,12 +400,21 @@ function NegotiationCard({ negotiation, sponsor, onAccept, onReject }: Negotiati
 interface DealsProps {
   /** When true, hides the section heading (used when embedded in Sponsors) */
   embedded?: boolean;
+  /** Initial tier filter to apply (e.g., when navigating from an empty sponsor slot) */
+  initialTierFilter?: SponsorTier;
 }
 
-export function Deals({ embedded = false }: DealsProps) {
+export function Deals({ embedded = false, initialTierFilter }: DealsProps) {
   const [activeTab, setActiveTab] = useState<DealsTab>('browse');
-  const [tierFilter, setTierFilter] = useState<TierFilter>('all');
+  const [tierFilter, setTierFilter] = useState<TierFilter>(initialTierFilter ?? 'all');
   const [contactingSponsor, setContactingSponsor] = useState<Sponsor | null>(null);
+
+  // Sync tier filter when initialTierFilter prop changes (e.g., clicking a different empty slot)
+  useEffect(() => {
+    if (initialTierFilter) {
+      setTierFilter(initialTierFilter);
+    }
+  }, [initialTierFilter]);
 
   const { gameState, isLoading } = useDerivedGameState();
   const queryClient = useQueryClient();

@@ -241,33 +241,42 @@ function SponsorCard({ sponsor, deal, currentSeason, variant }: SponsorCardProps
 interface EmptySlotProps {
   tier: SponsorTier;
   variant: 'large' | 'medium' | 'compact';
+  onClick?: () => void;
 }
 
-function EmptySlot({ tier, variant }: EmptySlotProps) {
+function EmptySlot({ tier, variant, onClick }: EmptySlotProps) {
   const tierLabel = tier.charAt(0).toUpperCase() + tier.slice(1);
+
+  const baseClasses = 'cursor-pointer transition-colors hover:border-neutral-500 hover:bg-neutral-800/50';
 
   if (variant === 'compact') {
     return (
-      <div className="flex flex-col items-center justify-center p-3 rounded-lg border-2 border-dashed border-neutral-700 bg-neutral-800/30 min-w-[100px]">
+      <button
+        type="button"
+        onClick={onClick}
+        className={`flex flex-col items-center justify-center p-3 rounded-lg border-2 border-dashed border-neutral-700 bg-neutral-800/30 min-w-[100px] ${baseClasses}`}
+      >
         <span className="text-2xl text-neutral-600">+</span>
         <span className="text-xs text-neutral-500 mt-1">Empty</span>
-      </div>
+      </button>
     );
   }
 
   const isLarge = variant === 'large';
 
   return (
-    <div
-      className={`card ${isLarge ? 'p-6' : 'p-4'} flex items-center justify-center border-2 border-dashed border-neutral-700 bg-neutral-800/30`}
+    <button
+      type="button"
+      onClick={onClick}
+      className={`card ${isLarge ? 'p-6' : 'p-4'} flex items-center justify-center border-2 border-dashed border-neutral-700 bg-neutral-800/30 w-full ${baseClasses}`}
       style={{ minHeight: isLarge ? EMPTY_SLOT_MIN_HEIGHT.large : EMPTY_SLOT_MIN_HEIGHT.medium }}
     >
       <div className="text-center">
         <div className={`${isLarge ? 'text-4xl' : 'text-2xl'} text-neutral-600 mb-2`}>+</div>
         <div className="text-sm text-neutral-500">Empty {tierLabel} Slot</div>
-        <div className="text-xs text-neutral-600 mt-1">Go to Deals to find sponsors</div>
+        <div className="text-xs text-neutral-600 mt-1">Click to browse sponsors</div>
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -313,9 +322,10 @@ interface TierSectionProps {
   sponsors: Sponsor[];
   currentSeason: number;
   slotCount: number;
+  onEmptySlotClick?: (tier: SponsorTier) => void;
 }
 
-function TierSection({ title, tier, deals, sponsors, currentSeason, slotCount }: TierSectionProps) {
+function TierSection({ title, tier, deals, sponsors, currentSeason, slotCount, onEmptySlotClick }: TierSectionProps) {
   const isTitle = tier === SponsorTier.Title;
   const isMinor = tier === SponsorTier.Minor;
 
@@ -333,7 +343,7 @@ function TierSection({ title, tier, deals, sponsors, currentSeason, slotCount }:
         <div className="flex flex-wrap gap-3">
           {slots.map((deal, index) => {
             if (!deal) {
-              return <EmptySlot key={`empty-${index}`} tier={tier} variant="compact" />;
+              return <EmptySlot key={`empty-${index}`} tier={tier} variant="compact" onClick={() => onEmptySlotClick?.(tier)} />;
             }
             const sponsor = getSponsorById(sponsors, deal.sponsorId);
             if (!sponsor) return null;
@@ -357,6 +367,7 @@ function TierSection({ title, tier, deals, sponsors, currentSeason, slotCount }:
                   key={`empty-${index}`}
                   tier={tier}
                   variant={isTitle ? 'large' : 'medium'}
+                  onClick={() => onEmptySlotClick?.(tier)}
                 />
               );
             }
@@ -415,7 +426,11 @@ function computeSponsorData(gameState: GameState, playerTeamId: string): Sponsor
   };
 }
 
-function SponsorsSummary() {
+interface SponsorsSummaryProps {
+  onEmptySlotClick?: (tier: SponsorTier) => void;
+}
+
+function SponsorsSummary({ onEmptySlotClick }: SponsorsSummaryProps) {
   const { gameState, isLoading } = useDerivedGameState();
 
   const sponsorData = useMemo(() => {
@@ -452,6 +467,7 @@ function SponsorsSummary() {
         sponsors={sponsors}
         currentSeason={currentSeason}
         slotCount={SLOT_COUNTS[SponsorTier.Title]}
+        onEmptySlotClick={onEmptySlotClick}
       />
 
       {/* Major Sponsors */}
@@ -462,6 +478,7 @@ function SponsorsSummary() {
         sponsors={sponsors}
         currentSeason={currentSeason}
         slotCount={SLOT_COUNTS[SponsorTier.Major]}
+        onEmptySlotClick={onEmptySlotClick}
       />
 
       {/* Minor Sponsors */}
@@ -472,6 +489,7 @@ function SponsorsSummary() {
         sponsors={sponsors}
         currentSeason={currentSeason}
         slotCount={SLOT_COUNTS[SponsorTier.Minor]}
+        onEmptySlotClick={onEmptySlotClick}
       />
     </div>
   );
@@ -485,10 +503,21 @@ interface SponsorsProps {
 export function Sponsors({ initialTab, onTabChange }: SponsorsProps) {
   const resolvedInitialTab = (initialTab === 'summary' || initialTab === 'deals') ? initialTab : 'summary';
   const [activeTab, setActiveTab] = useState<SponsorsTab>(resolvedInitialTab);
+  const [dealsTierFilter, setDealsTierFilter] = useState<SponsorTier | undefined>(undefined);
 
   const handleTabChange = (tab: SponsorsTab) => {
     setActiveTab(tab);
     onTabChange?.(tab);
+    // Clear tier filter when manually switching tabs
+    if (tab === 'summary') {
+      setDealsTierFilter(undefined);
+    }
+  };
+
+  const handleEmptySlotClick = (tier: SponsorTier) => {
+    setDealsTierFilter(tier);
+    setActiveTab('deals');
+    onTabChange?.('deals');
   };
 
   return (
@@ -501,8 +530,8 @@ export function Sponsors({ initialTab, onTabChange }: SponsorsProps) {
         onTabChange={handleTabChange}
       />
 
-      {activeTab === 'summary' && <SponsorsSummary />}
-      {activeTab === 'deals' && <Deals embedded />}
+      {activeTab === 'summary' && <SponsorsSummary onEmptySlotClick={handleEmptySlotClick} />}
+      {activeTab === 'deals' && <Deals embedded initialTierFilter={dealsTierFilter} />}
     </div>
   );
 }
