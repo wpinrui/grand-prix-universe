@@ -17,7 +17,7 @@ import {
 // TYPES
 // ===========================================
 
-type SponsorsTab = 'summary' | 'deals';
+export type SponsorsTab = 'summary' | 'deals';
 
 // ===========================================
 // CONSTANTS
@@ -496,13 +496,12 @@ function SponsorsSummary({ onEmptySlotClick }: SponsorsSummaryProps) {
 }
 
 interface SponsorsProps {
-  initialTab?: string;
+  initialTab?: SponsorsTab;
   onTabChange?: (tab: SponsorsTab) => void;
 }
 
 export function Sponsors({ initialTab, onTabChange }: SponsorsProps) {
-  const resolvedInitialTab = (initialTab === 'summary' || initialTab === 'deals') ? initialTab : 'summary';
-  const [activeTab, setActiveTab] = useState<SponsorsTab>(resolvedInitialTab);
+  const [activeTab, setActiveTab] = useState<SponsorsTab>(initialTab ?? 'summary');
   const [dealsTierFilter, setDealsTierFilter] = useState<SponsorTier | undefined>(undefined);
 
   const handleTabChange = (tab: SponsorsTab) => {

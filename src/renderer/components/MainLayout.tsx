@@ -47,6 +47,7 @@ import {
   WorldDrivers,
   WorldStaff,
   WorldStats,
+  type SponsorsTab,
 } from '../content';
 import { GamePhase } from '../../shared/domain';
 import { RoutePaths } from '../routes';
@@ -117,7 +118,7 @@ export function MainLayout() {
   const [lastSubItemPerSection, setLastSubItemPerSection] = useState<Partial<Record<SectionId, string>>>({});
 
   // Track internal page tabs (for pages like Sponsors that have their own tabs)
-  const [pageTabState, setPageTabState] = useState<Record<string, string>>({});
+  const [sponsorsTab, setSponsorsTab] = useState<SponsorsTab | undefined>(undefined);
 
   const navigate = useNavigate();
   const clearGameState = useClearGameState();
@@ -411,8 +412,8 @@ export function MainLayout() {
     if (selectedSectionId === 'commercial' && selectedSubItemId === 'sponsors') {
       return (
         <Sponsors
-          initialTab={pageTabState['sponsors']}
-          onTabChange={(tab) => setPageTabState(prev => ({ ...prev, sponsors: tab }))}
+          initialTab={sponsorsTab}
+          onTabChange={setSponsorsTab}
         />
       );
     }

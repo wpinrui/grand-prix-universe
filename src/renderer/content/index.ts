@@ -11,7 +11,7 @@ export { Testing } from './Testing';
 export { Design } from './Design';
 export { Construction } from './Construction';
 export { Contracts } from './Contracts';
-export { Sponsors } from './Sponsors';
+export { Sponsors, type SponsorsTab } from './Sponsors';
 export { SavedGames } from './SavedGames';
 export { GameOptions } from './GameOptions';
 export { ActionScreen, QUIT_DIALOG_CONFIG } from './ActionScreen';
