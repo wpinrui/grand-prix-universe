@@ -258,12 +258,12 @@
     "@dicebear/shapes" "9.2.4"
     "@dicebear/thumbs" "9.2.4"
 
-"@dicebear/core@^9.2.4":
-  version "9.2.4"
-  resolved "https://registry.yarnpkg.com/@dicebear/core/-/core-9.2.4.tgz#930d844fca2de33d6634297bf4fa68c9bd8b24ce"
-  integrity sha512-hz6zArEcUwkZzGOSJkWICrvqnEZY7BKeiq9rqKzVJIc1tRVv0MkR0FGvIxSvXiK9TTIgKwu656xCWAGAl6oh+w==
+"@dicebear/core@^9.4.1":
+  version "9.4.1"
+  resolved "https://registry.yarnpkg.com/@dicebear/core/-/core-9.4.1.tgz#fe9320fb8ade79cb943fd7444272087cb63b1015"
+  integrity sha512-yzmoEhAc6CTaY9v0xz4MI3FTt5I5O+cvphpE+kd6Qz8XjW3/YveXEQcdO4CW0CTSUao88a8+/IMvnMGfUmDW1Q==
   dependencies:
-    "@types/json-schema" "^7.0.11"
+    "@types/json-schema" "^7.0.15"
 
 "@dicebear/croodles-neutral@9.2.4":
   version "9.2.4"
@@ -1807,7 +1807,7 @@
   resolved "https://registry.yarnpkg.com/@types/http-cache-semantics/-/http-cache-semantics-4.0.4.tgz#b979ebad3919799c979b17c72621c0bc0a31c6c4"
   integrity sha512-1m0bIFVc7eJWyve9S0RnuRgcQqF/Xd5QsUZAZeQFr1Q3/p9JWoQQEqmVy+DPTNpGXwhgIetAoYF8JSc33q29QA==
 
-"@types/json-schema@*", "@types/json-schema@^7.0.11", "@types/json-schema@^7.0.15", "@types/json-schema@^7.0.9":
+"@types/json-schema@*", "@types/json-schema@^7.0.15", "@types/json-schema@^7.0.9":
   version "7.0.15"
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.15.tgz#596a1747233694d50f6ad8a7869fcb6f56cf5841"
   integrity sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==
