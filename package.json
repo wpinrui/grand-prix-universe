@@ -63,5 +63,9 @@
     "react-router-dom": "^7.10.1",
     "recharts": "^3.5.1",
     "three": "^0.181.2"
+  },
+  "resolutions": {
+    "minimatch": "9.0.7",
+    "picomatch": "4.0.4"
   }
 }
