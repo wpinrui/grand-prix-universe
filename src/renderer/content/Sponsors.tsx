@@ -507,10 +507,10 @@ export function Sponsors({ initialTab, onTabChange }: SponsorsProps) {
   const [activeTab, setActiveTab] = useState<SponsorsTab>(initialTab ?? 'summary');
   const [dealsTierFilter, setDealsTierFilter] = useState<SponsorTier | undefined>(undefined);
 
-  // Derive the "needs attention" count from gameState directly so the badge stays
+  // Derive the active-negotiation count from gameState directly so the badge stays
   // correct on every tab — including Summary, where <Deals> is unmounted.
   const { gameState } = useDerivedGameState();
-  const needsAttentionCount = useMemo(() => {
+  const activeNegotiationCount = useMemo(() => {
     if (!gameState) return 0;
     const playerTeamId = gameState.player.teamId;
     return gameState.negotiations.filter(
@@ -545,7 +545,7 @@ export function Sponsors({ initialTab, onTabChange }: SponsorsProps) {
         tabs={TABS}
         activeTab={activeTab}
         onTabChange={handleTabChange}
-        badge={needsAttentionCount > 0 ? { tabId: 'deals', count: needsAttentionCount } : undefined}
+        badge={activeNegotiationCount > 0 ? { tabId: 'deals', count: activeNegotiationCount } : undefined}
       />
 
       {activeTab === 'summary' && <SponsorsSummary onEmptySlotClick={handleEmptySlotClick} />}

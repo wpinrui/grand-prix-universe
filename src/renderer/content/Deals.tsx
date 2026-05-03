@@ -637,6 +637,7 @@ export function Deals({ embedded = false, initialTierFilter }: DealsProps) {
   }
 
   const currentSeason = gameState.currentSeason.seasonNumber;
+  const badgeCount = needsAttention.length + sentNegotiations.length;
 
   return (
     <div className="space-y-4">
@@ -646,7 +647,7 @@ export function Deals({ embedded = false, initialTierFilter }: DealsProps) {
         tabs={TABS}
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        badge={needsAttention.length + sentNegotiations.length > 0 ? { tabId: 'negotiations', count: needsAttention.length + sentNegotiations.length } : undefined}
+        badge={badgeCount > 0 ? { tabId: 'negotiations', count: badgeCount } : undefined}
       />
 
       {activeTab === 'browse' && (
