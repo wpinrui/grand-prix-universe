@@ -109,7 +109,7 @@ function IncomeSection({ deals, sponsors, totalIncome }: IncomeSectionProps) {
 
   return (
     <section>
-      <SectionHeading>Annual Income</SectionHeading>
+      <SectionHeading>Monthly Sponsor Income</SectionHeading>
       <div className="card p-5">
         {deals.length === 0 ? (
           <EmptyState message="No sponsor deals" />
@@ -122,13 +122,13 @@ function IncomeSection({ deals, sponsors, totalIncome }: IncomeSectionProps) {
                   key={deal.sponsorId}
                   label={sponsor?.name ?? deal.sponsorId}
                   sublabel={SPONSOR_TIER_LABELS[deal.tier]}
-                  amount={deal.monthlyPayment * 12}
+                  amount={deal.monthlyPayment}
                 />
               );
             })}
           </div>
         )}
-        <TotalRow label="Total Income" amount={totalIncome} />
+        <TotalRow label="Total Monthly" amount={totalIncome} />
       </div>
     </section>
   );
@@ -231,13 +231,15 @@ export function Finance() {
     (c) => c.teamId === playerTeam.id && c.annualCost > 0
   );
 
-  // Calculate totals (single source of truth)
-  const totalIncome = teamSponsorDeals.reduce((sum, d) => sum + d.monthlyPayment * 12, 0);
+  // Monthly income — what actually gets credited each month
+  const totalMonthlyIncome = teamSponsorDeals.reduce((sum, d) => sum + d.monthlyPayment, 0);
+  // Annual figures for season projection
+  const totalAnnualIncome = totalMonthlyIncome * 12;
   const totalExpenses =
     teamDrivers.reduce((sum, d) => sum + d.salary, 0) +
     teamChiefs.reduce((sum, c) => sum + c.salary, 0) +
     teamPaidContracts.reduce((sum, c) => sum + c.annualCost, 0);
-  const netAnnual = totalIncome - totalExpenses;
+  const netAnnual = totalAnnualIncome - totalExpenses;
   const projectedBalance = playerTeam.budget + netAnnual;
 
   return (
@@ -256,7 +258,7 @@ export function Finance() {
       <IncomeSection
         deals={teamSponsorDeals}
         sponsors={gameState.sponsors}
-        totalIncome={totalIncome}
+        totalIncome={totalMonthlyIncome}
       />
 
       {/* Expenses Section */}

@@ -503,11 +503,11 @@ interface SponsorsProps {
 export function Sponsors({ initialTab, onTabChange }: SponsorsProps) {
   const [activeTab, setActiveTab] = useState<SponsorsTab>(initialTab ?? 'summary');
   const [dealsTierFilter, setDealsTierFilter] = useState<SponsorTier | undefined>(undefined);
+  const [needsAttentionCount, setNeedsAttentionCount] = useState(0);
 
   const handleTabChange = (tab: SponsorsTab) => {
     setActiveTab(tab);
     onTabChange?.(tab);
-    // Clear tier filter when manually switching tabs
     if (tab === 'summary') {
       setDealsTierFilter(undefined);
     }
@@ -527,10 +527,17 @@ export function Sponsors({ initialTab, onTabChange }: SponsorsProps) {
         tabs={TABS}
         activeTab={activeTab}
         onTabChange={handleTabChange}
+        badge={needsAttentionCount > 0 ? { tabId: 'deals', count: needsAttentionCount } : undefined}
       />
 
       {activeTab === 'summary' && <SponsorsSummary onEmptySlotClick={handleEmptySlotClick} />}
-      {activeTab === 'deals' && <Deals embedded initialTierFilter={dealsTierFilter} />}
+      {activeTab === 'deals' && (
+        <Deals
+          embedded
+          initialTierFilter={dealsTierFilter}
+          onNeedsAttentionCountChange={setNeedsAttentionCount}
+        />
+      )}
     </div>
   );
 }
