@@ -283,12 +283,31 @@ export function processSpecReleases(state: GameState, currentDate: GameDate): vo
 // =============================================================================
 
 /**
+ * Credit monthly sponsor payments to each team's budget.
+ * Runs once on the first day of each month.
+ */
+function applyMonthlyIncomeTick(state: GameState): void {
+  for (const deal of state.sponsorDeals) {
+    const team = state.teams.find((t) => t.id === deal.teamId);
+    if (team && deal.monthlyPayment > 0) {
+      team.budget += deal.monthlyPayment;
+    }
+  }
+}
+
+/**
  * Apply turn processing result to game state (mutates state)
  * Returns true if player team had a design milestone or test completion (for auto-stop)
  */
 export function applyTurnResult(state: GameState, result: TurnProcessingResult): boolean {
+  const prevDate = state.currentDate;
   state.currentDate = result.newDate;
   state.phase = result.newPhase;
+
+  // Fire monthly income tick on the first day of each new month
+  if (result.newDate.day === 1 && result.newDate.month !== prevDate.month) {
+    applyMonthlyIncomeTick(state);
+  }
   applyDriverStateChanges(state, result.driverStateChanges);
   applyTeamStateChanges(state, result.teamStateChanges);
 

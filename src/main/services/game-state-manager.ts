@@ -88,6 +88,7 @@ import {
   generateBaseContractTerms,
   OFFER_EXPIRY_DAYS,
   LATE_SEASON_MONTH,
+  SPONSOR_SLOT_COUNTS,
 } from '../../shared/domain/engine-utils';
 import { offsetDate } from '../../shared/utils/date-utils';
 
@@ -983,6 +984,22 @@ export const GameStateManager = {
       throw new Error('Sponsor not found');
     }
 
+    // Enforce slot limits: active deals + active negotiations cannot exceed slot count for this tier
+    const activeDealsForTier = state.sponsorDeals.filter(
+      (d) => d.teamId === playerTeamId && d.tier === sponsor.tier
+    ).length;
+    const activeNegotiationsForTier = state.negotiations.filter((n) => {
+      if (n.stakeholderType !== StakeholderType.Sponsor) return false;
+      if (n.teamId !== playerTeamId) return false;
+      if (n.phase === NegotiationPhase.Completed || n.phase === NegotiationPhase.Failed) return false;
+      const negSponsor = state.sponsors.find((s) => s.id === (n as SponsorNegotiation).sponsorId);
+      return negSponsor?.tier === sponsor.tier;
+    }).length;
+    const slotCount = SPONSOR_SLOT_COUNTS[sponsor.tier];
+    if (activeDealsForTier + activeNegotiationsForTier >= slotCount) {
+      throw new Error(`No open ${sponsor.tier} sponsor slots`);
+    }
+
     // Create new negotiation for next season
     const negotiation = createSponsorNegotiation(
       playerTeamId,
@@ -1023,15 +1040,9 @@ export const GameStateManager = {
     }
 
     if (response === 'accept') {
-      // Accept the counterparty's terms - negotiation complete
-      negotiation.phase = NegotiationPhase.Completed;
+      // Counterparty accepted: hold for player confirmation (Sign / Decline)
+      negotiation.phase = NegotiationPhase.PendingPlayerConfirmation;
       negotiation.lastActivityDate = { ...state.currentDate };
-
-      // Create the contract and generate signing event
-      const result = createSponsorContractFromNegotiation(negotiation, state);
-      if (result) {
-        generateSponsorSigningEvent(state, result, true); // Player team is always involved
-      }
     } else if (response === 'reject') {
       // Reject - negotiation failed
       negotiation.phase = NegotiationPhase.Failed;
@@ -1057,6 +1068,63 @@ export const GameStateManager = {
       negotiation.phase = NegotiationPhase.AwaitingResponse;
       negotiation.lastActivityDate = { ...state.currentDate };
     }
+
+    return state;
+  },
+
+  /**
+   * Player confirms a PendingPlayerConfirmation sponsor deal by clicking Sign.
+   * Creates the active deal, credits signing bonus, fires news headline + critical email.
+   */
+  signSponsorDeal(negotiationId: string): GameState {
+    const state = GameStateManager.currentState;
+    if (!state) throw new Error('No game in progress');
+
+    const negotiationIndex = state.negotiations.findIndex((n) => n.id === negotiationId);
+    if (negotiationIndex === -1) throw new Error('Negotiation not found');
+
+    const negotiation = state.negotiations[negotiationIndex] as SponsorNegotiation;
+    if (negotiation.stakeholderType !== StakeholderType.Sponsor) throw new Error('Not a sponsor negotiation');
+    if (negotiation.phase !== NegotiationPhase.PendingPlayerConfirmation) throw new Error('Not pending confirmation');
+
+    // Check slot availability — another Sign earlier this turn may have filled the slot
+    const sponsor = state.sponsors.find((s) => s.id === negotiation.sponsorId);
+    if (!sponsor) throw new Error('Sponsor not found');
+    const filledSlots = state.sponsorDeals.filter(
+      (d) => d.teamId === negotiation.teamId && d.tier === sponsor.tier
+    ).length;
+    if (filledSlots >= SPONSOR_SLOT_COUNTS[sponsor.tier]) {
+      throw new Error(`All ${sponsor.tier} slots are filled`);
+    }
+
+    negotiation.phase = NegotiationPhase.Completed;
+    negotiation.lastActivityDate = { ...state.currentDate };
+
+    const result = createSponsorContractFromNegotiation(negotiation, state);
+    if (result) {
+      generateSponsorSigningEvent(state, result, true);
+    }
+
+    return state;
+  },
+
+  /**
+   * Player declines a PendingPlayerConfirmation sponsor deal.
+   * Marks the negotiation as Failed.
+   */
+  declineSponsorDeal(negotiationId: string): GameState {
+    const state = GameStateManager.currentState;
+    if (!state) throw new Error('No game in progress');
+
+    const negotiationIndex = state.negotiations.findIndex((n) => n.id === negotiationId);
+    if (negotiationIndex === -1) throw new Error('Negotiation not found');
+
+    const negotiation = state.negotiations[negotiationIndex] as SponsorNegotiation;
+    if (negotiation.stakeholderType !== StakeholderType.Sponsor) throw new Error('Not a sponsor negotiation');
+    if (negotiation.phase !== NegotiationPhase.PendingPlayerConfirmation) throw new Error('Not pending confirmation');
+
+    negotiation.phase = NegotiationPhase.Failed;
+    negotiation.lastActivityDate = { ...state.currentDate };
 
     return state;
   },

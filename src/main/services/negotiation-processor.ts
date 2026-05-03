@@ -220,19 +220,27 @@ export function applyNegotiationUpdates(state: GameState, updates: NegotiationUp
         // Sponsor negotiation
         const sponsorNeg = negotiation as SponsorNegotiation;
 
-        // Handle completed negotiations - create sponsor deals for ALL teams
+        // When the engine accepts a sponsor deal, gate it behind player confirmation
+        // instead of auto-creating the contract. AI team deals complete immediately.
         if (sponsorNeg.phase === NegotiationPhase.Completed) {
-          const contractResult = createSponsorContractFromNegotiation(sponsorNeg, state);
-          if (contractResult) {
-            generateSponsorSigningEvent(state, contractResult, isPlayerTeam);
+          if (isPlayerTeam) {
+            // Intercept: hold at PendingPlayerConfirmation until player clicks Sign
+            sponsorNeg.phase = NegotiationPhase.PendingPlayerConfirmation;
+            state.negotiations[index] = sponsorNeg;
+            shouldStop = true;
+          } else {
+            // AI teams: create the deal directly
+            const contractResult = createSponsorContractFromNegotiation(sponsorNeg, state);
+            if (contractResult) {
+              generateSponsorSigningEvent(state, contractResult, false);
+            }
           }
         }
 
-        // Check if this affects player and should stop simulation
-        if (update.shouldStopSimulation && isPlayerTeam) {
+        // For non-completed player-team updates that require attention (counter, reject)
+        if (update.shouldStopSimulation && isPlayerTeam && sponsorNeg.phase !== NegotiationPhase.PendingPlayerConfirmation) {
           shouldStop = true;
 
-          // Generate email for player
           const sponsor = state.sponsors.find((s) => s.id === sponsorNeg.sponsorId);
           if (sponsor) {
             const latestRound = sponsorNeg.rounds[sponsorNeg.rounds.length - 1];
