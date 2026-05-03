@@ -491,6 +491,14 @@ export function createSponsorContractFromNegotiation(
   // Add to sponsor deals
   state.sponsorDeals.push(deal);
 
+  // Credit signing bonus to team budget immediately
+  if (terms.signingBonus > 0) {
+    const team = state.teams.find((t) => t.id === negotiation.teamId);
+    if (team) {
+      team.budget += terms.signingBonus;
+    }
+  }
+
   return {
     sponsorId: sponsor.id,
     teamId: negotiation.teamId,
@@ -531,15 +539,35 @@ export function generateSponsorSigningEvent(
     critical: false,
   });
 
-  // Email to player if their team is involved
+  // SPONSOR_SIGNED game event (for Player Wiki / history)
+  state.events.push(
+    createEvent({
+      type: 'SPONSOR_SIGNED',
+      date: { ...state.currentDate },
+      involvedEntities: [teamRef(team.id)],
+      data: {
+        sponsorId: sponsor.id,
+        sponsorName: sponsor.name,
+        teamId: team.id,
+        teamName: team.name,
+        tier: result.tier,
+        monthlyPayment: result.monthlyPayment,
+        signingBonus: result.signingBonus,
+        duration: result.contractDuration,
+      },
+      importance: result.tier === 'title' ? 'high' : 'medium',
+    })
+  );
+
+  // Critical email to player — simulation pauses so player reads the confirmation
   if (isPlayerTeamInvolved) {
     state.calendarEvents.push({
       id: randomUUID(),
       date: state.currentDate,
       type: CalendarEventType.Email,
-      subject: headline,
-      body: `${body} This sponsorship will provide important funding for your team.`,
-      critical: false, // Don't stop sim
+      subject: `${sponsor.name} partnership confirmed`,
+      body: `${sponsor.name} partnership confirmed — ${tierName}, $${result.monthlyPayment.toLocaleString()}/mo, ${result.contractDuration}-year deal. Your signing bonus of $${result.signingBonus.toLocaleString()} has been credited to your team budget.`,
+      critical: true,
     });
   }
 }

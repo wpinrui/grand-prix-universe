@@ -339,6 +339,8 @@ export const IpcChannels = {
   // Sponsor Negotiation
   SPONSOR_START_NEGOTIATION: 'sponsor:startNegotiation',
   SPONSOR_RESPOND_TO_OFFER: 'sponsor:respondToOffer',
+  SPONSOR_SIGN: 'sponsor:sign',
+  SPONSOR_DECLINE: 'sponsor:decline',
 
   // Mail
   MAIL_MARK_READ: 'mail:markRead',
@@ -566,6 +568,14 @@ export interface IpcInvokeMap {
   };
   [IpcChannels.SPONSOR_RESPOND_TO_OFFER]: {
     args: [params: RespondToSponsorOfferParams];
+    result: GameState;
+  };
+  [IpcChannels.SPONSOR_SIGN]: {
+    args: [negotiationId: string];
+    result: GameState;
+  };
+  [IpcChannels.SPONSOR_DECLINE]: {
+    args: [negotiationId: string];
     result: GameState;
   };
 
