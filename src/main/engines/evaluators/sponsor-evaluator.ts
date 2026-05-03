@@ -22,6 +22,15 @@ import type {
 } from '../../../shared/domain/types';
 import type { NegotiationEvaluationResult } from '../../../shared/domain/engines';
 import { ResponseType, ResponseTone, SponsorTier, SponsorPlacement } from '../../../shared/domain';
+import {
+  INSTANT_ACCEPT_RATIO,
+  REJECT_RATIO,
+  SOFT_GATE_MULTIPLIER,
+  HARD_GATE_MULTIPLIER,
+  hashString,
+  seededRandom,
+  computeAcceptanceProbabilities,
+} from '../../../shared/domain/sponsor-probability';
 
 // =============================================================================
 // CONSTANTS
@@ -33,22 +42,6 @@ const BASE_RESPONSE_DELAY_DAYS = 3;
 /** Min/max response delay */
 const MIN_RESPONSE_DELAY_DAYS = 1;
 const MAX_RESPONSE_DELAY_DAYS = 5;
-
-// -----------------------------------------------------------------------------
-// Reputation Gates
-// -----------------------------------------------------------------------------
-
-/**
- * Soft gate threshold multiplier
- * Teams below minReputation * SOFT_GATE_MULTIPLIER get demanding counter-offers
- */
-const SOFT_GATE_MULTIPLIER = 0.9; // 10% below minReputation = soft gate
-
-/**
- * Hard gate threshold multiplier
- * Teams below minReputation * HARD_GATE_MULTIPLIER get rejected
- */
-const HARD_GATE_MULTIPLIER = 0.7; // 30% below minReputation = hard rejection
 
 /** Maximum exit clause position (sponsor can demand team finish above this) */
 const MAX_EXIT_CLAUSE_POSITION = 10;
@@ -84,16 +77,6 @@ const MINOR_SIGNING_BONUS_MONTHS = 1; // 1 month
 
 /** Maximum contract duration sponsors will accept */
 const MAX_CONTRACT_DURATION = 3;
-
-// -----------------------------------------------------------------------------
-// Acceptance Thresholds
-// -----------------------------------------------------------------------------
-
-/** Ratio of offered payment to sponsor's willing payment for instant accept */
-const INSTANT_ACCEPT_RATIO = 0.95; // Accept if offer >= 95% of willing amount
-
-/** Ratio below which sponsor rejects outright (too cheap for them) */
-const REJECT_RATIO = 0.6; // Reject if offer < 60% of willing amount
 
 /** Maximum rounds before sponsor walks away */
 const MAX_NEGOTIATION_ROUNDS = 4;
@@ -160,6 +143,25 @@ export function hasRivalGroupConflict(
     }
   }
   return false;
+}
+
+/**
+ * Return the name of the existing sponsor causing a rivalGroup conflict, or null.
+ */
+export function getRivalConflictSponsorName(
+  sponsorRivalGroup: string | null,
+  existingSponsorDeals: ActiveSponsorDeal[],
+  allSponsors: Sponsor[]
+): string | null {
+  if (!sponsorRivalGroup) return null;
+
+  for (const deal of existingSponsorDeals) {
+    const existingSponsor = allSponsors.find((s) => s.id === deal.sponsorId);
+    if (existingSponsor?.rivalGroup === sponsorRivalGroup) {
+      return existingSponsor.name;
+    }
+  }
+  return null;
 }
 
 // =============================================================================
@@ -307,11 +309,29 @@ function calculateResponseDelay(relationshipScore: number): number {
 }
 
 // =============================================================================
+// REJECTION REASON HELPERS
+// =============================================================================
+
+function formatPaymentHint(amount: number): string {
+  if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}M`;
+  if (amount >= 1_000) return `$${Math.round(amount / 1_000)}k`;
+  return `$${Math.round(amount)}`;
+}
+
+function buildOfferTooLowReason(willingPayment: number): string {
+  const low = Math.round(willingPayment * 0.95);
+  const high = Math.round(willingPayment * 1.10);
+  return `We can't accept this rate — we're looking closer to ${formatPaymentHint(low)}–${formatPaymentHint(high)}/mo.`;
+}
+
+// =============================================================================
 // MAIN EVALUATOR
 // =============================================================================
 
 /**
  * Evaluate a sponsor contract offer from the sponsor's perspective.
+ * Uses a probability model with a per-negotiation seeded roll so that
+ * save-load preserves outcomes for identical inputs.
  */
 export function evaluateSponsorOffer(input: SponsorEvaluationInput): NegotiationEvaluationResult {
   const {
@@ -336,6 +356,7 @@ export function evaluateSponsorOffer(input: SponsorEvaluationInput): Negotiation
       responseDelayDays: BASE_RESPONSE_DELAY_DAYS,
       isNewsworthy: false,
       relationshipChange: REJECT_RELATIONSHIP_PENALTY,
+      rejectionReason: 'We could not process your offer.',
     };
   }
 
@@ -345,14 +366,17 @@ export function evaluateSponsorOffer(input: SponsorEvaluationInput): Negotiation
   // ==========================================================================
   // HARD REJECTION: rivalGroup conflict
   // ==========================================================================
-  if (hasRivalGroupConflict(sponsor.rivalGroup, existingSponsorDeals, allSponsors)) {
+  const rivalName = getRivalConflictSponsorName(sponsor.rivalGroup, existingSponsorDeals, allSponsors);
+  if (rivalName !== null) {
     return {
       responseType: ResponseType.Reject,
       counterTerms: null,
       responseTone: ResponseTone.Professional,
       responseDelayDays: MIN_RESPONSE_DELAY_DAYS,
       isNewsworthy: false,
-      relationshipChange: 0, // No relationship penalty for conflict
+      relationshipChange: 0,
+      rejectionReason: `We can't partner while you hold ${rivalName}.`,
+      acceptanceProbability: 0,
     };
   }
 
@@ -370,17 +394,19 @@ export function evaluateSponsorOffer(input: SponsorEvaluationInput): Negotiation
       responseDelayDays: MIN_RESPONSE_DELAY_DAYS,
       isNewsworthy: false,
       relationshipChange: REJECT_RELATIONSHIP_PENALTY,
+      rejectionReason: "Your team's profile is below what our brand requires.",
+      acceptanceProbability: 0,
     };
   }
 
   // ==========================================================================
-  // Evaluate the offered payment
+  // Evaluate the offered payment using the probability model
   // ==========================================================================
   const offeredPayment = terms.monthlyPayment;
   const paymentRatio = offeredPayment / valuation.willingPayment;
 
   // ==========================================================================
-  // Handle ultimatums
+  // Handle ultimatums (bypass probability — ultimatums are categorical)
   // ==========================================================================
   if (currentRound.isUltimatum) {
     // Player issued ultimatum - accept or reject only
@@ -392,6 +418,7 @@ export function evaluateSponsorOffer(input: SponsorEvaluationInput): Negotiation
         responseDelayDays: MIN_RESPONSE_DELAY_DAYS,
         isNewsworthy: sponsor.tier === SponsorTier.Title,
         relationshipChange: ACCEPT_RELATIONSHIP_BOOST,
+        acceptanceProbability: 1,
       };
     } else {
       return {
@@ -401,16 +428,31 @@ export function evaluateSponsorOffer(input: SponsorEvaluationInput): Negotiation
         responseDelayDays: MIN_RESPONSE_DELAY_DAYS,
         isNewsworthy: false,
         relationshipChange: REJECT_RELATIONSHIP_PENALTY,
+        rejectionReason: buildOfferTooLowReason(valuation.willingPayment),
+        acceptanceProbability: 0,
       };
     }
   }
 
   // ==========================================================================
-  // Decision logic
+  // Probability-based decision
   // ==========================================================================
+  const probs = computeAcceptanceProbabilities(
+    paymentRatio,
+    valuation.isBelowHardGate,
+    valuation.isBelowSoftGate
+  );
 
-  // Accept if offer is good enough and team is above soft gate
-  if (paymentRatio >= INSTANT_ACCEPT_RATIO && !valuation.isBelowSoftGate) {
+  // Seeded roll: derive seed from negotiation ID + round so outcomes are
+  // deterministic for identical (negotiation, round, terms) combos.
+  const seed = hashString(`${negotiation.id}:${roundNumber}`);
+  const roll = seededRandom(seed);
+
+  // Check if we should issue ultimatum on the counter path
+  const shouldUltimatum = roundNumber >= MAX_NEGOTIATION_ROUNDS;
+
+  if (roll < probs.accept) {
+    // Accept
     return {
       responseType: ResponseType.Accept,
       counterTerms: null,
@@ -418,38 +460,40 @@ export function evaluateSponsorOffer(input: SponsorEvaluationInput): Negotiation
       responseDelayDays: calculateResponseDelay(relationshipScore),
       isNewsworthy: sponsor.tier === SponsorTier.Title,
       relationshipChange: ACCEPT_RELATIONSHIP_BOOST,
+      acceptanceProbability: probs.accept,
     };
   }
 
-  // Reject if offer is too low
-  if (paymentRatio < REJECT_RATIO) {
+  if (roll < probs.accept + probs.counter) {
+    // Counter
+    const counterTerms = generateCounterTerms(terms, sponsor, valuation);
     return {
-      responseType: ResponseType.Reject,
-      counterTerms: null,
-      responseTone: ResponseTone.Disappointed,
+      responseType: ResponseType.Counter,
+      counterTerms,
+      responseTone: valuation.isBelowSoftGate ? ResponseTone.Professional : ResponseTone.Enthusiastic,
       responseDelayDays: calculateResponseDelay(relationshipScore),
       isNewsworthy: false,
-      relationshipChange: REJECT_RELATIONSHIP_PENALTY,
+      relationshipChange: 0,
+      isUltimatum: shouldUltimatum,
+      acceptanceProbability: probs.accept,
     };
   }
 
-  // ==========================================================================
-  // Counter-offer
-  // ==========================================================================
-
-  // Check if we should issue ultimatum
-  const shouldUltimatum = roundNumber >= MAX_NEGOTIATION_ROUNDS;
-
-  const counterTerms = generateCounterTerms(terms, sponsor, valuation);
+  // Reject
+  const isMaxRounds = roundNumber >= MAX_NEGOTIATION_ROUNDS;
+  const rejectionReason = isMaxRounds
+    ? "We've tried to find common ground but can't agree."
+    : buildOfferTooLowReason(valuation.willingPayment);
 
   return {
-    responseType: ResponseType.Counter,
-    counterTerms,
-    responseTone: valuation.isBelowSoftGate ? ResponseTone.Professional : ResponseTone.Enthusiastic,
+    responseType: ResponseType.Reject,
+    counterTerms: null,
+    responseTone: ResponseTone.Disappointed,
     responseDelayDays: calculateResponseDelay(relationshipScore),
     isNewsworthy: false,
-    relationshipChange: 0,
-    isUltimatum: shouldUltimatum,
+    relationshipChange: REJECT_RELATIONSHIP_PENALTY,
+    rejectionReason,
+    acceptanceProbability: probs.accept,
   };
 }
 

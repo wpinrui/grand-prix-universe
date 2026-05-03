@@ -348,10 +348,14 @@ function processNegotiation(
   // Update negotiation
   // Type assertion needed because Negotiation is a union type with different round types
   // The cast is safe because responseRound is created from the same negotiation's lastRound
+  const newPhase = determineNewPhase(result.responseType);
   const updatedNegotiation = {
     ...negotiation,
-    phase: determineNewPhase(result.responseType),
+    phase: newPhase,
     rounds: [...negotiation.rounds, responseRound],
+    ...(newPhase === NegotiationPhase.Failed && result.rejectionReason
+      ? { rejectionReason: result.rejectionReason }
+      : {}),
   } as Negotiation;
 
   // Determine if should stop simulation

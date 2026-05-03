@@ -1112,6 +1112,30 @@ export const GameStateManager = {
       generateSponsorSigningEvent(state, result, true);
     }
 
+    // Auto-fail any remaining PendingPlayerConfirmation negotiations for the same tier
+    // if signing this deal filled the last open slot.
+    const nowFilledSlots = state.sponsorDeals.filter(
+      (d) => d.teamId === negotiation.teamId && d.tier === sponsor.tier
+    ).length;
+    if (nowFilledSlots >= SPONSOR_SLOT_COUNTS[sponsor.tier]) {
+      for (const n of state.negotiations) {
+        if (
+          n.id !== negotiationId &&
+          n.stakeholderType === StakeholderType.Sponsor &&
+          n.teamId === negotiation.teamId &&
+          n.phase === NegotiationPhase.PendingPlayerConfirmation
+        ) {
+          const otherSponsor = state.sponsors.find((s) => s.id === (n as SponsorNegotiation).sponsorId);
+          if (otherSponsor?.tier === sponsor.tier) {
+            (n as SponsorNegotiation).phase = NegotiationPhase.Failed;
+            (n as SponsorNegotiation).lastActivityDate = { ...state.currentDate };
+            (n as SponsorNegotiation).rejectionReason =
+              'Your slot was taken by another deal — we\'ve withdrawn.';
+          }
+        }
+      }
+    }
+
     return state;
   },
 
