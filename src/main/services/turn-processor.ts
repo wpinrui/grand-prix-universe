@@ -54,6 +54,7 @@ import {
   ENGINE_STAT_DISPLAY_NAMES,
 } from '../../shared/domain/engine-utils';
 import { generateDailyNews, pushNewsEvent } from './news-generator';
+import { applyMonthlyIncomeTick } from './sponsor-mechanics';
 
 /** Shared engine manager instance */
 const engineManager = new EngineManager();
@@ -287,8 +288,14 @@ export function processSpecReleases(state: GameState, currentDate: GameDate): vo
  * Returns true if player team had a design milestone or test completion (for auto-stop)
  */
 export function applyTurnResult(state: GameState, result: TurnProcessingResult): boolean {
+  const prevDate = state.currentDate;
   state.currentDate = result.newDate;
   state.phase = result.newPhase;
+
+  // Fire monthly income tick on the first day of each new month
+  if (result.newDate.day === 1 && result.newDate.month !== prevDate.month) {
+    applyMonthlyIncomeTick(state);
+  }
   applyDriverStateChanges(state, result.driverStateChanges);
   applyTeamStateChanges(state, result.teamStateChanges);
 

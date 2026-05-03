@@ -8,9 +8,12 @@ import { formatCurrency, formatCompact } from '../utils/format';
 import { seasonToYear } from '../../shared/utils/date-utils';
 import {
   SponsorTier,
+  NegotiationPhase,
+  StakeholderType,
   type Sponsor,
   type ActiveSponsorDeal,
   type GameState,
+  type SponsorNegotiation,
 } from '../../shared/domain';
 
 // ===========================================
@@ -504,10 +507,25 @@ export function Sponsors({ initialTab, onTabChange }: SponsorsProps) {
   const [activeTab, setActiveTab] = useState<SponsorsTab>(initialTab ?? 'summary');
   const [dealsTierFilter, setDealsTierFilter] = useState<SponsorTier | undefined>(undefined);
 
+  // Derive the active-negotiation count from gameState directly so the badge stays
+  // correct on every tab — including Summary, where <Deals> is unmounted.
+  const { gameState } = useDerivedGameState();
+  const activeNegotiationCount = useMemo(() => {
+    if (!gameState) return 0;
+    const playerTeamId = gameState.player.teamId;
+    return gameState.negotiations.filter(
+      (n): n is SponsorNegotiation =>
+        n.stakeholderType === StakeholderType.Sponsor &&
+        n.teamId === playerTeamId &&
+        (n.phase === NegotiationPhase.AwaitingResponse ||
+          n.phase === NegotiationPhase.ResponseReceived ||
+          n.phase === NegotiationPhase.PendingPlayerConfirmation)
+    ).length;
+  }, [gameState]);
+
   const handleTabChange = (tab: SponsorsTab) => {
     setActiveTab(tab);
     onTabChange?.(tab);
-    // Clear tier filter when manually switching tabs
     if (tab === 'summary') {
       setDealsTierFilter(undefined);
     }
@@ -527,10 +545,13 @@ export function Sponsors({ initialTab, onTabChange }: SponsorsProps) {
         tabs={TABS}
         activeTab={activeTab}
         onTabChange={handleTabChange}
+        badge={activeNegotiationCount > 0 ? { tabId: 'deals', count: activeNegotiationCount } : undefined}
       />
 
       {activeTab === 'summary' && <SponsorsSummary onEmptySlotClick={handleEmptySlotClick} />}
-      {activeTab === 'deals' && <Deals embedded initialTierFilter={dealsTierFilter} />}
+      {activeTab === 'deals' && (
+        <Deals embedded initialTierFilter={dealsTierFilter} />
+      )}
     </div>
   );
 }

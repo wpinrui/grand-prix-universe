@@ -1450,6 +1450,8 @@ export enum NegotiationPhase {
   AwaitingResponse = 'awaiting-response',
   /** Counterparty has responded, player can act */
   ResponseReceived = 'response-received',
+  /** Sponsor accepted; waiting for player to Sign or Decline */
+  PendingPlayerConfirmation = 'pending-player-confirmation',
   /** Negotiation complete, deal signed */
   Completed = 'completed',
   /** Negotiation ended without deal (rejected or expired) */

@@ -21,7 +21,7 @@ import type {
   SponsorContractTerms,
   GameDate,
 } from './types';
-import { ManufacturerType, NegotiationPhase, StakeholderType, DriverRole } from './types';
+import { ManufacturerType, NegotiationPhase, StakeholderType, DriverRole, SponsorTier } from './types';
 import { offsetDate } from '../utils/date-utils';
 
 /**
@@ -519,6 +519,15 @@ export const OFFER_EXPIRY_DAYS = 14;
  * Maximum number of negotiation rounds before stalemate
  */
 export const DEFAULT_MAX_ROUNDS = 5;
+
+/**
+ * Fixed slot counts per sponsor tier — shared between backend enforcement and frontend display.
+ */
+export const SPONSOR_SLOT_COUNTS: Record<SponsorTier, number> = {
+  title: 1,
+  major: 3,
+  minor: 5,
+};
 
 /**
  * Default neutral relationship score (0-100 scale)

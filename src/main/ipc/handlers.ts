@@ -281,6 +281,20 @@ export function registerIpcHandlers(): void {
     }
   );
 
+  ipcMain.handle(
+    IpcChannels.SPONSOR_SIGN,
+    (_event, negotiationId: string) => {
+      return GameStateManager.signSponsorDeal(negotiationId);
+    }
+  );
+
+  ipcMain.handle(
+    IpcChannels.SPONSOR_DECLINE,
+    (_event, negotiationId: string) => {
+      return GameStateManager.declineSponsorDeal(negotiationId);
+    }
+  );
+
   // Mail handlers
   ipcMain.handle(IpcChannels.MAIL_MARK_READ, (_event, emailId: string) => {
     return GameStateManager.markEmailRead(emailId);
