@@ -49,23 +49,23 @@ const DURATION_OPTIONS: DropdownOption<DurationValue>[] = [
   { value: '3', label: '3 Years' },
 ];
 
-/** Industry icons */
+/** Industry icons (matches Sponsors.tsx) */
 const INDUSTRY_ICONS: Record<string, string> = {
-  'oil-gas': '⛽',
+  'oil-gas': '\u26FD',
   technology: '\u{1F4BB}',
   finance: '\u{1F4B3}',
   telecommunications: '\u{1F4F1}',
   payments: '\u{1F4B8}',
   'water-technology': '\u{1F4A7}',
   consulting: '\u{1F4BC}',
-  aviation: '✈️',
+  aviation: '\u2708\uFE0F',
   luxury: '\u{1F48E}',
   beverages: '\u{1F37A}',
   logistics: '\u{1F4E6}',
   apparel: '\u{1F455}',
-  insurance: '\u{1F6E1}️',
+  insurance: '\u{1F6E1}\uFE0F',
   tyres: '\u{1F6DE}',
-  components: '⚙️',
+  components: '\u2699\uFE0F',
   'consumer-electronics': '\u{1F4F7}',
   entertainment: '\u{1F3AC}',
   hospitality: '\u{1F3E8}',
@@ -281,14 +281,14 @@ function ContactModal({ sponsor, currentSeason, onClose, onSubmit }: ContactModa
 interface NegotiationCardProps {
   negotiation: SponsorNegotiation;
   sponsor: Sponsor;
-  isSlotFilled: boolean;
-  onAccept: () => void;
-  onReject: () => void;
-  onSign: () => void;
-  onDecline: () => void;
+  isSlotFilled?: boolean;
+  onAccept?: () => void;
+  onReject?: () => void;
+  onSign?: () => void;
+  onDecline?: () => void;
 }
 
-function NegotiationCard({ negotiation, sponsor, isSlotFilled, onAccept, onReject, onSign, onDecline }: NegotiationCardProps) {
+function NegotiationCard({ negotiation, sponsor, isSlotFilled = false, onAccept, onReject, onSign, onDecline }: NegotiationCardProps) {
   const lastRound = negotiation.rounds[negotiation.rounds.length - 1];
   const terms = lastRound?.terms as SponsorContractTerms | undefined;
   const isResponseReceived = negotiation.phase === NegotiationPhase.ResponseReceived;
@@ -462,11 +462,9 @@ interface DealsProps {
   embedded?: boolean;
   /** Initial tier filter to apply (e.g., when navigating from an empty sponsor slot) */
   initialTierFilter?: SponsorTier;
-  /** Called when the "needs your attention" count changes, so parent can update badge */
-  onNeedsAttentionCountChange?: (count: number) => void;
 }
 
-export function Deals({ embedded = false, initialTierFilter, onNeedsAttentionCountChange }: DealsProps) {
+export function Deals({ embedded = false, initialTierFilter }: DealsProps) {
   const [activeTab, setActiveTab] = useState<DealsTab>('browse');
   const [tierFilter, setTierFilter] = useState<TierFilter>(initialTierFilter ?? 'all');
   const [contactingSponsor, setContactingSponsor] = useState<Sponsor | null>(null);
@@ -556,11 +554,6 @@ export function Deals({ embedded = false, initialTierFilter, onNeedsAttentionCou
     }
     return result;
   }, [gameState]);
-
-  // Notify parent of "needs attention" count changes
-  useEffect(() => {
-    onNeedsAttentionCountChange?.(needsAttention.length);
-  }, [needsAttention.length, onNeedsAttentionCountChange]);
 
   // Filter sponsors for browse tab
   const filteredSponsors = useMemo(() => {
@@ -660,7 +653,7 @@ export function Deals({ embedded = false, initialTierFilter, onNeedsAttentionCou
         <div className="space-y-4">
           <div className="card p-4" style={ACCENT_CARD_STYLE}>
             <div className="flex items-start gap-3">
-              <div className="text-blue-400 text-xl">ℹ️</div>
+              <div className="text-blue-400 text-xl">ℹ\uFE0F</div>
               <div>
                 <h3 className="text-sm font-semibold text-primary mb-1">
                   Sponsor Negotiations
@@ -734,7 +727,7 @@ export function Deals({ embedded = false, initialTierFilter, onNeedsAttentionCou
             </div>
           )}
 
-          {/* Sent */}
+          {/* Sent — AwaitingResponse only; no actionable buttons render */}
           <SectionHeader title="Sent" count={sentNegotiations.length} />
           {sentNegotiations.length === 0 ? (
             <p className="text-sm text-muted px-1 pb-2">No proposals awaiting a response.</p>
@@ -748,11 +741,6 @@ export function Deals({ embedded = false, initialTierFilter, onNeedsAttentionCou
                     key={negotiation.id}
                     negotiation={negotiation}
                     sponsor={sponsor}
-                    isSlotFilled={false}
-                    onAccept={() => handleRespondToOffer(negotiation.id, 'accept')}
-                    onReject={() => handleRespondToOffer(negotiation.id, 'reject')}
-                    onSign={() => handleSign(negotiation.id)}
-                    onDecline={() => handleDecline(negotiation.id)}
                   />
                 );
               })}
@@ -780,11 +768,6 @@ export function Deals({ embedded = false, initialTierFilter, onNeedsAttentionCou
                       key={negotiation.id}
                       negotiation={negotiation}
                       sponsor={sponsor}
-                      isSlotFilled={false}
-                      onAccept={() => handleRespondToOffer(negotiation.id, 'accept')}
-                      onReject={() => handleRespondToOffer(negotiation.id, 'reject')}
-                      onSign={() => handleSign(negotiation.id)}
-                      onDecline={() => handleDecline(negotiation.id)}
                     />
                   );
                 })

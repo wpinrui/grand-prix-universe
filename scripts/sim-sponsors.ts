@@ -5,11 +5,14 @@
  *   npx ts-node --compiler-options '{"module":"commonjs"}' scripts/sim-sponsors.ts [scenario]
  *
  * Scenarios:
- *   signing      Simulate a completed signing and print pre/post team.budget
- *   monthly N    Fast-forward N months from an active deal and print cumulative delta
- *   slots        Attempt to initiate a negotiation when all slots of a tier are filled
+ *   signing      Simulate a sponsor-accepts → player Sign and print pre/post team.budget
+ *   monthly N    Fast-forward N months (active deal) and print cumulative delta
+ *   slots        Try to start a negotiation when all slots of a tier are filled
  *
  * All scenarios run by default when no argument is supplied.
+ *
+ * The CLI installs a constructed GameState onto `GameStateManager.currentState`
+ * and invokes the same methods the IPC layer calls — no parallel calculation.
  */
 
 import { randomUUID } from 'crypto';
@@ -27,10 +30,7 @@ import {
   StakeholderType,
 } from '../src/shared/domain/types';
 import { SPONSOR_SLOT_COUNTS } from '../src/shared/domain/engine-utils';
-import {
-  createSponsorContractFromNegotiation,
-  generateSponsorSigningEvent,
-} from '../src/main/services/contract-creator';
+import { GameStateManager } from '../src/main/services/game-state-manager';
 import { applyMonthlyIncomeTick } from '../src/main/services/sponsor-mechanics';
 
 // ---------------------------------------------------------------------------
@@ -62,7 +62,11 @@ function makeSponsor(id: string, tier: SponsorTier): Sponsor {
   };
 }
 
-function makeMinimalState(teamId: string, budget: number, sponsorTier: SponsorTier = SponsorTier.Major): GameState {
+function makeMinimalState(
+  teamId: string,
+  budget: number,
+  sponsorTier: SponsorTier = SponsorTier.Major
+): GameState {
   const team = makeTeam(teamId, budget);
   const sponsor = makeSponsor('sponsor-1', sponsorTier);
   return {
@@ -78,10 +82,11 @@ function makeMinimalState(teamId: string, budget: number, sponsorTier: SponsorTi
   } as unknown as GameState;
 }
 
-function makeNegotiation(
+function makePendingNegotiation(
   teamId: string,
   sponsorId: string,
-  terms: SponsorContractTerms
+  terms: SponsorContractTerms,
+  forSeason = 2
 ): SponsorNegotiation {
   return {
     id: randomUUID(),
@@ -89,7 +94,7 @@ function makeNegotiation(
     teamId,
     sponsorId,
     phase: NegotiationPhase.PendingPlayerConfirmation,
-    forSeason: 2,
+    forSeason,
     startedDate: { year: 2025, month: 1, day: 1 },
     lastActivityDate: { year: 2025, month: 1, day: 15 },
     rounds: [
@@ -109,8 +114,12 @@ function makeNegotiation(
   };
 }
 
+function installState(state: GameState): void {
+  GameStateManager.currentState = state;
+}
+
 // ---------------------------------------------------------------------------
-// Scenario 1 — Signing bonus
+// Scenario 1 — Signing bonus via real signSponsorDeal()
 // ---------------------------------------------------------------------------
 
 function scenarySigning() {
@@ -129,30 +138,32 @@ function scenarySigning() {
     placement: SponsorPlacement.Secondary,
   };
 
-  const negotiation = makeNegotiation(teamId, 'sponsor-1', terms);
+  const negotiation = makePendingNegotiation(teamId, 'sponsor-1', terms);
   state.negotiations.push(negotiation);
 
-  // Complete the negotiation (set phase to Completed as signSponsorDeal does)
-  negotiation.phase = NegotiationPhase.Completed;
+  installState(state);
 
   const budgetBefore = state.teams[0].budget;
   console.log(`Budget before Sign:  $${budgetBefore.toLocaleString()}`);
 
-  const result = createSponsorContractFromNegotiation(negotiation, state);
-  if (result) {
-    generateSponsorSigningEvent(state, result, true);
-  }
+  GameStateManager.signSponsorDeal(negotiation.id);
 
   const budgetAfter = state.teams[0].budget;
   console.log(`Budget after Sign:   $${budgetAfter.toLocaleString()}`);
   console.log(`Delta:               $${(budgetAfter - budgetBefore).toLocaleString()} (expected $${signingBonus.toLocaleString()})`);
+  console.log(`Negotiation phase:   ${negotiation.phase} (expected '${NegotiationPhase.Completed}')`);
 
-  const passed = budgetAfter - budgetBefore === signingBonus;
+  const passed =
+    budgetAfter - budgetBefore === signingBonus &&
+    negotiation.phase === NegotiationPhase.Completed;
   console.log(`Result: ${passed ? 'PASS ✓' : 'FAIL ✗'}`);
 }
 
 // ---------------------------------------------------------------------------
-// Scenario 2 — Monthly income tick
+// Scenario 2 — Monthly income tick (real applyMonthlyIncomeTick)
+//
+// Covers the active-season filter: an inactive deal scheduled for next season
+// must not pay, and an expired deal must not pay.
 // ---------------------------------------------------------------------------
 
 function scenarioMonthly(months: number) {
@@ -163,8 +174,9 @@ function scenarioMonthly(months: number) {
   const startBudget = 1_000_000;
 
   const state = makeMinimalState(teamId, startBudget);
+  // currentSeason = 1
 
-  // Plant an active deal directly (as if already signed)
+  // Active deal (covers current season) — should pay
   state.sponsorDeals.push({
     sponsorId: 'sponsor-1',
     teamId,
@@ -175,6 +187,30 @@ function scenarioMonthly(months: number) {
     startSeason: 1,
     endSeason: 3,
   });
+  // Future deal (next season) — should NOT pay
+  state.sponsorDeals.push({
+    sponsorId: 'sponsor-future',
+    teamId,
+    tier: SponsorTier.Major,
+    signingBonus: 0,
+    monthlyPayment: 99_999,
+    guaranteed: true,
+    startSeason: 2,
+    endSeason: 3,
+  });
+  // Expired deal — should NOT pay
+  state.sponsorDeals.push({
+    sponsorId: 'sponsor-expired',
+    teamId,
+    tier: SponsorTier.Minor,
+    signingBonus: 0,
+    monthlyPayment: 88_888,
+    guaranteed: true,
+    startSeason: 0,
+    endSeason: 0,
+  });
+
+  installState(state);
 
   const budgetBefore = state.teams[0].budget;
   console.log(`Budget before ${months} month(s): $${budgetBefore.toLocaleString()}`);
@@ -187,14 +223,14 @@ function scenarioMonthly(months: number) {
   const delta = budgetAfter - budgetBefore;
   const expected = monthlyPayment * months;
   console.log(`Budget after ${months} month(s):  $${budgetAfter.toLocaleString()}`);
-  console.log(`Delta:    $${delta.toLocaleString()} (expected $${expected.toLocaleString()})`);
+  console.log(`Delta:    $${delta.toLocaleString()} (expected $${expected.toLocaleString()} — only the active deal should pay)`);
 
   const passed = delta === expected;
   console.log(`Result: ${passed ? 'PASS ✓' : 'FAIL ✗'}`);
 }
 
 // ---------------------------------------------------------------------------
-// Scenario 3 — Slot enforcement
+// Scenario 3 — Slot enforcement via real startSponsorNegotiation()
 // ---------------------------------------------------------------------------
 
 function scenarioSlots() {
@@ -215,25 +251,31 @@ function scenarioSlots() {
     startSeason: 1,
     endSeason: 3,
   });
+  // Add a second sponsor of the same tier so we have someone to attempt to negotiate with
+  state.sponsors.push(makeSponsor('sponsor-2', tier));
+
+  installState(state);
 
   console.log(`Title slots allowed:   ${SPONSOR_SLOT_COUNTS[tier]}`);
   console.log(`Active title deals:    ${state.sponsorDeals.filter((d) => d.teamId === teamId && d.tier === tier).length}`);
 
-  // Attempt to start a new negotiation (same logic as game-state-manager.startSponsorNegotiation)
-  const activeDealsForTier = state.sponsorDeals.filter(
-    (d) => d.teamId === teamId && d.tier === tier
-  ).length;
-  const activeNegotiationsForTier = state.negotiations.filter((n) => {
-    if (n.stakeholderType !== StakeholderType.Sponsor) return false;
-    if (n.teamId !== teamId) return false;
-    if (n.phase === NegotiationPhase.Completed || n.phase === NegotiationPhase.Failed) return false;
-    const negSponsor = state.sponsors.find((s) => s.id === (n as SponsorNegotiation).sponsorId);
-    return negSponsor?.tier === tier;
-  }).length;
-  const slotCount = SPONSOR_SLOT_COUNTS[tier];
-  const blocked = activeDealsForTier + activeNegotiationsForTier >= slotCount;
+  const terms: SponsorContractTerms = {
+    signingBonus: 100_000,
+    monthlyPayment: 100_000,
+    duration: 2,
+    placement: SponsorPlacement.Primary,
+  };
 
-  console.log(`Attempt to negotiate: ${blocked ? 'BLOCKED ✓' : 'ALLOWED (unexpected ✗)'}`);
+  let blocked = false;
+  let errorMessage = '';
+  try {
+    GameStateManager.startSponsorNegotiation('sponsor-2', terms);
+  } catch (err) {
+    blocked = true;
+    errorMessage = err instanceof Error ? err.message : String(err);
+  }
+
+  console.log(`Attempt to negotiate: ${blocked ? `BLOCKED ✓ (\"${errorMessage}\")` : 'ALLOWED (unexpected ✗)'}`);
   console.log(`Result: ${blocked ? 'PASS ✓' : 'FAIL ✗'}`);
 }
 

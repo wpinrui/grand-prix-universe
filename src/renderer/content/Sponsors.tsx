@@ -8,9 +8,12 @@ import { formatCurrency, formatCompact } from '../utils/format';
 import { seasonToYear } from '../../shared/utils/date-utils';
 import {
   SponsorTier,
+  NegotiationPhase,
+  StakeholderType,
   type Sponsor,
   type ActiveSponsorDeal,
   type GameState,
+  type SponsorNegotiation,
 } from '../../shared/domain';
 
 // ===========================================
@@ -503,7 +506,21 @@ interface SponsorsProps {
 export function Sponsors({ initialTab, onTabChange }: SponsorsProps) {
   const [activeTab, setActiveTab] = useState<SponsorsTab>(initialTab ?? 'summary');
   const [dealsTierFilter, setDealsTierFilter] = useState<SponsorTier | undefined>(undefined);
-  const [needsAttentionCount, setNeedsAttentionCount] = useState(0);
+
+  // Derive the "needs attention" count from gameState directly so the badge stays
+  // correct on every tab — including Summary, where <Deals> is unmounted.
+  const { gameState } = useDerivedGameState();
+  const needsAttentionCount = useMemo(() => {
+    if (!gameState) return 0;
+    const playerTeamId = gameState.player.teamId;
+    return gameState.negotiations.filter(
+      (n): n is SponsorNegotiation =>
+        n.stakeholderType === StakeholderType.Sponsor &&
+        n.teamId === playerTeamId &&
+        (n.phase === NegotiationPhase.ResponseReceived ||
+          n.phase === NegotiationPhase.PendingPlayerConfirmation)
+    ).length;
+  }, [gameState]);
 
   const handleTabChange = (tab: SponsorsTab) => {
     setActiveTab(tab);
@@ -532,11 +549,7 @@ export function Sponsors({ initialTab, onTabChange }: SponsorsProps) {
 
       {activeTab === 'summary' && <SponsorsSummary onEmptySlotClick={handleEmptySlotClick} />}
       {activeTab === 'deals' && (
-        <Deals
-          embedded
-          initialTierFilter={dealsTierFilter}
-          onNeedsAttentionCountChange={setNeedsAttentionCount}
-        />
+        <Deals embedded initialTierFilter={dealsTierFilter} />
       )}
     </div>
   );

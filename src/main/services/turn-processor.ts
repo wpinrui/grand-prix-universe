@@ -283,7 +283,6 @@ export function processSpecReleases(state: GameState, currentDate: GameDate): vo
 // TURN RESULT APPLICATION
 // =============================================================================
 
-
 /**
  * Apply turn processing result to game state (mutates state)
  * Returns true if player team had a design milestone or test completion (for auto-stop)

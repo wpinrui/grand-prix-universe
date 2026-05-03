@@ -1040,9 +1040,16 @@ export const GameStateManager = {
     }
 
     if (response === 'accept') {
-      // Counterparty accepted: hold for player confirmation (Sign / Decline)
-      negotiation.phase = NegotiationPhase.PendingPlayerConfirmation;
+      // Player explicitly accepted the counterparty's terms — complete immediately.
+      // The PendingPlayerConfirmation gate only applies to engine-driven completions
+      // (when a sponsor accepts the player's offer without further player action).
+      negotiation.phase = NegotiationPhase.Completed;
       negotiation.lastActivityDate = { ...state.currentDate };
+
+      const result = createSponsorContractFromNegotiation(negotiation, state);
+      if (result) {
+        generateSponsorSigningEvent(state, result, true);
+      }
     } else if (response === 'reject') {
       // Reject - negotiation failed
       negotiation.phase = NegotiationPhase.Failed;
