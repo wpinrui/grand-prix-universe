@@ -653,7 +653,7 @@ export function Deals({ embedded = false, initialTierFilter }: DealsProps) {
         <div className="space-y-4">
           <div className="card p-4" style={ACCENT_CARD_STYLE}>
             <div className="flex items-start gap-3">
-              <div className="text-blue-400 text-xl">ℹ\uFE0F</div>
+              <div className="text-blue-400 text-xl">{'ℹ️'}</div>
               <div>
                 <h3 className="text-sm font-semibold text-primary mb-1">
                   Sponsor Negotiations
