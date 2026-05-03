@@ -517,7 +517,8 @@ export function Sponsors({ initialTab, onTabChange }: SponsorsProps) {
       (n): n is SponsorNegotiation =>
         n.stakeholderType === StakeholderType.Sponsor &&
         n.teamId === playerTeamId &&
-        (n.phase === NegotiationPhase.ResponseReceived ||
+        (n.phase === NegotiationPhase.AwaitingResponse ||
+          n.phase === NegotiationPhase.ResponseReceived ||
           n.phase === NegotiationPhase.PendingPlayerConfirmation)
     ).length;
   }, [gameState]);

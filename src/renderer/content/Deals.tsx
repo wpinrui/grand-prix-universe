@@ -646,7 +646,7 @@ export function Deals({ embedded = false, initialTierFilter }: DealsProps) {
         tabs={TABS}
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        badge={needsAttention.length > 0 ? { tabId: 'negotiations', count: needsAttention.length } : undefined}
+        badge={needsAttention.length + sentNegotiations.length > 0 ? { tabId: 'negotiations', count: needsAttention.length + sentNegotiations.length } : undefined}
       />
 
       {activeTab === 'browse' && (
