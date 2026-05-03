@@ -1,6 +1,6 @@
 # Agent instructions (project-specific, not shared)
 .claude/
-agents/
+.agent/
 
 # Design document (local reference only)
 Grand_Prix_World_Design_Document.md
