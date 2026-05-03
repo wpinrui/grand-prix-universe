@@ -66,6 +66,7 @@
   },
   "resolutions": {
     "minimatch": "9.0.7",
-    "picomatch": "4.0.4"
+    "picomatch": "4.0.4",
+    "terser-webpack-plugin": "^5.5.0"
   }
 }
