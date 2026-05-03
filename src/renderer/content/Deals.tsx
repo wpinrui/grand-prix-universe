@@ -15,8 +15,18 @@ import {
   type Sponsor,
   type SponsorNegotiation,
   type SponsorContractTerms,
+  type ActiveSponsorDeal,
 } from '../../shared/domain';
 import { SPONSOR_SLOT_COUNTS } from '../../shared/domain/engine-utils';
+import {
+  computeAcceptanceProbabilities,
+  getLikelihoodBand,
+  getReputationStanding,
+  getRequiredPosition,
+  TIER_PAYMENT_RANGES,
+  HARD_GATE_MULTIPLIER,
+  SOFT_GATE_MULTIPLIER,
+} from '../../shared/domain/sponsor-probability';
 
 // ===========================================
 // TYPES
@@ -51,21 +61,21 @@ const DURATION_OPTIONS: DropdownOption<DurationValue>[] = [
 
 /** Industry icons (matches Sponsors.tsx) */
 const INDUSTRY_ICONS: Record<string, string> = {
-  'oil-gas': '\u26FD',
+  'oil-gas': '⛽',
   technology: '\u{1F4BB}',
   finance: '\u{1F4B3}',
   telecommunications: '\u{1F4F1}',
   payments: '\u{1F4B8}',
   'water-technology': '\u{1F4A7}',
   consulting: '\u{1F4BC}',
-  aviation: '\u2708\uFE0F',
+  aviation: '✈️',
   luxury: '\u{1F48E}',
   beverages: '\u{1F37A}',
   logistics: '\u{1F4E6}',
   apparel: '\u{1F455}',
-  insurance: '\u{1F6E1}\uFE0F',
+  insurance: '\u{1F6E1}️',
   tyres: '\u{1F6DE}',
-  components: '\u2699\uFE0F',
+  components: '⚙️',
   'consumer-electronics': '\u{1F4F7}',
   entertainment: '\u{1F3AC}',
   hospitality: '\u{1F3E8}',
@@ -95,6 +105,31 @@ function getPlacementForTier(tier: SponsorTier): SponsorPlacement {
     default:
       return SponsorPlacement.Tertiary;
   }
+}
+
+/** Return the name of the sponsor causing a rival conflict, or null */
+function getRivalConflictName(
+  sponsor: Sponsor,
+  playerDealsForSponsor: ActiveSponsorDeal[],
+  allSponsors: Sponsor[]
+): string | null {
+  if (!sponsor.rivalGroup) return null;
+  for (const deal of playerDealsForSponsor) {
+    const existing = allSponsors.find((s) => s.id === deal.sponsorId);
+    if (existing?.rivalGroup === sponsor.rivalGroup) return existing.name;
+  }
+  return null;
+}
+
+/** Compute reputationRatio for a sponsor given team position data */
+function computeReputationRatio(
+  teamPosition: number,
+  totalTeams: number,
+  minReputation: number
+): number {
+  const positionScore = 1 - (teamPosition - 1) / (totalTeams - 1 || 1);
+  const effectiveReputation = positionScore * 100;
+  return effectiveReputation / (minReputation || 1);
 }
 
 // ===========================================
@@ -131,19 +166,112 @@ function SponsorLogo({ sponsor, size }: SponsorLogoProps) {
   );
 }
 
+// ===========================================
+// REPUTATION STANDING BADGE
+// ===========================================
+
+const REP_STANDING_STYLES = {
+  'Strong match': 'bg-emerald-900/40 text-emerald-400 border border-emerald-700/50',
+  'Borderline': 'bg-amber-900/40 text-amber-400 border border-amber-700/50',
+  'Below requirements': 'bg-red-900/40 text-red-400 border border-red-700/50',
+} as const;
+
+function RepStandingBadge({ standing }: { standing: ReturnType<typeof getReputationStanding> }) {
+  return (
+    <span className={`text-xs px-2 py-0.5 rounded font-medium ${REP_STANDING_STYLES[standing]}`}>
+      {standing}
+    </span>
+  );
+}
+
+// ===========================================
+// LIKELIHOOD BAND INDICATOR
+// ===========================================
+
+const BAND_STYLES = {
+  'Likely to accept': { text: 'text-emerald-400', label: 'Likely to accept' },
+  'Likely to counter': { text: 'text-amber-400', label: 'Likely to counter' },
+  'Toss-up': { text: 'text-blue-400', label: 'Toss-up' },
+  'Likely to reject': { text: 'text-red-400', label: 'Likely to reject' },
+} as const;
+
+function LikelihoodBandIndicator({ band }: { band: ReturnType<typeof getLikelihoodBand> }) {
+  const style = BAND_STYLES[band];
+  return (
+    <div className="flex items-center justify-between px-3 py-2 bg-neutral-800/60 border border-neutral-700 rounded">
+      <span className="text-xs text-muted">Likelihood of acceptance</span>
+      <span className={`text-sm font-semibold ${style.text}`}>{style.label}</span>
+    </div>
+  );
+}
+
+// ===========================================
+// SPONSOR CARD
+// ===========================================
+
 interface SponsorCardProps {
   sponsor: Sponsor;
   isContracted: boolean;
   isNegotiating: boolean;
   isSlotFull: boolean;
+  rivalConflictName: string | null;
+  isBelowRepFloor: boolean;
+  repStanding: ReturnType<typeof getReputationStanding>;
+  negotiationId: string | null;
   onContact: () => void;
+  onViewNegotiations: () => void;
 }
 
-function SponsorCard({ sponsor, isContracted, isNegotiating, isSlotFull, onContact }: SponsorCardProps) {
+function SponsorCard({
+  sponsor,
+  isContracted,
+  isNegotiating,
+  isSlotFull,
+  rivalConflictName,
+  isBelowRepFloor,
+  repStanding,
+  negotiationId,
+  onContact,
+  onViewNegotiations,
+}: SponsorCardProps) {
+  const hasHardBlocker = isSlotFull || rivalConflictName !== null || isBelowRepFloor;
+
+  const blockerReason =
+    rivalConflictName !== null
+      ? `Conflicts with ${rivalConflictName}`
+      : isBelowRepFloor
+      ? 'Below reputation requirement'
+      : isSlotFull
+      ? 'Slot at capacity'
+      : null;
+
   const renderCTA = () => {
     if (isContracted) return <span className="text-sm text-emerald-400">Contracted</span>;
-    if (isNegotiating) return <span className="text-sm text-amber-400">Negotiating</span>;
-    if (isSlotFull) return <span className="text-sm text-neutral-500">Slot full.</span>;
+
+    if (isNegotiating && negotiationId) {
+      return (
+        <button
+          type="button"
+          onClick={onViewNegotiations}
+          className={`btn cursor-pointer px-4 py-2 text-sm font-medium ${GHOST_BORDERED_BUTTON_CLASSES}`}
+        >
+          View in Negotiations
+        </button>
+      );
+    }
+
+    if (hasHardBlocker) {
+      return (
+        <button
+          type="button"
+          disabled
+          className="btn px-4 py-2 text-sm font-medium opacity-40 cursor-not-allowed border border-neutral-600 text-neutral-500"
+        >
+          Contact
+        </button>
+      );
+    }
+
     return (
       <button
         type="button"
@@ -161,16 +289,22 @@ function SponsorCard({ sponsor, isContracted, isNegotiating, isSlotFull, onConta
       <SponsorLogo sponsor={sponsor} size="md" />
 
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <h3 className="font-semibold text-primary truncate">{sponsor.name}</h3>
           <span className="text-xs px-2 py-0.5 rounded bg-neutral-700 text-muted">
             {SPONSOR_TIER_LABELS[sponsor.tier]}
           </span>
+          <RepStandingBadge standing={repStanding} />
+          {rivalConflictName !== null && (
+            <span className="text-xs px-2 py-0.5 rounded bg-amber-900/40 text-amber-400 border border-amber-700/50 font-medium">
+              Rival conflict
+            </span>
+          )}
         </div>
-        <p className="text-sm text-muted capitalize">{sponsor.industry.replace(/-/g, ' ')}</p>
-        <p className="text-sm text-secondary mt-1">
-          Base: {formatCurrency(sponsor.baseMonthlyPayment)}/mo
-        </p>
+        <p className="text-sm text-muted capitalize mt-0.5">{sponsor.industry.replace(/-/g, ' ')}</p>
+        {blockerReason && (
+          <p className="text-xs text-red-400 mt-1 italic">{blockerReason}</p>
+        )}
       </div>
 
       <div className="flex-shrink-0">
@@ -180,17 +314,86 @@ function SponsorCard({ sponsor, isContracted, isNegotiating, isSlotFull, onConta
   );
 }
 
+// ===========================================
+// CONTACT MODAL
+// ===========================================
+
 interface ContactModalProps {
   sponsor: Sponsor;
   currentSeason: number;
+  teamPosition: number;
+  totalTeams: number;
+  existingPlayerDeals: ActiveSponsorDeal[];
+  allSponsors: Sponsor[];
   onClose: () => void;
   onSubmit: (terms: SponsorContractTerms) => void;
 }
 
-function ContactModal({ sponsor, currentSeason, onClose, onSubmit }: ContactModalProps) {
+function ContactModal({
+  sponsor,
+  currentSeason,
+  teamPosition,
+  totalTeams,
+  existingPlayerDeals,
+  allSponsors,
+  onClose,
+  onSubmit,
+}: ContactModalProps) {
   const [duration, setDuration] = useState<DurationValue>('2');
   const [monthlyPayment, setMonthlyPayment] = useState(sponsor.baseMonthlyPayment);
   const [signingBonus, setSigningBonus] = useState(Math.round(sponsor.baseMonthlyPayment * 2));
+
+  // Hard blocker checks
+  const rivalConflictName = getRivalConflictName(sponsor, existingPlayerDeals, allSponsors);
+  const reputationRatio = computeReputationRatio(teamPosition, totalTeams, sponsor.minReputation);
+  const isBelowHardGate = reputationRatio < HARD_GATE_MULTIPLIER;
+  const isBelowSoftGate = reputationRatio < SOFT_GATE_MULTIPLIER;
+  const hasHardBlocker = rivalConflictName !== null || isBelowHardGate;
+
+  const blockerMessage =
+    rivalConflictName !== null
+      ? `Cannot negotiate: rival group conflict with ${rivalConflictName}`
+      : isBelowHardGate
+      ? "Cannot negotiate: your team's reputation is below this sponsor's requirement"
+      : null;
+
+  // Live likelihood band
+  const willingPayment = useMemo(() => {
+    // Approximate willingPayment using the same formula as the evaluator
+    const PREMIUM_REPUTATION_THRESHOLD = 1.2;
+    const MAX_PREMIUM_MULTIPLIER = 1.25;
+    const DISCOUNT_MULTIPLIER_FLOOR = 0.7;
+
+    let willing = sponsor.baseMonthlyPayment;
+    if (reputationRatio >= PREMIUM_REPUTATION_THRESHOLD) {
+      const premiumFactor = Math.min(reputationRatio - 1, MAX_PREMIUM_MULTIPLIER - 1);
+      willing = sponsor.baseMonthlyPayment * (1 + premiumFactor);
+    } else if (reputationRatio < 1.0) {
+      const discountFactor = Math.max(reputationRatio, DISCOUNT_MULTIPLIER_FLOOR);
+      willing = sponsor.baseMonthlyPayment * discountFactor;
+    }
+    return Math.round(willing);
+  }, [sponsor.baseMonthlyPayment, reputationRatio]);
+
+  const likelihoodBand = useMemo(() => {
+    if (hasHardBlocker) return getLikelihoodBand({ accept: 0, counter: 0, reject: 1 });
+    const paymentRatio = monthlyPayment / willingPayment;
+    const probs = computeAcceptanceProbabilities(paymentRatio, isBelowHardGate, isBelowSoftGate);
+    return getLikelihoodBand(probs);
+  }, [monthlyPayment, willingPayment, isBelowHardGate, isBelowSoftGate, hasHardBlocker]);
+
+  // Reference line
+  const tierRange = TIER_PAYMENT_RANGES[sponsor.tier];
+
+  // Requirements blurb
+  const requiredPosition = getRequiredPosition(totalTeams, sponsor.minReputation);
+  const requirementsBlurb = `Requires top-${requiredPosition} championship finish`;
+
+  // Slider ranges
+  const maxMonthly = sponsor.baseMonthlyPayment * 3;
+  const stepMonthly = Math.max(1000, Math.round(sponsor.baseMonthlyPayment / 100) * 1000);
+  const maxBonus = sponsor.baseMonthlyPayment * 6;
+  const stepBonus = Math.max(1000, Math.round(sponsor.baseMonthlyPayment / 100) * 1000);
 
   const handleSubmit = () => {
     onSubmit({
@@ -203,60 +406,89 @@ function ContactModal({ sponsor, currentSeason, onClose, onSubmit }: ContactModa
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-      <div className="card p-6 max-w-md w-full mx-4" style={ACCENT_CARD_STYLE}>
-        <h2 className="text-xl font-bold text-primary mb-4">Contact {sponsor.name}</h2>
-
-        <div className="flex items-center gap-3 mb-6">
+      <div className="card max-w-md w-full mx-4" style={ACCENT_CARD_STYLE}>
+        {/* Modal header */}
+        <div className="flex items-start gap-3 p-5 border-b border-neutral-700">
           <SponsorLogo sponsor={sponsor} size="md" />
-          <div>
-            <p className="text-sm text-muted capitalize">{sponsor.industry.replace(/-/g, ' ')}</p>
-            <p className="text-xs text-secondary">{SPONSOR_TIER_LABELS[sponsor.tier]} Sponsor</p>
-          </div>
-        </div>
-
-        <p className="text-sm text-muted mb-4">
-          Propose contract terms for {seasonToYear(currentSeason + 1)} season.
-        </p>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm text-secondary mb-1">Monthly Payment</label>
-            <input
-              type="number"
-              value={monthlyPayment}
-              onChange={(e) => setMonthlyPayment(Number(e.target.value))}
-              className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-2 text-primary"
-              min={0}
-              step={10000}
-            />
-            <p className="text-xs text-muted mt-1">
-              Base rate: {formatCurrency(sponsor.baseMonthlyPayment)}/mo
+          <div className="flex-1 min-w-0">
+            <h2 className="text-lg font-bold text-primary leading-tight">{sponsor.name}</h2>
+            <p className="text-xs text-muted mt-0.5">
+              {SPONSOR_TIER_LABELS[sponsor.tier]} Sponsor · {requirementsBlurb}
             </p>
           </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-muted hover:text-primary text-xl leading-none flex-shrink-0 mt-0.5"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
 
-          <div>
-            <label className="block text-sm text-secondary mb-1">Signing Bonus</label>
-            <input
-              type="number"
-              value={signingBonus}
-              onChange={(e) => setSigningBonus(Number(e.target.value))}
-              className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-2 text-primary"
-              min={0}
-              step={10000}
-            />
+        <div className="p-5 space-y-4">
+          {/* Hard blocker */}
+          {hasHardBlocker && blockerMessage && (
+            <div className="px-3 py-2 bg-red-900/30 border border-red-700/50 rounded text-sm text-red-400 font-medium">
+              {blockerMessage}
+            </div>
+          )}
+
+          {/* Likelihood band */}
+          {!hasHardBlocker && <LikelihoodBandIndicator band={likelihoodBand} />}
+
+          {/* Reference line */}
+          <div className="text-xs text-muted italic border-l-2 border-neutral-600 pl-2">
+            Sponsors of this tier typically pay {formatCurrency(tierRange.low)}–{formatCurrency(tierRange.high)}/mo
           </div>
 
-          <div>
-            <label className="block text-sm text-secondary mb-1">Duration</label>
-            <Dropdown<DurationValue>
-              options={DURATION_OPTIONS}
-              value={duration}
-              onChange={setDuration}
-            />
+          {/* Sliders */}
+          <div className={hasHardBlocker ? 'opacity-40 pointer-events-none space-y-4' : 'space-y-4'}>
+            <div>
+              <div className="flex justify-between text-sm mb-1">
+                <label className="text-secondary font-medium">Monthly Payment</label>
+                <span className="text-primary font-medium">{formatCurrency(monthlyPayment)}</span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={maxMonthly}
+                step={stepMonthly}
+                value={monthlyPayment}
+                onChange={(e) => setMonthlyPayment(Number(e.target.value))}
+                className="w-full accent-white"
+              />
+            </div>
+
+            <div>
+              <div className="flex justify-between text-sm mb-1">
+                <label className="text-secondary font-medium">Signing Bonus</label>
+                <span className="text-primary font-medium">{formatCurrency(signingBonus)}</span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={maxBonus}
+                step={stepBonus}
+                value={signingBonus}
+                onChange={(e) => setSigningBonus(Number(e.target.value))}
+                className="w-full accent-white"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm text-secondary font-medium mb-1">Duration</label>
+              <Dropdown<DurationValue>
+                options={DURATION_OPTIONS}
+                value={duration}
+                onChange={setDuration}
+              />
+            </div>
           </div>
         </div>
 
-        <div className="flex gap-3 mt-6">
+        {/* Footer */}
+        <div className="flex gap-3 px-5 pb-5">
           <button
             type="button"
             onClick={onClose}
@@ -267,16 +499,21 @@ function ContactModal({ sponsor, currentSeason, onClose, onSubmit }: ContactModa
           <button
             type="button"
             onClick={handleSubmit}
-            className="btn cursor-pointer flex-1 px-4 py-2 font-medium"
-            style={ACCENT_BORDERED_BUTTON_STYLE}
+            disabled={hasHardBlocker}
+            className={`btn flex-1 px-4 py-2 font-medium ${hasHardBlocker ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+            style={hasHardBlocker ? undefined : ACCENT_BORDERED_BUTTON_STYLE}
           >
-            Send Proposal
+            Submit Proposal
           </button>
         </div>
       </div>
     </div>
   );
 }
+
+// ===========================================
+// NEGOTIATION CARD
+// ===========================================
 
 interface NegotiationCardProps {
   negotiation: SponsorNegotiation;
@@ -332,10 +569,11 @@ function NegotiationCard({ negotiation, sponsor, isSlotFilled = false, onAccept,
         </div>
       </div>
 
-      {terms && !isComplete && !isFailed && (
+      {terms && !isComplete && (
         <div className="mt-4 pt-4 border-t border-neutral-700">
           <h4 className="text-sm font-medium text-secondary mb-2">
             {isPendingConfirmation ? 'Accepted Terms' :
+             isFailed ? 'Last Offer' :
              lastRound?.offeredBy === 'player' ? 'Your Offer' : 'Their Offer'}
           </h4>
           <div className="grid grid-cols-3 gap-4 text-sm">
@@ -407,14 +645,22 @@ function NegotiationCard({ negotiation, sponsor, isSlotFilled = false, onAccept,
 
       {isFailed && (
         <div className="mt-4 p-3 bg-red-900/20 border border-red-600/30 rounded-lg">
-          <p className="text-sm text-red-400 text-center">
-            Negotiation ended without agreement.
-          </p>
+          {negotiation.rejectionReason ? (
+            <p className="text-sm text-red-300 italic">"{negotiation.rejectionReason}"</p>
+          ) : (
+            <p className="text-sm text-red-400 text-center">
+              Negotiation ended without agreement.
+            </p>
+          )}
         </div>
       )}
     </div>
   );
 }
+
+// ===========================================
+// SECTION HEADER
+// ===========================================
 
 interface SectionHeaderProps {
   title: string;
@@ -440,6 +686,10 @@ function SectionHeader({ title, count, collapsible, collapsed, onToggle }: Secti
     </div>
   );
 }
+
+// ===========================================
+// TOAST
+// ===========================================
 
 interface ToastProps {
   message: string;
@@ -507,6 +757,11 @@ export function Deals({ embedded = false, initialTierFilter }: DealsProps) {
     );
   }, [gameState]);
 
+  const playerDealsList = useMemo(() => {
+    if (!gameState) return [] as ActiveSponsorDeal[];
+    return gameState.sponsorDeals.filter((d) => d.teamId === gameState.player.teamId);
+  }, [gameState]);
+
   // All player sponsor negotiations
   const allNegotiations = useMemo(() => {
     if (!gameState) return [];
@@ -532,13 +787,15 @@ export function Deals({ embedded = false, initialTierFilter }: DealsProps) {
       (n) => n.phase === NegotiationPhase.Failed || n.phase === NegotiationPhase.Completed
     ), [allNegotiations]);
 
-  // Active (non-terminal) negotiations for browse-tab state
-  const negotiatingSponsorIds = useMemo(() => {
-    return new Set(
-      allNegotiations
-        .filter((n) => n.phase !== NegotiationPhase.Completed && n.phase !== NegotiationPhase.Failed)
-        .map((n) => n.sponsorId)
-    );
+  // Active (non-terminal) negotiations for browse-tab state, keyed by sponsorId
+  const activeNegotiationBySponsorId = useMemo(() => {
+    const map = new Map<string, SponsorNegotiation>();
+    for (const n of allNegotiations) {
+      if (n.phase !== NegotiationPhase.Completed && n.phase !== NegotiationPhase.Failed) {
+        map.set(n.sponsorId, n);
+      }
+    }
+    return map;
   }, [allNegotiations]);
 
   // Slot fullness per tier (active deals count)
@@ -554,6 +811,23 @@ export function Deals({ embedded = false, initialTierFilter }: DealsProps) {
     }
     return result;
   }, [gameState]);
+
+  // Team position and total teams (for reputation calculations)
+  const { teamPosition, totalTeams } = useMemo(() => {
+    if (!gameState) return { teamPosition: 1, totalTeams: 10 };
+    const standings = gameState.currentSeason.constructorStandings;
+    const standing = standings.find((s) => s.teamId === gameState.player.teamId);
+    return {
+      teamPosition: standing?.position ?? standings.length,
+      totalTeams: Math.max(standings.length, 1),
+    };
+  }, [gameState]);
+
+  // Navigate to negotiations tab (for "View in Negotiations" button)
+  const handleViewNegotiations = useCallback(() => {
+    setActiveTab('negotiations');
+    setHistoryCollapsed(false);
+  }, []);
 
   // Filter sponsors for browse tab
   const filteredSponsors = useMemo(() => {
@@ -679,16 +953,35 @@ export function Deals({ embedded = false, initialTierFilter }: DealsProps) {
           </div>
 
           <div className="space-y-3">
-            {filteredSponsors.map((sponsor) => (
-              <SponsorCard
-                key={sponsor.id}
-                sponsor={sponsor}
-                isContracted={playerDeals.has(sponsor.id)}
-                isNegotiating={negotiatingSponsorIds.has(sponsor.id)}
-                isSlotFull={!playerDeals.has(sponsor.id) && !negotiatingSponsorIds.has(sponsor.id) && tierSlotsFull[sponsor.tier]}
-                onContact={() => setContactingSponsor(sponsor)}
-              />
-            ))}
+            {filteredSponsors.map((sponsor) => {
+              const isContracted = playerDeals.has(sponsor.id);
+              const activeNeg = activeNegotiationBySponsorId.get(sponsor.id) ?? null;
+              const isNegotiating = activeNeg !== null;
+              const isSlotFull =
+                !isContracted && !isNegotiating && tierSlotsFull[sponsor.tier];
+              const rivalConflictName = isContracted
+                ? null
+                : getRivalConflictName(sponsor, playerDealsList, gameState.sponsors);
+              const repStanding = getReputationStanding(teamPosition, totalTeams, sponsor.minReputation);
+              const repRatio = computeReputationRatio(teamPosition, totalTeams, sponsor.minReputation);
+              const isBelowRepFloor = !isContracted && repRatio < HARD_GATE_MULTIPLIER;
+
+              return (
+                <SponsorCard
+                  key={sponsor.id}
+                  sponsor={sponsor}
+                  isContracted={isContracted}
+                  isNegotiating={isNegotiating}
+                  isSlotFull={isSlotFull}
+                  rivalConflictName={rivalConflictName}
+                  isBelowRepFloor={isBelowRepFloor}
+                  repStanding={repStanding}
+                  negotiationId={activeNeg?.id ?? null}
+                  onContact={() => setContactingSponsor(sponsor)}
+                  onViewNegotiations={handleViewNegotiations}
+                />
+              );
+            })}
             {filteredSponsors.length === 0 && (
               <p className="text-center text-muted py-8">
                 No sponsors found matching filter.
@@ -783,6 +1076,10 @@ export function Deals({ embedded = false, initialTierFilter }: DealsProps) {
         <ContactModal
           sponsor={contactingSponsor}
           currentSeason={currentSeason}
+          teamPosition={teamPosition}
+          totalTeams={totalTeams}
+          existingPlayerDeals={playerDealsList}
+          allSponsors={gameState.sponsors}
           onClose={() => setContactingSponsor(null)}
           onSubmit={handleStartNegotiation}
         />
