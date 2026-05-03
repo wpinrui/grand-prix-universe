@@ -275,7 +275,7 @@ function scenarioSlots() {
     errorMessage = err instanceof Error ? err.message : String(err);
   }
 
-  console.log(`Attempt to negotiate: ${blocked ? `BLOCKED ✓ (\"${errorMessage}\")` : 'ALLOWED (unexpected ✗)'}`);
+  console.log(`Attempt to negotiate: ${blocked ? `BLOCKED ✓ ("${errorMessage}")` : 'ALLOWED (unexpected ✗)'}`);
   console.log(`Result: ${blocked ? 'PASS ✓' : 'FAIL ✗'}`);
 }
 
