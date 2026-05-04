@@ -672,6 +672,12 @@ export interface NegotiationEvaluationResult {
 
   /** If true, this is a "take it or leave it" final offer - no more counters allowed */
   isUltimatum?: boolean;
+
+  /** Human-readable rejection reason (populated when responseType is Reject) */
+  rejectionReason?: string;
+
+  /** Probability of acceptance at the time of evaluation (0–1) */
+  acceptanceProbability?: number;
 }
 
 /**

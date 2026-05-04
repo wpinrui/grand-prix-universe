@@ -48,10 +48,12 @@ export {
   evaluateSponsorOffer,
   hasRivalGroupConflict,
   calculateSponsorValuation,
-  getPlacementForTier,
   getSponsorTierDisplayName,
   type SponsorEvaluationInput,
 } from './sponsor-evaluator';
+
+// Re-export shared sponsor placement helper for callers that import via the evaluators barrel
+export { getPlacementForTier } from '../../../shared/domain/sponsor-probability';
 
 export {
   evaluateStaffOffer,

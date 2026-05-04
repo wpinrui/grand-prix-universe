@@ -1656,6 +1656,8 @@ export interface SponsorNegotiation extends BaseNegotiation<SponsorContractTerms
   stakeholderType: StakeholderType.Sponsor;
   /** ID of the sponsor being negotiated with */
   sponsorId: string;
+  /** Human-readable reason the negotiation failed (populated on phase = Failed) */
+  rejectionReason?: string;
 }
 
 /**
