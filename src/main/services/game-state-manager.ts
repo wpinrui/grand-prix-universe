@@ -42,7 +42,11 @@ import {
   createSponsorContractFromNegotiation,
   generateSponsorSigningEvent,
   generateNegotiationUpdateEmail,
+  createSponsorDealDirect,
+  generateSponsorLapseHeadline,
+  processSponsorSeasonEnd,
 } from './contract-creator';
+import { calculateWillingPayment } from '../../shared/domain/sponsor-probability';
 import type {
   GameState,
   DesignState,
@@ -419,6 +423,9 @@ export const GameStateManager = {
 
     // Apply aging, retirements, and state resets
     applySeasonEndResult(state, seasonEndResult);
+
+    // --- Sponsor season-end hooks (before season number increments) ---
+    processSponsorSeasonEnd(state, state.player.teamId);
 
     // Transition to new season (archive old, create new)
     transitionToNewSeason(state, seasonEndResult.newCalendar);
@@ -985,19 +992,29 @@ export const GameStateManager = {
       throw new Error('Sponsor not found');
     }
 
-    // Enforce slot limits: active deals + active negotiations cannot exceed slot count for this tier
-    const activeDealsForTier = state.sponsorDeals.filter(
-      (d) => d.teamId === playerTeamId && d.tier === sponsor.tier
-    ).length;
-    const activeNegotiationsForTier = state.negotiations.filter((n) => {
-      if (n.stakeholderType !== StakeholderType.Sponsor) return false;
-      if (n.teamId !== playerTeamId) return false;
-      if (n.phase === NegotiationPhase.Completed || n.phase === NegotiationPhase.Failed) return false;
-      const negSponsor = state.sponsors.find((s) => s.id === (n as SponsorNegotiation).sponsorId);
-      return negSponsor?.tier === sponsor.tier;
-    }).length;
+    // Slot limits are counted by unique (sponsor) for the player team in this tier.
+    // A renewal counter against an existing deal does not consume a second slot —
+    // the deal and the counter-negotiation share the same (sponsor, team) slot.
+    const occupiedSponsors = new Set<string>();
+    for (const d of state.sponsorDeals) {
+      if (d.teamId === playerTeamId && d.tier === sponsor.tier) {
+        occupiedSponsors.add(d.sponsorId);
+      }
+    }
+    for (const n of state.negotiations) {
+      if (n.stakeholderType !== StakeholderType.Sponsor) continue;
+      if (n.teamId !== playerTeamId) continue;
+      if (n.phase === NegotiationPhase.Completed || n.phase === NegotiationPhase.Failed) continue;
+      const negSponsorId = (n as SponsorNegotiation).sponsorId;
+      const negSponsor = state.sponsors.find((s) => s.id === negSponsorId);
+      if (negSponsor?.tier === sponsor.tier) {
+        occupiedSponsors.add(negSponsorId);
+      }
+    }
+    const willOccupy = new Set(occupiedSponsors);
+    willOccupy.add(sponsorId);
     const slotCount = SPONSOR_SLOT_COUNTS[sponsor.tier];
-    if (activeDealsForTier + activeNegotiationsForTier >= slotCount) {
+    if (willOccupy.size > slotCount) {
       throw new Error(`No open ${sponsor.tier} sponsor slots`);
     }
 
@@ -1167,6 +1184,101 @@ export const GameStateManager = {
 
     negotiation.phase = NegotiationPhase.Failed;
     negotiation.lastActivityDate = { ...state.currentDate };
+
+    return state;
+  },
+
+  /**
+   * Player accepts a sponsor renewal from the Renewals tab.
+   * Creates a new 1-season deal at the standing-adjusted monthly payment.
+   * No signing bonus. Fires news headline + critical email (reuses signing event helper).
+   */
+  acceptSponsorRenewal(sponsorId: string): GameState {
+    const state = GameStateManager.currentState;
+    if (!state) throw new Error('No game in progress');
+
+    const playerTeamId = state.player.teamId;
+    const sponsor = state.sponsors.find((s) => s.id === sponsorId);
+    if (!sponsor) throw new Error('Sponsor not found');
+
+    // Verify an expiring deal exists for this sponsor+player team
+    const expiringDeal = state.sponsorDeals.find(
+      (d) => d.sponsorId === sponsorId && d.teamId === playerTeamId
+    );
+    if (!expiringDeal) throw new Error('No active deal found for renewal');
+
+    // Remove the old deal
+    state.sponsorDeals = state.sponsorDeals.filter(
+      (d) => !(d.sponsorId === sponsorId && d.teamId === playerTeamId)
+    );
+
+    // Calculate standing-adjusted renewal payment
+    const standings = state.currentSeason.constructorStandings;
+    const standing = standings.find((s) => s.teamId === playerTeamId);
+    const teamPosition = standing?.position ?? standings.length;
+    const totalTeams = Math.max(standings.length, 1);
+    const monthlyPayment = calculateWillingPayment(sponsor, teamPosition, totalTeams);
+
+    // Under Option B, renewal happens DURING the deal's final season — so the
+    // new deal must start the next season, otherwise it shares endSeason with
+    // the deal we just removed and the Renewals tab won't clear.
+    const newDealStartSeason = state.currentSeason.seasonNumber + 1;
+    const result = createSponsorDealDirect(
+      state,
+      sponsorId,
+      playerTeamId,
+      monthlyPayment,
+      1,
+      newDealStartSeason
+    );
+    if (result) {
+      generateSponsorSigningEvent(state, result, true);
+    }
+
+    return state;
+  },
+
+  /**
+   * Player counters a renewal offer from the Renewals tab.
+   * The expiring deal stays active for the duration of the counter-negotiation:
+   * if the counter fails, the deal continues to its endSeason; if the counter
+   * succeeds, the deal is removed at the point of signing (handled by
+   * createSponsorContractFromNegotiation). Slot enforcement in
+   * startSponsorNegotiation treats deal+same-sponsor-negotiation as one slot.
+   */
+  startSponsorRenewalCounter(sponsorId: string, terms: import('../../shared/domain').SponsorContractTerms): GameState {
+    const state = GameStateManager.currentState;
+    if (!state) throw new Error('No game in progress');
+
+    const playerTeamId = state.player.teamId;
+
+    const expiringDeal = state.sponsorDeals.find(
+      (d) => d.sponsorId === sponsorId && d.teamId === playerTeamId
+    );
+    if (!expiringDeal) throw new Error('No active deal found to counter');
+
+    return GameStateManager.startSponsorNegotiation(sponsorId, terms);
+  },
+
+  /**
+   * Player declines a sponsor renewal from the Renewals tab.
+   * Removes the deal immediately and fires a lapse headline.
+   */
+  declineSponsorRenewal(sponsorId: string): GameState {
+    const state = GameStateManager.currentState;
+    if (!state) throw new Error('No game in progress');
+
+    const playerTeamId = state.player.teamId;
+    const deal = state.sponsorDeals.find(
+      (d) => d.sponsorId === sponsorId && d.teamId === playerTeamId
+    );
+    if (!deal) throw new Error('No active deal found to decline');
+
+    const duration = deal.endSeason - deal.startSeason + 1;
+    generateSponsorLapseHeadline(state, sponsorId, playerTeamId, duration);
+    state.sponsorDeals = state.sponsorDeals.filter(
+      (d) => !(d.sponsorId === sponsorId && d.teamId === playerTeamId)
+    );
 
     return state;
   },

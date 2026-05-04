@@ -1,0 +1,428 @@
+/**
+ * Sponsor Tier 3 simulation CLI — used by Tricia (Tester) to verify
+ * Tier 3 sponsorship mechanics: renewal prompt, lapse, and renewal payment calculation.
+ *
+ * Usage:
+ *   npx ts-node --compiler-options '{"module":"commonjs"}' scripts/sim-sponsor-tier3.ts [scenario]
+ *
+ * Scenarios:
+ *   prompt   Season-end hook fires a critical renewal-prompt email for expiring deals
+ *   lapse    Expiring deal with no player action is removed at season transition
+ *   payment  calculateWillingPayment output for a given team position and sponsor
+ *   counter  Counter at full slots: deal stays, no extra slot consumed
+ *
+ * All scenarios run by default when no argument is supplied.
+ */
+
+import {
+  SponsorTier,
+  SponsorPlacement,
+  GamePhase,
+  StakeholderType,
+  NegotiationPhase,
+  type GameState,
+  type Sponsor,
+  type ActiveSponsorDeal,
+  type Team,
+  type SponsorContractTerms,
+  type SponsorNegotiation,
+} from '../src/shared/domain/types';
+import { CalendarEventType } from '../src/shared/domain';
+import { calculateWillingPayment } from '../src/shared/domain/sponsor-probability';
+import { processSponsorSeasonEnd } from '../src/main/services/contract-creator';
+import { GameStateManager } from '../src/main/services/game-state-manager';
+
+// ---------------------------------------------------------------------------
+// Minimal builders
+// ---------------------------------------------------------------------------
+
+function makeTeam(id: string): Team {
+  return {
+    id,
+    name: 'Test Team',
+    shortName: 'TEST',
+    color: '#ff0000',
+    budget: 5_000_000,
+    reputation: 70,
+    initialSponsorIds: [],
+  } as unknown as Team;
+}
+
+function makeSponsor(overrides: Partial<Sponsor> = {}): Sponsor {
+  return {
+    id: 'sponsor-test',
+    name: 'Test Sponsor',
+    industry: 'technology',
+    tier: SponsorTier.Major,
+    baseMonthlyPayment: 1_000_000,
+    minReputation: 40,
+    rivalGroup: null,
+    logoUrl: null,
+    ...overrides,
+  };
+}
+
+function makeDeal(sponsorId: string, teamId: string, startSeason: number, endSeason: number): ActiveSponsorDeal {
+  return {
+    sponsorId,
+    teamId,
+    tier: SponsorTier.Major,
+    signingBonus: 0,
+    monthlyPayment: 500_000,
+    guaranteed: true,
+    startSeason,
+    endSeason,
+  };
+}
+
+function makeMinimalState(teamId: string, sponsors: Sponsor[], deals: ActiveSponsorDeal[], currentSeasonNumber: number): GameState {
+  const team = makeTeam(teamId);
+  return {
+    teams: [team],
+    sponsors,
+    sponsorDeals: deals,
+    negotiations: [],
+    calendarEvents: [],
+    events: [],
+    drivers: [],
+    chiefs: [],
+    manufacturers: [],
+    runtimeStates: {},
+    currentDate: { year: 2025, month: 12, day: 31 },
+    currentSeason: {
+      seasonNumber: currentSeasonNumber,
+      constructorStandings: [{ teamId, points: 200, position: 3, wins: 5, podiums: 10, polePositions: 2 }],
+      driverStandings: [],
+      calendar: [],
+      regulations: {},
+    } as GameState['currentSeason'],
+    pastSeasons: [],
+    phase: GamePhase.PostSeason,
+    player: { teamId } as GameState['player'],
+    settings: {},
+    version: '1.0.0',
+  } as unknown as GameState;
+}
+
+// ---------------------------------------------------------------------------
+// Scenario 1: Renewal prompt email
+// ---------------------------------------------------------------------------
+
+function runPromptScenario(): boolean {
+  console.log('\n===== SCENARIO 1: Renewal Prompt Email (Option B timing) =====');
+  console.log('At end of season N-1, prompt fires for deals with endSeason === N (deals entering');
+  console.log('their final year). Player gets the whole final season to act in the Renewals tab.');
+  console.log('Calls processSponsorSeasonEnd() — the same function startNewSeason() uses.\n');
+
+  const teamId = 'team-player';
+  const sponsor = makeSponsor({ id: 'sponsor-alpha', name: 'AlphaCorp' });
+  // Deal expires at end of season 6. We're at end of season 5 (about to transition to 6).
+  // Prompt should fire so the player enters their final year (season 6) with the renewal card.
+  const deal = makeDeal(sponsor.id, teamId, 3, 6);
+  const state = makeMinimalState(teamId, [sponsor], [deal], 5);
+
+  processSponsorSeasonEnd(state, teamId);
+
+  const criticalEmails = state.calendarEvents.filter(
+    (e: { type: string; critical: boolean; body?: string }) =>
+      e.type === CalendarEventType.Email && e.critical
+  );
+
+  if (criticalEmails.length === 0) {
+    console.log('FAIL — no critical email generated for upcoming-final-year deal');
+    return false;
+  }
+
+  const email = criticalEmails[0] as { subject: string; body: string };
+  console.log(`Subject: "${email.subject}"`);
+  console.log(`Body:    "${email.body}"`);
+
+  const hasRenewalText = email.body.includes('open to renewal') && email.body.includes('Renewals tab');
+  if (!hasRenewalText) {
+    console.log(`FAIL — email body missing expected renewal text`);
+    return false;
+  }
+
+  // Verify the deal was NOT lapsed (it doesn't expire until end of season 6)
+  if (state.sponsorDeals.length !== 1) {
+    console.log(`FAIL — deal was lapsed prematurely; expected to survive into final year`);
+    return false;
+  }
+
+  // Negative: a deal expiring TWO seasons out (endSeason = 7) should NOT prompt yet
+  const sponsor2 = makeSponsor({ id: 'sponsor-future', name: 'FutureCorp' });
+  const deal2 = makeDeal(sponsor2.id, teamId, 3, 7);
+  const state2 = makeMinimalState(teamId, [sponsor2], [deal2], 5);
+  processSponsorSeasonEnd(state2, teamId);
+  const earlyEmails = state2.calendarEvents.filter(
+    (e: { type: string; critical: boolean }) => e.type === CalendarEventType.Email && e.critical
+  );
+  if (earlyEmails.length !== 0) {
+    console.log('FAIL — renewal prompt fired for a deal that does not expire next season');
+    return false;
+  }
+
+  // Negative: player-team filter — a non-player deal entering its final year must NOT get an email
+  const otherTeamId = 'team-other';
+  const otherSponsor = makeSponsor({ id: 'sponsor-other', name: 'OtherCorp' });
+  const otherDeal = makeDeal(otherSponsor.id, otherTeamId, 3, 6);
+  const state3 = makeMinimalState(teamId, [otherSponsor], [otherDeal], 5);
+  processSponsorSeasonEnd(state3, teamId);
+  const emailsForOtherTeam = state3.calendarEvents.filter(
+    (e: { type: string; critical: boolean }) => e.type === CalendarEventType.Email && e.critical
+  );
+  if (emailsForOtherTeam.length !== 0) {
+    console.log('FAIL — renewal prompt sent for a non-player deal');
+    return false;
+  }
+
+  console.log('\nScenario 1 ✓ — prompt fires one season before expiry, only for player deals');
+  return true;
+}
+
+// ---------------------------------------------------------------------------
+// Scenario 2: Lapse on ignored deal
+// ---------------------------------------------------------------------------
+
+function runLapseScenario(): boolean {
+  console.log('\n===== SCENARIO 2: Lapse on Ignored Deal =====');
+  console.log('Sets up an expiring deal with no active negotiation, calls processSponsorSeasonEnd(),');
+  console.log('and confirms the deal is removed and a news headline fires.\n');
+
+  const teamId = 'team-player';
+  const sponsor = makeSponsor({ id: 'sponsor-beta', name: 'BetaDrive' });
+  const deal = makeDeal(sponsor.id, teamId, 3, 5);
+  const state = makeMinimalState(teamId, [sponsor], [deal], 5);
+
+  const dealsBeforeLapse = state.sponsorDeals.length;
+  processSponsorSeasonEnd(state, teamId);
+  const dealsAfterLapse = state.sponsorDeals.length;
+
+  const headlines = state.calendarEvents.filter(
+    (e: { type: string; critical: boolean; subject?: string }) =>
+      e.type === CalendarEventType.Headline && !e.critical
+  );
+
+  if (dealsAfterLapse !== dealsBeforeLapse - 1) {
+    console.log(`FAIL — deal count: before=${dealsBeforeLapse}, after=${dealsAfterLapse}`);
+    return false;
+  }
+
+  if (headlines.length === 0) {
+    console.log('FAIL — no news headline generated for lapsed deal');
+    return false;
+  }
+
+  const headline = headlines[0] as { subject: string };
+  console.log(`Headline: "${headline.subject}"`);
+
+  const hasLapseText =
+    headline.subject.includes('BetaDrive') &&
+    headline.subject.includes('Test Team') &&
+    headline.subject.includes('3-year');
+
+  if (!hasLapseText) {
+    console.log(`FAIL — headline missing sponsor name, team name, or duration`);
+    return false;
+  }
+
+  console.log(`Deals removed: ${dealsBeforeLapse} → ${dealsAfterLapse}`);
+  console.log('\nScenario 2 ✓ — deal lapsed, slot opened, news headline fired');
+  return true;
+}
+
+// ---------------------------------------------------------------------------
+// Scenario 3: Renewal payment matches calculateWillingPayment
+// ---------------------------------------------------------------------------
+
+function runPaymentScenario(): boolean {
+  console.log('\n===== SCENARIO 3: Renewal Payment Calculation =====');
+  console.log('Prints the renewal monthly payment from calculateWillingPayment for specific');
+  console.log('team positions, confirming no parallel calculation exists.\n');
+
+  const testCases = [
+    { teamPosition: 1, totalTeams: 10, label: 'P1 (champion)' },
+    { teamPosition: 3, totalTeams: 10, label: 'P3' },
+    { teamPosition: 5, totalTeams: 10, label: 'P5 (midfield)' },
+    { teamPosition: 8, totalTeams: 10, label: 'P8 (lower midfield)' },
+    { teamPosition: 10, totalTeams: 10, label: 'P10 (backmarker)' },
+  ];
+
+  const sponsor = makeSponsor({
+    id: 'sponsor-gamma',
+    name: 'GammaPay',
+    tier: SponsorTier.Title,
+    baseMonthlyPayment: 3_000_000,
+    minReputation: 50,
+  });
+
+  console.log('sponsor: GammaPay (Title, base $3M/mo, minReputation=50)');
+  console.log('');
+  console.log('position     | renewalPayment');
+  console.log('-------------|---------------');
+
+  let passed = true;
+  for (const { teamPosition, totalTeams, label } of testCases) {
+    const payment = calculateWillingPayment(sponsor, teamPosition, totalTeams);
+    console.log(`${label.padEnd(12)} | $${payment.toLocaleString()}/mo`);
+
+    // Sanity: payment must be > 0 and <= 2× base (premium cap)
+    if (payment <= 0 || payment > sponsor.baseMonthlyPayment * 2) {
+      console.log(`  FAIL — payment out of expected range`);
+      passed = false;
+    }
+  }
+
+  // Verify P1 > P5 > P10 (better position = higher willing payment)
+  const p1 = calculateWillingPayment(sponsor, 1, 10);
+  const p5 = calculateWillingPayment(sponsor, 5, 10);
+  const p10 = calculateWillingPayment(sponsor, 10, 10);
+
+  if (!(p1 >= p5 && p5 >= p10)) {
+    console.log('\nFAIL — payment does not decrease monotonically with lower position');
+    passed = false;
+  } else {
+    console.log('\nMonotonicity check: P1 ≥ P5 ≥ P10 ✓');
+  }
+
+  if (passed) {
+    console.log('\nScenario 3 ✓ — calculateWillingPayment outputs consistent values for Renewals tab');
+  }
+  return passed;
+}
+
+// ---------------------------------------------------------------------------
+// Scenario 4: Counter at full slots — deal stays, slot count unchanged
+// ---------------------------------------------------------------------------
+
+function runCounterFullSlotsScenario(): boolean {
+  console.log('\n===== SCENARIO 4: Counter at Full Slots =====');
+  console.log('Sets up a Title-tier deal (1 slot, fully occupied), calls startSponsorRenewalCounter,');
+  console.log('and asserts: deal stays in state.sponsorDeals; new SponsorNegotiation exists;');
+  console.log('total tier slot count is unchanged (deal+negotiation share one slot).\n');
+
+  const teamId = 'team-player';
+  const sponsor = makeSponsor({
+    id: 'sponsor-title',
+    name: 'TitlePay',
+    tier: SponsorTier.Title,
+    baseMonthlyPayment: 3_000_000,
+    minReputation: 50,
+  });
+  // Title slot count = 1. One deal in tier == fully occupied.
+  const deal: ActiveSponsorDeal = {
+    sponsorId: sponsor.id,
+    teamId,
+    tier: SponsorTier.Title,
+    signingBonus: 0,
+    monthlyPayment: 3_000_000,
+    guaranteed: true,
+    startSeason: 4,
+    endSeason: 6, // entering final year next season
+  };
+
+  const state = makeMinimalState(teamId, [sponsor], [deal], 5);
+  GameStateManager.currentState = state;
+
+  const slotCountBefore = countTitleSlotsOccupied(state, teamId);
+  console.log(`Slot count before: ${slotCountBefore}`);
+
+  const counterTerms: SponsorContractTerms = {
+    monthlyPayment: 4_000_000,
+    signingBonus: 0,
+    duration: 1,
+    placement: SponsorPlacement.Primary,
+  };
+
+  let threw = false;
+  try {
+    GameStateManager.startSponsorRenewalCounter(sponsor.id, counterTerms);
+  } catch (err) {
+    threw = true;
+    console.log(`FAIL — threw: ${(err as Error).message}`);
+  }
+  if (threw) return false;
+
+  // Assert deal still in state
+  const dealStillThere = state.sponsorDeals.some(
+    (d) => d.sponsorId === sponsor.id && d.teamId === teamId
+  );
+  if (!dealStillThere) {
+    console.log('FAIL — deal was removed; should remain active during counter');
+    return false;
+  }
+  console.log('Deal still present after counter ✓');
+
+  // Assert new negotiation exists
+  const newNegotiation = state.negotiations.find(
+    (n) =>
+      n.stakeholderType === StakeholderType.Sponsor &&
+      n.teamId === teamId &&
+      (n as SponsorNegotiation).sponsorId === sponsor.id &&
+      n.phase !== NegotiationPhase.Completed &&
+      n.phase !== NegotiationPhase.Failed
+  );
+  if (!newNegotiation) {
+    console.log('FAIL — no active negotiation created for counter');
+    return false;
+  }
+  console.log('New SponsorNegotiation created ✓');
+
+  // Slot count unchanged: deal + same-sponsor negotiation share one slot
+  const slotCountAfter = countTitleSlotsOccupied(state, teamId);
+  console.log(`Slot count after: ${slotCountAfter}`);
+  if (slotCountAfter !== slotCountBefore) {
+    console.log(`FAIL — slot count changed (${slotCountBefore} → ${slotCountAfter})`);
+    return false;
+  }
+
+  // Reset GSM state to avoid bleeding into other scenarios
+  GameStateManager.currentState = null;
+
+  console.log('\nScenario 4 ✓ — counter keeps deal active, no extra slot consumed');
+  return true;
+}
+
+/** Counts unique (sponsor) occupants of Title-tier slots for the player team. */
+function countTitleSlotsOccupied(state: GameState, teamId: string): number {
+  const occupied = new Set<string>();
+  for (const d of state.sponsorDeals) {
+    if (d.teamId === teamId && d.tier === SponsorTier.Title) {
+      occupied.add(d.sponsorId);
+    }
+  }
+  for (const n of state.negotiations) {
+    if (n.stakeholderType !== StakeholderType.Sponsor) continue;
+    if (n.teamId !== teamId) continue;
+    if (n.phase === NegotiationPhase.Completed || n.phase === NegotiationPhase.Failed) continue;
+    const negSponsorId = (n as SponsorNegotiation).sponsorId;
+    const negSponsor = state.sponsors.find((s) => s.id === negSponsorId);
+    if (negSponsor?.tier === SponsorTier.Title) {
+      occupied.add(negSponsorId);
+    }
+  }
+  return occupied.size;
+}
+
+// ---------------------------------------------------------------------------
+// Entry point
+// ---------------------------------------------------------------------------
+
+const arg = process.argv[2];
+let allPassed = true;
+
+if (!arg || arg === 'prompt') {
+  allPassed = runPromptScenario() && allPassed;
+}
+if (!arg || arg === 'lapse') {
+  allPassed = runLapseScenario() && allPassed;
+}
+if (!arg || arg === 'payment') {
+  allPassed = runPaymentScenario() && allPassed;
+}
+if (!arg || arg === 'counter') {
+  allPassed = runCounterFullSlotsScenario() && allPassed;
+}
+
+console.log('\n' + (allPassed ? '✓ All Tier 3 scenarios passed.' : '✗ One or more Tier 3 scenarios FAILED.'));
+process.exit(allPassed ? 0 : 1);

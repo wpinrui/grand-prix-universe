@@ -32,7 +32,7 @@ import {
   EntityType,
   NewsEventType,
 } from '../../shared/domain';
-import { NegotiationPhase } from '../../shared/domain/types';
+import { NegotiationPhase, StakeholderType } from '../../shared/domain/types';
 import { getFullName } from '../../shared/utils/format';
 import { seasonToYear } from '../../shared/utils/date-utils';
 
@@ -488,6 +488,12 @@ export function createSponsorContractFromNegotiation(
     endSeason,
   };
 
+  // If this negotiation was a renewal counter (an existing deal exists for the
+  // same sponsor + team), remove the old deal — the new deal replaces it.
+  state.sponsorDeals = state.sponsorDeals.filter(
+    (d) => !(d.sponsorId === sponsor.id && d.teamId === negotiation.teamId)
+  );
+
   // Add to sponsor deals
   state.sponsorDeals.push(deal);
 
@@ -566,7 +572,7 @@ export function generateSponsorSigningEvent(
       date: state.currentDate,
       type: CalendarEventType.Email,
       subject: `${sponsor.name} partnership confirmed`,
-      body: `${sponsor.name} partnership confirmed — ${tierName}, $${result.monthlyPayment.toLocaleString()}/mo, ${result.contractDuration}-year deal. Your signing bonus of $${result.signingBonus.toLocaleString()} has been credited to your team budget.`,
+      body: `${sponsor.name} partnership confirmed — ${tierName}, $${result.monthlyPayment.toLocaleString()}/mo, ${result.contractDuration}-year deal.${result.signingBonus > 0 ? ` Your signing bonus of $${result.signingBonus.toLocaleString()} has been credited to your team budget.` : ''}`,
       critical: true,
     });
   }
@@ -613,5 +619,141 @@ export function generateNegotiationUpdateEmail(
     subject,
     body,
     critical: true,
+  });
+}
+
+// =============================================================================
+// RENEWAL HELPERS
+// =============================================================================
+
+/**
+ * Send a critical renewal-prompt email to the player for an expiring sponsor deal.
+ * Called once per expiring deal at season end, before the season increments.
+ */
+export function generateRenewalPromptEmail(state: GameState, sponsorId: string): void {
+  const sponsor = state.sponsors.find((s) => s.id === sponsorId);
+  if (!sponsor) return;
+
+  state.calendarEvents.push({
+    id: randomUUID(),
+    date: state.currentDate,
+    type: CalendarEventType.Email,
+    subject: `${sponsor.name} is open to renewal`,
+    body: `${sponsor.name} is open to renewal. View terms in the Renewals tab.`,
+    critical: true,
+  });
+}
+
+/**
+ * Create an active sponsor deal directly (e.g., from a renewal accept),
+ * without going through a negotiation. No signing bonus is credited.
+ * Returns the SponsorContractResult for event generation.
+ *
+ * `startSeasonOverride` lets the caller force a future startSeason — used by
+ * the renewal-accept path so the new deal starts the season AFTER the expiring
+ * deal's final season, otherwise the new deal would inherit the same endSeason
+ * as the old one and the renewal card would not clear.
+ */
+export function createSponsorDealDirect(
+  state: GameState,
+  sponsorId: string,
+  teamId: string,
+  monthlyPayment: number,
+  duration: number,
+  startSeasonOverride?: number
+): SponsorContractResult | null {
+  const sponsor = state.sponsors.find((s) => s.id === sponsorId);
+  if (!sponsor) return null;
+
+  const startSeason = startSeasonOverride ?? state.currentSeason.seasonNumber;
+  const endSeason = startSeason + duration - 1;
+
+  const deal: ActiveSponsorDeal = {
+    sponsorId: sponsor.id,
+    teamId,
+    tier: sponsor.tier,
+    signingBonus: 0,
+    monthlyPayment,
+    guaranteed: true,
+    startSeason,
+    endSeason,
+  };
+
+  state.sponsorDeals.push(deal);
+
+  return {
+    sponsorId: sponsor.id,
+    teamId,
+    tier: sponsor.tier,
+    signingBonus: 0,
+    monthlyPayment,
+    contractDuration: duration,
+    startSeason,
+    endSeason,
+  };
+}
+
+/**
+ * Process all sponsor season-end hooks for the player's team:
+ * 1. Send renewal-prompt critical emails for deals that will expire NEXT season
+ *    (so the player enters their final year with the prompt and has the whole
+ *    season to act in the Renewals tab).
+ * 2. Lapse deals with no active counter-negotiation (remove deal + fire headline).
+ *
+ * Must be called BEFORE the season number increments.
+ * Exported so the CLI test gate can exercise the same code path as startNewSeason().
+ */
+export function processSponsorSeasonEnd(state: GameState, playerTeamId: string): void {
+  const expiringSeasonNumber = state.currentSeason.seasonNumber;
+
+  for (const deal of state.sponsorDeals) {
+    if (deal.teamId === playerTeamId && deal.endSeason === expiringSeasonNumber + 1) {
+      generateRenewalPromptEmail(state, deal.sponsorId);
+    }
+  }
+
+  const dealsToLapse = state.sponsorDeals.filter((deal) => {
+    if (deal.endSeason > expiringSeasonNumber) return false;
+    const hasActiveNegotiation = state.negotiations.some(
+      (n) =>
+        n.stakeholderType === StakeholderType.Sponsor &&
+        n.teamId === deal.teamId &&
+        (n as SponsorNegotiation).sponsorId === deal.sponsorId &&
+        n.phase !== NegotiationPhase.Completed &&
+        n.phase !== NegotiationPhase.Failed
+    );
+    return !hasActiveNegotiation;
+  });
+
+  for (const deal of dealsToLapse) {
+    const duration = deal.endSeason - deal.startSeason + 1;
+    generateSponsorLapseHeadline(state, deal.sponsorId, deal.teamId, duration);
+  }
+  state.sponsorDeals = state.sponsorDeals.filter((d) => !dealsToLapse.includes(d));
+}
+
+/**
+ * Generate a news headline for a lapsed sponsor deal.
+ * "[Sponsor] departs [Team] after [N]-year partnership."
+ */
+export function generateSponsorLapseHeadline(
+  state: GameState,
+  sponsorId: string,
+  teamId: string,
+  contractDuration: number
+): void {
+  const sponsor = state.sponsors.find((s) => s.id === sponsorId);
+  const team = state.teams.find((t) => t.id === teamId);
+  if (!sponsor || !team) return;
+
+  const headline = `${sponsor.name} departs ${team.name} after ${contractDuration}-year partnership`;
+
+  state.calendarEvents.push({
+    id: randomUUID(),
+    date: state.currentDate,
+    type: CalendarEventType.Headline,
+    subject: headline,
+    body: headline + '.',
+    critical: false,
   });
 }
