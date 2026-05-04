@@ -488,6 +488,12 @@ export function createSponsorContractFromNegotiation(
     endSeason,
   };
 
+  // If this negotiation was a renewal counter (an existing deal exists for the
+  // same sponsor + team), remove the old deal — the new deal replaces it.
+  state.sponsorDeals = state.sponsorDeals.filter(
+    (d) => !(d.sponsorId === sponsor.id && d.teamId === negotiation.teamId)
+  );
+
   // Add to sponsor deals
   state.sponsorDeals.push(deal);
 

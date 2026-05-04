@@ -992,19 +992,29 @@ export const GameStateManager = {
       throw new Error('Sponsor not found');
     }
 
-    // Enforce slot limits: active deals + active negotiations cannot exceed slot count for this tier
-    const activeDealsForTier = state.sponsorDeals.filter(
-      (d) => d.teamId === playerTeamId && d.tier === sponsor.tier
-    ).length;
-    const activeNegotiationsForTier = state.negotiations.filter((n) => {
-      if (n.stakeholderType !== StakeholderType.Sponsor) return false;
-      if (n.teamId !== playerTeamId) return false;
-      if (n.phase === NegotiationPhase.Completed || n.phase === NegotiationPhase.Failed) return false;
-      const negSponsor = state.sponsors.find((s) => s.id === (n as SponsorNegotiation).sponsorId);
-      return negSponsor?.tier === sponsor.tier;
-    }).length;
+    // Slot limits are counted by unique (sponsor) for the player team in this tier.
+    // A renewal counter against an existing deal does not consume a second slot —
+    // the deal and the counter-negotiation share the same (sponsor, team) slot.
+    const occupiedSponsors = new Set<string>();
+    for (const d of state.sponsorDeals) {
+      if (d.teamId === playerTeamId && d.tier === sponsor.tier) {
+        occupiedSponsors.add(d.sponsorId);
+      }
+    }
+    for (const n of state.negotiations) {
+      if (n.stakeholderType !== StakeholderType.Sponsor) continue;
+      if (n.teamId !== playerTeamId) continue;
+      if (n.phase === NegotiationPhase.Completed || n.phase === NegotiationPhase.Failed) continue;
+      const negSponsorId = (n as SponsorNegotiation).sponsorId;
+      const negSponsor = state.sponsors.find((s) => s.id === negSponsorId);
+      if (negSponsor?.tier === sponsor.tier) {
+        occupiedSponsors.add(negSponsorId);
+      }
+    }
+    const willOccupy = new Set(occupiedSponsors);
+    willOccupy.add(sponsorId);
     const slotCount = SPONSOR_SLOT_COUNTS[sponsor.tier];
-    if (activeDealsForTier + activeNegotiationsForTier >= slotCount) {
+    if (willOccupy.size > slotCount) {
       throw new Error(`No open ${sponsor.tier} sponsor slots`);
     }
 
@@ -1230,8 +1240,11 @@ export const GameStateManager = {
 
   /**
    * Player counters a renewal offer from the Renewals tab.
-   * Atomically removes the expiring deal (freeing the slot) before creating the
-   * new negotiation, so slot enforcement in startSponsorNegotiation never trips.
+   * The expiring deal stays active for the duration of the counter-negotiation:
+   * if the counter fails, the deal continues to its endSeason; if the counter
+   * succeeds, the deal is removed at the point of signing (handled by
+   * createSponsorContractFromNegotiation). Slot enforcement in
+   * startSponsorNegotiation treats deal+same-sponsor-negotiation as one slot.
    */
   startSponsorRenewalCounter(sponsorId: string, terms: import('../../shared/domain').SponsorContractTerms): GameState {
     const state = GameStateManager.currentState;
@@ -1244,12 +1257,6 @@ export const GameStateManager = {
     );
     if (!expiringDeal) throw new Error('No active deal found to counter');
 
-    // Free the slot before slot enforcement runs
-    state.sponsorDeals = state.sponsorDeals.filter(
-      (d) => !(d.sponsorId === sponsorId && d.teamId === playerTeamId)
-    );
-
-    // Now create the negotiation — slot count is clear
     return GameStateManager.startSponsorNegotiation(sponsorId, terms);
   },
 
