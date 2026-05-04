@@ -1,9 +1,12 @@
 /**
  * Shared sponsor probability utilities.
  * Used by both the engine (main) and the renderer (UI live band).
+ *
+ * All probability + valuation math lives here so the renderer's live likelihood
+ * band reflects the engine's actual decision — no parallel calculation.
  */
 
-import { SponsorTier } from './types';
+import { SponsorTier, SponsorPlacement, type Sponsor } from './types';
 
 // =============================================================================
 // THRESHOLD CONSTANTS (shared with sponsor-evaluator.ts)
@@ -13,6 +16,26 @@ export const INSTANT_ACCEPT_RATIO = 0.95;
 export const REJECT_RATIO = 0.6;
 export const SOFT_GATE_MULTIPLIER = 0.9;
 export const HARD_GATE_MULTIPLIER = 0.7;
+
+// =============================================================================
+// VALUATION CONSTANTS (shared with sponsor-evaluator.ts)
+// =============================================================================
+
+/** Premium multiplier applies when team's reputation exceeds the threshold */
+export const PREMIUM_REPUTATION_THRESHOLD = 1.2;
+/** Cap on the premium uplift over base monthly payment */
+export const MAX_PREMIUM_MULTIPLIER = 1.25;
+/** Floor on the discount multiplier when reputation is below 1.0 */
+export const DISCOUNT_MULTIPLIER_FLOOR = 0.7;
+
+// =============================================================================
+// PROBABILITY-MODEL TUNING CONSTANTS
+// =============================================================================
+
+/** Sigmoid steepness around the accept/reject thresholds */
+const PROB_STEEPNESS = 25;
+/** When team is below soft gate, multiply pAccept by this dampener */
+const SOFT_GATE_PACCEPT_DAMPING = 0.3;
 
 // =============================================================================
 // TIER PAYMENT RANGES (hardcoded from sponsors.json data)
@@ -46,14 +69,58 @@ export function seededRandom(seed: number): number {
 }
 
 // =============================================================================
+// REPUTATION RATIO
+// =============================================================================
+
+/**
+ * Compute reputationRatio = effectiveReputation / minReputation.
+ * effectiveReputation is derived from constructor standings position.
+ */
+export function computeReputationRatio(
+  teamPosition: number,
+  totalTeams: number,
+  minReputation: number
+): number {
+  const positionScore = 1 - (teamPosition - 1) / (totalTeams - 1 || 1);
+  const effectiveReputation = positionScore * 100;
+  return effectiveReputation / (minReputation || 1);
+}
+
+// =============================================================================
+// WILLING PAYMENT
+// =============================================================================
+
+/**
+ * Compute the sponsor's willing monthly payment for a given team.
+ * Premium uplift above PREMIUM_REPUTATION_THRESHOLD; discount below 1.0
+ * (floored at DISCOUNT_MULTIPLIER_FLOOR). This is the divisor used for
+ * paymentRatio in the probability model.
+ */
+export function calculateWillingPayment(
+  sponsor: Sponsor,
+  teamPosition: number,
+  totalTeams: number
+): number {
+  const reputationRatio = computeReputationRatio(teamPosition, totalTeams, sponsor.minReputation);
+
+  let willing = sponsor.baseMonthlyPayment;
+  if (reputationRatio >= PREMIUM_REPUTATION_THRESHOLD) {
+    const premiumFactor = Math.min(reputationRatio - 1, MAX_PREMIUM_MULTIPLIER - 1);
+    willing = sponsor.baseMonthlyPayment * (1 + premiumFactor);
+  } else if (reputationRatio < 1.0) {
+    const discountFactor = Math.max(reputationRatio, DISCOUNT_MULTIPLIER_FLOOR);
+    willing = sponsor.baseMonthlyPayment * discountFactor;
+  }
+  return Math.round(willing);
+}
+
+// =============================================================================
 // PROBABILITY MODEL
 // =============================================================================
 
 function sigmoid(x: number): number {
   return 1 / (1 + Math.exp(-x));
 }
-
-const PROB_STEEPNESS = 25;
 
 export interface AcceptanceProbabilities {
   accept: number;
@@ -81,9 +148,8 @@ export function computeAcceptanceProbabilities(
   let pAccept = sigmoid((paymentRatio - INSTANT_ACCEPT_RATIO) * PROB_STEEPNESS);
   const pReject = sigmoid((REJECT_RATIO - paymentRatio) * PROB_STEEPNESS);
 
-  // Soft gate heavily dampens acceptance
   if (isBelowSoftGate) {
-    pAccept *= 0.3;
+    pAccept *= SOFT_GATE_PACCEPT_DAMPING;
   }
 
   const pCounter = Math.max(0, 1 - pAccept - pReject);
@@ -130,10 +196,7 @@ export function getReputationStanding(
   totalTeams: number,
   minReputation: number
 ): ReputationStanding {
-  const positionScore = 1 - (teamPosition - 1) / (totalTeams - 1 || 1);
-  const effectiveReputation = positionScore * 100;
-  const reputationRatio = effectiveReputation / (minReputation || 1);
-
+  const reputationRatio = computeReputationRatio(teamPosition, totalTeams, minReputation);
   if (reputationRatio < HARD_GATE_MULTIPLIER) return 'Below requirements';
   if (reputationRatio < SOFT_GATE_MULTIPLIER) return 'Borderline';
   return 'Strong match';
@@ -148,4 +211,21 @@ export function getRequiredPosition(totalTeams: number, minReputation: number): 
   // positionScore = 1 - (position - 1) / (totalTeams - 1)
   // position = 1 + (totalTeams - 1) * (1 - minReputation / 100)
   return Math.ceil(1 + (totalTeams - 1) * (1 - minReputation / 100));
+}
+
+// =============================================================================
+// PLACEMENT MAPPING
+// =============================================================================
+
+/** Map sponsor tier to its corresponding placement level on the car. */
+export function getPlacementForTier(tier: SponsorTier): SponsorPlacement {
+  switch (tier) {
+    case SponsorTier.Title:
+      return SponsorPlacement.Primary;
+    case SponsorTier.Major:
+      return SponsorPlacement.Secondary;
+    case SponsorTier.Minor:
+    default:
+      return SponsorPlacement.Tertiary;
+  }
 }

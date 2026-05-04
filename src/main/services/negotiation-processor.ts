@@ -244,12 +244,18 @@ export function applyNegotiationUpdates(state: GameState, updates: NegotiationUp
           const sponsor = state.sponsors.find((s) => s.id === sponsorNeg.sponsorId);
           if (sponsor) {
             const latestRound = sponsorNeg.rounds[sponsorNeg.rounds.length - 1];
+            // For failed sponsor negotiations, surface the engine's rejection reason
+            // (set by sponsor-evaluator) so the email matches the History card.
+            const failedSuffix =
+              sponsorNeg.phase === NegotiationPhase.Failed && sponsorNeg.rejectionReason
+                ? ` ${sponsorNeg.rejectionReason}`
+                : ' You may approach other sponsors.';
             generateNegotiationUpdateEmail(
               state,
               sponsor.name,
               sponsorNeg.phase,
               latestRound?.isUltimatum ?? false,
-              ' You may approach other sponsors.'
+              failedSuffix
             );
           }
         }

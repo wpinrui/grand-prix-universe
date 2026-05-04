@@ -9,7 +9,6 @@ import { seasonToYear } from '../../shared/utils/date-utils';
 import { IpcChannels } from '../../shared/ipc';
 import {
   SponsorTier,
-  SponsorPlacement,
   NegotiationPhase,
   StakeholderType,
   type Sponsor,
@@ -23,6 +22,9 @@ import {
   getLikelihoodBand,
   getReputationStanding,
   getRequiredPosition,
+  computeReputationRatio,
+  calculateWillingPayment,
+  getPlacementForTier,
   TIER_PAYMENT_RANGES,
   HARD_GATE_MULTIPLIER,
   SOFT_GATE_MULTIPLIER,
@@ -95,18 +97,6 @@ function getIndustryIcon(industry: string): string {
   return INDUSTRY_ICONS[industry] ?? DEFAULT_ICON;
 }
 
-function getPlacementForTier(tier: SponsorTier): SponsorPlacement {
-  switch (tier) {
-    case SponsorTier.Title:
-      return SponsorPlacement.Primary;
-    case SponsorTier.Major:
-      return SponsorPlacement.Secondary;
-    case SponsorTier.Minor:
-    default:
-      return SponsorPlacement.Tertiary;
-  }
-}
-
 /** Return the name of the sponsor causing a rival conflict, or null */
 function getRivalConflictName(
   sponsor: Sponsor,
@@ -119,17 +109,6 @@ function getRivalConflictName(
     if (existing?.rivalGroup === sponsor.rivalGroup) return existing.name;
   }
   return null;
-}
-
-/** Compute reputationRatio for a sponsor given team position data */
-function computeReputationRatio(
-  teamPosition: number,
-  totalTeams: number,
-  minReputation: number
-): number {
-  const positionScore = 1 - (teamPosition - 1) / (totalTeams - 1 || 1);
-  const effectiveReputation = positionScore * 100;
-  return effectiveReputation / (minReputation || 1);
 }
 
 // ===========================================
@@ -320,7 +299,6 @@ function SponsorCard({
 
 interface ContactModalProps {
   sponsor: Sponsor;
-  currentSeason: number;
   teamPosition: number;
   totalTeams: number;
   existingPlayerDeals: ActiveSponsorDeal[];
@@ -331,7 +309,6 @@ interface ContactModalProps {
 
 function ContactModal({
   sponsor,
-  currentSeason,
   teamPosition,
   totalTeams,
   existingPlayerDeals,
@@ -357,23 +334,11 @@ function ContactModal({
       ? "Cannot negotiate: your team's reputation is below this sponsor's requirement"
       : null;
 
-  // Live likelihood band
-  const willingPayment = useMemo(() => {
-    // Approximate willingPayment using the same formula as the evaluator
-    const PREMIUM_REPUTATION_THRESHOLD = 1.2;
-    const MAX_PREMIUM_MULTIPLIER = 1.25;
-    const DISCOUNT_MULTIPLIER_FLOOR = 0.7;
-
-    let willing = sponsor.baseMonthlyPayment;
-    if (reputationRatio >= PREMIUM_REPUTATION_THRESHOLD) {
-      const premiumFactor = Math.min(reputationRatio - 1, MAX_PREMIUM_MULTIPLIER - 1);
-      willing = sponsor.baseMonthlyPayment * (1 + premiumFactor);
-    } else if (reputationRatio < 1.0) {
-      const discountFactor = Math.max(reputationRatio, DISCOUNT_MULTIPLIER_FLOOR);
-      willing = sponsor.baseMonthlyPayment * discountFactor;
-    }
-    return Math.round(willing);
-  }, [sponsor.baseMonthlyPayment, reputationRatio]);
+  // Live likelihood band — uses the engine's own willing-payment + probability functions
+  const willingPayment = useMemo(
+    () => calculateWillingPayment(sponsor, teamPosition, totalTeams),
+    [sponsor, teamPosition, totalTeams]
+  );
 
   const likelihoodBand = useMemo(() => {
     if (hasHardBlocker) return getLikelihoodBand({ accept: 0, counter: 0, reject: 1 });
@@ -391,9 +356,8 @@ function ContactModal({
 
   // Slider ranges
   const maxMonthly = sponsor.baseMonthlyPayment * 3;
-  const stepMonthly = Math.max(1000, Math.round(sponsor.baseMonthlyPayment / 100) * 1000);
   const maxBonus = sponsor.baseMonthlyPayment * 6;
-  const stepBonus = Math.max(1000, Math.round(sponsor.baseMonthlyPayment / 100) * 1000);
+  const sliderStep = Math.max(1000, Math.round(sponsor.baseMonthlyPayment / 100) * 1000);
 
   const handleSubmit = () => {
     onSubmit({
@@ -453,7 +417,7 @@ function ContactModal({
                 type="range"
                 min={0}
                 max={maxMonthly}
-                step={stepMonthly}
+                step={sliderStep}
                 value={monthlyPayment}
                 onChange={(e) => setMonthlyPayment(Number(e.target.value))}
                 className="w-full accent-white"
@@ -469,7 +433,7 @@ function ContactModal({
                 type="range"
                 min={0}
                 max={maxBonus}
-                step={stepBonus}
+                step={sliderStep}
                 value={signingBonus}
                 onChange={(e) => setSigningBonus(Number(e.target.value))}
                 className="w-full accent-white"
@@ -910,7 +874,6 @@ export function Deals({ embedded = false, initialTierFilter }: DealsProps) {
     );
   }
 
-  const currentSeason = gameState.currentSeason.seasonNumber;
   const badgeCount = needsAttention.length + sentNegotiations.length;
 
   return (
@@ -1075,7 +1038,6 @@ export function Deals({ embedded = false, initialTierFilter }: DealsProps) {
       {contactingSponsor && (
         <ContactModal
           sponsor={contactingSponsor}
-          currentSeason={currentSeason}
           teamPosition={teamPosition}
           totalTeams={totalTeams}
           existingPlayerDeals={playerDealsList}

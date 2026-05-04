@@ -45,7 +45,7 @@ import { GameStateManager } from '../src/main/services/game-state-manager';
 // Minimal builders
 // ---------------------------------------------------------------------------
 
-function makeTeam(id: string, position: number): Team {
+function makeTeam(id: string): Team {
   return {
     id,
     name: 'Test Team',
@@ -120,7 +120,7 @@ function makeNegotiation(
 }
 
 function makeMinimalState(teamId: string, sponsors: Sponsor[], deals: ActiveSponsorDeal[] = []): GameState {
-  const team = makeTeam(teamId, 5);
+  const team = makeTeam(teamId);
   return {
     teams: [team],
     sponsors,
@@ -176,7 +176,7 @@ function runBandScenario() {
     const result = evaluateSponsorOffer({
       negotiation: neg,
       sponsor,
-      team: makeTeam(teamId, 3),
+      team: makeTeam(teamId),
       allTeams: [],
       allSponsors: [sponsor],
       existingSponsorDeals: [],
@@ -227,7 +227,7 @@ function runSeedScenario() {
     const result = evaluateSponsorOffer({
       negotiation: neg,
       sponsor,
-      team: makeTeam(teamId, 3),
+      team: makeTeam(teamId),
       allTeams: [],
       allSponsors: [sponsor],
       existingSponsorDeals: [],
@@ -282,7 +282,7 @@ function runReasonsScenario() {
     const result = evaluateSponsorOffer({
       negotiation: neg,
       sponsor: targetSponsor,
-      team: makeTeam(teamId, 3),
+      team: makeTeam(teamId),
       allTeams: [],
       allSponsors: [rivalSponsor, targetSponsor],
       existingSponsorDeals: [existingDeal],
@@ -305,7 +305,7 @@ function runReasonsScenario() {
     const result = evaluateSponsorOffer({
       negotiation: neg,
       sponsor,
-      team: makeTeam(teamId, 3),
+      team: makeTeam(teamId),
       allTeams: [],
       allSponsors: [sponsor],
       existingSponsorDeals: [],
@@ -335,7 +335,7 @@ function runReasonsScenario() {
       const result = evaluateSponsorOffer({
         negotiation: neg,
         sponsor,
-        team: makeTeam(teamId, 3),
+        team: makeTeam(teamId),
         allTeams: [],
         allSponsors: [sponsor],
         existingSponsorDeals: [],
@@ -371,7 +371,7 @@ function runReasonsScenario() {
       const result = evaluateSponsorOffer({
         negotiation: neg,
         sponsor,
-        team: makeTeam(teamId, 3),
+        team: makeTeam(teamId),
         allTeams: [],
         allSponsors: [sponsor],
         existingSponsorDeals: [],
@@ -426,9 +426,11 @@ function runReasonsScenario() {
     };
 
     const state = makeMinimalState(teamId, [sponsor1, sponsor2]);
-    // Minor tier has 2 slots (from SPONSOR_SLOT_COUNTS). To trigger the auto-fail
-    // we need all slots to be taken. Minor has 2 slots, so we fill slot 1 already.
-    (state.sponsorDeals as ActiveSponsorDeal[]).push(makeSponsorDeal('sponsor-existing', teamId, SponsorTier.Minor));
+    // Minor tier has 5 slots (from SPONSOR_SLOT_COUNTS). Pre-fill 4 so that signing
+    // neg-a fills the last slot and triggers the auto-fail of neg-b.
+    for (let i = 0; i < 4; i++) {
+      (state.sponsorDeals as ActiveSponsorDeal[]).push(makeSponsorDeal(`sponsor-existing-${i}`, teamId, SponsorTier.Minor));
+    }
     state.negotiations = [negA, negB] as GameState['negotiations'];
     GameStateManager.currentState = state;
 

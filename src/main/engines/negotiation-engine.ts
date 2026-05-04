@@ -346,17 +346,23 @@ function processNegotiation(
   const responseRound = createResponseRound(lastRound, result, input.currentDate);
 
   // Update negotiation
-  // Type assertion needed because Negotiation is a union type with different round types
-  // The cast is safe because responseRound is created from the same negotiation's lastRound
+  // Type assertion needed because Negotiation is a union type with different round types.
+  // The cast is safe because responseRound is created from the same negotiation's lastRound.
   const newPhase = determineNewPhase(result.responseType);
-  const updatedNegotiation = {
+  const baseUpdate = {
     ...negotiation,
     phase: newPhase,
     rounds: [...negotiation.rounds, responseRound],
-    ...(newPhase === NegotiationPhase.Failed && result.rejectionReason
-      ? { rejectionReason: result.rejectionReason }
-      : {}),
   } as Negotiation;
+
+  // rejectionReason only exists on SponsorNegotiation — narrow before assigning
+  // so we don't widen the union to include the field on other negotiation types.
+  const updatedNegotiation: Negotiation =
+    newPhase === NegotiationPhase.Failed &&
+    result.rejectionReason &&
+    baseUpdate.stakeholderType === StakeholderType.Sponsor
+      ? { ...baseUpdate, rejectionReason: result.rejectionReason }
+      : baseUpdate;
 
   // Determine if should stop simulation
   // Always stop for: Accept, Reject (negotiation concluded)

@@ -21,15 +21,16 @@ import type {
   ActiveSponsorDeal,
 } from '../../../shared/domain/types';
 import type { NegotiationEvaluationResult } from '../../../shared/domain/engines';
-import { ResponseType, ResponseTone, SponsorTier, SponsorPlacement } from '../../../shared/domain';
+import { ResponseType, ResponseTone, SponsorTier } from '../../../shared/domain';
 import {
-  INSTANT_ACCEPT_RATIO,
   REJECT_RATIO,
   SOFT_GATE_MULTIPLIER,
   HARD_GATE_MULTIPLIER,
   hashString,
   seededRandom,
   computeAcceptanceProbabilities,
+  computeReputationRatio,
+  calculateWillingPayment,
 } from '../../../shared/domain/sponsor-probability';
 
 // =============================================================================
@@ -48,20 +49,6 @@ const MAX_EXIT_CLAUSE_POSITION = 10;
 
 /** Base exit clause position for teams at soft gate threshold */
 const BASE_EXIT_CLAUSE_POSITION = 5;
-
-// -----------------------------------------------------------------------------
-// Valuation Thresholds
-// -----------------------------------------------------------------------------
-
-/**
- * Premium multiplier for teams exceeding minReputation significantly
- * Top teams can negotiate higher than base payment
- */
-const PREMIUM_REPUTATION_THRESHOLD = 1.2; // 20% above minReputation
-const MAX_PREMIUM_MULTIPLIER = 1.25; // Up to 25% premium
-
-/** Discount multiplier for teams near minReputation */
-const DISCOUNT_MULTIPLIER_FLOOR = 0.7; // At most 30% discount from base
 
 // -----------------------------------------------------------------------------
 // Counter-Offer Strategy
@@ -179,30 +166,11 @@ export function calculateSponsorValuation(
   teamPosition: number,
   totalTeams: number
 ): SponsorValuation {
-  // Calculate team's effective reputation from standings position
-  // Position 1 = 100%, Position last = ~10%
-  const positionScore = 1 - (teamPosition - 1) / (totalTeams - 1 || 1);
-  const effectiveReputation = positionScore * 100;
-
-  // Compare to sponsor's minimum reputation requirement
-  const reputationRatio = effectiveReputation / sponsor.minReputation;
-
-  // Determine gate status
+  const reputationRatio = computeReputationRatio(teamPosition, totalTeams, sponsor.minReputation);
   const isBelowHardGate = reputationRatio < HARD_GATE_MULTIPLIER;
   const isBelowSoftGate = reputationRatio < SOFT_GATE_MULTIPLIER;
 
-  // Calculate willing payment (monthly)
-  let willingPayment = sponsor.baseMonthlyPayment;
-
-  if (reputationRatio >= PREMIUM_REPUTATION_THRESHOLD) {
-    // Premium team - sponsor pays more for exposure
-    const premiumFactor = Math.min(reputationRatio - 1, MAX_PREMIUM_MULTIPLIER - 1);
-    willingPayment = sponsor.baseMonthlyPayment * (1 + premiumFactor);
-  } else if (reputationRatio < 1.0) {
-    // Below threshold - sponsor pays less
-    const discountFactor = Math.max(reputationRatio, DISCOUNT_MULTIPLIER_FLOOR);
-    willingPayment = sponsor.baseMonthlyPayment * discountFactor;
-  }
+  const willingPayment = calculateWillingPayment(sponsor, teamPosition, totalTeams);
 
   // Calculate protection level (0-1)
   // Higher = more protective terms (exit clause, shorter duration, lower signing bonus)
@@ -216,7 +184,7 @@ export function calculateSponsorValuation(
   }
 
   return {
-    willingPayment: Math.round(willingPayment),
+    willingPayment,
     protectionLevel,
     isBelowSoftGate,
     isBelowHardGate,
@@ -500,21 +468,6 @@ export function evaluateSponsorOffer(input: SponsorEvaluationInput): Negotiation
 // =============================================================================
 // SPONSOR PLACEMENT HELPERS
 // =============================================================================
-
-/**
- * Get the appropriate placement level based on sponsor tier.
- */
-export function getPlacementForTier(tier: SponsorTier): SponsorPlacement {
-  switch (tier) {
-    case SponsorTier.Title:
-      return SponsorPlacement.Primary;
-    case SponsorTier.Major:
-      return SponsorPlacement.Secondary;
-    case SponsorTier.Minor:
-    default:
-      return SponsorPlacement.Tertiary;
-  }
-}
 
 /**
  * Get display name for sponsor tier (lowercase for news headlines).
