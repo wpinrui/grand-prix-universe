@@ -23,12 +23,13 @@ import type {
 import type { NegotiationEvaluationResult } from '../../../shared/domain/engines';
 import { ResponseType, ResponseTone, SponsorTier } from '../../../shared/domain';
 import {
-  REJECT_RATIO,
+  INSTANT_ACCEPT_RATIO,
   SOFT_GATE_MULTIPLIER,
   HARD_GATE_MULTIPLIER,
   hashString,
   seededRandom,
   computeAcceptanceProbabilities,
+  computePaymentRatio,
   computeReputationRatio,
   calculateWillingPayment,
 } from '../../../shared/domain/sponsor-probability';
@@ -356,15 +357,15 @@ export function evaluateSponsorOffer(input: SponsorEvaluationInput): Negotiation
   // ==========================================================================
   // Evaluate the offered payment using the probability model
   // ==========================================================================
-  const offeredPayment = terms.monthlyPayment;
-  const paymentRatio = offeredPayment / valuation.willingPayment;
+  const durationMonths = terms.duration * 12;
+  const paymentRatio = computePaymentRatio(terms.monthlyPayment, durationMonths, terms.signingBonus, valuation.willingPayment);
 
   // ==========================================================================
   // Handle ultimatums (bypass probability — ultimatums are categorical)
   // ==========================================================================
   if (currentRound.isUltimatum) {
     // Player issued ultimatum - accept or reject only
-    if (paymentRatio >= REJECT_RATIO) {
+    if (paymentRatio <= INSTANT_ACCEPT_RATIO) {
       return {
         responseType: ResponseType.Accept,
         counterTerms: null,

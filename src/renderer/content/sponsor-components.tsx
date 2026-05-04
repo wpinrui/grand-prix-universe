@@ -13,6 +13,7 @@ import {
 } from '../../shared/domain';
 import {
   computeAcceptanceProbabilities,
+  computePaymentRatio,
   getLikelihoodBand,
   getReputationStanding,
   getRequiredPosition,
@@ -322,10 +323,11 @@ export function ContactModal({
 
   const likelihoodBand = useMemo(() => {
     if (hasHardBlocker) return 'Likely to reject' as const;
-    const paymentRatio = monthlyPayment / willingPayment;
+    const durationMonths = parseInt(duration, 10) * 12;
+    const paymentRatio = computePaymentRatio(monthlyPayment, durationMonths, signingBonus, willingPayment);
     const probs = computeAcceptanceProbabilities(paymentRatio, isBelowHardGate, isBelowSoftGate);
     return getLikelihoodBand(probs, isBelowHardGate);
-  }, [monthlyPayment, willingPayment, isBelowHardGate, isBelowSoftGate, hasHardBlocker]);
+  }, [monthlyPayment, duration, signingBonus, willingPayment, isBelowHardGate, isBelowSoftGate, hasHardBlocker]);
 
   // Reference line
   const tierRange = TIER_PAYMENT_RANGES[sponsor.tier];

@@ -12,8 +12,8 @@ import { SponsorTier, SponsorPlacement, type Sponsor } from './types';
 // THRESHOLD CONSTANTS (shared with sponsor-evaluator.ts)
 // =============================================================================
 
-export const INSTANT_ACCEPT_RATIO = 0.95;
-export const REJECT_RATIO = 0.6;
+export const INSTANT_ACCEPT_RATIO = 0.90;
+export const REJECT_RATIO = 1.10;
 export const SOFT_GATE_MULTIPLIER = 0.9;
 export const HARD_GATE_MULTIPLIER = 0.7;
 
@@ -27,6 +27,15 @@ export const PREMIUM_REPUTATION_THRESHOLD = 1.2;
 export const MAX_PREMIUM_MULTIPLIER = 1.25;
 /** Floor on the discount multiplier when reputation is below 1.0 */
 export const DISCOUNT_MULTIPLIER_FLOOR = 0.7;
+
+// =============================================================================
+// PAYMENT RATIO CONSTANTS
+// =============================================================================
+
+/** Weight applied to signing bonus when computing total offered cost */
+const BONUS_WEIGHT = 1.5;
+/** Floor for effectiveReputation so P10 teams can reach some sponsors */
+const EFFECTIVE_REP_FLOOR = 10;
 
 // =============================================================================
 // PROBABILITY-MODEL TUNING CONSTANTS
@@ -84,7 +93,7 @@ export function computeReputationRatio(
   minReputation: number
 ): number {
   const positionScore = 1 - (teamPosition - 1) / (totalTeams - 1 || 1);
-  const effectiveReputation = positionScore * 100;
+  const effectiveReputation = Math.max(positionScore * 100, EFFECTIVE_REP_FLOOR);
   return effectiveReputation / (minReputation || 1);
 }
 
@@ -117,6 +126,25 @@ export function calculateWillingPayment(
 }
 
 // =============================================================================
+// PAYMENT RATIO
+// =============================================================================
+
+/**
+ * Compute paymentRatio = offeredCost / willingCost.
+ * Signing bonus is weighted to reflect its upfront cash-flow burden.
+ */
+export function computePaymentRatio(
+  monthlyPayment: number,
+  durationMonths: number,
+  signingBonus: number,
+  willingMonthly: number
+): number {
+  const offeredCost = monthlyPayment * durationMonths + signingBonus * BONUS_WEIGHT;
+  const willingCost = willingMonthly * durationMonths;
+  return offeredCost / (willingCost || 1);
+}
+
+// =============================================================================
 // PROBABILITY MODEL
 // =============================================================================
 
@@ -143,8 +171,8 @@ export function computeAcceptanceProbabilities(
   isBelowHardGate: boolean,
   isBelowSoftGate: boolean
 ): AcceptanceProbabilities {
-  let pAccept = sigmoid((paymentRatio - INSTANT_ACCEPT_RATIO) * PROB_STEEPNESS);
-  const pReject = sigmoid((REJECT_RATIO - paymentRatio) * PROB_STEEPNESS);
+  let pAccept = sigmoid((INSTANT_ACCEPT_RATIO - paymentRatio) * PROB_STEEPNESS);
+  const pReject = sigmoid((paymentRatio - REJECT_RATIO) * PROB_STEEPNESS);
 
   if (isBelowHardGate) {
     pAccept *= BELOW_GATE_PACCEPT_DAMPING;
