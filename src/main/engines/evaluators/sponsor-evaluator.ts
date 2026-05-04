@@ -353,20 +353,6 @@ export function evaluateSponsorOffer(input: SponsorEvaluationInput): Negotiation
   // ==========================================================================
   const valuation = calculateSponsorValuation(sponsor, teamPosition, totalTeams);
 
-  // Hard rejection if WAY below reputation threshold
-  if (valuation.isBelowHardGate) {
-    return {
-      responseType: ResponseType.Reject,
-      counterTerms: null,
-      responseTone: ResponseTone.Professional,
-      responseDelayDays: MIN_RESPONSE_DELAY_DAYS,
-      isNewsworthy: false,
-      relationshipChange: REJECT_RELATIONSHIP_PENALTY,
-      rejectionReason: "Your team's profile is below what our brand requires.",
-      acceptanceProbability: 0,
-    };
-  }
-
   // ==========================================================================
   // Evaluate the offered payment using the probability model
   // ==========================================================================

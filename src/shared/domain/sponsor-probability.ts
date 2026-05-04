@@ -36,6 +36,8 @@ export const DISCOUNT_MULTIPLIER_FLOOR = 0.7;
 const PROB_STEEPNESS = 25;
 /** When team is below soft gate, multiply pAccept by this dampener */
 const SOFT_GATE_PACCEPT_DAMPING = 0.3;
+/** When team is below hard gate ("Below requirements"), heavily damp pAccept — roughly 1–3% at reasonable terms */
+const BELOW_GATE_PACCEPT_DAMPING = 0.03;
 
 // =============================================================================
 // TIER PAYMENT RANGES (hardcoded from sponsors.json data)
@@ -141,14 +143,12 @@ export function computeAcceptanceProbabilities(
   isBelowHardGate: boolean,
   isBelowSoftGate: boolean
 ): AcceptanceProbabilities {
-  if (isBelowHardGate) {
-    return { accept: 0, counter: 0, reject: 1 };
-  }
-
   let pAccept = sigmoid((paymentRatio - INSTANT_ACCEPT_RATIO) * PROB_STEEPNESS);
   const pReject = sigmoid((REJECT_RATIO - paymentRatio) * PROB_STEEPNESS);
 
-  if (isBelowSoftGate) {
+  if (isBelowHardGate) {
+    pAccept *= BELOW_GATE_PACCEPT_DAMPING;
+  } else if (isBelowSoftGate) {
     pAccept *= SOFT_GATE_PACCEPT_DAMPING;
   }
 
@@ -164,13 +164,16 @@ export type LikelihoodBand =
   | 'Likely to accept'
   | 'Likely to counter'
   | 'Toss-up'
-  | 'Likely to reject';
+  | 'Likely to reject'
+  | 'Below requirements';
 
 /**
  * Map a probability distribution to a human-readable likelihood band.
  * The dominant outcome wins; if no outcome exceeds 50%, it's a Toss-up.
+ * Pass isBelowHardGate=true to short-circuit to the "Below requirements" label.
  */
-export function getLikelihoodBand(probs: AcceptanceProbabilities): LikelihoodBand {
+export function getLikelihoodBand(probs: AcceptanceProbabilities, isBelowHardGate = false): LikelihoodBand {
+  if (isBelowHardGate) return 'Below requirements';
   const { accept, counter, reject } = probs;
   if (accept > 0.5) return 'Likely to accept';
   if (reject > 0.5) return 'Likely to reject';
