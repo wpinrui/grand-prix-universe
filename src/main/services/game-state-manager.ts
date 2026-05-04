@@ -1209,7 +1209,18 @@ export const GameStateManager = {
     const totalTeams = Math.max(standings.length, 1);
     const monthlyPayment = calculateWillingPayment(sponsor, teamPosition, totalTeams);
 
-    const result = createSponsorDealDirect(state, sponsorId, playerTeamId, monthlyPayment, 1);
+    // Under Option B, renewal happens DURING the deal's final season — so the
+    // new deal must start the next season, otherwise it shares endSeason with
+    // the deal we just removed and the Renewals tab won't clear.
+    const newDealStartSeason = state.currentSeason.seasonNumber + 1;
+    const result = createSponsorDealDirect(
+      state,
+      sponsorId,
+      playerTeamId,
+      monthlyPayment,
+      1,
+      newDealStartSeason
+    );
     if (result) {
       generateSponsorSigningEvent(state, result, true);
     }

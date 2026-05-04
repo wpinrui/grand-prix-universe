@@ -642,18 +642,24 @@ export function generateRenewalPromptEmail(state: GameState, sponsorId: string):
  * Create an active sponsor deal directly (e.g., from a renewal accept),
  * without going through a negotiation. No signing bonus is credited.
  * Returns the SponsorContractResult for event generation.
+ *
+ * `startSeasonOverride` lets the caller force a future startSeason — used by
+ * the renewal-accept path so the new deal starts the season AFTER the expiring
+ * deal's final season, otherwise the new deal would inherit the same endSeason
+ * as the old one and the renewal card would not clear.
  */
 export function createSponsorDealDirect(
   state: GameState,
   sponsorId: string,
   teamId: string,
   monthlyPayment: number,
-  duration: number
+  duration: number,
+  startSeasonOverride?: number
 ): SponsorContractResult | null {
   const sponsor = state.sponsors.find((s) => s.id === sponsorId);
   if (!sponsor) return null;
 
-  const startSeason = state.currentSeason.seasonNumber;
+  const startSeason = startSeasonOverride ?? state.currentSeason.seasonNumber;
   const endSeason = startSeason + duration - 1;
 
   const deal: ActiveSponsorDeal = {
@@ -683,7 +689,9 @@ export function createSponsorDealDirect(
 
 /**
  * Process all sponsor season-end hooks for the player's team:
- * 1. Send renewal-prompt critical emails for deals expiring this season.
+ * 1. Send renewal-prompt critical emails for deals that will expire NEXT season
+ *    (so the player enters their final year with the prompt and has the whole
+ *    season to act in the Renewals tab).
  * 2. Lapse deals with no active counter-negotiation (remove deal + fire headline).
  *
  * Must be called BEFORE the season number increments.
@@ -693,7 +701,7 @@ export function processSponsorSeasonEnd(state: GameState, playerTeamId: string):
   const expiringSeasonNumber = state.currentSeason.seasonNumber;
 
   for (const deal of state.sponsorDeals) {
-    if (deal.teamId === playerTeamId && deal.endSeason === expiringSeasonNumber) {
+    if (deal.teamId === playerTeamId && deal.endSeason === expiringSeasonNumber + 1) {
       generateRenewalPromptEmail(state, deal.sponsorId);
     }
   }

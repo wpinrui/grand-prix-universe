@@ -99,13 +99,16 @@ function makeMinimalState(teamId: string, sponsors: Sponsor[], deals: ActiveSpon
 // ---------------------------------------------------------------------------
 
 function runPromptScenario(): boolean {
-  console.log('\n===== SCENARIO 1: Renewal Prompt Email =====');
-  console.log('Sets up an expiring deal (endSeason === currentSeason), calls processSponsorSeasonEnd()');
-  console.log('(the same function startNewSeason() uses), and confirms a critical renewal-prompt email was generated.\n');
+  console.log('\n===== SCENARIO 1: Renewal Prompt Email (Option B timing) =====');
+  console.log('At end of season N-1, prompt fires for deals with endSeason === N (deals entering');
+  console.log('their final year). Player gets the whole final season to act in the Renewals tab.');
+  console.log('Calls processSponsorSeasonEnd() — the same function startNewSeason() uses.\n');
 
   const teamId = 'team-player';
   const sponsor = makeSponsor({ id: 'sponsor-alpha', name: 'AlphaCorp' });
-  const deal = makeDeal(sponsor.id, teamId, 3, 5);
+  // Deal expires at end of season 6. We're at end of season 5 (about to transition to 6).
+  // Prompt should fire so the player enters their final year (season 6) with the renewal card.
+  const deal = makeDeal(sponsor.id, teamId, 3, 6);
   const state = makeMinimalState(teamId, [sponsor], [deal], 5);
 
   processSponsorSeasonEnd(state, teamId);
@@ -116,7 +119,7 @@ function runPromptScenario(): boolean {
   );
 
   if (criticalEmails.length === 0) {
-    console.log('FAIL — no critical email generated');
+    console.log('FAIL — no critical email generated for upcoming-final-year deal');
     return false;
   }
 
@@ -130,13 +133,32 @@ function runPromptScenario(): boolean {
     return false;
   }
 
-  // Verify player-team filter: a non-player deal expiring same season must NOT get an email
+  // Verify the deal was NOT lapsed (it doesn't expire until end of season 6)
+  if (state.sponsorDeals.length !== 1) {
+    console.log(`FAIL — deal was lapsed prematurely; expected to survive into final year`);
+    return false;
+  }
+
+  // Negative: a deal expiring TWO seasons out (endSeason = 7) should NOT prompt yet
+  const sponsor2 = makeSponsor({ id: 'sponsor-future', name: 'FutureCorp' });
+  const deal2 = makeDeal(sponsor2.id, teamId, 3, 7);
+  const state2 = makeMinimalState(teamId, [sponsor2], [deal2], 5);
+  processSponsorSeasonEnd(state2, teamId);
+  const earlyEmails = state2.calendarEvents.filter(
+    (e: { type: string; critical: boolean }) => e.type === CalendarEventType.Email && e.critical
+  );
+  if (earlyEmails.length !== 0) {
+    console.log('FAIL — renewal prompt fired for a deal that does not expire next season');
+    return false;
+  }
+
+  // Negative: player-team filter — a non-player deal entering its final year must NOT get an email
   const otherTeamId = 'team-other';
   const otherSponsor = makeSponsor({ id: 'sponsor-other', name: 'OtherCorp' });
-  const otherDeal = makeDeal(otherSponsor.id, otherTeamId, 3, 5);
-  const state2 = makeMinimalState(teamId, [otherSponsor], [otherDeal], 5);
-  processSponsorSeasonEnd(state2, teamId);
-  const emailsForOtherTeam = state2.calendarEvents.filter(
+  const otherDeal = makeDeal(otherSponsor.id, otherTeamId, 3, 6);
+  const state3 = makeMinimalState(teamId, [otherSponsor], [otherDeal], 5);
+  processSponsorSeasonEnd(state3, teamId);
+  const emailsForOtherTeam = state3.calendarEvents.filter(
     (e: { type: string; critical: boolean }) => e.type === CalendarEventType.Email && e.critical
   );
   if (emailsForOtherTeam.length !== 0) {
@@ -144,7 +166,7 @@ function runPromptScenario(): boolean {
     return false;
   }
 
-  console.log('\nScenario 1 ✓ — critical renewal-prompt email generated for player deal only');
+  console.log('\nScenario 1 ✓ — prompt fires one season before expiry, only for player deals');
   return true;
 }
 
