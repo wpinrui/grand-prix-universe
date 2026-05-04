@@ -32,7 +32,7 @@ import {
   EntityType,
   NewsEventType,
 } from '../../shared/domain';
-import { NegotiationPhase } from '../../shared/domain/types';
+import { NegotiationPhase, StakeholderType } from '../../shared/domain/types';
 import { getFullName } from '../../shared/utils/format';
 import { seasonToYear } from '../../shared/utils/date-utils';
 
@@ -566,7 +566,7 @@ export function generateSponsorSigningEvent(
       date: state.currentDate,
       type: CalendarEventType.Email,
       subject: `${sponsor.name} partnership confirmed`,
-      body: `${sponsor.name} partnership confirmed — ${tierName}, $${result.monthlyPayment.toLocaleString()}/mo, ${result.contractDuration}-year deal. Your signing bonus of $${result.signingBonus.toLocaleString()} has been credited to your team budget.`,
+      body: `${sponsor.name} partnership confirmed — ${tierName}, $${result.monthlyPayment.toLocaleString()}/mo, ${result.contractDuration}-year deal.${result.signingBonus > 0 ? ` Your signing bonus of $${result.signingBonus.toLocaleString()} has been credited to your team budget.` : ''}`,
       critical: true,
     });
   }
@@ -679,6 +679,43 @@ export function createSponsorDealDirect(
     startSeason,
     endSeason,
   };
+}
+
+/**
+ * Process all sponsor season-end hooks for the player's team:
+ * 1. Send renewal-prompt critical emails for deals expiring this season.
+ * 2. Lapse deals with no active counter-negotiation (remove deal + fire headline).
+ *
+ * Must be called BEFORE the season number increments.
+ * Exported so the CLI test gate can exercise the same code path as startNewSeason().
+ */
+export function processSponsorSeasonEnd(state: GameState, playerTeamId: string): void {
+  const expiringSeasonNumber = state.currentSeason.seasonNumber;
+
+  for (const deal of state.sponsorDeals) {
+    if (deal.teamId === playerTeamId && deal.endSeason === expiringSeasonNumber) {
+      generateRenewalPromptEmail(state, deal.sponsorId);
+    }
+  }
+
+  const dealsToLapse = state.sponsorDeals.filter((deal) => {
+    if (deal.endSeason > expiringSeasonNumber) return false;
+    const hasActiveNegotiation = state.negotiations.some(
+      (n) =>
+        n.stakeholderType === StakeholderType.Sponsor &&
+        n.teamId === deal.teamId &&
+        (n as SponsorNegotiation).sponsorId === deal.sponsorId &&
+        n.phase !== NegotiationPhase.Completed &&
+        n.phase !== NegotiationPhase.Failed
+    );
+    return !hasActiveNegotiation;
+  });
+
+  for (const deal of dealsToLapse) {
+    const duration = deal.endSeason - deal.startSeason + 1;
+    generateSponsorLapseHeadline(state, deal.sponsorId, deal.teamId, duration);
+  }
+  state.sponsorDeals = state.sponsorDeals.filter((d) => !dealsToLapse.includes(d));
 }
 
 /**

@@ -42,9 +42,9 @@ import {
   createSponsorContractFromNegotiation,
   generateSponsorSigningEvent,
   generateNegotiationUpdateEmail,
-  generateRenewalPromptEmail,
   createSponsorDealDirect,
   generateSponsorLapseHeadline,
+  processSponsorSeasonEnd,
 } from './contract-creator';
 import { calculateWillingPayment } from '../../shared/domain/sponsor-probability';
 import type {
@@ -425,36 +425,7 @@ export const GameStateManager = {
     applySeasonEndResult(state, seasonEndResult);
 
     // --- Sponsor season-end hooks (before season number increments) ---
-    const expiringSeasonNumber = state.currentSeason.seasonNumber;
-    const playerTeamId = state.player.teamId;
-
-    // 1. Send renewal prompt emails for player deals expiring this season
-    for (const deal of state.sponsorDeals) {
-      if (deal.teamId === playerTeamId && deal.endSeason === expiringSeasonNumber) {
-        generateRenewalPromptEmail(state, deal.sponsorId);
-      }
-    }
-
-    // 2. Lapse deals where endSeason <= expiringSeasonNumber AND no active counter-negotiation
-    const dealsToLapse = state.sponsorDeals.filter((deal) => {
-      if (deal.endSeason > expiringSeasonNumber) return false;
-      // Keep if there's an active SponsorNegotiation for this sponsor+team
-      const hasActiveNegotiation = state.negotiations.some(
-        (n) =>
-          n.stakeholderType === StakeholderType.Sponsor &&
-          n.teamId === deal.teamId &&
-          (n as SponsorNegotiation).sponsorId === deal.sponsorId &&
-          n.phase !== NegotiationPhase.Completed &&
-          n.phase !== NegotiationPhase.Failed
-      );
-      return !hasActiveNegotiation;
-    });
-
-    for (const deal of dealsToLapse) {
-      const duration = deal.endSeason - deal.startSeason + 1;
-      generateSponsorLapseHeadline(state, deal.sponsorId, deal.teamId, duration);
-    }
-    state.sponsorDeals = state.sponsorDeals.filter((d) => !dealsToLapse.includes(d));
+    processSponsorSeasonEnd(state, state.player.teamId);
 
     // Transition to new season (archive old, create new)
     transitionToNewSeason(state, seasonEndResult.newCalendar);
@@ -1244,6 +1215,31 @@ export const GameStateManager = {
     }
 
     return state;
+  },
+
+  /**
+   * Player counters a renewal offer from the Renewals tab.
+   * Atomically removes the expiring deal (freeing the slot) before creating the
+   * new negotiation, so slot enforcement in startSponsorNegotiation never trips.
+   */
+  startSponsorRenewalCounter(sponsorId: string, terms: import('../../shared/domain').SponsorContractTerms): GameState {
+    const state = GameStateManager.currentState;
+    if (!state) throw new Error('No game in progress');
+
+    const playerTeamId = state.player.teamId;
+
+    const expiringDeal = state.sponsorDeals.find(
+      (d) => d.sponsorId === sponsorId && d.teamId === playerTeamId
+    );
+    if (!expiringDeal) throw new Error('No active deal found to counter');
+
+    // Free the slot before slot enforcement runs
+    state.sponsorDeals = state.sponsorDeals.filter(
+      (d) => !(d.sponsorId === sponsorId && d.teamId === playerTeamId)
+    );
+
+    // Now create the negotiation — slot count is clear
+    return GameStateManager.startSponsorNegotiation(sponsorId, terms);
   },
 
   /**

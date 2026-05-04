@@ -33,7 +33,7 @@ import {
   Toast,
   type RenewalInitialTerms,
   type DurationValue,
-} from './Deals';
+} from './sponsor-components';
 
 // ===========================================
 // TYPES
@@ -591,6 +591,7 @@ function RenewalCard({ deal, sponsor, renewalPayment, onAccept, onDecline, onCou
 interface ContactSponsorState {
   sponsor: Sponsor;
   initialTerms?: RenewalInitialTerms;
+  isRenewalCounter?: boolean;
 }
 
 interface SponsorsProps {
@@ -726,8 +727,11 @@ export function Sponsors({ initialTab, onTabChange }: SponsorsProps) {
   const handleStartNegotiation = useCallback(async (terms: SponsorContractTerms) => {
     if (!contactSponsorState) return;
     const sponsorName = contactSponsorState.sponsor.name;
+    const channel = contactSponsorState.isRenewalCounter
+      ? IpcChannels.SPONSOR_START_RENEWAL_COUNTER
+      : IpcChannels.SPONSOR_START_NEGOTIATION;
     try {
-      await window.electronAPI.invoke(IpcChannels.SPONSOR_START_NEGOTIATION, {
+      await window.electronAPI.invoke(channel, {
         sponsorId: contactSponsorState.sponsor.id,
         terms,
       });
@@ -791,10 +795,12 @@ export function Sponsors({ initialTab, onTabChange }: SponsorsProps) {
       signingBonus: 0,
       duration: '1' as DurationValue,
     };
-    setContactSponsorState({ sponsor, initialTerms });
+    setContactSponsorState({ sponsor, initialTerms, isRenewalCounter: true });
   }, [teamPosition, totalTeams]);
 
-  const activeNegotiationCount = needsAttention.length;
+  const activeNegotiationCount = allNegotiations.filter(
+    (n) => n.phase !== NegotiationPhase.Completed && n.phase !== NegotiationPhase.Failed
+  ).length;
 
   const renewalCount = renewalDeals.length;
 

@@ -20,10 +20,7 @@ import {
 } from '../src/shared/domain/types';
 import { CalendarEventType } from '../src/shared/domain';
 import { calculateWillingPayment } from '../src/shared/domain/sponsor-probability';
-import {
-  generateRenewalPromptEmail,
-  generateSponsorLapseHeadline,
-} from '../src/main/services/contract-creator';
+import { processSponsorSeasonEnd } from '../src/main/services/contract-creator';
 
 // ---------------------------------------------------------------------------
 // Minimal builders
@@ -103,17 +100,15 @@ function makeMinimalState(teamId: string, sponsors: Sponsor[], deals: ActiveSpon
 
 function runPromptScenario(): boolean {
   console.log('\n===== SCENARIO 1: Renewal Prompt Email =====');
-  console.log('Sets up an expiring deal (endSeason === currentSeason), runs startNewSeason(),');
-  console.log('and confirms a critical renewal-prompt email was generated.\n');
+  console.log('Sets up an expiring deal (endSeason === currentSeason), calls processSponsorSeasonEnd()');
+  console.log('(the same function startNewSeason() uses), and confirms a critical renewal-prompt email was generated.\n');
 
   const teamId = 'team-player';
   const sponsor = makeSponsor({ id: 'sponsor-alpha', name: 'AlphaCorp' });
-  // Deal expires at season 5 (the current season before transition)
   const deal = makeDeal(sponsor.id, teamId, 3, 5);
-
   const state = makeMinimalState(teamId, [sponsor], [deal], 5);
 
-  generateRenewalPromptEmail(state, sponsor.id);
+  processSponsorSeasonEnd(state, teamId);
 
   const criticalEmails = state.calendarEvents.filter(
     (e: { type: string; critical: boolean; body?: string }) =>
@@ -135,7 +130,21 @@ function runPromptScenario(): boolean {
     return false;
   }
 
-  console.log('\nScenario 1 ✓ — critical renewal-prompt email generated with correct text');
+  // Verify player-team filter: a non-player deal expiring same season must NOT get an email
+  const otherTeamId = 'team-other';
+  const otherSponsor = makeSponsor({ id: 'sponsor-other', name: 'OtherCorp' });
+  const otherDeal = makeDeal(otherSponsor.id, otherTeamId, 3, 5);
+  const state2 = makeMinimalState(teamId, [otherSponsor], [otherDeal], 5);
+  processSponsorSeasonEnd(state2, teamId);
+  const emailsForOtherTeam = state2.calendarEvents.filter(
+    (e: { type: string; critical: boolean }) => e.type === CalendarEventType.Email && e.critical
+  );
+  if (emailsForOtherTeam.length !== 0) {
+    console.log('FAIL — renewal prompt sent for a non-player deal');
+    return false;
+  }
+
+  console.log('\nScenario 1 ✓ — critical renewal-prompt email generated for player deal only');
   return true;
 }
 
@@ -145,23 +154,16 @@ function runPromptScenario(): boolean {
 
 function runLapseScenario(): boolean {
   console.log('\n===== SCENARIO 2: Lapse on Ignored Deal =====');
-  console.log('Sets up an expiring deal with no active negotiation, runs the lapse logic,');
+  console.log('Sets up an expiring deal with no active negotiation, calls processSponsorSeasonEnd(),');
   console.log('and confirms the deal is removed and a news headline fires.\n');
 
   const teamId = 'team-player';
   const sponsor = makeSponsor({ id: 'sponsor-beta', name: 'BetaDrive' });
   const deal = makeDeal(sponsor.id, teamId, 3, 5);
-
   const state = makeMinimalState(teamId, [sponsor], [deal], 5);
 
   const dealsBeforeLapse = state.sponsorDeals.length;
-
-  const duration = deal.endSeason - deal.startSeason + 1;
-  generateSponsorLapseHeadline(state, sponsor.id, teamId, duration);
-  state.sponsorDeals = state.sponsorDeals.filter(
-    (d: ActiveSponsorDeal) => !(d.sponsorId === sponsor.id && d.teamId === teamId)
-  );
-
+  processSponsorSeasonEnd(state, teamId);
   const dealsAfterLapse = state.sponsorDeals.length;
 
   const headlines = state.calendarEvents.filter(
