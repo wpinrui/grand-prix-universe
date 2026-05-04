@@ -342,7 +342,7 @@ export function ContactModal({
   // Slider ranges
   const maxMonthly = sponsor.baseMonthlyPayment * 3;
   const maxBonus = sponsor.baseMonthlyPayment * 6;
-  const sliderStep = Math.max(1000, Math.round(sponsor.baseMonthlyPayment / 100) * 1000);
+  const sliderStep = Math.max(1000, Math.round(sponsor.baseMonthlyPayment / 100));
 
   const handleSubmit = () => {
     onSubmit({
