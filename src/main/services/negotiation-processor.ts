@@ -228,6 +228,19 @@ export function applyNegotiationUpdates(state: GameState, updates: NegotiationUp
             sponsorNeg.phase = NegotiationPhase.PendingPlayerConfirmation;
             state.negotiations[index] = sponsorNeg;
             shouldStop = true;
+
+            // Surface the acceptance via inbox so the player isn't stranded
+            // when the sim pauses. The signing celebration email still fires
+            // separately from generateSponsorSigningEvent after Sign is clicked.
+            const sponsor = state.sponsors.find((s) => s.id === sponsorNeg.sponsorId);
+            if (sponsor) {
+              generateNegotiationUpdateEmail(
+                state,
+                sponsor.name,
+                NegotiationPhase.Completed,
+                false
+              );
+            }
           } else {
             // AI teams: create the deal directly
             const contractResult = createSponsorContractFromNegotiation(sponsorNeg, state);
