@@ -13,6 +13,7 @@ import {
 } from '../../shared/domain';
 import {
   computeAcceptanceProbabilities,
+  computePaymentRatio,
   getLikelihoodBand,
   getReputationStanding,
   getRequiredPosition,
@@ -154,6 +155,7 @@ const BAND_STYLES = {
   'Likely to counter': { text: 'text-amber-400', label: 'Likely to counter' },
   'Toss-up': { text: 'text-blue-400', label: 'Toss-up' },
   'Likely to reject': { text: 'text-red-400', label: 'Likely to reject' },
+  'Below requirements': { text: 'text-red-400', label: 'Below requirements' },
 } as const;
 
 function LikelihoodBandIndicator({ band }: { band: ReturnType<typeof getLikelihoodBand> }) {
@@ -176,7 +178,6 @@ export interface BrowseSponsorCardProps {
   isNegotiating: boolean;
   isSlotFull: boolean;
   rivalConflictName: string | null;
-  isBelowRepFloor: boolean;
   repStanding: ReturnType<typeof getReputationStanding>;
   negotiationId: string | null;
   onContact: () => void;
@@ -189,19 +190,16 @@ export function BrowseSponsorCard({
   isNegotiating,
   isSlotFull,
   rivalConflictName,
-  isBelowRepFloor,
   repStanding,
   negotiationId,
   onContact,
   onViewNegotiations,
 }: BrowseSponsorCardProps) {
-  const hasHardBlocker = isSlotFull || rivalConflictName !== null || isBelowRepFloor;
+  const hasHardBlocker = isSlotFull || rivalConflictName !== null;
 
   const blockerReason =
     rivalConflictName !== null
       ? `Conflicts with ${rivalConflictName}`
-      : isBelowRepFloor
-      ? 'Below reputation requirement'
       : isSlotFull
       ? 'Slot at capacity'
       : null;
@@ -305,18 +303,16 @@ export function ContactModal({
   const [monthlyPayment, setMonthlyPayment] = useState(initialTerms?.monthlyPayment ?? sponsor.baseMonthlyPayment);
   const [signingBonus, setSigningBonus] = useState(initialTerms?.signingBonus ?? Math.round(sponsor.baseMonthlyPayment * 2));
 
-  // Hard blocker checks
+  // Hard blocker checks — only rival conflict is a true hard blocker
   const rivalConflictName = getRivalConflictName(sponsor, existingPlayerDeals, allSponsors);
   const reputationRatio = computeReputationRatio(teamPosition, totalTeams, sponsor.minReputation);
   const isBelowHardGate = reputationRatio < HARD_GATE_MULTIPLIER;
   const isBelowSoftGate = reputationRatio < SOFT_GATE_MULTIPLIER;
-  const hasHardBlocker = rivalConflictName !== null || isBelowHardGate;
+  const hasHardBlocker = rivalConflictName !== null;
 
   const blockerMessage =
     rivalConflictName !== null
       ? `Cannot negotiate: rival group conflict with ${rivalConflictName}`
-      : isBelowHardGate
-      ? "Cannot negotiate: your team's reputation is below this sponsor's requirement"
       : null;
 
   // Live likelihood band — uses the engine's own willing-payment + probability functions
@@ -326,11 +322,12 @@ export function ContactModal({
   );
 
   const likelihoodBand = useMemo(() => {
-    if (hasHardBlocker) return getLikelihoodBand({ accept: 0, counter: 0, reject: 1 });
-    const paymentRatio = monthlyPayment / willingPayment;
+    if (hasHardBlocker) return 'Likely to reject' as const;
+    const durationMonths = parseInt(duration, 10) * 12;
+    const paymentRatio = computePaymentRatio(monthlyPayment, durationMonths, signingBonus, willingPayment);
     const probs = computeAcceptanceProbabilities(paymentRatio, isBelowHardGate, isBelowSoftGate);
-    return getLikelihoodBand(probs);
-  }, [monthlyPayment, willingPayment, isBelowHardGate, isBelowSoftGate, hasHardBlocker]);
+    return getLikelihoodBand(probs, isBelowHardGate);
+  }, [monthlyPayment, duration, signingBonus, willingPayment, isBelowHardGate, isBelowSoftGate, hasHardBlocker]);
 
   // Reference line
   const tierRange = TIER_PAYMENT_RANGES[sponsor.tier];

@@ -20,9 +20,7 @@ import {
 import { SPONSOR_SLOT_COUNTS } from '../../shared/domain/engine-utils';
 import {
   getReputationStanding,
-  computeReputationRatio,
   calculateWillingPayment,
-  HARD_GATE_MULTIPLIER,
 } from '../../shared/domain/sponsor-probability';
 import {
   getRivalConflictName,
@@ -879,8 +877,6 @@ export function Sponsors({ initialTab, onTabChange }: SponsorsProps) {
                 ? null
                 : getRivalConflictName(sponsor, playerDealsList, gameState.sponsors);
               const repStanding = getReputationStanding(teamPosition, totalTeams, sponsor.minReputation);
-              const repRatio = computeReputationRatio(teamPosition, totalTeams, sponsor.minReputation);
-              const isBelowRepFloor = !isContracted && repRatio < HARD_GATE_MULTIPLIER;
 
               return (
                 <BrowseSponsorCard
@@ -890,7 +886,6 @@ export function Sponsors({ initialTab, onTabChange }: SponsorsProps) {
                   isNegotiating={isNegotiating}
                   isSlotFull={isSlotFull}
                   rivalConflictName={rivalConflictName}
-                  isBelowRepFloor={isBelowRepFloor}
                   repStanding={repStanding}
                   negotiationId={activeNeg?.id ?? null}
                   onContact={() => setContactSponsorState({ sponsor })}

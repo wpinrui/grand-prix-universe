@@ -12,8 +12,8 @@ import { SponsorTier, SponsorPlacement, type Sponsor } from './types';
 // THRESHOLD CONSTANTS (shared with sponsor-evaluator.ts)
 // =============================================================================
 
-export const INSTANT_ACCEPT_RATIO = 0.95;
-export const REJECT_RATIO = 0.6;
+export const INSTANT_ACCEPT_RATIO = 0.90;
+export const REJECT_RATIO = 1.10;
 export const SOFT_GATE_MULTIPLIER = 0.9;
 export const HARD_GATE_MULTIPLIER = 0.7;
 
@@ -29,6 +29,15 @@ export const MAX_PREMIUM_MULTIPLIER = 1.25;
 export const DISCOUNT_MULTIPLIER_FLOOR = 0.7;
 
 // =============================================================================
+// PAYMENT RATIO CONSTANTS
+// =============================================================================
+
+/** Weight applied to signing bonus when computing total offered cost */
+const BONUS_WEIGHT = 1.5;
+/** Floor for effectiveReputation so P10 teams can reach some sponsors */
+const EFFECTIVE_REP_FLOOR = 10;
+
+// =============================================================================
 // PROBABILITY-MODEL TUNING CONSTANTS
 // =============================================================================
 
@@ -36,6 +45,8 @@ export const DISCOUNT_MULTIPLIER_FLOOR = 0.7;
 const PROB_STEEPNESS = 25;
 /** When team is below soft gate, multiply pAccept by this dampener */
 const SOFT_GATE_PACCEPT_DAMPING = 0.3;
+/** When team is below hard gate ("Below requirements"), heavily damp pAccept — roughly 1–3% at reasonable terms */
+const BELOW_GATE_PACCEPT_DAMPING = 0.03;
 
 // =============================================================================
 // TIER PAYMENT RANGES (hardcoded from sponsors.json data)
@@ -82,7 +93,7 @@ export function computeReputationRatio(
   minReputation: number
 ): number {
   const positionScore = 1 - (teamPosition - 1) / (totalTeams - 1 || 1);
-  const effectiveReputation = positionScore * 100;
+  const effectiveReputation = Math.max(positionScore * 100, EFFECTIVE_REP_FLOOR);
   return effectiveReputation / (minReputation || 1);
 }
 
@@ -115,6 +126,25 @@ export function calculateWillingPayment(
 }
 
 // =============================================================================
+// PAYMENT RATIO
+// =============================================================================
+
+/**
+ * Compute paymentRatio = offeredCost / willingCost.
+ * Signing bonus is weighted to reflect its upfront cash-flow burden.
+ */
+export function computePaymentRatio(
+  monthlyPayment: number,
+  durationMonths: number,
+  signingBonus: number,
+  willingMonthly: number
+): number {
+  const offeredCost = monthlyPayment * durationMonths + signingBonus * BONUS_WEIGHT;
+  const willingCost = willingMonthly * durationMonths;
+  return offeredCost / (willingCost || 1);
+}
+
+// =============================================================================
 // PROBABILITY MODEL
 // =============================================================================
 
@@ -141,14 +171,12 @@ export function computeAcceptanceProbabilities(
   isBelowHardGate: boolean,
   isBelowSoftGate: boolean
 ): AcceptanceProbabilities {
+  let pAccept = sigmoid((INSTANT_ACCEPT_RATIO - paymentRatio) * PROB_STEEPNESS);
+  const pReject = sigmoid((paymentRatio - REJECT_RATIO) * PROB_STEEPNESS);
+
   if (isBelowHardGate) {
-    return { accept: 0, counter: 0, reject: 1 };
-  }
-
-  let pAccept = sigmoid((paymentRatio - INSTANT_ACCEPT_RATIO) * PROB_STEEPNESS);
-  const pReject = sigmoid((REJECT_RATIO - paymentRatio) * PROB_STEEPNESS);
-
-  if (isBelowSoftGate) {
+    pAccept *= BELOW_GATE_PACCEPT_DAMPING;
+  } else if (isBelowSoftGate) {
     pAccept *= SOFT_GATE_PACCEPT_DAMPING;
   }
 
@@ -164,13 +192,16 @@ export type LikelihoodBand =
   | 'Likely to accept'
   | 'Likely to counter'
   | 'Toss-up'
-  | 'Likely to reject';
+  | 'Likely to reject'
+  | 'Below requirements';
 
 /**
  * Map a probability distribution to a human-readable likelihood band.
  * The dominant outcome wins; if no outcome exceeds 50%, it's a Toss-up.
+ * Pass isBelowHardGate=true to short-circuit to the "Below requirements" label.
  */
-export function getLikelihoodBand(probs: AcceptanceProbabilities): LikelihoodBand {
+export function getLikelihoodBand(probs: AcceptanceProbabilities, isBelowHardGate = false): LikelihoodBand {
+  if (isBelowHardGate) return 'Below requirements';
   const { accept, counter, reject } = probs;
   if (accept > 0.5) return 'Likely to accept';
   if (reject > 0.5) return 'Likely to reject';
