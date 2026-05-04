@@ -1,22 +1,16 @@
-import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { useDerivedGameState, queryKeys } from '../hooks';
-import { useQueryClient } from '@tanstack/react-query';
-import { SectionHeading, TabBar, Dropdown } from '../components';
-import type { Tab, DropdownOption } from '../components';
+import { useState, useMemo } from 'react';
+import { Dropdown } from '../components';
+import type { DropdownOption } from '../components';
 import { ACCENT_CARD_STYLE, ACCENT_BORDERED_BUTTON_STYLE, GHOST_BORDERED_BUTTON_CLASSES } from '../utils/theme-styles';
 import { formatCurrency, SPONSOR_TIER_LABELS } from '../utils/format';
 import { seasonToYear } from '../../shared/utils/date-utils';
-import { IpcChannels } from '../../shared/ipc';
 import {
-  SponsorTier,
   NegotiationPhase,
-  StakeholderType,
   type Sponsor,
   type SponsorNegotiation,
   type SponsorContractTerms,
   type ActiveSponsorDeal,
 } from '../../shared/domain';
-import { SPONSOR_SLOT_COUNTS } from '../../shared/domain/engine-utils';
 import {
   computeAcceptanceProbabilities,
   getLikelihoodBand,
@@ -34,28 +28,16 @@ import {
 // TYPES
 // ===========================================
 
-type DealsTab = 'browse' | 'negotiations';
-type TierFilter = 'all' | SponsorTier;
+export type DurationValue = '1' | '2' | '3';
 
-// ===========================================
-// CONSTANTS
-// ===========================================
+/** Optional initial terms for pre-populating ContactModal (e.g., from a renewal) */
+export interface RenewalInitialTerms {
+  monthlyPayment: number;
+  signingBonus: number;
+  duration: DurationValue;
+}
 
-const TABS: Tab<DealsTab>[] = [
-  { id: 'browse', label: 'Browse Sponsors' },
-  { id: 'negotiations', label: 'Negotiations' },
-];
-
-const TIER_FILTER_OPTIONS: DropdownOption<TierFilter>[] = [
-  { value: 'all', label: 'All Tiers' },
-  { value: SponsorTier.Title, label: 'Title' },
-  { value: SponsorTier.Major, label: 'Major' },
-  { value: SponsorTier.Minor, label: 'Minor' },
-];
-
-type DurationValue = '1' | '2' | '3';
-
-const DURATION_OPTIONS: DropdownOption<DurationValue>[] = [
+export const DURATION_OPTIONS: DropdownOption<DurationValue>[] = [
   { value: '1', label: '1 Year' },
   { value: '2', label: '2 Years' },
   { value: '3', label: '3 Years' },
@@ -98,7 +80,7 @@ function getIndustryIcon(industry: string): string {
 }
 
 /** Return the name of the sponsor causing a rival conflict, or null */
-function getRivalConflictName(
+export function getRivalConflictName(
   sponsor: Sponsor,
   playerDealsForSponsor: ActiveSponsorDeal[],
   allSponsors: Sponsor[]
@@ -174,7 +156,7 @@ const BAND_STYLES = {
   'Likely to reject': { text: 'text-red-400', label: 'Likely to reject' },
 } as const;
 
-function LikelihoodBandIndicator({ band }: { band: ReturnType<typeof getLikelihoodBand> }) {
+export function LikelihoodBandIndicator({ band }: { band: ReturnType<typeof getLikelihoodBand> }) {
   const style = BAND_STYLES[band];
   return (
     <div className="flex items-center justify-between px-3 py-2 bg-neutral-800/60 border border-neutral-700 rounded">
@@ -185,10 +167,10 @@ function LikelihoodBandIndicator({ band }: { band: ReturnType<typeof getLikeliho
 }
 
 // ===========================================
-// SPONSOR CARD
+// BROWSE SPONSOR CARD
 // ===========================================
 
-interface SponsorCardProps {
+export interface BrowseSponsorCardProps {
   sponsor: Sponsor;
   isContracted: boolean;
   isNegotiating: boolean;
@@ -201,7 +183,7 @@ interface SponsorCardProps {
   onViewNegotiations: () => void;
 }
 
-function SponsorCard({
+export function BrowseSponsorCard({
   sponsor,
   isContracted,
   isNegotiating,
@@ -212,7 +194,7 @@ function SponsorCard({
   negotiationId,
   onContact,
   onViewNegotiations,
-}: SponsorCardProps) {
+}: BrowseSponsorCardProps) {
   const hasHardBlocker = isSlotFull || rivalConflictName !== null || isBelowRepFloor;
 
   const blockerReason =
@@ -297,7 +279,7 @@ function SponsorCard({
 // CONTACT MODAL
 // ===========================================
 
-interface ContactModalProps {
+export interface ContactModalProps {
   sponsor: Sponsor;
   teamPosition: number;
   totalTeams: number;
@@ -305,9 +287,11 @@ interface ContactModalProps {
   allSponsors: Sponsor[];
   onClose: () => void;
   onSubmit: (terms: SponsorContractTerms) => void;
+  /** Pre-populated values, e.g. from a renewal offer */
+  initialTerms?: RenewalInitialTerms;
 }
 
-function ContactModal({
+export function ContactModal({
   sponsor,
   teamPosition,
   totalTeams,
@@ -315,10 +299,11 @@ function ContactModal({
   allSponsors,
   onClose,
   onSubmit,
+  initialTerms,
 }: ContactModalProps) {
-  const [duration, setDuration] = useState<DurationValue>('2');
-  const [monthlyPayment, setMonthlyPayment] = useState(sponsor.baseMonthlyPayment);
-  const [signingBonus, setSigningBonus] = useState(Math.round(sponsor.baseMonthlyPayment * 2));
+  const [duration, setDuration] = useState<DurationValue>(initialTerms?.duration ?? '2');
+  const [monthlyPayment, setMonthlyPayment] = useState(initialTerms?.monthlyPayment ?? sponsor.baseMonthlyPayment);
+  const [signingBonus, setSigningBonus] = useState(initialTerms?.signingBonus ?? Math.round(sponsor.baseMonthlyPayment * 2));
 
   // Hard blocker checks
   const rivalConflictName = getRivalConflictName(sponsor, existingPlayerDeals, allSponsors);
@@ -479,7 +464,7 @@ function ContactModal({
 // NEGOTIATION CARD
 // ===========================================
 
-interface NegotiationCardProps {
+export interface NegotiationCardProps {
   negotiation: SponsorNegotiation;
   sponsor: Sponsor;
   isSlotFilled?: boolean;
@@ -489,7 +474,7 @@ interface NegotiationCardProps {
   onDecline?: () => void;
 }
 
-function NegotiationCard({ negotiation, sponsor, isSlotFilled = false, onAccept, onReject, onSign, onDecline }: NegotiationCardProps) {
+export function NegotiationCard({ negotiation, sponsor, isSlotFilled = false, onAccept, onReject, onSign, onDecline }: NegotiationCardProps) {
   const lastRound = negotiation.rounds[negotiation.rounds.length - 1];
   const terms = lastRound?.terms as SponsorContractTerms | undefined;
   const isResponseReceived = negotiation.phase === NegotiationPhase.ResponseReceived;
@@ -634,7 +619,7 @@ interface SectionHeaderProps {
   onToggle?: () => void;
 }
 
-function SectionHeader({ title, count, collapsible, collapsed, onToggle }: SectionHeaderProps) {
+export function SectionHeader({ title, count, collapsible, collapsed, onToggle }: SectionHeaderProps) {
   return (
     <div
       className={`flex items-center gap-2 py-2 ${collapsible ? 'cursor-pointer select-none' : ''}`}
@@ -659,396 +644,10 @@ interface ToastProps {
   message: string;
 }
 
-function Toast({ message }: ToastProps) {
+export function Toast({ message }: ToastProps) {
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-neutral-800 border border-neutral-600 rounded-lg shadow-lg text-sm text-primary pointer-events-none">
       {message}
-    </div>
-  );
-}
-
-// ===========================================
-// MAIN COMPONENT
-// ===========================================
-
-interface DealsProps {
-  /** When true, hides the section heading (used when embedded in Sponsors) */
-  embedded?: boolean;
-  /** Initial tier filter to apply (e.g., when navigating from an empty sponsor slot) */
-  initialTierFilter?: SponsorTier;
-}
-
-export function Deals({ embedded = false, initialTierFilter }: DealsProps) {
-  const [activeTab, setActiveTab] = useState<DealsTab>('browse');
-  const [tierFilter, setTierFilter] = useState<TierFilter>(initialTierFilter ?? 'all');
-  const [contactingSponsor, setContactingSponsor] = useState<Sponsor | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [historyCollapsed, setHistoryCollapsed] = useState(true);
-  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    if (initialTierFilter) {
-      setTierFilter(initialTierFilter);
-    }
-  }, [initialTierFilter]);
-
-  const { gameState, isLoading } = useDerivedGameState();
-  const queryClient = useQueryClient();
-
-  const refreshGameState = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.gameState });
-  }, [queryClient]);
-
-  const showToast = useCallback((msg: string) => {
-    setToastMessage(msg);
-    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = setTimeout(() => setToastMessage(null), 3000);
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    };
-  }, []);
-
-  // Get player's current sponsor deals
-  const playerDeals = useMemo(() => {
-    if (!gameState) return new Set<string>();
-    return new Set(
-      gameState.sponsorDeals
-        .filter((d) => d.teamId === gameState.player.teamId)
-        .map((d) => d.sponsorId)
-    );
-  }, [gameState]);
-
-  const playerDealsList = useMemo(() => {
-    if (!gameState) return [] as ActiveSponsorDeal[];
-    return gameState.sponsorDeals.filter((d) => d.teamId === gameState.player.teamId);
-  }, [gameState]);
-
-  // All player sponsor negotiations
-  const allNegotiations = useMemo(() => {
-    if (!gameState) return [];
-    return gameState.negotiations.filter(
-      (n): n is SponsorNegotiation =>
-        n.stakeholderType === StakeholderType.Sponsor &&
-        n.teamId === gameState.player.teamId
-    );
-  }, [gameState]);
-
-  // Inbox sections
-  const needsAttention = useMemo(() =>
-    allNegotiations.filter(
-      (n) => n.phase === NegotiationPhase.ResponseReceived || n.phase === NegotiationPhase.PendingPlayerConfirmation
-    ), [allNegotiations]);
-
-  const sentNegotiations = useMemo(() =>
-    allNegotiations.filter((n) => n.phase === NegotiationPhase.AwaitingResponse),
-    [allNegotiations]);
-
-  const historyNegotiations = useMemo(() =>
-    allNegotiations.filter(
-      (n) => n.phase === NegotiationPhase.Failed || n.phase === NegotiationPhase.Completed
-    ), [allNegotiations]);
-
-  // Active (non-terminal) negotiations for browse-tab state, keyed by sponsorId
-  const activeNegotiationBySponsorId = useMemo(() => {
-    const map = new Map<string, SponsorNegotiation>();
-    for (const n of allNegotiations) {
-      if (n.phase !== NegotiationPhase.Completed && n.phase !== NegotiationPhase.Failed) {
-        map.set(n.sponsorId, n);
-      }
-    }
-    return map;
-  }, [allNegotiations]);
-
-  // Slot fullness per tier (active deals count)
-  const tierSlotsFull = useMemo(() => {
-    if (!gameState) return {} as Record<SponsorTier, boolean>;
-    const playerTeamId = gameState.player.teamId;
-    const result = {} as Record<SponsorTier, boolean>;
-    for (const tier of Object.values(SponsorTier)) {
-      const dealCount = gameState.sponsorDeals.filter(
-        (d) => d.teamId === playerTeamId && d.tier === tier
-      ).length;
-      result[tier] = dealCount >= SPONSOR_SLOT_COUNTS[tier];
-    }
-    return result;
-  }, [gameState]);
-
-  // Team position and total teams (for reputation calculations)
-  const { teamPosition, totalTeams } = useMemo(() => {
-    if (!gameState) return { teamPosition: 1, totalTeams: 10 };
-    const standings = gameState.currentSeason.constructorStandings;
-    const standing = standings.find((s) => s.teamId === gameState.player.teamId);
-    return {
-      teamPosition: standing?.position ?? standings.length,
-      totalTeams: Math.max(standings.length, 1),
-    };
-  }, [gameState]);
-
-  // Navigate to negotiations tab (for "View in Negotiations" button)
-  const handleViewNegotiations = useCallback(() => {
-    setActiveTab('negotiations');
-    setHistoryCollapsed(false);
-  }, []);
-
-  // Filter sponsors for browse tab
-  const filteredSponsors = useMemo(() => {
-    if (!gameState) return [];
-    let sponsors = gameState.sponsors;
-    if (tierFilter !== 'all') {
-      sponsors = sponsors.filter((s) => s.tier === tierFilter);
-    }
-    const tierOrder = { [SponsorTier.Title]: 0, [SponsorTier.Major]: 1, [SponsorTier.Minor]: 2 };
-    return [...sponsors].sort((a, b) => {
-      const tierDiff = tierOrder[a.tier] - tierOrder[b.tier];
-      if (tierDiff !== 0) return tierDiff;
-      return b.baseMonthlyPayment - a.baseMonthlyPayment;
-    });
-  }, [gameState, tierFilter]);
-
-  // Handlers
-  const handleStartNegotiation = useCallback(async (terms: SponsorContractTerms) => {
-    if (!contactingSponsor) return;
-    const sponsorName = contactingSponsor.name;
-    try {
-      await window.electronAPI.invoke(IpcChannels.SPONSOR_START_NEGOTIATION, {
-        sponsorId: contactingSponsor.id,
-        terms,
-      });
-      refreshGameState();
-      setContactingSponsor(null);
-      // Stay on Browse tab; show toast; badge auto-updates via needsAttention
-      showToast(`Proposal sent to ${sponsorName}.`);
-    } catch (error) {
-      console.error('Failed to start negotiation:', error);
-    }
-  }, [contactingSponsor, refreshGameState, showToast]);
-
-  const handleRespondToOffer = useCallback(async (negotiationId: string, response: 'accept' | 'reject') => {
-    try {
-      await window.electronAPI.invoke(IpcChannels.SPONSOR_RESPOND_TO_OFFER, {
-        negotiationId,
-        response,
-      });
-      refreshGameState();
-    } catch (error) {
-      console.error('Failed to respond to offer:', error);
-    }
-  }, [refreshGameState]);
-
-  const handleSign = useCallback(async (negotiationId: string) => {
-    try {
-      await window.electronAPI.invoke(IpcChannels.SPONSOR_SIGN, negotiationId);
-      refreshGameState();
-    } catch (error) {
-      console.error('Failed to sign deal:', error);
-    }
-  }, [refreshGameState]);
-
-  const handleDecline = useCallback(async (negotiationId: string) => {
-    try {
-      await window.electronAPI.invoke(IpcChannels.SPONSOR_DECLINE, negotiationId);
-      refreshGameState();
-    } catch (error) {
-      console.error('Failed to decline deal:', error);
-    }
-  }, [refreshGameState]);
-
-  if (isLoading) {
-    return (
-      <div className="p-4">
-        {!embedded && <SectionHeading>Deals</SectionHeading>}
-        <p className="text-muted">Loading...</p>
-      </div>
-    );
-  }
-
-  if (!gameState) {
-    return (
-      <div className="p-4">
-        {!embedded && <SectionHeading>Deals</SectionHeading>}
-        <p className="text-muted">No game data available.</p>
-      </div>
-    );
-  }
-
-  const badgeCount = needsAttention.length + sentNegotiations.length;
-
-  return (
-    <div className="space-y-4">
-      {!embedded && <SectionHeading>Deals</SectionHeading>}
-
-      <TabBar<DealsTab>
-        tabs={TABS}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        badge={badgeCount > 0 ? { tabId: 'negotiations', count: badgeCount } : undefined}
-      />
-
-      {activeTab === 'browse' && (
-        <div className="space-y-4">
-          <div className="card p-4" style={ACCENT_CARD_STYLE}>
-            <div className="flex items-start gap-3">
-              <div className="text-blue-400 text-xl">{'ℹ️'}</div>
-              <div>
-                <h3 className="text-sm font-semibold text-primary mb-1">
-                  Sponsor Negotiations
-                </h3>
-                <p className="text-xs text-muted">
-                  Contact sponsors to negotiate deals for next season. Higher-tier sponsors pay more
-                  but have stricter requirements. Your team's championship position affects their interest.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-secondary">Filter by tier:</span>
-            <div className="w-40">
-              <Dropdown<TierFilter>
-                options={TIER_FILTER_OPTIONS}
-                value={tierFilter}
-                onChange={setTierFilter}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            {filteredSponsors.map((sponsor) => {
-              const isContracted = playerDeals.has(sponsor.id);
-              const activeNeg = activeNegotiationBySponsorId.get(sponsor.id) ?? null;
-              const isNegotiating = activeNeg !== null;
-              const isSlotFull =
-                !isContracted && !isNegotiating && tierSlotsFull[sponsor.tier];
-              const rivalConflictName = isContracted
-                ? null
-                : getRivalConflictName(sponsor, playerDealsList, gameState.sponsors);
-              const repStanding = getReputationStanding(teamPosition, totalTeams, sponsor.minReputation);
-              const repRatio = computeReputationRatio(teamPosition, totalTeams, sponsor.minReputation);
-              const isBelowRepFloor = !isContracted && repRatio < HARD_GATE_MULTIPLIER;
-
-              return (
-                <SponsorCard
-                  key={sponsor.id}
-                  sponsor={sponsor}
-                  isContracted={isContracted}
-                  isNegotiating={isNegotiating}
-                  isSlotFull={isSlotFull}
-                  rivalConflictName={rivalConflictName}
-                  isBelowRepFloor={isBelowRepFloor}
-                  repStanding={repStanding}
-                  negotiationId={activeNeg?.id ?? null}
-                  onContact={() => setContactingSponsor(sponsor)}
-                  onViewNegotiations={handleViewNegotiations}
-                />
-              );
-            })}
-            {filteredSponsors.length === 0 && (
-              <p className="text-center text-muted py-8">
-                No sponsors found matching filter.
-              </p>
-            )}
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'negotiations' && (
-        <div className="space-y-2">
-          {/* Needs Your Attention */}
-          <SectionHeader title="Needs your attention" count={needsAttention.length} />
-          {needsAttention.length === 0 ? (
-            <p className="text-sm text-muted px-1 pb-2">Nothing needs your attention right now.</p>
-          ) : (
-            <div className="space-y-3 pb-2">
-              {needsAttention.map((negotiation) => {
-                const sponsor = gameState.sponsors.find((s) => s.id === negotiation.sponsorId);
-                if (!sponsor) return null;
-                const slotFilled = negotiation.phase === NegotiationPhase.PendingPlayerConfirmation
-                  ? tierSlotsFull[sponsor.tier]
-                  : false;
-                return (
-                  <NegotiationCard
-                    key={negotiation.id}
-                    negotiation={negotiation}
-                    sponsor={sponsor}
-                    isSlotFilled={slotFilled}
-                    onAccept={() => handleRespondToOffer(negotiation.id, 'accept')}
-                    onReject={() => handleRespondToOffer(negotiation.id, 'reject')}
-                    onSign={() => handleSign(negotiation.id)}
-                    onDecline={() => handleDecline(negotiation.id)}
-                  />
-                );
-              })}
-            </div>
-          )}
-
-          {/* Sent — AwaitingResponse only; no actionable buttons render */}
-          <SectionHeader title="Sent" count={sentNegotiations.length} />
-          {sentNegotiations.length === 0 ? (
-            <p className="text-sm text-muted px-1 pb-2">No proposals awaiting a response.</p>
-          ) : (
-            <div className="space-y-3 pb-2">
-              {sentNegotiations.map((negotiation) => {
-                const sponsor = gameState.sponsors.find((s) => s.id === negotiation.sponsorId);
-                if (!sponsor) return null;
-                return (
-                  <NegotiationCard
-                    key={negotiation.id}
-                    negotiation={negotiation}
-                    sponsor={sponsor}
-                  />
-                );
-              })}
-            </div>
-          )}
-
-          {/* History — collapsed by default */}
-          <SectionHeader
-            title="History"
-            count={historyNegotiations.length}
-            collapsible
-            collapsed={historyCollapsed}
-            onToggle={() => setHistoryCollapsed((c) => !c)}
-          />
-          {!historyCollapsed && (
-            <div className="space-y-3 pb-2">
-              {historyNegotiations.length === 0 ? (
-                <p className="text-sm text-muted px-1">No history yet.</p>
-              ) : (
-                historyNegotiations.map((negotiation) => {
-                  const sponsor = gameState.sponsors.find((s) => s.id === negotiation.sponsorId);
-                  if (!sponsor) return null;
-                  return (
-                    <NegotiationCard
-                      key={negotiation.id}
-                      negotiation={negotiation}
-                      sponsor={sponsor}
-                    />
-                  );
-                })
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Contact Modal */}
-      {contactingSponsor && (
-        <ContactModal
-          sponsor={contactingSponsor}
-          teamPosition={teamPosition}
-          totalTeams={totalTeams}
-          existingPlayerDeals={playerDealsList}
-          allSponsors={gameState.sponsors}
-          onClose={() => setContactingSponsor(null)}
-          onSubmit={handleStartNegotiation}
-        />
-      )}
-
-      {/* Bottom-centre toast */}
-      {toastMessage && <Toast message={toastMessage} />}
     </div>
   );
 }

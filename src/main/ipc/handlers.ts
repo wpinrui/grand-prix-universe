@@ -295,6 +295,20 @@ export function registerIpcHandlers(): void {
     }
   );
 
+  ipcMain.handle(
+    IpcChannels.SPONSOR_ACCEPT_RENEWAL,
+    (_event, sponsorId: string) => {
+      return GameStateManager.acceptSponsorRenewal(sponsorId);
+    }
+  );
+
+  ipcMain.handle(
+    IpcChannels.SPONSOR_DECLINE_RENEWAL,
+    (_event, sponsorId: string) => {
+      return GameStateManager.declineSponsorRenewal(sponsorId);
+    }
+  );
+
   // Mail handlers
   ipcMain.handle(IpcChannels.MAIL_MARK_READ, (_event, emailId: string) => {
     return GameStateManager.markEmailRead(emailId);

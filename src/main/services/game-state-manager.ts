@@ -42,7 +42,11 @@ import {
   createSponsorContractFromNegotiation,
   generateSponsorSigningEvent,
   generateNegotiationUpdateEmail,
+  generateRenewalPromptEmail,
+  createSponsorDealDirect,
+  generateSponsorLapseHeadline,
 } from './contract-creator';
+import { calculateWillingPayment } from '../../shared/domain/sponsor-probability';
 import type {
   GameState,
   DesignState,
@@ -419,6 +423,38 @@ export const GameStateManager = {
 
     // Apply aging, retirements, and state resets
     applySeasonEndResult(state, seasonEndResult);
+
+    // --- Sponsor season-end hooks (before season number increments) ---
+    const expiringSeasonNumber = state.currentSeason.seasonNumber;
+    const playerTeamId = state.player.teamId;
+
+    // 1. Send renewal prompt emails for player deals expiring this season
+    for (const deal of state.sponsorDeals) {
+      if (deal.teamId === playerTeamId && deal.endSeason === expiringSeasonNumber) {
+        generateRenewalPromptEmail(state, deal.sponsorId);
+      }
+    }
+
+    // 2. Lapse deals where endSeason <= expiringSeasonNumber AND no active counter-negotiation
+    const dealsToLapse = state.sponsorDeals.filter((deal) => {
+      if (deal.endSeason > expiringSeasonNumber) return false;
+      // Keep if there's an active SponsorNegotiation for this sponsor+team
+      const hasActiveNegotiation = state.negotiations.some(
+        (n) =>
+          n.stakeholderType === StakeholderType.Sponsor &&
+          n.teamId === deal.teamId &&
+          (n as SponsorNegotiation).sponsorId === deal.sponsorId &&
+          n.phase !== NegotiationPhase.Completed &&
+          n.phase !== NegotiationPhase.Failed
+      );
+      return !hasActiveNegotiation;
+    });
+
+    for (const deal of dealsToLapse) {
+      const duration = deal.endSeason - deal.startSeason + 1;
+      generateSponsorLapseHeadline(state, deal.sponsorId, deal.teamId, duration);
+    }
+    state.sponsorDeals = state.sponsorDeals.filter((d) => !dealsToLapse.includes(d));
 
     // Transition to new season (archive old, create new)
     transitionToNewSeason(state, seasonEndResult.newCalendar);
@@ -1167,6 +1203,68 @@ export const GameStateManager = {
 
     negotiation.phase = NegotiationPhase.Failed;
     negotiation.lastActivityDate = { ...state.currentDate };
+
+    return state;
+  },
+
+  /**
+   * Player accepts a sponsor renewal from the Renewals tab.
+   * Creates a new 1-season deal at the standing-adjusted monthly payment.
+   * No signing bonus. Fires news headline + critical email (reuses signing event helper).
+   */
+  acceptSponsorRenewal(sponsorId: string): GameState {
+    const state = GameStateManager.currentState;
+    if (!state) throw new Error('No game in progress');
+
+    const playerTeamId = state.player.teamId;
+    const sponsor = state.sponsors.find((s) => s.id === sponsorId);
+    if (!sponsor) throw new Error('Sponsor not found');
+
+    // Verify an expiring deal exists for this sponsor+player team
+    const expiringDeal = state.sponsorDeals.find(
+      (d) => d.sponsorId === sponsorId && d.teamId === playerTeamId
+    );
+    if (!expiringDeal) throw new Error('No active deal found for renewal');
+
+    // Remove the old deal
+    state.sponsorDeals = state.sponsorDeals.filter(
+      (d) => !(d.sponsorId === sponsorId && d.teamId === playerTeamId)
+    );
+
+    // Calculate standing-adjusted renewal payment
+    const standings = state.currentSeason.constructorStandings;
+    const standing = standings.find((s) => s.teamId === playerTeamId);
+    const teamPosition = standing?.position ?? standings.length;
+    const totalTeams = Math.max(standings.length, 1);
+    const monthlyPayment = calculateWillingPayment(sponsor, teamPosition, totalTeams);
+
+    const result = createSponsorDealDirect(state, sponsorId, playerTeamId, monthlyPayment, 1);
+    if (result) {
+      generateSponsorSigningEvent(state, result, true);
+    }
+
+    return state;
+  },
+
+  /**
+   * Player declines a sponsor renewal from the Renewals tab.
+   * Removes the deal immediately and fires a lapse headline.
+   */
+  declineSponsorRenewal(sponsorId: string): GameState {
+    const state = GameStateManager.currentState;
+    if (!state) throw new Error('No game in progress');
+
+    const playerTeamId = state.player.teamId;
+    const deal = state.sponsorDeals.find(
+      (d) => d.sponsorId === sponsorId && d.teamId === playerTeamId
+    );
+    if (!deal) throw new Error('No active deal found to decline');
+
+    const duration = deal.endSeason - deal.startSeason + 1;
+    generateSponsorLapseHeadline(state, sponsorId, playerTeamId, duration);
+    state.sponsorDeals = state.sponsorDeals.filter(
+      (d) => !(d.sponsorId === sponsorId && d.teamId === playerTeamId)
+    );
 
     return state;
   },

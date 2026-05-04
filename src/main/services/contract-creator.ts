@@ -615,3 +615,94 @@ export function generateNegotiationUpdateEmail(
     critical: true,
   });
 }
+
+// =============================================================================
+// RENEWAL HELPERS
+// =============================================================================
+
+/**
+ * Send a critical renewal-prompt email to the player for an expiring sponsor deal.
+ * Called once per expiring deal at season end, before the season increments.
+ */
+export function generateRenewalPromptEmail(state: GameState, sponsorId: string): void {
+  const sponsor = state.sponsors.find((s) => s.id === sponsorId);
+  if (!sponsor) return;
+
+  state.calendarEvents.push({
+    id: randomUUID(),
+    date: state.currentDate,
+    type: CalendarEventType.Email,
+    subject: `${sponsor.name} is open to renewal`,
+    body: `${sponsor.name} is open to renewal. View terms in the Renewals tab.`,
+    critical: true,
+  });
+}
+
+/**
+ * Create an active sponsor deal directly (e.g., from a renewal accept),
+ * without going through a negotiation. No signing bonus is credited.
+ * Returns the SponsorContractResult for event generation.
+ */
+export function createSponsorDealDirect(
+  state: GameState,
+  sponsorId: string,
+  teamId: string,
+  monthlyPayment: number,
+  duration: number
+): SponsorContractResult | null {
+  const sponsor = state.sponsors.find((s) => s.id === sponsorId);
+  if (!sponsor) return null;
+
+  const startSeason = state.currentSeason.seasonNumber;
+  const endSeason = startSeason + duration - 1;
+
+  const deal: ActiveSponsorDeal = {
+    sponsorId: sponsor.id,
+    teamId,
+    tier: sponsor.tier,
+    signingBonus: 0,
+    monthlyPayment,
+    guaranteed: true,
+    startSeason,
+    endSeason,
+  };
+
+  state.sponsorDeals.push(deal);
+
+  return {
+    sponsorId: sponsor.id,
+    teamId,
+    tier: sponsor.tier,
+    signingBonus: 0,
+    monthlyPayment,
+    contractDuration: duration,
+    startSeason,
+    endSeason,
+  };
+}
+
+/**
+ * Generate a news headline for a lapsed sponsor deal.
+ * "[Sponsor] departs [Team] after [N]-year partnership."
+ */
+export function generateSponsorLapseHeadline(
+  state: GameState,
+  sponsorId: string,
+  teamId: string,
+  contractDuration: number
+): void {
+  const sponsor = state.sponsors.find((s) => s.id === sponsorId);
+  const team = state.teams.find((t) => t.id === teamId);
+  if (!sponsor || !team) return;
+
+  const headline = `${sponsor.name} departs ${team.name} after ${contractDuration}-year partnership`;
+
+  state.calendarEvents.push({
+    id: randomUUID(),
+    date: state.currentDate,
+    type: CalendarEventType.Headline,
+    subject: headline,
+    body: headline + '.',
+    critical: false,
+  });
+}
